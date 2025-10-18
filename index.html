@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="./funciones/funcionesIndex/validacionCampos.js"></script>
     <title>Inicio</title>
 </head>
 <body>
@@ -18,13 +19,11 @@
             </div>
         <form action="" id="form">
             <label for="">Ingrese su numero de boleta</label>
-            <input type="text" id="boleta" name="boleta" required>
+            <input type="text" id="boleta" name="boleta" onkeypress="return ValidarCamposNumericos(event)" maxlength="10">
             <label for="">Ingrese su contraseña</label>
-            <input type="password" id="password" name="password" required>
+            <input type="password" id="password" name="password" onkeypress="return ValidarCamposPassword(event)" >
             <button type="submit" id="btn-login">Iniciar Sesión</button>
         </form>
-        </div>
-        <div class="container-facebook">
         </div>
     </div>
 </body>
