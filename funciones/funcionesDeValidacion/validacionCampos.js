@@ -13,3 +13,10 @@ function ValidarCamposPassword(e) {
     return patron.test(codigo);
 }
 
+function ValidarCamposLetras(e) {
+    var teclado = (document.all) ? e.keyCode : e.which;
+    if (teclado == 8) return true; // Backspace
+    var patron = /[A-Za-z\s\'\á\é\í\ó\ú]/;
+    var codigo = String.fromCharCode(teclado);
+    return patron.test(codigo);
+}
