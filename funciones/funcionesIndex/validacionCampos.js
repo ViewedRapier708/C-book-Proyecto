@@ -12,3 +12,4 @@ function ValidarCamposPassword(e) {
     var codigo = String.fromCharCode(teclado);
     return patron.test(codigo);
 }
+

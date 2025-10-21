@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="./funciones/funcionesIndex/validacionCampos.js"></script>
+    <script src="./funciones/funcionesIndex/MostrarPsw.js"></script>
     <title>Inicio</title>
 </head>
 <body>
     <header class="header-container">
-        <div class="logo-containerBTS"><img src="" alt=""></div>
+        <div class="logo-containerBTZ"><img src="" alt=""></div>
         <div class="title-container">BIENVENIDO</div>
         <div class="logo-containerIPN"><img src="" alt=""></div>
     </header>
@@ -22,7 +23,9 @@
             <input type="text" id="boleta" name="boleta" onkeypress="return ValidarCamposNumericos(event)" maxlength="10">
             <label for="">Ingrese su contraseña</label>
             <input type="password" id="password" name="password" onkeypress="return ValidarCamposPassword(event)" >
+            <input type="checkbox" id="mostrar" onclick="VizualizarPsw('mostrar', 'password')"> <label for="">Mostrar Contraseña </label>
             <button type="submit" id="btn-login">Iniciar Sesión</button>
+            <a href="">Recuperar contraseña?</a>
         </form>
         </div>
     </div>
