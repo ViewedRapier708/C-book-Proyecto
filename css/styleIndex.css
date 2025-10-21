@@ -1,0 +1,205 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 1080px;
+    background: linear-gradient(180deg, #7B0233 50%, black 100%);
+    display: flex;
+    flex-direction: column;
+}
+
+.header-container{
+    background: linear-gradient(180deg, #F2D9E3 0%, #8C7E83 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+
+}
+
+.logo-containerBTZ,
+.logo-containerIPN{
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-containerBTZ img,
+.logo-containerIPN img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+.title-container{
+    font-size: 32px;
+    font-weight: bold;
+    color: #2C2C2C;
+    letter-spacing: 2px;
+    text-align: center;
+    flex: 1;
+}
+
+.container-main{
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+}
+
+.container-form{
+    background: linear-gradient(180deg, #F2D9E3 0%, #8C7E83 100%);
+    border-radius: 25px;
+    padding: 40px 50px;
+    box-shadow: 0px 8px 30px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 450px;
+}
+.container-title {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.container-title h2 {
+    font-size: 28px;
+    font-weight: bold;
+    color: #2C2C2C;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    margin-bottom: 30px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+form label {
+    font-size: 14px;
+    color: #2C2C2C;
+    font-weight: 500;
+    margin-bottom: -10px;
+}
+
+form input[type="text"],
+form input[type="password"] {
+    padding: 12px 14px;
+    border: 1px solid #B8B8B8;
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: white;
+    transition: all 0.3s ease;
+  
+}
+form input[type="text"]:focus,
+form input[type="password"]:focus {
+    outline: none;
+    border-color: #2c3e50;
+    box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+}
+
+form input[type="text"]::placeholder,
+form input[type="password"]::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+form input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    margin-right: 8px;
+}
+form label[for=""] {
+    display: inline;
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+}
+#btn-login {
+    background: #2C3E50;
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+#btn-login:hover {
+    background: #34495E;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(44, 62, 80, 0.3);
+}
+#btn-login:active {
+    transform: translateY(0);
+}
+
+.separator {
+    text-align: center;
+    margin: 15px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.btn-crear-cuenta {
+    background: #2C3E50;
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+}
+
+.btn-crear-cuenta:hover {
+    background: #34495E;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(44, 62, 80, 0.3);
+}
+.divider {
+    height: 1px;
+    background-color: #999;
+    margin: 20px 0;
+}
+
+form a{
+    color: #2C3E50;
+    font-size: 13px;
+    text-decoration: none;
+    text-align: center;
+    transition: color 0.3s ease;
+    margin-top: 5px;
+}
+
+form a:hover {
+    color: #7B0233;
+    text-decoration: underline;
+}
+
+.admin-link {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+}
