@@ -5,7 +5,7 @@ const usuarioValidos = {
 };
 //Funcion de auxiliar antes de la conexion con la base de datos
 function iniciarSesion(e){
-
+    e.preventDefault();
     const Nboleta = document.getElementById('boleta').value;
     const password = document.getElementById('password').value;
 
