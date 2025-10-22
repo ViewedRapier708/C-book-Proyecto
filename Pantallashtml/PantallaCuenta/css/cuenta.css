@@ -1,3 +1,232 @@
-/*
-css para la gestión de la cuenta de usuario
-*/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #7B0233 50%, black 100%);
+    display: flex;
+    flex-direction: column;
+}
+
+.container-main {
+    display: flex;
+    flex: 1;
+}
+
+/* HEADER */
+.header-container {
+    background: linear-gradient(180deg, #F2D9E3 0%, #8C7E83 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.header-container .logo-containerBTZ,
+.header-container .logo-containerIPN {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-container .logo-containerBTZ img,
+.header-container .logo-containerIPN img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.title-container {
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    letter-spacing: 1px;
+    text-align: center;
+    flex: 1;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* ASIDE */
+.container-aside {
+    width: 280px;
+    background: linear-gradient(180deg, #f2d9e3 0%, #8c7e83 100%);
+    box-shadow: 3px 0 10px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+}
+
+aside {
+    padding: 20px;
+}
+
+.container-logos {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+/* Logo del aside - pequeño */
+.container-aside .logo-cuenta {
+    width: 50px;
+    height: 50px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.container-aside .logo-cuenta img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.container-entrada {
+    margin-top: 20px;
+}
+
+.linea-aside {
+    border: none;
+    border-top: 2px solid #333;
+    margin: 20px 0;
+}
+
+.container-entrada h2 {
+    font-size: 14px;
+    color: #333;
+    text-align: center;
+    font-weight: bold;
+    margin: 15px 0;
+}
+
+.menu-interactivo {
+    margin-top: 20px;
+}
+
+.menu-interactivo h3 {
+    font-size: 13px;
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.btn-secciones button,
+.btn-cerrar-sesion button {
+    width: 100%;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.btn-secciones button:hover,
+.btn-cerrar-sesion button:hover {
+    background-color: #9D306C;
+}
+
+.btn-secciones button:hover .link-secciones,
+.btn-cerrar-sesion button:hover .link-secciones {
+    color: white;
+}
+
+.link-secciones {
+    text-decoration: none;
+    color: #333;
+    font-size: 12px;
+    font-weight: 500;
+    display: block;
+    width: 100%;
+}
+
+.btn-cerrar-sesion {
+    margin-top: 20px;
+}
+
+/* CONTENEDOR DE INFORMACIÓN DEL USUARIO */
+.container-info_usu {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background: linear-gradient(180deg, #7B0233 50%, #8B1538 100%);
+    position: relative;
+}
+
+/* Logo grande del contenedor de información */
+.container-info_usu .logo-cuenta {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) translateX(-220px);
+    width: 120px;
+    height: 120px;
+    background-color: #7B0233;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    z-index: 2;
+}
+
+.container-info_usu .logo-cuenta img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.container-info_usu .logo-cuenta::after {
+    content: 'CUENTA';
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 18px;
+    font-weight: bold;
+    color: #2C2C2C;
+    white-space: nowrap;
+}
+
+.txt-informacion {
+    background-color: rgba(255, 248, 240, 0.95);
+    padding: 60px 80px 60px 180px;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    min-width: 550px;
+    position: relative;
+    z-index: 1;
+}
+
+.txt-informacion h3 {
+    font-size: 16px;
+    font-weight: bold;
+    color: #2C2C2C;
+    margin-bottom: 25px;
+    letter-spacing: 0.5px;
+}
+
+.txt-informacion label {
+    font-size: 14px;
+    color: #2C2C2C;
+    font-weight: 600;
+    line-height: 2.5;
+    display: block;
+}
