@@ -1,0 +1,1 @@
+/* Funciones para la pantalla de alumnos solicitantes */
