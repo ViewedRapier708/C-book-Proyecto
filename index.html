@@ -1,36 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="./funciones/funcionesIndex/validacionCampos.js"></script>
-    <script src="./funciones/funcionesIndex/MostrarPsw.js"></script>
-    <title>Inicio</title>
+ <script src="./funciones/funcionesDeValidacion/validacionCampos.js"></script>
+ <script src="./funciones/funcionesDeValidacion/MostrarPsw.js"></script>
+ <script src="./funciones/funcionesIndex/funcionInicioSesion.js"></script>
+    <title>Biblioteca Digital - Inicio</title>
+    <link rel="stylesheet" href="./css/styleIndex.css">
 </head>
 <body>
+    
     <header class="header-container">
-        <div class="logo-containerBTZ"><img src="" alt=""></div>
-        <div class="title-container">BIENVENIDO</div>
-        <div class="logo-containerIPN"><img src="" alt=""></div>
+        <div class="logo-containerBTZ">
+            <img src="./img/logo-BTZ.png" alt="Logo BTZ">
+        </div>
+        <div class="title-container">
+            BIENVENIDO A TU BIBLIOTECA DIGITAL
+        </div>
+        <div class="logo-containerIPN">
+            <img src="./img/logo-IPN.png" alt="Logo IPN">
+        </div>
     </header>
+
+    
     <div class="container-main">
         <div class="container-form">
+            
             <div class="container-title">
-                <h2>Iniciar Sesión</h2>
+                <h2>INICIAR SESION</h2>
             </div>
-        <form action="" id="form">
-            <label for="">Ingrese su numero de boleta</label>
-            <input type="text" id="boleta" name="boleta" onkeypress="return ValidarCamposNumericos(event)" maxlength="10">
-            <label for="">Ingrese su contraseña</label>
-            <input type="password" id="password" name="password" onkeypress="return ValidarCamposPassword(event)" >
-            <input type="checkbox" id="mostrar" onclick="VizualizarPsw('mostrar', 'password')"> <label for="">Mostrar Contraseña </label>
-            <button type="submit" id="btn-login">Iniciar Sesión</button>
-            <a href="">Recuperar contraseña?</a>
-        </form>
+            <form action="" id="form" onsubmit="iniciarSesion(event)" method="post">
+                
+                <label for="boleta">Usuario</label>
+                <input 
+                    type="text" 
+                    id="boleta" 
+                    name="boleta" 
+                    placeholder="Ingrese su usuario"
+                    onkeypress="return ValidarCamposNumericos(event)" 
+                    maxlength="10"
+                    required>
+
+                <label for="password">Contraseña</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    placeholder="Ingrese su contraseña"
+                    onkeypress="return ValidarCamposPassword(event)"
+                    required>
+                
+                <div class="checkbox-container">
+                    <input 
+                        type="checkbox" 
+                        id="mostrar" 
+                        onclick="VizualizarPsw('mostrar', 'password')"
+                    >
+                    <label for="mostrar">Mostrar contraseña</label>
+                </div>
+                
+                <button type="submit" class="btn-crear-cuenta">ACCEDER</button>
+
+                <div class="separator">O</div>
+                
+                <a href="./crear-cuenta.html" class="btn-crear-cuenta">Crear cuenta</a>
+
+                
+                <div class="divider"></div>
+
+                
+                <a href="./recuperar-contrasena.html" class="recuperar-contrasena">RECUPERAR CONTRASEÑA?</a>
+              
+            </form>
         </div>
     </div>
 </body>
 </html>
 
-//caja de opcciones de grupos
-<input type="text" id="grupo" name="grupo" placeholder="Ingrese su grupo">
