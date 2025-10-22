@@ -1,0 +1,1 @@
+/* Funciones para la gestión de computadoras */
