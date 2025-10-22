@@ -17,7 +17,7 @@ body {
     flex: 1;
 }
 
-/* HEADER */
+
 .header-container {
     background: linear-gradient(180deg, #F2D9E3 0%, #8C7E83 100%);
     display: flex;
@@ -27,8 +27,8 @@ body {
     box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-.header-container .logo-containerBTZ,
-.header-container .logo-containerIPN {
+.logo-containerBTZ,
+.logo-containerIPN {
     width: 80px;
     height: 80px;
     display: flex;
@@ -36,8 +36,8 @@ body {
     justify-content: center;
 }
 
-.header-container .logo-containerBTZ img,
-.header-container .logo-containerIPN img {
+.logo-containerBTZ img,
+.logo-containerIPN img {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
@@ -53,7 +53,7 @@ body {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* ASIDE */
+
 .container-aside {
     width: 280px;
     background: linear-gradient(180deg, #f2d9e3 0%, #8c7e83 100%);
@@ -73,7 +73,7 @@ aside {
     margin-bottom: 30px;
 }
 
-/* Logo del aside - pequeño */
+
 .container-aside .logo-cuenta {
     width: 50px;
     height: 50px;
@@ -158,23 +158,33 @@ aside {
     margin-top: 20px;
 }
 
-/* CONTENEDOR DE INFORMACIÓN DEL USUARIO */
+
 .container-info_usu {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 40px;
+}
+
+.container-info_usu {
     background: linear-gradient(180deg, #7B0233 50%, #8B1538 100%);
+}
+
+
+.container-info_usu::before {
+    content: '';
+}
+
+.container-info_usu {
     position: relative;
 }
 
-/* Logo grande del contenedor de información */
 .container-info_usu .logo-cuenta {
     position: absolute;
-    left: 50%;
+    left: 51.3%;
     top: 50%;
-    transform: translate(-50%, -50%) translateX(-220px);
+    transform: translate(-50%, -50%) translateX(-180px);
     width: 120px;
     height: 120px;
     background-color: #7B0233;
@@ -183,14 +193,6 @@ aside {
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    overflow: hidden;
-    z-index: 2;
-}
-
-.container-info_usu .logo-cuenta img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
 }
 
 .container-info_usu .logo-cuenta::after {
@@ -210,9 +212,7 @@ aside {
     padding: 60px 80px 60px 180px;
     border-radius: 20px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-    min-width: 550px;
-    position: relative;
-    z-index: 1;
+    min-width: 500px;
 }
 
 .txt-informacion h3 {
@@ -227,6 +227,23 @@ aside {
     font-size: 14px;
     color: #2C2C2C;
     font-weight: 600;
-    line-height: 2.5;
+    line-height: 2;
     display: block;
+    margin-bottom: 8px;
+}
+
+
+@media (max-width: 768px) {
+    .container-main {
+        flex-direction: column;
+    }
+
+    .container-aside {
+        width: 100%;
+        height: auto;
+    }
+
+    .title-container {
+        font-size: 18px;
+    }
 }
