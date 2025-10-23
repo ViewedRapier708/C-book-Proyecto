@@ -24,15 +24,20 @@ function iniciarSesion(event) {
 
     // Verificar si usuarioValidos existe y tiene datos
     if (usuarioValidos && usuarioValidos[Nboleta] === password) {
-          boletaEl.value = '';
+        // GUARDAR LA SESIÓN
+        sessionStorage.setItem('sesionActiva', 'true');
+        sessionStorage.setItem('boleta', Nboleta);
+        // Opcional: guardar timestamp de inicio de sesión
+        sessionStorage.setItem('tiempoInicio', new Date().getTime());
+        
+        boletaEl.value = '';
         passwordEl.value = '';
         alert('Inicio de sesión exitoso');
-        // Redirigir a la página de usuario. Asegurarse de la ruta relativa correcta desde index.html
-        // index.html está en la raíz del proyecto, y la página objetivo está en ./pantallasUs/postInicio.html
-        window.location.href = './pantallasUs/postInicio.html';
+        
+        // Usar replace en lugar de href para evitar volver atrás
+        window.location.replace('./pantallasUs/postInicio.html');
         return true;
     } else {
-        // Borrar campos
         // Limpiar campos y mostrar mensaje de error
         boletaEl.value = '';
         passwordEl.value = '';
