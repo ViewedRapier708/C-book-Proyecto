@@ -1,0 +1,244 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+   background: linear-gradient(180deg, #7B0233 50%, black 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+
+header {
+    background: linear-gradient(180deg, #F2D9E3 0%, #8C7E83 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    border-bottom: 4px solid #1E3A5F;
+}
+
+.logo-containerBTZ,
+.logo-containerIPN {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-containerBTZ img,
+.logo-containerIPN img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.title-container {
+    font-size: 32px;
+    font-weight: bold;
+    color: #000;
+    letter-spacing: 2px;
+}
+
+/* Main Container */
+.container-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.container-title {
+    background: linear-gradient(180deg, #F2D9E3 0%, #8C7E83 100%);
+    padding: 20px 60px;
+    border-radius: 15px 15px 0 0;
+    text-align: center;
+}
+
+.container-title h2 {
+    font-size: 28px;
+    font-weight: bold;
+    color: #000;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 5px;
+}
+
+/* Form Container */
+.container-form {
+    background: linear-gradient(180deg, #F2D9E3 0%, #8C7E83 100%);
+    padding: 30px 50px 40px;
+    border-radius: 0 0 15px 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 550px;
+}
+
+#form-registro {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 20px;
+}
+
+/* Labels */
+.text-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 5px;
+    display: block;
+    grid-column: span 1;
+}
+
+/* Special labels that span full width */
+#form-registro label[for="boleta"],
+#form-registro label[for="correo"] {
+    grid-column: span 2;
+}
+
+/* Input Fields */
+.input-field {
+    width: 100%;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    background: #FFF;
+    color: #666;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.input-field::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+.input-field:focus {
+    box-shadow: 0 0 0 2px #1E3A5F;
+}
+
+/* Inputs that span full width */
+#boleta,
+#correo {
+    grid-column: span 2;
+}
+
+/* Password inputs span full width */
+#contrasena,
+#confirmar_contrasena {
+    grid-column: span 2;
+}
+
+/* Checkbox container */
+#form-registro label[for=""],
+#form-registro input[type="checkbox"] {
+    grid-column: span 2;
+    display: inline;
+    width: auto;
+}
+
+#form-registro label:has(+ #mostrar) {
+    font-size: 13px;
+    font-weight: normal;
+    margin-bottom: 0;
+}
+
+#mostrar {
+    width: auto;
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+/* Submit Button */
+#btn-registrar {
+    grid-column: span 2;
+    background: #1E3A5F;
+    color: #FFF;
+    padding: 12px 40px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 15px;
+    width: 200px;
+    justify-self: center;
+}
+
+#btn-registrar:hover {
+    background: #2C4F7C;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+#btn-registrar:active {
+    transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    header {
+        padding: 15px 20px;
+    }
+    
+    .title-container {
+        font-size: 20px;
+    }
+    
+    .logo-containerBTZ,
+    .logo-containerIPN {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .container-form {
+        padding: 25px 30px;
+        max-width: 90%;
+    }
+    
+    #form-registro {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .text-label,
+    #boleta,
+    #correo,
+    #contrasena,
+    #confirmar_contrasena {
+        grid-column: span 1;
+    }
+    
+    #form-registro label[for=""],
+    #form-registro input[type="checkbox"] {
+        grid-column: span 1;
+    }
+    
+    #btn-registrar {
+        grid-column: span 1;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .title-container {
+        font-size: 16px;
+    }
+    
+    .container-title h2 {
+        font-size: 22px;
+    }
+    
+    .container-form {
+        padding: 20px;
+    }
+}
