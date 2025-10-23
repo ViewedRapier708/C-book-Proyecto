@@ -1,3 +1,0 @@
-/*
-Aqui van las funciones para la pantalla de cancelar solicitudes
-*/
