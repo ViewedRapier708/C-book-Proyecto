@@ -11,7 +11,7 @@ function iniciarSesion(e){
 
     if (usuarioValidos[Nboleta] === password) {
         alert('Inicio de sesión exitoso');
-        window.location.href = '';
+        window.location.href = './PantallaPostInicio/postInicio.html';
     } else {
         //Borrar campos
         document.getElementById('boleta').value = '';
