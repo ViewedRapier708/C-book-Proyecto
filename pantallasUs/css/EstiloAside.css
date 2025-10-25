@@ -24,8 +24,7 @@ body{
     overflow-y: auto;
     border-radius: 0px 15px 15px 0px;
     transform: translateX(0); /* por defecto en su posición final */
-
-
+    height: 100vh;
 }
 
 
