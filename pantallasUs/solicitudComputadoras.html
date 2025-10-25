@@ -1,46 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../cssGeneral/EstiloAside.css">
-    <link rel="stylesheet" href="./css/solicitudComputadoras.css">
+    <link rel="stylesheet" href="./css/EstiloAside.css">
+    <link rel="stylesheet" href="./css/solicitudRestiradores.css">
     <title>Solicitud de Computadoras</title>
 </head>
+
 <body>
     <div class="container-main">
         <div class="container-aside">
             <script src="./funcionesHtml/asideConection.js"></script>
         </div>
-        <div class="container-soli_compus">
-            <h1>COMPUTADORAS</h1>
-            <div class="container-tabla_compus">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>No. Computadora</th>
-                            <th>Procesador</th>
-                            <th>Programas</th>
-                            <th>Carrera</th>
-                            <th>Disponibilidad</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td></td>
-                        </tr>
-                    </tbody>
-                </table>
+
+        <div class="container-informacion">
+            <div class="container-titulo">
+                <h1>COMPUTADORAS</h1>
             </div>
-            <div class="container-datos_usu">
-                <label for="">No. Boleta: </label><br>
-                <label for="">Nombre(s): </label><br>
-                <label for="">Apellido(s): </label><br>
-            </div>
-            <div class="btn-solicitar">
-                <button>Apartar Computadora</button>
+
+            <div class="container-contenido">
+                <div class="container-servicios">
+                    <h2>COMPUTADORAS DISPONIBLES</h2>
+                    <div class="layout">
+                        <div class="container-tabla">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>No. Computadora</th>
+                                        <th>Procesador</th>
+                                        <th>Programas</th>
+                                        <th>Carrera</th>
+                                        <th>Disponibilidad</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="container-datos-usuario">
+                            <h3>Datos del usuario</h3>
+                            <div class="dato-item">
+                                <span class="dato-label">No. boleta:</span>
+                                <span class="dato-value">_________________</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Nombre(s):</span>
+                                <span class="dato-value">_________________</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Apellido(s):</span>
+                                <span class="dato-value">_________________</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="container-btn-apartar">
+                        <button class="btn-apartar">Apartar Computadora</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </body>
+
 </html>
