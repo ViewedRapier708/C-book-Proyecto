@@ -95,8 +95,8 @@ aside{
     text-align: left;
 }
 
-.btn-secciones button,
-.btn-cerrar-sesion button{
+.btn-secciones a,
+.btn-cerrar-sesion a{
     width: 100%;
     padding: 10px 15px;
     margin-bottom: 10px;
@@ -109,12 +109,12 @@ aside{
     box-shadow: 0px 0px 3px rgb(0, 0, 0);
 }
 
-.btn-secciones button:hover,
-.btn-cerrar-sesion button:hover{
+.btn-secciones a:hover,
+.btn-cerrar-sesion a:hover{
     background-color: #9D306C;
 }
-.btn-secciones button:hover .link-secciones,
-.btn-cerrar-sesion button:hover .link-secciones {
+.btn-secciones a:hover .link-secciones,
+.btn-cerrar-sesion a:hover .link-secciones {
     color: white;
 }
 .link-secciones {
