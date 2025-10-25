@@ -1,17 +1,6 @@
 /* Estilos para la pantalla de solicitud de restiradores */
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    min-height: 100vh;
-    background: linear-gradient(180deg, #7B0233 50%, black 100%);
-    overflow-x: hidden;
-}
 
 .container-main {
     display: flex;
@@ -50,7 +39,7 @@ body {
 }
 
 /* Sección de restiradores */
-.container-restiradores h2 {
+.container-secciones h2 {
     color: #333;
     font-size: 28px;
     font-weight: bold;
@@ -59,7 +48,7 @@ body {
 }
 
 /* Layout de tabla y datos de usuario */
-.layout-restiradores {
+.container-tabla {
     display: flex;
     gap: 30px;
     margin-bottom: 30px;
