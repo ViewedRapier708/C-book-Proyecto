@@ -1,1 +1,0 @@
-/* Funciones para la gestión de libros */

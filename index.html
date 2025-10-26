@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <script src="./funciones/funcionesDeValidacion/validacionCampos.js"></script>
  <script src="./funciones/funcionesDeValidacion/MostrarPsw.js"></script>
- <script src="./funciones/funcionesIndex/funcionInicioSesion.js"></script>
+ <script src="funciones/funcionInicioSesion.js"></script>
+    <link rel="stylesheet" href="./cssGeneral/styleIndex.css">
+
     <title>Biblioteca Digital - Inicio</title>
-    <link rel="stylesheet" href="./css/styleIndex.css">
 </head>
 <body>
     
@@ -30,7 +31,7 @@
             <div class="container-title">
                 <h2>INICIAR SESION</h2>
             </div>
-            <form id="form" onsubmit="iniciarSesion(event)" method="post">
+            <form id="form" onsubmit="return iniciarSesion(event)">
                 
                 <label for="boleta">Usuario</label>
                 <input 
@@ -60,7 +61,7 @@
                     <label for="mostrar">Mostrar contraseña</label>
                 </div>
                 
-                <button type="submit" class="btn-crear-cuenta" >ACCEDER</button>
+                <button type="submit" class="btn-crear-cuenta">ACCEDER</button>
 
                 <div class="separator">O</div>
                 
@@ -69,9 +70,9 @@
                 
                 <div class="divider"></div>
 
-                
+
                 <a href="./recuperar-contrasena.html" class="recuperar-contrasena">RECUPERAR CONTRASEÑA?</a>
-              
+
             </form>
         </div>
     </div>
