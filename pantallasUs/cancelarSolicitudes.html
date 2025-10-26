@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./css/cancelarSolicitudes.css">
     <link rel="stylesheet" href="../cssGeneral/EstiloAside.css">
+    <link rel="stylesheet" href="./css/cancelarSolicitudes.css">
     <title>Cancelar solicitudes</title>
 </head>
 <body>
     <div class="container-main">
-      <div class="container-aside">
+        <div class="container-aside">
             <aside>
                 <div class="container-logos">
                     <div class="logo-cuenta"><img src="" alt=""></div>
@@ -21,10 +21,8 @@
                     <hr class="linea-aside">
                     <div class="menu-interactivo">
                         <h3>Solicitiudes de Servicios y Libros</h3>
-                       
-
                         <div class="btn-secciones">
-                            <button><a  href="./solicitudComputadoras.html" class="link-secciones">Computadoras</a></button>
+                            <button><a href="./solicitudComputadoras.html" class="link-secciones">Computadoras</a></button>
                             <br>
                             <button><a href="./solicitudRestiradores.html" class="link-secciones">Restiradores</a></button>
                             <br>
@@ -42,32 +40,46 @@
                 </div>
             </aside>
         </div>
+        
         <div class="container-solis_actu">
             <h1>SOLICITUDES ACTUALES</h1>
-            <div class="container-tabla_solis">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID Solicitud</th>
-                            <th>Tipo de Servicio</th>
-                            <th>Fecha de Solicitud</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <h3>SI LA SOLICITUD SE REALIZO HACE MÁS DE 24 HORAS, NO SE PODRÁ CANCELAR</h3>
-            <div class="container-datos_usu">
-                <label for="">No. de Boleta: </label><br>
-                <label for="">Nombre(s): </label><br>
-                <label for="">Apellido(s): </label><br>
-            </div>
-            <div class="btn-cancelar">
-                <button>Cancelar Solicitud</button>
+            
+            <div class="container-contenido">
+                <h2>SOLICITUDES ACTUALES</h2>
+                
+                <div class="container-tabla_solis">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID Solicitud</th>
+                                <th>Tipo de Servicio</th>
+                                <th>Fecha de Solicitud</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mensaje-advertencia">
+                    SI LA SOLICITUD SE REALIZÓ HACE MÁS DE 24 HORAS, NO SE PODRÁ CANCELAR
+                </div>
+                
+                <div class="container-datos_usu">
+                    <h3>Datos del usuario</h3>
+                    <label>No. de Boleta: </label>
+                    <label>Nombre(s): </label>
+                    <label>Apellido(s): </label>
+                </div>
+                
+                <div class="btn-cancelar">
+                    <button>Cancelar Solicitud</button>
+                </div>
             </div>
         </div>
     </div>
