@@ -1,0 +1,21 @@
+# Dependencias
+node_modules/
+
+# Archivos de variables de entorno
+.env
+.env.*
+
+# Archivos de compilación
+build/
+dist/
+
+# Archivos de registro y temporales
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Archivos de sistema operativo y editores
+.DS_Store
+Thumbs.db
+.vscode/
