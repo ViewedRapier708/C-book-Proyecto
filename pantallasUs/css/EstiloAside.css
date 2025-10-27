@@ -14,11 +14,7 @@ body{
     flex-direction: column;
 }
 
-.container-main{
-    display: flex;
-    height: 100vh;
 
-}
 
 /* estilo del aside sin animación por defecto */
 .container-aside{
@@ -28,12 +24,12 @@ body{
     overflow-y: auto;
     border-radius: 0px 15px 15px 0px;
     transform: translateX(0); /* por defecto en su posición final */
-
+    height: 100vh;
 }
 
 
 aside{
-    padding: 20px;
+    padding: 10px;
 }
 
 .container-logos{
@@ -41,7 +37,7 @@ aside{
     flex-direction: space-between;
     align-items: center;
     gap: 15px;
-    
+    padding: 10px;  
 }
 
 .logo-cuenta {
@@ -95,26 +91,42 @@ aside{
     text-align: left;
 }
 
-.btn-secciones button,
-.btn-cerrar-sesion button{
+.btn-secciones a,
+.btn-cerrar-sesion a{
     width: 100%;
     padding: 10px 15px;
     margin-bottom: 10px;
     background-color: rgba(255, 255, 255, 0.5);
     border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
     text-align: left;
     box-shadow: 0px 0px 3px rgb(0, 0, 0);
+    font-size: 12px;
+    font-weight: bold;
+    border: none;
+    text-decoration: none;
 }
 
-.btn-secciones button:hover,
-.btn-cerrar-sesion button:hover{
+.btn-secciones a:hover,
+.btn-cerrar-sesion a:hover{
+    
     background-color: #9D306C;
+    transform: scale(1.05);
+    box-shadow: 0px 0px 10px rgb(0, 0, 0);
+    color: white;
+    border: none;
+    text-decoration: none;
+    background-color: #9D306C;
+    color: white;
+    box-shadow: 0px 0px 10px rgb(0, 0, 0);
+    transform: scale(1.05);
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
-.btn-secciones button:hover .link-secciones,
-.btn-cerrar-sesion button:hover .link-secciones {
+.btn-secciones a:hover .link-secciones,
+.btn-cerrar-sesion a:hover .link-secciones {
     color: white;
 }
 .link-secciones {
