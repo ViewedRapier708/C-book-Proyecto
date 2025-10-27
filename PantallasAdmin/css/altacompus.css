@@ -1,5 +1,6 @@
+/* Estilos para la página de alta de computadoras */
 /*
-CSS para Lista de Computadoras
+CSS para Alta de Computadoras
 */
 
 * {
@@ -156,27 +157,16 @@ aside {
     background-color: #7B0233;
 }
 
-/* Contenido principal - LISTA DE COMPUTADORAS */
+/* Contenido principal - ALTA DE COMPUTADORAS */
 .container-libros {
     margin-left: 300px;
     padding: 30px;
     width: calc(100% - 300px);
 }
 
-/* Títulos principales */
-.titulo-principal {
+.container-libros h2 {
     color: white;
     font-size: 28px;
-    text-align: center;
-    margin-bottom: 10px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-.subtitulo {
-    color: white;
-    font-size: 22px;
     text-align: center;
     margin-bottom: 30px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
@@ -213,11 +203,6 @@ th {
     font-weight: bold;
     font-size: 14px;
     text-transform: uppercase;
-    border-right: 1px solid rgba(255,255,255,0.2);
-}
-
-th:last-child {
-    border-right: none;
 }
 
 td {
@@ -225,11 +210,6 @@ td {
     border-bottom: 1px solid #e0e0e0;
     color: #333;
     font-size: 14px;
-    border-right: 1px solid #e0e0e0;
-}
-
-td:last-child {
-    border-right: none;
 }
 
 tbody tr:hover {
@@ -275,13 +255,6 @@ tbody tr:hover {
 }
 
 /* Botones */
-.botones-container {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    margin-top: 20px;
-}
-
 .btn-limpiar,
 .btn-agregar {
     padding: 15px 30px;
@@ -291,8 +264,8 @@ tbody tr:hover {
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
+    margin-right: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    min-width: 200px;
 }
 
 .btn-limpiar {
@@ -333,24 +306,5 @@ tbody tr:hover {
     
     .container-tabla_libros {
         overflow-x: auto;
-    }
-    
-    .botones-container {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .btn-limpiar,
-    .btn-agregar {
-        width: 100%;
-        max-width: 300px;
-    }
-    
-    .titulo-principal {
-        font-size: 22px;
-    }
-    
-    .subtitulo {
-        font-size: 18px;
     }
 }
