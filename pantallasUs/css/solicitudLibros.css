@@ -20,7 +20,7 @@ body {
     height: 100vh;
 }
 
-/* Container de la información principal */
+
 .container-soli_libros {
     flex: 1;
     display: flex;
@@ -29,7 +29,7 @@ body {
     overflow-y: auto;
 }
 
-/* Título principal */
+
 .container-soli_libros > h1 {
     color: white;
     font-size: 32px;
@@ -39,7 +39,7 @@ body {
     margin-bottom: 30px;
 }
 
-/* Contenedor principal con fondo gris */
+
 .container-contenido {
     background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 100%);
     border-radius: 20px;
@@ -48,7 +48,7 @@ body {
     flex: 1;
 }
 
-/* Subtítulo LIBROS */
+
 .container-contenido h2 {
     color: #333;
     font-size: 28px;
@@ -57,7 +57,6 @@ body {
     letter-spacing: 1px;
 }
 
-/* Layout de tabla y datos de usuario */
 .layout-libros {
     display: flex;
     gap: 30px;
@@ -65,7 +64,6 @@ body {
     align-items: flex-start;
 }
 
-/* Contenedor de la tabla de libros */
 .container-tabla_libros {
     flex: 1;
     background: white;
@@ -74,7 +72,7 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Tabla de libros */
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -103,7 +101,6 @@ tbody tr:hover {
     background-color: #f9f9f9;
 }
 
-/* Datos del usuario */
 .container-datos_usu {
     background: linear-gradient(135deg, #f8d7e8 0%, #f0c1da 100%);
     border-radius: 15px;
@@ -128,7 +125,7 @@ tbody tr:hover {
     margin-bottom: 15px;
 }
 
-/* Botón solicitar */
+
 .btn-solicitar {
     display: flex;
     justify-content: center;
@@ -161,7 +158,7 @@ tbody tr:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* Responsive */
+
 @media (max-width: 1024px) {
     .layout-libros {
         flex-direction: column;
