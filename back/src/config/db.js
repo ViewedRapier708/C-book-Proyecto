@@ -1,22 +1,30 @@
-// config/supabaseClient.js
+const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config();
 
-import { createClient } from '@supabase/supabase-js'
-import dotenv from 'dotenv'
+let client = null;
 
-// ✅ Cargar las variables del archivo .env
-dotenv.config()
+function ensureEnv() {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
 
-// 🔹 Leer las variables de entorno
-const SUPABASE_URL = process.env.SUPABASE_URL
-const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY
-console.log( SUPABASE_URL, SUPABASE_KEY )
-// 🚨 Verificar si existen (para evitar errores)
-if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error('❌ ERROR: No se encontraron las variables SUPABASE_URL o SUPABASE_KEY en el archivo .env')
-  process.exit(1) // Detiene la ejecución si faltan datos
+  if (!url || !key) {
+    throw new Error('SUPABASE_URL y SUPABASE_[ANON|SERVICE]_KEY deben estar configurados en el archivo .env');
+  }
+
+  return { url, key };
 }
 
-// ✅ Crear el cliente de conexión
-export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+function connect() {
+  if (!client) {
+    const { url, key } = ensureEnv();
+    client = createClient(url, key);
+    console.log('✅ Conexión a Supabase inicializada correctamente');
+  }
+  return client;
+}
 
-console.log('✅ Conexión a Supabase inicializada correctamente')
+function getClient() {
+  return client || connect();
+}
+
+module.exports = { connect, getClient };
