@@ -1,0 +1,198 @@
+/*
+Aqui debe de ir el codigo css referente para la pantalla de post inicio de sesion en Admin
+*/
+
+
+/*
+Me falta la imagen del logo BTZ en la parte superior izquierda 
+*/ 
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #7B0233 50%, black 100%);
+    display: flex;
+    flex-direction: column;
+}
+
+.container-main {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* estilo del aside sin animación por defecto */
+.container-aside{
+    width: 280px;
+    background: linear-gradient(180deg, #f2d9e3 0%, #8c7e83 100%);
+    box-shadow: 1px 1px 15px rgb(0, 0, 0);
+    overflow-y: auto;
+    border-radius: 0px 15px 15px 0px;
+    transform: translateX(0);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+}
+
+aside{
+    padding: 10px;
+}
+
+.container-logos{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;  
+}
+
+.logo-cuenta {
+    width: 80px;
+    height: 80px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    margin-bottom: 10px;
+}
+
+.logo-containerBTZ{
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+}
+
+.logo-containerBTZ img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.linea-aside{
+    border-top: 2px solid #333;
+    margin: 10px 0;
+}
+
+.container-entrada h2{
+    font-size: 16px;
+    color: #333;
+    text-align: center;
+    font-weight: bold;
+    margin: 15px 0;
+    text-transform: uppercase;
+}
+
+.menu-interactivo{
+    margin-top: 20px;
+}
+
+.btn-secciones h2{
+    font-size: 16px;
+    color: #333;
+    font-weight: bold;
+    margin: 20px 0 10px 0;
+    text-align: left;
+    padding-left: 10px;
+    text-transform: uppercase;
+}
+
+.btn-secciones button,
+.btn-cerrar-sesion button{
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    font-weight: bold;
+    border: none;
+}
+
+.btn-secciones button:hover,
+.btn-cerrar-sesion button:hover{
+    background-color: #9D306C;
+    transform: translateY(-2px);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    color: white;
+}
+
+.link-secciones {
+    text-decoration: none;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    display: block;
+    width: 100%;
+    text-align: left;
+}
+
+.btn-secciones button:hover .link-secciones,
+.btn-cerrar-sesion button:hover .link-secciones {
+    color: white;
+}
+
+.btn-cerrar-sesion {
+    margin-top: 30px;
+    padding: 0 10px;
+}
+
+.btn-cerrar-sesion button {
+    background-color: rgba(155, 48, 108, 0.8);
+    color: white;
+}
+
+.btn-cerrar-sesion button:hover {
+    background-color: #7B0233;
+}
+
+/* Contenido principal */
+.container-txtInicio {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 280px;
+    padding: 20px;
+}
+
+.container-txtInicio h1 {
+    color: white;
+    font-size: 2.5rem;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+    max-width: 600px;
+    line-height: 1.3;
+}
+
+.img-logocecytadmin {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    width: 150px;
+    height: 150px;
+}
+
+.img-logocecytadmin img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+    
+}

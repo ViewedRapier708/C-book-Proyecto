@@ -1,1 +1,310 @@
 /* Estilos para la página de alta de computadoras */
+/*
+CSS para Alta de Computadoras
+*/
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #7B0233 50%, black 100%);
+    display: flex;
+    flex-direction: column;
+}
+
+.container-main {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Estilo del aside */
+.container-aside {
+    width: 280px;
+    background: linear-gradient(180deg, #f2d9e3 0%, #8c7e83 100%);
+    box-shadow: 1px 1px 15px rgb(0, 0, 0);
+    overflow-y: auto;
+    border-radius: 0px 15px 15px 0px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+}
+
+aside {
+    padding: 10px;
+}
+
+.container-logos {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+}
+
+.logo-cuenta {
+    width: 80px;
+    height: 80px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    margin-bottom: 10px;
+}
+
+.logo-containerBTZ {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+}
+
+.logo-containerBTZ img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.linea-aside {
+    border-top: 2px solid #333;
+    margin: 10px 0;
+}
+
+.container-entrada h2 {
+    font-size: 16px;
+    color: #333;
+    text-align: center;
+    font-weight: bold;
+    margin: 15px 0;
+    text-transform: uppercase;
+}
+
+.menu-interactivo {
+    margin-top: 20px;
+}
+
+.btn-secciones h2 {
+    font-size: 16px;
+    color: #333;
+    font-weight: bold;
+    margin: 20px 0 10px 0;
+    text-align: left;
+    padding-left: 10px;
+    text-transform: uppercase;
+}
+
+.btn-secciones button,
+.btn-cerrar-sesion button {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    font-weight: bold;
+    border: none;
+}
+
+.btn-secciones button:hover,
+.btn-cerrar-sesion button:hover {
+    background-color: #9D306C;
+    transform: translateY(-2px);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    color: white;
+}
+
+.link-secciones {
+    text-decoration: none;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    display: block;
+    width: 100%;
+    text-align: left;
+}
+
+.btn-secciones button:hover .link-secciones,
+.btn-cerrar-sesion button:hover .link-secciones {
+    color: white;
+}
+
+.btn-cerrar-sesion {
+    margin-top: 30px;
+    padding: 0 10px;
+}
+
+.btn-cerrar-sesion button {
+    background-color: rgba(155, 48, 108, 0.8);
+    color: white;
+}
+
+.btn-cerrar-sesion button:hover {
+    background-color: #7B0233;
+}
+
+/* Contenido principal - ALTA DE COMPUTADORAS */
+.container-libros {
+    margin-left: 300px;
+    padding: 30px;
+    width: calc(100% - 300px);
+}
+
+.container-libros h2 {
+    color: white;
+    font-size: 28px;
+    text-align: center;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+    border-bottom: 2px solid white;
+    padding-bottom: 10px;
+}
+
+/* Tabla de computadoras */
+.container-tabla_libros {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    margin-bottom: 30px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+thead {
+    background: linear-gradient(135deg, #9D306C, #7B0233);
+}
+
+th {
+    color: white;
+    padding: 15px;
+    text-align: left;
+    font-weight: bold;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e0e0e0;
+    color: #333;
+    font-size: 14px;
+}
+
+tbody tr:hover {
+    background-color: #f8f8f8;
+}
+
+/* Formulario de entrada */
+.input-agg_lib {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    margin-bottom: 20px;
+}
+
+.input-agg_lib label {
+    display: block;
+    margin-bottom: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+.input-agg_lib input {
+    width: 100%;
+    padding: 12px 15px;
+    margin-top: 8px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.input-agg_lib input:focus {
+    outline: none;
+    border-color: #9D306C;
+    box-shadow: 0 0 8px rgba(157, 48, 108, 0.3);
+}
+
+.input-agg_lib input::placeholder {
+    color: #999;
+}
+
+/* Botones */
+.btn-limpiar,
+.btn-agregar {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-limpiar {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    color: white;
+}
+
+.btn-limpiar:hover {
+    background: linear-gradient(135deg, #5a6268, #343a40);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-agregar {
+    background: linear-gradient(135deg, #9D306C, #7B0233);
+    color: white;
+}
+
+.btn-agregar:hover {
+    background: linear-gradient(135deg, #8a2b5f, #6a0229);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container-aside {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+    
+    .container-libros {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px;
+    }
+    
+    .container-tabla_libros {
+        overflow-x: auto;
+    }
+}
