@@ -2,6 +2,8 @@
 const { getClient } = require('../config/db');
 const bcrypt = require('bcryptjs');
 require('dotenv').config({ path: '../config/.env' });
+
+
 async function loginUser(boleta, password) {
   const supabase = getClient();
   const { data: user, error } = await supabase
@@ -20,6 +22,7 @@ async function loginUser(boleta, password) {
   const { passwordHash: _, ...safeUser } = user;
   return { error: null, data: safeUser };
 }
+
 async function registerUser({ boleta, nombre, apellido, correo, password, tiene_documentos = false }) {
   const supabase = getClient();
   try {

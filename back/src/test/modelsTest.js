@@ -19,5 +19,4 @@ async function testLoginUser() {
   console.log(loginResult);
 }
 
-testRegisterUser(); // ✅ Esto imprime el resultado real
 testLoginUser(); // ✅ Esto imprime el resultado real

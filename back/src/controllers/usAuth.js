@@ -1,11 +1,24 @@
-const supa = require('@supabase/supabase-js');
 
-import { createClient } from '@supabase/supabase-js'
-import dotenv from 'dotenv'
-dotenv.config()
-const supabaseUrl = process.env.URl
-const supabaseKey = process.env.SUPABASE_ANON_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
+async function RegisterUser(req,res) {
+    const {registerUser}=require('../models/authModel.js');
+    const {boleta, nombre, apellido, correo, password} = req.body;
+    const result = await registerUser({ boleta, nombre, apellido, correo, password });
+    if (result.error) {
+        return res.status(400).json({ error: result.error.message });
+    }
+    return res.status(201).json({ user: result.data });
+}
+
+async function LoginUser(req,res) {
+const { loginUser } =  require('../models/authModel.js');
+
+    const { correo, password } = req.body;
+    const result = await loginUser({ correo, password });
+    if (result.error) {
+        return res.status(400).json({ error: result.error.message });
+    }
+    return res.status(200).json({ user: result.data });
+}
 
 
-export default methodsSupa
+module.exports = { RegisterUser, LoginUser };
