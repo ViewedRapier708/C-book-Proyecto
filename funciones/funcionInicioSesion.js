@@ -4,14 +4,9 @@ async function iniciarSesion(event) {
     const boleta = document.getElementById('boleta').value;
     const password = document.getElementById('password').value;
     const mensajeDiv = document.querySelector('.messaje');
-    const remember = !!document.getElementById('remember')?.checked;
+  
 
-    // Validaciones simples antes de enviar
-    if (!boleta || !password) {
-        mensajeDiv.textContent = 'Por favor, complete todos los campos';
-        mensajeDiv.style.color = 'red';
-        return;
-    }
+   
 
     try {
         // Enviar datos al backend
@@ -23,7 +18,7 @@ async function iniciarSesion(event) {
         });
         
         const data = await res.json();
-        console.log('Login status:', res.status, 'respuesta:', data);
+      
         if (!res.ok) {
             mensajeDiv.textContent = `${data.mensaje || 'Usuario o contraseña incorrectos'}`;
             mensajeDiv.style.color = 'red';

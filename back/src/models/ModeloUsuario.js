@@ -8,7 +8,7 @@ const { getClient } = require('../config/db');
 //Importa bcrypt para el hash de contraseñas
 const bcrypt = require('bcryptjs');
 //Carga las variables de entorno
-require('dotenv').config({ path: '../config/.env' });
+
   
 //Conecta con la base de datos
 const supabase = getClient();
@@ -35,8 +35,6 @@ const supabase = getClient();
 
 async function registerUser({ boleta, nombre, apellido, correo, password, tiene_documentos = false }) {
   const bcrypt = require('bcryptjs');
-//Carga las variables de entorno
-require('dotenv').config({ path: '../config/.env' });
   const { getClient } = require('../config/db');
   const supabase = getClient();
   try {

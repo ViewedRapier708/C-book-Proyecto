@@ -1,7 +1,9 @@
-const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config();
 
 let client = null;
+const { createClient } = require('@supabase/supabase-js');
+const path = require('path');
+// Carga .env siempre desde la raíz de 'back', sin depender del cwd
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') }) || require('dotenv').config();
 
 function ensureEnv() {
   const url = process.env.SUPABASE_URL;
