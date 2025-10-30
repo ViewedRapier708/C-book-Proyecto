@@ -1,29 +1,43 @@
 
-const { getClient } = require('../config/db');
-const bcrypt = require('bcryptjs');
-require('dotenv').config({ path: '../config/.env' });
 
 
 async function loginUser(boleta, password) {
-  const supabase = getClient();
+
+//Obtiene el acceso a la base de datos
+const { getClient } = require('../config/db');
+//Importa bcrypt para el hash de contraseñas
+const bcrypt = require('bcryptjs');
+//Carga las variables de entorno
+require('dotenv').config({ path: '../config/.env' });
+  
+//Conecta con la base de datos
+const supabase = getClient();
   const { data: user, error } = await supabase
     .from('usuarios_web_movil')
     .select('boleta, nombre, apellido, correo, tiene_documentos,password')
     .eq('boleta', boleta)
     .maybeSingle();
+
+  //Obtiene el hash de la contraseña del usuario
   const passwordHash = user ? user.password : null;
+  //Verifica si hubo un error en la consulta
   if (error) return { error, data: null };
+  //Verifica si el usuario existe
   if (!user) return { error: new Error('Usuario no encontrado'), data: null };
-
+//Compara la contraseña ingresada con el hash almacenado
   const isValid = await bcrypt.compare(password, passwordHash || '');
-  console.log(isValid)
+  //Si la contraseña no es válida, retorna un error
   if (!isValid) return { error: new Error('Contraseña incorrecta'), data: null };
-
+  //Elimina el hash de la contraseña antes de retornar los datos del usuario
   const { passwordHash: _, ...safeUser } = user;
   return { error: null, data: safeUser };
 }
 
 async function registerUser({ boleta, nombre, apellido, correo, password, tiene_documentos = false }) {
+  const bcrypt = require('bcryptjs');
+//Carga las variables de entorno
+require('dotenv').config({ path: '../config/.env' });
+  const { getClient } = require('../config/db');
   const supabase = getClient();
   try {
     // Verificar que la boleta no exista
