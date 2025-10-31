@@ -1,49 +1,38 @@
-// Carga y renderiza computadoras en la tabla de solicitudComputadoras.html
-(function(){
-  const API_BASE = `http://${location.hostname}:3000`;
-
-  function mapValue(row, keys, fallback = '') {
-    for (const k of keys) {
-      if (row && row[k] !== undefined && row[k] !== null) return String(row[k]);
-    }
-    return fallback;
-  }
-
-  async function cargarComputadoras() {
-    const tbody = document.getElementById('tbody-computadoras');
-    if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
-    try {
-      const res = await fetch(`${API_BASE}/auth/recursos/tipo`);
-      const payload = await res.json();
-      if (!res.ok) throw new Error(payload?.error || 'Error al obtener recursos');
-      const lista = payload?.recursos || [];
-      if (!Array.isArray(lista) || lista.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5">Sin datos</td></tr>';
-        return;
+async function cargarTabla() {
+  try {
+    const resp = await fetch('http://localhost:3000/auth/recursos', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },body:{
+        tipo: 'computadoras'
       }
-      const rowsHtml = lista.map(row => {
-        const numero = mapValue(row, ['numero', 'no', 'id', 'id_computadora', 'no_computadora', 'num_computadora'], '');
-        const procesador = mapValue(row, ['procesador', 'cpu'], '');
-        const programas = mapValue(row, ['programas', 'software'], '');
-        const carrera = mapValue(row, ['carrera'], '');
-        const dispVal = row?.disponible ?? row?.disponibilidad ?? row?.status ?? row?.estado;
-        const disponibilidad = typeof dispVal === 'boolean' ? (dispVal ? 'Disponible' : 'No disponible') : (dispVal ?? '');
-        return `<tr>
-          <td>${numero}</td>
-          <td>${procesador}</td>
-          <td>${programas}</td>
-          <td>${carrera}</td>
-          <td>${disponibilidad}</td>
-        </tr>`;
-      }).join('');
-      tbody.innerHTML = rowsHtml;
-    } catch (err) {
-      console.error(err);
-      tbody.innerHTML = `<tr><td colspan="5" style="color:red;">${err.message || 'Error de conexión'}</td></tr>`;
-    }
-  }
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const json = await resp.json();
 
-  document.addEventListener('DOMContentLoaded', cargarComputadoras);
-  window.cargarComputadoras = cargarComputadoras; // opcional
-})();
+    const filas = Array.isArray(json.data) ? json.data : [];
+    const tabla = document.getElementById('usuarios');
+    if (!tabla) throw new Error('No se encontró la tabla #usuarios');
+    const tbody = tabla.querySelector('tbody');
+
+    // determinar columnas (si no las tienes definidas globalmente)
+    const columnas = window.columnas || (filas.length ? Object.keys(filas[0]) : []);
+   
+    // insertar filas
+    tbody.innerHTML = '';
+    filas.forEach(reg => {
+      const tr = tbody.insertRow();
+      columnas.forEach(col => {
+        const td = tr.insertCell();
+        td.textContent = reg[col] != null ? reg[col] : '';
+      });
+    });
+  } catch (e) {
+    console.error('Error al cargar la tabla:', e);
+  }
+}
+
+// Ejemplo de uso:
+// cargarTabla('/api/users');                 // llamada simple
+// cargarTabla('/api/users', 'TU_TOKEN_AQUI'); // con token Bearer

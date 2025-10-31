@@ -6,19 +6,23 @@ async function iniciarSesion(event) {
     const mensajeDiv = document.querySelector('.messaje');
   
 
-   
+    // Validaciones simples antes de enviar
+    if (!boleta || !password) {
+        mensajeDiv.textContent = 'Por favor, complete todos los campos';
+        mensajeDiv.style.color = 'red';
+        return;
+    }
 
     try {
         // Enviar datos al backend
         const res = await fetch('http://localhost:3000/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include', // importante para enviar y recibir cookies de sesión
-            body: JSON.stringify({ boleta, password, remember })
+            body: JSON.stringify({ boleta, password })
         });
         
         const data = await res.json();
-      
+        console.log('Login status:', res.status, 'respuesta:', data);
         if (!res.ok) {
             mensajeDiv.textContent = `${data.mensaje || 'Usuario o contraseña incorrectos'}`;
             mensajeDiv.style.color = 'red';

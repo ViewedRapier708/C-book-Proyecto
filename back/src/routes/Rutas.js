@@ -4,6 +4,6 @@ const { LoginUser, RegisterUser } = require('../controllers/ControladorUsuario.j
 const { obtenerRecursosPorTipo } = require('../controllers/ControladorRecursos.js');
 router.post('/login', LoginUser);
 router.post('/register', RegisterUser);
-router.get('/recursos/tipo', obtenerRecursosPorTipo);
+router.get('/recursos', obtenerRecursosPorTipo);
 
 module.exports = router;
