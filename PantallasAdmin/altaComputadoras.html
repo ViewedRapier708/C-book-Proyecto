@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alta de Computadoras</title>
+    <link rel="stylesheet" href="css/asidepostadmin.css">
+    <link rel="stylesheet" href="css/altacompus.css">
 </head>
 <body>
     <div class="container-main">
@@ -15,63 +17,136 @@
                 </div>
                 <div class="container-entrada">
                     <hr class="linea-aside">
-                    <br>
+                    <h2>ADMINISTRADOR</h2>
                     <hr class="linea-aside">
                     <div class="menu-interactivo">
                         <div class="btn-secciones">
                             <h2>Altas</h2>
-                            <button><a href="" class="link-secciones">Computadoras</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Restiradores</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Area de Consulta</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Solicion de Prestamos</a></button>
+                            <button><a href="altaComputadoras.html" class="link-secciones">Computadoras</a></button>
+                            <button><a href="AltaLibros.html" class="link-secciones">Libros</a></button>
+                            <button><a href="AltaRestiradores.html" class="link-secciones">Restiradores</a></button>
+                            <button><a href="AltaGuardaropas.html" class="link-secciones">Guardaropas</a></button>
+                            
                             <h2>Solicitudes</h2>
-                            <button><a href="" class="link-secciones">Libros</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Documentos</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Registros de alumnos que han ingresado</a></button>
+                            <button><a href="solicitudesAlumnosLib.html" class="link-secciones">Libros</a></button>
+                            <button><a href="" class="link-secciones">Computadoras</a></button>
+                            <button><a href="" class="link-secciones">Restiradores</a></button>
+                            <button><a href="" class="link-secciones">Guardaropas</a></button>
+                            
+                            <h2>Consultas</h2>
+                            <button><a href="" class="link-secciones">Alumnos Registrados</a></button>
+                            <button><a href="" class="link-secciones">Historial Préstamos</a></button>
                         </div>
-                        <br>
                         <div class="btn-cerrar-sesion">
-                            <button><a href="" class="link-secciones">Cerrar Sesión</a></button>
+                            <button><a href="../index.html" class="link-secciones">Cerrar Sesión</a></button>
                         </div>
                     </div>
                 </div>
             </aside>
         </div>
-        <div class="container-libros">
-            <h2>LISTA DE COMPUTADORAS EXISTENTES</h2>
-            <div class="container-tabla_libros">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>No. Computadora</th>
-                            <th>Procesador</th>
-                            <th>Programas</th>
-                            <th>Carrera</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td></td>
-                        </tr>
-                    </tbody>
-                </table>
+        
+        <div class="container-informacion">
+            <div class="container-titulo">
+                <h1>ALTA DE COMPUTADORAS</h1>
             </div>
-        </div>
-        <div class="input-agg_lib">
-            <label for="">Procesador: <input type="text" placeholder="Ingrese el procesador de la computadora"></label><br>
-            <label for="">Programas: <input type="text" placeholder="Ingrese los programas de la computadora"></label><br>
-            <label for="">Carrera: <input type="text" placeholder="Ingrese la carrera de la computadora"></label><br>
-        </div>
-        <br>
-        <div>
-            <button id="btn-limpiar" class="btn-limpiar">Limpiar Campos</button>
-            <button id="btn-agregarLibro" class="btn-agregar">Agregar Libro</button>
+            
+            <div class="container-contenido">
+                <div class="container-computadoras">
+                    <h2>Registro de Nueva Computadora</h2>
+                    
+                    <div class="layout">
+                        <div class="container-formulario">
+                            <div class="form-group">
+                                <label for="procesador">Procesador:</label>
+                                <input type="text" id="procesador" placeholder="Ingrese el procesador de la computadora">
+                            </div>
+                            <div class="form-group">
+                                <label for="programas">Programas Instalados:</label>
+                                <textarea id="programas" rows="3" placeholder="Ingrese los programas instalados"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="carrera">Carrera Especializada:</label>
+                                <select id="carrera">
+                                    <option value="">Seleccione una carrera</option>
+                                    <option value="sistemas">Ingeniería en Sistemas</option>
+                                    <option value="industrial">Ingeniería Industrial</option>
+                                    <option value="mecatronica">Ingeniería Mecatrónica</option>
+                                    <option value="general">Uso General</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="ram">Memoria RAM:</label>
+                                <input type="text" id="ram" placeholder="Ej: 8GB, 16GB">
+                            </div>
+                            <div class="form-group">
+                                <label for="estado">Estado:</label>
+                                <select id="estado">
+                                    <option value="disponible">Disponible</option>
+                                    <option value="ocupada">Ocupada</option>
+                                    <option value="mantenimiento">En Mantenimiento</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="container-datos-sistema">
+                            <h3>Información del Sistema</h3>
+                            <div class="dato-item">
+                                <span class="dato-label">Total Computadoras:</span>
+                                <span class="dato-value">25</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Disponibles:</span>
+                                <span class="dato-value">18</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">En Uso:</span>
+                                <span class="dato-value">5</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Mantenimiento:</span>
+                                <span class="dato-value">2</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Última Actualización:</span>
+                                <span class="dato-value">29/10/2025</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="container-tabla">
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>Procesador</th>
+                                        <th>RAM</th>
+                                        <th>Carrera</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>001</td>
+                                        <td>Intel Core i5</td>
+                                        <td>8GB</td>
+                                        <td>Sistemas</td>
+                                        <td>Disponible</td>
+                                        <td><button class="btn-editar">Editar</button></td>
+                                    </tr>
+                                    <!-- Más filas aquí -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="container-btn-alta">
+                        <button class="btn-limpiar" id="btn-limpiar">Limpiar Campos</button>
+                        <button class="btn-alta" id="btn-agregar">Agregar Computadora</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

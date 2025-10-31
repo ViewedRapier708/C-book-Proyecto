@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Alta De Restiradores</title>
+    <title>Alta De Restiradores</title>
+    <link rel="stylesheet" href="css/asidepostadmin.css">
+    <link rel="stylesheet" href="css/altarestir.css">
 </head>
 <body>
     <div class="container-main">
@@ -15,47 +17,145 @@
                 </div>
                 <div class="container-entrada">
                     <hr class="linea-aside">
-                    <br>
+                    <h2>ADMINISTRADOR</h2>
                     <hr class="linea-aside">
                     <div class="menu-interactivo">
                         <div class="btn-secciones">
                             <h2>Altas</h2>
-                            <button><a href="" class="link-secciones">Computadoras</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Restiradores</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Area de Consulta</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Solicion de Prestamos</a></button>
+                            <button><a href="altaComputadoras.html" class="link-secciones">Computadoras</a></button>
+                            <button><a href="AltaLibros.html" class="link-secciones">Libros</a></button>
+                            <button><a href="AltaRestiradores.html" class="link-secciones">Restiradores</a></button>
+                            <button><a href="AltaGuardaropas.html" class="link-secciones">Guardaropas</a></button>
+                            
                             <h2>Solicitudes</h2>
-                            <button><a href="" class="link-secciones">Libros</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Documentos</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Registros de alumnos que han ingresado</a></button>
+                            <button><a href="solicitudesAlumnosLib.html" class="link-secciones">Libros</a></button>
+                            <button><a href="" class="link-secciones">Computadoras</a></button>
+                            <button><a href="" class="link-secciones">Restiradores</a></button>
+                            <button><a href="" class="link-secciones">Guardaropas</a></button>
+                            
+                            <h2>Consultas</h2>
+                            <button><a href="" class="link-secciones">Alumnos Registrados</a></button>
+                            <button><a href="" class="link-secciones">Historial Préstamos</a></button>
                         </div>
-                        <br>
                         <div class="btn-cerrar-sesion">
-                            <button><a href="" class="link-secciones">Cerrar Sesión</a></button>
+                            <button><a href="../index.html" class="link-secciones">Cerrar Sesión</a></button>
                         </div>
                     </div>
                 </div>
             </aside>
         </div>
-        <div class="container-restir">
-            <div class="">
-                <h2>Restiradores</h2>
+        
+        <div class="container-informacion">
+            <div class="container-titulo">
+                <h1>ALTA DE RESTIRADORES</h1>
             </div>
-            <div class="txt-restiradores">
-                <label for="">Cantidad de Restiradores Actuales: </label>
-                <input type="text" readonly="readonly">
-                <br>
-                <label for="">Restiradores a dar de alta: </label>
-                <input type="text" id="cant-restir" class="input-restir" placeholder="Ingrese la cantidad de restiradores">
-            </div>
-            <div class="btn-restiradores">
-                <button id="btn-limpiar">Limpiar campos</button>
-                <button id="btn-agregar">Agregar Restiradores</button>
+            
+            <div class="container-contenido">
+                <div class="container-restiradores">
+                    <h2>Registro de Nuevos Restiradores</h2>
+                    
+                    <div class="layout">
+                        <div class="container-formulario">
+                            <div class="form-group">
+                                <label for="ubicacion">Ubicación:</label>
+                                <select id="ubicacion">
+                                    <option value="">Seleccione una ubicación</option>
+                                    <option value="aula1">Aula 101</option>
+                                    <option value="aula2">Aula 102</option>
+                                    <option value="laboratorio1">Laboratorio A</option>
+                                    <option value="laboratorio2">Laboratorio B</option>
+                                    <option value="biblioteca">Biblioteca</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="tipo">Tipo de Restirador:</label>
+                                <select id="tipo">
+                                    <option value="">Seleccione un tipo</option>
+                                    <option value="madera">Madera</option>
+                                    <option value="metal">Metal</option>
+                                    <option value="plastico">Plástico</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="tamano">Tamaño:</label>
+                                <select id="tamano">
+                                    <option value="">Seleccione un tamaño</option>
+                                    <option value="pequeño">Pequeño</option>
+                                    <option value="mediano">Mediano</option>
+                                    <option value="grande">Grande</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="cantidad">Cantidad a Agregar:</label>
+                                <input type="number" id="cantidad" placeholder="Ingrese la cantidad" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="estado">Estado Inicial:</label>
+                                <select id="estado">
+                                    <option value="disponible">Disponible</option>
+                                    <option value="mantenimiento">En Mantenimiento</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="container-datos-restiradores">
+                            <h3>Estadísticas Restiradores</h3>
+                            <div class="dato-item">
+                                <span class="dato-label">Total Restiradores:</span>
+                                <span class="dato-value">75</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Disponibles:</span>
+                                <span class="dato-value">62</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">En Uso:</span>
+                                <span class="dato-value">10</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Mantenimiento:</span>
+                                <span class="dato-value">3</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Última Actualización:</span>
+                                <span class="dato-value">29/10/2025</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="container-tabla">
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>Ubicación</th>
+                                        <th>Tipo</th>
+                                        <th>Tamaño</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>R001</td>
+                                        <td>Aula 101</td>
+                                        <td>Madera</td>
+                                        <td>Grande</td>
+                                        <td>Disponible</td>
+                                        <td><button class="btn-editar">Editar</button></td>
+                                    </tr>
+                                    <!-- Más filas aquí -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="container-btn-alta">
+                        <button class="btn-limpiar" id="btn-limpiar">Limpiar Campos</button>
+                        <button class="btn-alta" id="btn-agregar">Agregar Restiradores</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

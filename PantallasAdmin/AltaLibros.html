@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alta de Libros</title>
+    <link rel="stylesheet" href="css/asidepostadmin.css">
+    <link rel="stylesheet" href="css/altalibros.css">
 </head>
 <body>
     <div class="container-main">
@@ -15,65 +17,138 @@
                 </div>
                 <div class="container-entrada">
                     <hr class="linea-aside">
-                    <br>
+                    <h2>ADMINISTRADOR</h2>
                     <hr class="linea-aside">
                     <div class="menu-interactivo">
                         <div class="btn-secciones">
                             <h2>Altas</h2>
-                            <button><a href="" class="link-secciones">Computadoras</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Restiradores</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Area de Consulta</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Solicion de Prestamos</a></button>
+                            <button><a href="altaComputadoras.html" class="link-secciones">Computadoras</a></button>
+                            <button><a href="AltaLibros.html" class="link-secciones">Libros</a></button>
+                            <button><a href="AltaRestiradores.html" class="link-secciones">Restiradores</a></button>
+                            <button><a href="AltaGuardaropas.html" class="link-secciones">Guardaropas</a></button>
+                            
                             <h2>Solicitudes</h2>
-                            <button><a href="" class="link-secciones">Libros</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Documentos</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Registros de alumnos que han ingresado</a></button>
+                            <button><a href="solicitudesAlumnosLib.html" class="link-secciones">Libros</a></button>
+                            <button><a href="" class="link-secciones">Computadoras</a></button>
+                            <button><a href="" class="link-secciones">Restiradores</a></button>
+                            <button><a href="" class="link-secciones">Guardaropas</a></button>
+                            
+                            <h2>Consultas</h2>
+                            <button><a href="" class="link-secciones">Alumnos Registrados</a></button>
+                            <button><a href="" class="link-secciones">Historial Préstamos</a></button>
                         </div>
-                        <br>
                         <div class="btn-cerrar-sesion">
-                            <button><a href="" class="link-secciones">Cerrar Sesión</a></button>
+                            <button><a href="../index.html" class="link-secciones">Cerrar Sesión</a></button>
                         </div>
                     </div>
                 </div>
             </aside>
         </div>
-        <div class="container-libros">
-            <h2>LISTA DE LIBROS EXISTENTES</h2>
-            <div class="container-tabla_libros">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID Libro</th>
-                            <th>Título</th>
-                            <th>Editorial</th>
-                            <th>Autor</th>
-                            <th>Carrera</th>
-                            <th>Cant. Disponible</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td></td>
-                        </tr>
-                    </tbody>
-                </table>
+        
+        <div class="container-informacion">
+            <div class="container-titulo">
+                <h1>ALTA DE LIBROS</h1>
             </div>
-        </div>
-        <div class="input-agg_lib">
-            <label for="">Titulo: <input type="text" placeholder="Ingrese el titulo del libro"></label><br>
-            <label for="">Autor: <input type="text" placeholder="Ingrese el autor del libro"></label><br>
-            <label for="">Editorial: <input type="text" placeholder="Ingrese la editorial del libro"></label><br>
-            <label for="">Carrera: <input type="text" placeholder="Ingrese la carrera del libro"></label><br>
-            <label for="">Cantidad Disponible: <input type="text" placeholder="Ingrese la cantidad disponible"></label>
-        </div>
-        <div>
-            <button id="btn-limpiar" class="btn-limpiar">Limpiar Campos</button>
-            <button id="btn-agregarLibro" class="btn-agregar">Agregar Libro</button>
+            
+            <div class="container-contenido">
+                <div class="container-libros">
+                    <h2>Registro de Nuevo Libro</h2>
+                    
+                    <div class="layout">
+                        <div class="container-formulario">
+                            <div class="form-group">
+                                <label for="titulo">Título:</label>
+                                <input type="text" id="titulo" placeholder="Ingrese el título del libro">
+                            </div>
+                            <div class="form-group">
+                                <label for="autor">Autor:</label>
+                                <input type="text" id="autor" placeholder="Ingrese el autor del libro">
+                            </div>
+                            <div class="form-group">
+                                <label for="editorial">Editorial:</label>
+                                <input type="text" id="editorial" placeholder="Ingrese la editorial del libro">
+                            </div>
+                            <div class="form-group">
+                                <label for="isbn">ISBN:</label>
+                                <input type="text" id="isbn" placeholder="Ingrese el código ISBN">
+                            </div>
+                            <div class="form-group">
+                                <label for="carrera">Carrera:</label>
+                                <select id="carrera">
+                                    <option value="">Seleccione una carrera</option>
+                                    <option value="sistemas">Ingeniería en Sistemas</option>
+                                    <option value="industrial">Ingeniería Industrial</option>
+                                    <option value="mecatronica">Ingeniería Mecatrónica</option>
+                                    <option value="general">Uso General</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="cantidad">Cantidad Disponible:</label>
+                                <input type="number" id="cantidad" placeholder="Ingrese la cantidad disponible" min="1">
+                            </div>
+                        </div>
+                        
+                        <div class="container-datos-biblioteca">
+                            <h3>Estadísticas Biblioteca</h3>
+                            <div class="dato-item">
+                                <span class="dato-label">Total Libros:</span>
+                                <span class="dato-value">1,245</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Disponibles:</span>
+                                <span class="dato-value">892</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Prestados:</span>
+                                <span class="dato-value">353</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Categorías:</span>
+                                <span class="dato-value">15</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Última Actualización:</span>
+                                <span class="dato-value">29/10/2025</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="container-tabla">
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Título</th>
+                                        <th>Autor</th>
+                                        <th>Editorial</th>
+                                        <th>Carrera</th>
+                                        <th>Disponible</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>001</td>
+                                        <td>Algoritmos y Programación</td>
+                                        <td>Juan Pérez</td>
+                                        <td>McGraw Hill</td>
+                                        <td>Sistemas</td>
+                                        <td>5</td>
+                                        <td><button class="btn-editar">Editar</button></td>
+                                    </tr>
+                                    <!-- Más filas aquí -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="container-btn-alta">
+                        <button class="btn-limpiar" id="btn-limpiar">Limpiar Campos</button>
+                        <button class="btn-alta" id="btn-agregar">Agregar Libro</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

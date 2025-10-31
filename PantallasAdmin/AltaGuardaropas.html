@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alta de Guardarropas</title>
+    <link rel="stylesheet" href="css/asidepostadmin.css">
+    <link rel="stylesheet" href="css/AltaGuard.css">
 </head>
 <body>
     <div class="container-main">
@@ -15,47 +17,145 @@
                 </div>
                 <div class="container-entrada">
                     <hr class="linea-aside">
-                    <br>
+                    <h2>ADMINISTRADOR</h2>
                     <hr class="linea-aside">
                     <div class="menu-interactivo">
                         <div class="btn-secciones">
                             <h2>Altas</h2>
-                            <button><a href="" class="link-secciones">Computadoras</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Restiradores</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Area de Consulta</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Solicion de Prestamos</a></button>
+                            <button><a href="altaComputadoras.html" class="link-secciones">Computadoras</a></button>
+                            <button><a href="AltaLibros.html" class="link-secciones">Libros</a></button>
+                            <button><a href="AltaRestiradores.html" class="link-secciones">Restiradores</a></button>
+                            <button><a href="AltaGuardaropas.html" class="link-secciones">Guardaropas</a></button>
+                            
                             <h2>Solicitudes</h2>
-                            <button><a href="" class="link-secciones">Libros</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Documentos</a></button>
-                            <br>
-                            <button><a href="" class="link-secciones">Registros de alumnos que han ingresado</a></button>
+                            <button><a href="solicitudesAlumnosLib.html" class="link-secciones">Libros</a></button>
+                            <button><a href="" class="link-secciones">Computadoras</a></button>
+                            <button><a href="" class="link-secciones">Restiradores</a></button>
+                            <button><a href="" class="link-secciones">Guardaropas</a></button>
+                            
+                            <h2>Consultas</h2>
+                            <button><a href="" class="link-secciones">Alumnos Registrados</a></button>
+                            <button><a href="" class="link-secciones">Historial Préstamos</a></button>
                         </div>
-                        <br>
                         <div class="btn-cerrar-sesion">
-                            <button><a href="" class="link-secciones">Cerrar Sesión</a></button>
+                            <button><a href="../index.html" class="link-secciones">Cerrar Sesión</a></button>
                         </div>
                     </div>
                 </div>
             </aside>
         </div>
-        <div class="container-restir">
-            <div class="">
-                <h2>Guardarropas</h2>
+        
+        <div class="container-informacion">
+            <div class="container-titulo">
+                <h1>ALTA DE GUARDAROPAS</h1>
             </div>
-            <div class="txt-restiradores">
-                <label for="">Cantidad de Guardarropas Actuales: </label>
-                <input type="text" readonly="readonly">
-                <br>
-                <label for="">Guardarropas a dar de alta: </label>
-                <input type="text" id="cant-restir" class="input-restir" placeholder="Ingrese la cantidad de guardarropas">
-            </div>
-            <div class="btn-restiradores">
-                <button id="btn-limpiar">Limpiar campos</button>
-                <button id="btn-agregar">Agregar Guardarropas</button>
+            
+            <div class="container-contenido">
+                <div class="container-guardarropas">
+                    <h2>Registro de Nuevos Guardaropas</h2>
+                    
+                    <div class="layout">
+                        <div class="container-formulario">
+                            <div class="form-group">
+                                <label for="ubicacion">Ubicación:</label>
+                                <select id="ubicacion">
+                                    <option value="">Seleccione una ubicación</option>
+                                    <option value="entrada">Entrada Principal</option>
+                                    <option value="biblioteca">Biblioteca</option>
+                                    <option value="laboratorios">Área de Laboratorios</option>
+                                    <option value="aulas">Edificio de Aulas</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="piso">Piso:</label>
+                                <select id="piso">
+                                    <option value="">Seleccione un piso</option>
+                                    <option value="PB">Planta Baja</option>
+                                    <option value="1">Primer Piso</option>
+                                    <option value="2">Segundo Piso</option>
+                                    <option value="3">Tercer Piso</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="tipo">Tipo de Guardaropa:</label>
+                                <select id="tipo">
+                                    <option value="">Seleccione un tipo</option>
+                                    <option value="pequeño">Pequeño (Personal)</option>
+                                    <option value="mediano">Mediano (Mochila)</option>
+                                    <option value="grande">Grande (Equipos)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="cantidad">Cantidad a Agregar:</label>
+                                <input type="number" id="cantidad" placeholder="Ingrese la cantidad" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="estado">Estado Inicial:</label>
+                                <select id="estado">
+                                    <option value="disponible">Disponible</option>
+                                    <option value="mantenimiento">En Mantenimiento</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="container-datos-guardarropas">
+                            <h3>Estadísticas Guardaropas</h3>
+                            <div class="dato-item">
+                                <span class="dato-label">Total Guardaropas:</span>
+                                <span class="dato-value">120</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Disponibles:</span>
+                                <span class="dato-value">85</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Ocupados:</span>
+                                <span class="dato-value">30</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Mantenimiento:</span>
+                                <span class="dato-value">5</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Última Actualización:</span>
+                                <span class="dato-value">29/10/2025</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="container-tabla">
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>Ubicación</th>
+                                        <th>Piso</th>
+                                        <th>Tipo</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>G001</td>
+                                        <td>Entrada Principal</td>
+                                        <td>PB</td>
+                                        <td>Pequeño</td>
+                                        <td>Disponible</td>
+                                        <td><button class="btn-editar">Editar</button></td>
+                                    </tr>
+                                    <!-- Más filas aquí -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="container-btn-alta">
+                        <button class="btn-limpiar" id="btn-limpiar">Limpiar Campos</button>
+                        <button class="btn-alta" id="btn-agregar">Agregar Guardaropas</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
