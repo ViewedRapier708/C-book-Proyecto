@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/EstiloAside.css">
-    <link rel="stylesheet" href="./css/solicitudRestiradores.css">
+    <link rel="stylesheet" href="./css/StyleGeneral.css">
     <title>Solicitud de Computadoras</title>
 </head>
 
@@ -25,7 +25,7 @@
                     <h2>COMPUTADORAS DISPONIBLES</h2>
                     <div class="layout">
                         <div class="container-tabla">
-                            <table>
+                            <table id="tabla" data-tipo="computadoras">
                                 <thead>
                                     <tr>
                                         <th>No. Computadora</th>
@@ -35,14 +35,9 @@
                                         <th>Disponibilidad</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
+                                <tbody id="tbody-computadoras">
+
+                               
                                 </tbody>
                             </table>
                         </div>
@@ -71,6 +66,8 @@
             </div>
         </div>
     </div>
+    <script src="./js/funcionsRecursos.js"></script>
+
 </body>
 
 </html>

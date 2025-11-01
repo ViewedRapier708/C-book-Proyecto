@@ -1,47 +1,45 @@
-const usuarioValidos = {
-    "123456": "password1",
-    "234567": "password2",
-    "345678": "password3"
-};
-//Funcion de auxiliar antes de la conexion con la base de datos
-function iniciarSesion(event) {
-    // Si la función se usa como handler de submit, prevenir el comportamiento por defecto
-    if (event && typeof event.preventDefault === 'function') {
-        event.preventDefault();
+async function iniciarSesion(event) {
+    event.preventDefault(); // Evita que el formulario recargue la página
+
+    const boleta = document.getElementById('boleta').value;
+    const password = document.getElementById('password').value;
+    const mensajeDiv = document.querySelector('.messaje');
+  
+
+    // Validaciones simples antes de enviar
+    if (!boleta || !password) {
+        mensajeDiv.textContent = 'Por favor, complete todos los campos';
+        mensajeDiv.style.color = 'red';
+        return;
     }
 
-    const boletaEl = document.getElementById('boleta');
-    const passwordEl = document.getElementById('password');
-
-    // Verificar que los elementos existan en el DOM
-    if (!boletaEl || !passwordEl) {
-        alert('No se encontraron los campos de boleta o contraseña en la página.');
-        return false;
-    }
-
-    const Nboleta = boletaEl.value.trim();
-    const password = passwordEl.value;
-
-    // Verificar si usuarioValidos existe y tiene datos
-    if (usuarioValidos && usuarioValidos[Nboleta] === password) {
-        // GUARDAR LA SESIÓN
-        sessionStorage.setItem('sesionActiva', 'true');
-        sessionStorage.setItem('boleta', Nboleta);
-        // Opcional: guardar timestamp de inicio de sesión
-        sessionStorage.setItem('tiempoInicio', new Date().getTime());
+    try {
+        // Enviar datos al backend
+        const res = await fetch('http://localhost:3000/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ boleta, password })
+        });
         
-        boletaEl.value = '';
-        passwordEl.value = '';
-        alert('Inicio de sesión exitoso');
-        
-        // Usar replace en lugar de href para evitar volver atrás
-        window.location.replace('./pantallasUs/postInicio.html');
-        return true;
-    } else {
-        // Limpiar campos y mostrar mensaje de error
-        boletaEl.value = '';
-        passwordEl.value = '';
-        alert('Usuario o contraseña incorrectos');
-        return false;
+        const data = await res.json();
+        console.log('Login status:', res.status, 'respuesta:', data);
+        if (!res.ok) {
+            mensajeDiv.textContent = `${data.mensaje || 'Usuario o contraseña incorrectos'}`;
+            mensajeDiv.style.color = 'red';
+        } else {
+            mensajeDiv.textContent = `${data.mensaje || 'Inicio de sesión correcto'}`;
+            mensajeDiv.style.color = 'green';
+            // Redirigir al dashboard (ruta relativa desde index.html)
+            setTimeout(() => {
+                console.log('Redirigiendo a pantallasUs/postInicio.html');
+                window.location.href = './pantallasUs/postInicio.html';
+            }, 600);
+        }
+        return false; // asegura que el form no recargue
+
+    } catch (error) {
+        mensajeDiv.textContent = 'Error de conexión al servidor';
+        mensajeDiv.style.color = 'red';
+        console.error(error);
     }
 }

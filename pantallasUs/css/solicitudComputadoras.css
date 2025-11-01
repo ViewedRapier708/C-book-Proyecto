@@ -1,4 +1,4 @@
-/* Estilos para la pantalla de cancelar solicitudes */
+/* Estilos para la pantalla de solicitud de computadoras */
 
 * {
     margin: 0;
@@ -18,8 +18,8 @@ body {
     height: 100vh;
 }
 
-
-.container-solis_actu {
+/* Container de la información principal */
+.container-soli_compus {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -27,8 +27,8 @@ body {
     overflow-y: auto;
 }
 
-
-.container-solis_actu > h1 {
+/* Título principal */
+.container-soli_compus > h1 {
     color: white;
     font-size: 32px;
     font-weight: bold;
@@ -37,7 +37,7 @@ body {
     margin-bottom: 30px;
 }
 
-
+/* Contenedor principal con fondo gris */
 .container-contenido {
     background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 100%);
     border-radius: 20px;
@@ -46,7 +46,7 @@ body {
     flex: 1;
 }
 
-
+/* Subtítulo COMPUTADORAS */
 .container-contenido h2 {
     color: #333;
     font-size: 28px;
@@ -55,15 +55,24 @@ body {
     letter-spacing: 1px;
 }
 
+/* Layout de tabla y datos de usuario */
+.layout-compus {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+    align-items: flex-start;
+}
 
-.container-tabla_solis {
+/* Contenedor de la tabla de computadoras */
+.container-tabla_compus {
+    flex: 1;
     background: white;
     border-radius: 10px;
     padding: 15px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 25px;
 }
 
+/* Tabla de computadoras */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -92,26 +101,13 @@ tbody tr:hover {
     background-color: #f9f9f9;
 }
 
-.mensaje-advertencia {
-    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-    color: #856404;
-    font-weight: bold;
-    font-size: 14px;
-    text-align: center;
-    padding: 15px 20px;
-    border-radius: 10px;
-    margin-bottom: 25px;
-    border: 2px solid #ffc107;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-
+/* Datos del usuario */
 .container-datos_usu {
     background: linear-gradient(135deg, #f8d7e8 0%, #f0c1da 100%);
     border-radius: 15px;
     padding: 25px;
+    min-width: 300px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    margin-bottom: 30px;
 }
 
 .container-datos_usu h3 {
@@ -130,14 +126,15 @@ tbody tr:hover {
     margin-bottom: 15px;
 }
 
-.btn-cancelar {
+/* Botón solicitar */
+.btn-solicitar {
     display: flex;
     justify-content: center;
     margin-top: 30px;
 }
 
-.btn-cancelar button {
-    background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+.btn-solicitar button {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
     color: white;
     padding: 15px 50px;
     border: none;
@@ -151,23 +148,35 @@ tbody tr:hover {
     letter-spacing: 1px;
 }
 
-.btn-cancelar button:hover {
+.btn-solicitar button:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
 }
 
-.btn-cancelar button:active {
+.btn-solicitar button:active {
     transform: translateY(0);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
+/* Responsive */
+@media (max-width: 1024px) {
+    .layout-compus {
+        flex-direction: column;
+    }
+    
+    .container-datos_usu {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
 @media (max-width: 768px) {
-    .container-solis_actu {
+    .container-soli_compus {
         padding: 15px 20px;
     }
     
-    .container-solis_actu > h1 {
+    .container-soli_compus > h1 {
         font-size: 24px;
     }
     
@@ -179,7 +188,7 @@ tbody tr:hover {
         font-size: 22px;
     }
     
-    .container-tabla_solis {
+    .container-tabla_compus {
         padding: 10px;
         overflow-x: auto;
     }
@@ -190,10 +199,5 @@ tbody tr:hover {
     
     th, td {
         padding: 8px;
-    }
-    
-    .mensaje-advertencia {
-        font-size: 12px;
-        padding: 12px 15px;
     }
 }
