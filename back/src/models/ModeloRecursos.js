@@ -6,7 +6,7 @@ const modelosRecursos = {
 
   const { data: recursos, error } = await supabase
     .from('computadoras')
-    .select('*');
+    .select('id,procesador,programas,carrera,ocupado');
 
   if (error) {
     return { error, data: null };
