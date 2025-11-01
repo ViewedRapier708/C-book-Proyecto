@@ -24,8 +24,9 @@ const modelosRecursos = {
     return { error, data: null };
   }
   return { error: null, data: recursos };
-}, obtenerLibros: async () => { // Obtener cliente de Supabase
-
+}, obtenerLibros: async () => { 
+    const { getClient } = require('../config/db.js');// Obtener cliente de Supabase
+ const supabase = getClient();
   const { data: recursos, error } = await supabase
     .from('libros')
     .select('*');

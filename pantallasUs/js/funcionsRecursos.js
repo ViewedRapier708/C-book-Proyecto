@@ -34,6 +34,15 @@ async function cargarTabla() {
    
     // 4.2 Insertar filas
     tbody.innerHTML = '';
+    
+    if (filas.length === 0) {
+      const tr = tbody.insertRow();
+      const td = tr.insertCell();
+      td.colSpan = tabla.querySelectorAll('th').length; // abarcar todas las columnas
+      td.textContent = 'No hay recursos disponibles';
+      td.style.textAlign = 'center';
+      return; // salir si no hay filas
+    }
     filas.forEach(reg => {
       const tr = tbody.insertRow();
       const columnas = Object.keys(reg);
