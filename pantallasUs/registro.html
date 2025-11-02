@@ -1,60 +1,91 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="../../funciones/funcionesDeValidacion/MostrarPsw.js"></script>
-    <script src="../../funciones/funcionesDeValidacion/validacionCampos.js"></script>
     <link rel="stylesheet" href="./css/registro.css">
-    
+    <link rel="icon" type="image/x-icon" href="/C-book-Proyecto/img//logo_C_Book.jpg">
     <title>Registro</title>
 </head>
-
 <body>
     <header>
-        <div class="logo-containerBTZ"><img src="" alt=""></div>
-        <div class="title-container">REGISTRO</div>
-        <div class="logo-containerIPN"><img src="" alt=""></div>
-    </header>
-    <div class="container-main">
-        <div class="container-title">
-            <h2>Crear una cuenta</h2>
+        <div class="logo-containerBTZ">
+            <div class="logo-placeholder">LOGO BTZ</div>
+            <img src="/C-book-Proyecto/img/logo-BTZ.png" alt="">
         </div>
-        <div class="container-form">
-            <form action="" id="form-registro" onsubmit="return validarFormulario()">
-                <label for="" class="text-label">Numero de boleta</label>
-
-                <input type="text" class="input-field" id="boleta" name="boleta"
-                    onkeypress="return ValidarCamposNumericos(event)" maxlength="10"
-                    placeholder="Ingrese su numero de boleta">
-
-                <label for="" class="text-label">Nombre(s)</label>
-                <input type="text" class="input-field" id="nombre" name="nombre"
-                    onkeypress="return ValidarCamposLetras(event)" maxlength="100" placeholder="Ingrese su nombre(s)">
-
-                <label for="" class="text-label">Apellido(s)</label>
-
-                <input type="text" class="input-field" id="apellidos" name="apellidos"
-                    onkeypress="return ValidarCamposLetras(event)" maxlength="100" placeholder="Ingrese su apellido(s)">
-                <label for="" class="text-label">Correo Institucional</label>
-
-                <input type="email" class="input-field" id="correo" name="correo" maxlength="100"
-                    placeholder="Ingrese su correo institucional">
-                <label for="" class="text-label">Contraseña</label>
-                <input type="password" class="input-field" id="contrasena" name="contrasena" maxlength="100"
-                    placeholder="Ingrese su contraseña" onkeypress="return ValidarCamposPassword(event)">
-                <label for="">Mostrar Contraseña </label> 
-                <input type="checkbox" id="mostrar"
-                    onclick="VizualizarPsw('mostrar', 'contrasena')">
-                <label for="" class="text-label">Confirmacion de contraseña</label>
-                <input type="password" class="input-field" id="confirmar_contrasena" name="confirmar_contrasena"
-                    maxlength="100" placeholder="Ingrese nuevamente su contraseña"
-                    onkeypress="return ValidarCamposPassword(event)">
-                <button type="submit" id="btn-registrar">Registrar</button>
+        <div class="title-container">REGISTRO DE CUENTA</div>
+        <div class="logo-containerIPN">
+            <div class="logo-placeholder">LOGO IPN</div>
+            <img src="/C-book-Proyecto/img/logo-IPN.png" alt="">
+        </div>
+    </header>
+    
+    <div class="container-main">
+     <!-- Contendor unif, no se pq no me dejaba poner comentarios jeje-->
+        <div class="container-form-unified">
+            <h2>Registro de cuenta</h2>
+            
+            <form action="" id="form-registro">
+                <!-- Boleta -->
+                <div class="form-row full-width">
+                    <label for="boleta" class="text-label">Número de boleta</label>
+                    <input type="text" class="input-field" id="boleta" name="boleta" 
+                           maxlength="10" placeholder="Ingrese su número de boleta">
+                </div>
+                
+                <!-- Nombre y Apellido -->
+                <div class="form-row">
+                    <div class="form-column">
+                        <label for="nombre" class="text-label">Nombre(s)</label>
+                        <input type="text" class="input-field" id="nombre" name="nombre" 
+                               maxlength="100" placeholder="Ingrese su nombre(s)">
+                    </div>
+                    
+                    <div class="form-column">
+                        <label for="apellidos" class="text-label">Apellido(s)</label>
+                        <input type="text" class="input-field" id="apellidos" name="apellidos" 
+                               maxlength="100" placeholder="Ingrese su apellido(s)">
+                    </div>
+                </div>
+                
+                <!-- Correo Institucional -->
+                <div class="form-row full-width">
+                    <label for="correo" class="text-label">Correo Institucional</label>
+                    <input type="email" class="input-field" id="correo" name="correo" 
+                           maxlength="100" placeholder="Ingrese su correo institucional">
+                </div>
+                
+                <!-- Contraseña, Pug, eso te toca a ti -->
+                <div class="form-row full-width">
+                    <label for="contrasena" class="text-label">Contraseña</label>
+                    <input type="password" class="input-field" id="contrasena" name="contrasena" 
+                           maxlength="100" placeholder="Ingrese su contraseña">
+                </div>
+                
+                <!-- Mostrar contraseña, igual el js -->
+                <div class="form-row full-width checkbox-row">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="mostrar">
+                        <label for="mostrar" class="checkbox-label">Mostrar Contraseña</label>
+                    </div>
+                </div>
+                
+                <!-- Confirmar contraseña, cofirmar -->
+                <div class="form-row full-width">
+                    <label for="confirmar_contrasena" class="text-label">Confirmación de contraseña</label>
+                    <input type="password" class="input-field" id="confirmar_contrasena" 
+                           name="confirmar_contrasena" maxlength="100" 
+                           placeholder="Ingrese nuevamente su contraseña">
+                </div>
+                
+                <!-- Botón de registro -->
+                <div class="form-row full-width">
+                    <button type="submit" id="btn-registrar">Registrar</button>
+                </div>
             </form>
         </div>
     </div>
+    
+    <script src="registro.js"></script>
 </body>
-
 </html>
