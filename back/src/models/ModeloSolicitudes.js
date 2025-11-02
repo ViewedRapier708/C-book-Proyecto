@@ -33,6 +33,7 @@ const modeloSolicitudes = {
     if(error){ return {error, data:null}; }
 }
 }
+/*Estos modelos funcionan correctamente*/
 //Modelo para verificar la disponibilidad de los recursos esta funcion debe de ser la primera para hacer la solicitud
 const modeloVerificacion = {
     verificarSolicitudRestirador: async (numeroRestirador) => {
@@ -42,14 +43,12 @@ const modeloVerificacion = {
     .from('restiradores')
     .select('id,ocupado')
     .eq('id', numeroRestirador).maybeSingle();
-        console.log("Verificacion Restirador:");
-    console.log(data.ocupado);
     if(error){ return {error, data:null}; }
 
     if(data.ocupado == true){
         return { error: new Error('Restirador no disponible'), data: null };
     }else{
-        return modeloSolicitudes.solicitudRestirador(numeroRestirador);
+        return { success: true, data: data };
     }
 },verificarSolicitudComputadora: async (computadoraID) => {
     const { getClient } = require('../config/db.js');
@@ -58,14 +57,15 @@ const modeloVerificacion = {
     .from('computadoras')
     .select('id,ocupado')
     .eq('id', computadoraID).maybeSingle();
-        console.log("Verificacion Computadora:");
-    console.log(data.ocupado);
+
     if(error){ return {error, data:null}; }
 
     if(data.ocupado == true){
         return { error: new Error('Computadora no disponible'), data: null };
     }else{
-        return modeloUsoMaterial.solicitarComputadora(computadoraID);
+                console.log("Computadora Disponible:"+data.id);
+              return { success: true, data: data };
+
     }
 },verificarSolicitudLibro: async (libroID) => {
     const { getClient } = require('../config/db.js');
@@ -79,8 +79,9 @@ const modeloVerificacion = {
     if(data.cantidad_disponible <= 0){
         return { error: new Error('Libro no disponible'), data: null };
     }else{
+        console.log("Cantidad Disponible:"+data.cantidad_disponible);
+              return { success: true, data: data };
 
-        return modeloUsoMaterial.solicitarLibro(libroID);
     }
     
 
