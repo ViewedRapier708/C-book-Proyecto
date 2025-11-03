@@ -4,25 +4,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cuenta Personal</title>
+    <link rel="stylesheet" href="./css/EstiloAside.css">
     <link rel="stylesheet" href="./css/cuenta.css">
 </head>
 <body>
     <header class="header-container">
-        <div class="logo-containerBTZ"><img src="/C-book-Proyecto/img/logo-BTZ.png" alt=""></div>
+        <div class="logo-containerBTZ"><img src="/C-book-Proyecto/img/logo-BTZ.png" alt="Logo BTZ"></div>
         <div class="title-container">CENTRO DE ESTUDIOS CIENTIFICOS Y TECNOLÓGICOS No. 9 "JUAN DE DIOS BATIZ"</div>
-        <div class="logo-containerIPN"><img src="/C-book-Proyecto/img/logo-IPN.png" alt=""></div>
+        <div class="logo-containerIPN"><img src="/C-book-Proyecto/img/logo-IPN.png" alt="Logo IPN"></div>
     </header>
     <div class="container-main">
         <div class="container-aside">
-       <script src="./funcionesHtml/asideConection.js"></script>
+            <script src="./funcionesHtml/asideConection.js"></script>
         </div>
-        <div class="container-info_usu">
-            <div class="logo-cuenta"><img src="" alt=""></div>
-            <div class="txt-informacion">
-                <h3>DATOS GENERALES</h3>
-                <label for="">BOLETA: </label><br>
-                <label for="">NOMBRE COMPLETO: </label><br>
-                <label for="">CORREO ELECTRONICO: </label><br>
+        
+        <div class="container-informacion">
+            <div class="container-titulo">
+                <h1>MI CUENTA</h1>
+            </div>
+            
+            <div class="container-contenido">
+                <div class="container-cuenta">
+                    <h2>Información Personal</h2>
+                    
+                    <div class="layout-perfil">
+                        <div class="container-foto-perfil">
+                            <div class="logo-cuenta">
+                                <!-- Aquí iría la imagen del usuario si existe -->
+                            </div>
+                            <div class="nombre-usuario">Nombre del Usuario</div>
+                            <div class="rol-usuario">Estudiante</div>
+                        </div>
+                        
+                        <div class="container-datos-usuario">
+                            <h3>Datos Generales</h3>
+                            
+                            <div class="dato-item">
+                                <span class="dato-label">Boleta:</span>
+                                <span class="dato-value" id="boleta">2022XXXX</span>
+                            </div>
+                            
+                            <div class="dato-item">
+                                <span class="dato-label">Nombre Completo:</span>
+                                <span class="dato-value" id="nombre-completo">Nombre Apellido Paterno Apellido Materno</span>
+                            </div>
+                            
+                            <div class="dato-item">
+                                <span class="dato-label">Correo Electrónico:</span>
+                                <span class="dato-value" id="correo">usuario@ejemplo.com</span>
+                            </div>
+                            
+                            <div class="dato-item">
+                                <span class="dato-label">Grupo:</span>
+                                <span class="dato-value" id="grupo">6IM12</span>
+                            </div>
+                            
+                            <div class="dato-item">
+                                <span class="dato-label">Carrera:</span>
+                                <span class="dato-value" id="carrera">Ingeniería en Sistemas</span>
+                            </div>
+                            
+                            <div class="container-btn-acciones">
+                                <button class="btn-editar">Editar Perfil</button>
+                                <button class="btn-cambiar-password">Cambiar Contraseña</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
