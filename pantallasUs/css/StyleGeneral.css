@@ -107,6 +107,10 @@ td {
 tbody tr:hover {
     background-color: #f9f9f9;
 }
+tbody tr.selected {
+            background-color: #4239399f;     /* <- estilo de fila seleccionada */
+            color: #fff;                    /* texto legible sobre fondo azul */
+        }
 
 /* Datos del usuario */
 .container-datos-usuario {
