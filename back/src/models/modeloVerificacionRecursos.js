@@ -8,6 +8,9 @@ const modeloVerificacion = {
             .from('restiradores')
             .select('id,ocupado')
             .eq('id', ID).maybeSingle();
+
+            console.log("Verificacion Restirador:");
+            console.log(data);
         if (error) { return { error, data: null }; }
 
         if (data.ocupado == true) {
@@ -23,7 +26,9 @@ const modeloVerificacion = {
             .from('computadoras')
             .select('id,ocupado')
             .eq('id', ID).maybeSingle();
-
+        if (!data) {
+            return { error: 'Computadora no encontrada', data: null };
+        }
         if (error) { return { error, data: null }; }
         console.log("Verificacion Computadora:");
         console.log(data);
