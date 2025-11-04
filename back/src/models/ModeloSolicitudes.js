@@ -33,60 +33,7 @@ const modeloSolicitudes = {
     if(error){ return {error, data:null}; }
 }
 }
-/*Estos modelos funcionan correctamente*/
-//Modelo para verificar la disponibilidad de los recursos esta funcion debe de ser la primera para hacer la solicitud
-const modeloVerificacion = {
-    verificarSolicitudRestirador: async (numeroRestirador) => {
-    const { getClient } = require('../config/db.js');
-    const supabase = getClient();
-    const { data, error } = await supabase
-    .from('restiradores')
-    .select('id,ocupado')
-    .eq('id', numeroRestirador).maybeSingle();
-    if(error){ return {error, data:null}; }
 
-    if(data.ocupado == true){
-        return { error: new Error('Restirador no disponible'), data: null };
-    }else{
-        return { success: true, data: data };
-    }
-},verificarSolicitudComputadora: async (computadoraID) => {
-    const { getClient } = require('../config/db.js');
-    const supabase = getClient();
-    const { data, error } = await supabase
-    .from('computadoras')
-    .select('id,ocupado')
-    .eq('id', computadoraID).maybeSingle();
-
-    if(error){ return {error, data:null}; }
-
-    if(data.ocupado == true){
-        return { error: new Error('Computadora no disponible'), data: null };
-    }else{
-                console.log("Computadora Disponible:"+data.id);
-              return { success: true, data: data };
-
-    }
-},verificarSolicitudLibro: async (libroID) => {
-    const { getClient } = require('../config/db.js');
-    const supabase = getClient();
-    const { data, error } = await supabase
-    .from('libros')
-    .select('id,cantidad_disponible')
-    .eq('id', libroID).maybeSingle();
-        console.log("Verificacion Libro:");
-    if(error){ return {error, data:null}; }
-    if(data.cantidad_disponible <= 0){
-        return { error: new Error('Libro no disponible'), data: null };
-    }else{
-        console.log("Cantidad Disponible:"+data.cantidad_disponible);
-              return { success: true, data: data };
-
-    }
-    
-
-}
-};
 
 const modeloUsoMaterial = {
     solicitarRestirador: async (numeroRestirador) => {
@@ -107,17 +54,67 @@ const modeloUsoMaterial = {
         .update({ ocupado: true })
         .eq('id', computadoraID)
         .select()
+
+        console.log("Resultado de solicitarComputadora:", {data, error});
     if(error){ return {error, data:null}; }else{return true}
-}, solicitarLibro: async (libroID) => {
-    const cantidad_disponible = await modeloVerificacion.verificarSolicitudLibro(libroID);
+},  // CORRECCIÓN en modeloUsoMaterial - solicitarLibro
+solicitarLibro: async (libroID) => {
+    console.log("ID del libro a solicitar:", libroID);
+    
+    try {
+        const { modeloVerificacion } = require('./modeloVerificacionRecursos.js');
         const { getClient } = require('../config/db.js');
         const supabase = getClient();
+
+        // Asegurar que libroID sea un número
+        const id = parseInt(libroID);
+        if (isNaN(id)) {
+            return { 
+                error: { message: "ID de libro inválido" }, 
+                data: null 
+            };
+        }
+
+        // 1. Primero verificar la disponibilidad
+        const resultadoVerificacion = await modeloVerificacion.verificarSolicitudLibro({ ID: id });
+        console.log("Resultado de verificación:", resultadoVerificacion);
+        
+        // 2. Si hay error en la verificación, retornarlo
+        if (resultadoVerificacion && resultadoVerificacion.error) {
+            return resultadoVerificacion;
+        }
+        
+        // 3. resultadoVerificacion ahora debería ser el número de disponibilidad
+        const disponibilidad = resultadoVerificacion;
+        
+        // 4. Validar que hay disponibilidad
+        if (disponibilidad <= 0) {
+            return { 
+                error: { message: "No hay ejemplares disponibles" }, 
+                data: null 
+            };
+        }
+
+        // 5. Actualizar la cantidad disponible
         const { data, error } = await supabase
-        .from('libros')
-        .update({ cantidad_disponible: cantidad_disponible-1 })
-        .eq('id', libroID)
-        .select()
-    if(error){ return {error, data:null}; }else{return true}
-}};
-modeloVerificacion.verificarSolicitudLibro(1);
-module.exports = { modeloSolicitudes, modeloVerificacion };
+            .from('libros')
+            .update({ cantidad_disponible: disponibilidad - 1 })
+            .eq('id', id)
+            .select();
+
+        if (error) {
+            return { error, data: null };
+        }
+
+        console.log("Cantidad disponible después de la solicitud:", data);
+        return { error: null, data: data[0] };
+
+    } catch (error) {
+        console.error("Error en solicitarLibro:", error);
+        return { error, data: null };
+    }
+}
+};
+
+modeloUsoMaterial.solicitarComputadora({ID:1}.ID);
+module.exports = { modeloSolicitudes, modeloUsoMaterial };

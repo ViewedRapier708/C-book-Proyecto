@@ -45,6 +45,7 @@ async function cargarTabla() {
     }
     filas.forEach(reg => {
       const tr = tbody.insertRow();
+
       const columnas = Object.keys(reg);
       console.log('Insertando fila para registro:', reg);
       
