@@ -3,15 +3,28 @@ const { parse } = require('dotenv');
 const { modeloVerificacion } = require('../models/modeloVerificacionRecursos.js');
 // Middleware para verificar restirador
 function verificarDisponibilidad(req, res, next) {
-    const { TipoMaterial } = req.body;
-    console.log(`TipoMaterial recibido: ${TipoMaterial}`);
-    if (!TipoMaterial) {
+    console.log("Middleware Verificacion de Recursos activado");
+    console.log("Cuerpo de la solicitud:", req.body);
+    //Variable que se necesita para saber que tipo de material se esta solicitando
+   const {tipo} = req.body;
+
+   //Variables que se deben de verificar para que se pueda hacer la solicitud
+   const {registro_id, semestre, grupo, carrera, recurso_id,id} = req.body;
+    console.log(`TipoMaterial recibido: ${tipo}`);
+if (!registro_id || !semestre || !grupo || !carrera || !recurso_id) {
+        return res.status(400).json({
+            success: false,
+            error: 'Se requieren mas datos para procesar la solicitud porfavor verifique y vuelve a intentarlo'
+        });
+    }
+ 
+    if (!tipo) {
         return res.status(400).json({
             success: false,
             error: 'TipoMaterial es requerido'
         });
     }
-    switch (TipoMaterial) {
+    switch (tipo) {
         case 'restirador':
             return verificarRestirador(req, res, next);
         case 'computadora':
@@ -27,20 +40,21 @@ function verificarDisponibilidad(req, res, next) {
 }
 const verificarRestirador = async (req, res, next) => {
     try {
-        const { ID } = req.body;
-        console.log("Middleware Verificar Restirador ID:"+ID);
+        const { id } = req.body;
+        console.log("req body id:"+id);
+        console.log("Middleware Verificar Restirador ID:"+id);
         // Validar que el ID de restirador esté presente
-        if (!ID) {
+        if (!id) {
             return res.status(400).json({
                 success: false,
                 error: 'ID de restirador requerido'
             });
         }
 
-        console.log(`Verificando restirador: ${ID}`);
+        console.log(`Verificando restirador: ${id}`+'linea 54');
         
         // Verificar disponibilidad en la base de datos
-        const resultado = await modeloVerificacion.verificarSolicitudRestirador({ID});
+        const resultado = await modeloVerificacion.verificarSolicitudRestirador({id});
         console.log("Resultado Verificacion Restirador:",resultado);
         if (!resultado.success) {
             console.log('Restirador no disponible:', resultado.error);
@@ -67,16 +81,16 @@ const verificarRestirador = async (req, res, next) => {
 // Middleware para verificar computadora
 const verificarComputadora = async (req, res, next) => {
     try {
-        const { ID } = req.body;
-        
-        if (!ID) {
+        const { id } = req.body;
+
+        if (!id) {
             return res.status(400).json({ 
                 success: false, 
                 error: 'ID de computadora requerido' 
             });
         }
 
-        const resultado = await modeloVerificacion.verificarSolicitudComputadora({ID});
+        const resultado = await modeloVerificacion.verificarSolicitudComputadora({id});
         if (!resultado.success) {
             console.log('Computadora no disponible:', resultado.error);
             return res.status(400).json({ 
@@ -101,18 +115,18 @@ const verificarComputadora = async (req, res, next) => {
 // Middleware para verificar libro
 const verificarLibro = async (req, res, next) => {
     try {
-        const { ID } = req.body;
-        console.log("Middleware Verificar Libro ID:"+ID);
-        if (!ID) {
+        const { id } = req.body;
+        console.log("Middleware Verificar Libro ID:"+id);
+        if (!id) {
             return res.status(400).json({ 
                 success: false, 
                 error: 'ID de libro requerido' 
             });
         }
 
-        console.log(`Verificando libro: ${ID}`);
+        console.log(`Verificando libro: ${id}`);
 
-        const resultado = await modeloVerificacion.verificarSolicitudLibro({ID});
+        const resultado = await modeloVerificacion.verificarSolicitudLibro({id});
         console.log("Resultado Verificacion Libro:",resultado);
         console.log("aver is")
         if (!resultado.success) {
