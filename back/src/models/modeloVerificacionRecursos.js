@@ -1,29 +1,34 @@
 /*Estos modelos funcionan correctamente*/
 //Modelo para verificar la disponibilidad de los recursos esta funcion debe de ser la primera para hacer la solicitud
 const modeloVerificacion = {
-    verificarSolicitudRestirador: async ({ ID }) => {
+    verificarSolicitudRestirador: async ({ id }) => {
         const { getClient } = require('../config/db.js');
         const supabase = getClient();
         const { data, error } = await supabase
             .from('restiradores')
             .select('id,ocupado')
-            .eq('id', ID).maybeSingle();
+            .eq('id', id).maybeSingle();
+
+            console.log("Verificacion Restirador: modelo verificacion");
+            console.log(data);
         if (error) { return { error, data: null }; }
 
         if (data.ocupado == true) {
-            return { error: new Error('Restirador no disponible'), data: null };
+            return { mensaje: 'Restirador no disponible', data: null };
         } else {
             return { success: true, data: data };
         }
-    }, verificarSolicitudComputadora: async ({ ID }) => {
+    }, verificarSolicitudComputadora: async ({ id }) => {
         console.log("Verificando Computadora ID:--" + ID);
         const { getClient } = require('../config/db.js');
         const supabase = getClient();
         const { data, error } = await supabase
             .from('computadoras')
             .select('id,ocupado')
-            .eq('id', ID).maybeSingle();
-
+            .eq('id', id).maybeSingle();
+        if (!data) {
+            return { error: 'Computadora no encontrada', data: null };
+        }
         if (error) { return { error, data: null }; }
         console.log("Verificacion Computadora:");
         console.log(data);
@@ -33,13 +38,13 @@ const modeloVerificacion = {
             return { success: true, data: data };
 
         }
-    }, verificarSolicitudLibro: async ({ ID }) => {
-        console.log("Verificando Libro ID:--", ID);
+    }, verificarSolicitudLibro: async ({ id }) => {
+        console.log("Verificando Libro ID:--", id);
         const { getClient } = require('../config/db.js');
         const supabase = getClient();
 
         // Asegurar que ID sea un número
-        const libroID = parseInt(ID);
+        const libroID = parseInt(id);
         if (isNaN(libroID)) {
             return { error: new Error('ID de libro inválido'), data: null };
         }
