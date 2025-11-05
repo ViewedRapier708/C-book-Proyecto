@@ -1,4 +1,7 @@
-/* Estilos para la pantalla de alta de guardarropas - Basado en solicitudRestiradores */
+/* Estilos para la página de Alta de Guardaropas */
+/*
+CSS para Alta de Guardaropas
+*/
 
 * {
     margin: 0;
@@ -16,8 +19,7 @@ body {
 
 .container-main {
     display: flex;
-    height: 100vh;
-    min-height: 600px;
+    min-height: 100vh;
 }
 
 /* Estilo del aside */
@@ -155,7 +157,7 @@ aside {
     background-color: #7B0233;
 }
 
-/* Container de la información principal */
+/* Contenido principal - Alta de Guardaropas - Estilo basado en solicitudRestiradores */
 .container-informacion {
     margin-left: 300px;
     flex: 1;
@@ -190,8 +192,8 @@ aside {
     width: 100%;
 }
 
-/* Sección de guardarropas */
-.container-guardarropas h2 {
+/* Sección de computadoras */
+\.container-guardarropas h2 {
     color: #333;
     font-size: 28px;
     font-weight: bold;
@@ -204,19 +206,35 @@ aside {
     display: flex;
     gap: 30px;
     margin-bottom: 30px;
-    align-items: flex-start;
+    align-items: stretch; /* ambos hijos tendrán la misma altura */
     flex-wrap: wrap;
 }
 
-/* Formulario de alta */
-.container-formulario {
-    flex: 1 1 60%;
+/* Tabla principal - la más grande, a la izquierda/centro */
+.layout .container-tabla {
+    flex: 1 1 65%; /* ocupa ~65% del layout, más grande */
     background: white;
     border-radius: 10px;
-    padding: 25px;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: auto;
+    min-width: 400px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Formulario de alta - más compacto, a la derecha */
+.container-formulario {
+    flex: 0 0 320px; /* ancho fijo más pequeño, a la derecha */
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     min-width: 280px;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 .form-group {
@@ -250,45 +268,58 @@ aside {
     border-color: #2c3e50;
 }
 
-/* Panel de información de guardarropas */
-.container-datos-guardarropas {
-    flex: 0 0 320px;
-    background: linear-gradient(135deg, #e8f8d7 0%, #daf0c1 100%);
-    border-radius: 1rem;
-    padding: 25px;
-    min-width: 250px;
+/* Panel de información de sistema - diseño lineal (horizontal) */
+\.container-datos-sistema {
+    width: 100%;
+    background: linear-gradient(135deg, #d7e8f8 0%, #c1daf0 100%);
+    border-radius: 12px;
+    padding: 20px 30px;
+    margin-bottom: 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 15px;
 }
 
-.container-datos-guardarropas h3 {
+.container-datos-sistema h3 {
     color: #333;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
-    margin-bottom: 20px;
-    text-align: center;
+    margin: 0;
+    padding-right: 20px;
+    border-right: 2px solid rgba(0,0,0,0.2);
 }
 
 .dato-item {
-    margin-bottom: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 0 15px;
+    border-right: 1px solid rgba(0,0,0,0.15);
+}
+
+.dato-item:last-child {
+    border-right: none;
 }
 
 .dato-label {
     color: #333;
     font-weight: bold;
     font-size: 14px;
-    display: block;
-    margin-bottom: 5px;
+    margin: 0;
 }
 
 .dato-value {
     color: #666;
     font-size: 14px;
-    display: block;
+    font-weight: 600;
 }
 
-/* Tabla de guardarropas existentes */
-.container-tabla {
+/* Tabla de computadoras existentes - solo para cuando esté fuera del layout (no aplica si está dentro) */
+.container-tabla:not(.layout .container-tabla) {
     background: white;
     border-radius: 10px;
     padding: 15px;
@@ -388,27 +419,52 @@ tbody tr:hover {
 
 /* Responsive */
 @media (max-width: 1200px) {
-    .container-formulario {
-        flex: 1 1 65%;
+    .layout .container-tabla {
+        flex: 1 1 60%;
+        min-width: 350px;
     }
-    .container-datos-guardarropas {
-        flex: 0 0 280px;
+    .container-formulario {
+        flex: 0 0 300px;
     }
 }
 
 @media (max-width: 900px) {
+    .container-informacion {
+        margin-left: 300px;
+        padding: 15px 20px;
+    }
+
     .container-titulo h1 {
         font-size: 26px;
+    }
+
+    .container-contenido {
+        padding: 1.5rem;
     }
 
     .layout {
         gap: 20px;
     }
 
-    .container-formulario,
-    .container-datos-guardarropas {
+    /* En pantallas pequeñas, ambos van a ancho completo */
+    .layout .container-tabla,
+    .container-formulario {
         flex: 1 1 100%;
         min-width: 0;
+    }
+
+    \.container-datos-guardarropas {
+        padding: 15px 20px;
+        gap: 12px;
+    }
+
+    \.container-datos-guardarropas h3 {
+        font-size: 16px;
+        padding-right: 15px;
+    }
+
+    .dato-item {
+        padding: 0 12px;
     }
 
     table {
@@ -421,6 +477,7 @@ tbody tr:hover {
         width: 100%;
         height: auto;
         position: relative;
+        border-radius: 0;
     }
     
     .container-informacion {
@@ -430,24 +487,121 @@ tbody tr:hover {
     }
     
     .container-titulo h1 {
-        font-size: 20px;
+        font-size: 22px;
     }
 
     .container-contenido {
-        padding: 16px;
+        padding: 1rem;
+        border-radius: 15px;
     }
 
-    .container-guardarropas h2 {
-        font-size: 18px;
+    \.container-guardarropas h2 {
+        font-size: 20px;
+    }
+
+    .layout {
+        gap: 15px;
+    }
+
+    /* Información del sistema en vertical en móviles */
+    \.container-datos-guardarropas {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px;
+        gap: 10px;
+    }
+
+    \.container-datos-guardarropas h3 {
+        border-right: none;
+        border-bottom: 2px solid rgba(0,0,0,0.2);
+        padding-right: 0;
+        padding-bottom: 10px;
+        width: 100%;
+    }
+
+    .dato-item {
+        border-right: none;
+        padding: 5px 0;
+        width: 100%;
+        justify-content: space-between;
     }
 
     table {
-        min-width: 480px;
+        min-width: 500px;
+        font-size: 13px;
+    }
+
+    th, td {
+        padding: 10px 8px;
     }
 
     .btn-alta,
     .btn-limpiar {
-        padding: 12px 28px;
+        padding: 12px 30px;
         font-size: 14px;
+    }
+
+    .container-btn-alta {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn-alta,
+    .btn-limpiar {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .container-titulo h1 {
+        font-size: 18px;
+    }
+
+    .container-contenido {
+        padding: 0.8rem;
+    }
+
+    \.container-guardarropas h2 {
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+
+    table {
+        min-width: 450px;
+        font-size: 12px;
+    }
+
+    th, td {
+        padding: 8px 6px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        font-size: 13px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    \.container-datos-guardarropas h3 {
+        font-size: 18px;
+    }
+
+    .dato-label,
+    .dato-value {
+        font-size: 13px;
+    }
+
+    .btn-alta,
+    .btn-limpiar {
+        padding: 10px 20px;
+        font-size: 13px;
     }
 }

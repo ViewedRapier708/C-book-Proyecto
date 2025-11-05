@@ -55,6 +55,36 @@
                     <h2>Registro de Nueva Computadora</h2>
                     
                     <div class="layout">
+                        <!-- Tabla en el centro (columna izquierda del layout) -->
+                        <div class="container-tabla">
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>No.</th>
+                                            <th>Procesador</th>
+                                            <th>RAM</th>
+                                            <th>Carrera</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>001</td>
+                                            <td>Intel Core i5</td>
+                                            <td>8GB</td>
+                                            <td>Sistemas</td>
+                                            <td>Disponible</td>
+                                            <td><button class="btn-editar">Editar</button></td>
+                                        </tr>
+                                        <!-- Más filas aquí -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Inputs a la derecha -->
                         <div class="container-formulario">
                             <div class="form-group">
                                 <label for="procesador">Procesador:</label>
@@ -71,7 +101,7 @@
                                     <option value="Sistemas Digitales">Sistemas Digitales</option>
                                     <option value="Programación">Programación</option>
                                     <option value="Mecatronica">Mecatrónica</option>
-                                    <option value="general">Uso General</option>
+                                    <option value="tronco-comun">Tronco Común</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -87,57 +117,30 @@
                                 </select>
                             </div>
                         </div>
-                        
-                        <div class="container-datos-sistema">
-                            <h3>Información del Sistema</h3>
-                            <div class="dato-item">
-                                <span class="dato-label">Total Computadoras:</span>
-                                <span class="dato-value">25</span>
-                            </div>
-                            <div class="dato-item">
-                                <span class="dato-label">Disponibles:</span>
-                                <span class="dato-value">18</span>
-                            </div>
-                            <div class="dato-item">
-                                <span class="dato-label">En Uso:</span>
-                                <span class="dato-value">5</span>
-                            </div>
-                            <div class="dato-item">
-                                <span class="dato-label">Mantenimiento:</span>
-                                <span class="dato-value">2</span>
-                            </div>
-                            <div class="dato-item">
-                                <span class="dato-label">Última Actualización:</span>
-                                <span class="dato-value">29/10/2025</span>
-                            </div>
-                        </div>
                     </div>
                     
-                    <div class="container-tabla">
-                        <div class="table-responsive">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>No.</th>
-                                        <th>Procesador</th>
-                                        <th>RAM</th>
-                                        <th>Carrera</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>001</td>
-                                        <td>Intel Core i5</td>
-                                        <td>8GB</td>
-                                        <td>Sistemas</td>
-                                        <td>Disponible</td>
-                                        <td><button class="btn-editar">Editar</button></td>
-                                    </tr>
-                                    <!-- Más filas aquí -->
-                                </tbody>
-                            </table>
+                    <!-- Información del Sistema abajo de todo -->
+                    <div class="container-datos-sistema">
+                        <h3>Información del Sistema</h3>
+                        <div class="dato-item">
+                            <span class="dato-label">Total Computadoras:</span>
+                            <span class="dato-value">25</span>
+                        </div>
+                        <div class="dato-item">
+                            <span class="dato-label">Disponibles:</span>
+                            <span class="dato-value">18</span>
+                        </div>
+                        <div class="dato-item">
+                            <span class="dato-label">En Uso:</span>
+                            <span class="dato-value">5</span>
+                        </div>
+                        <div class="dato-item">
+                            <span class="dato-label">Mantenimiento:</span>
+                            <span class="dato-value">2</span>
+                        </div>
+                        <div class="dato-item">
+                            <span class="dato-label">Última Actualización:</span>
+                            <span class="dato-value">29/10/2025</span>
                         </div>
                     </div>
                     
