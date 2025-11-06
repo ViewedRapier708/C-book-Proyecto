@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/registro.css">
     <link rel="icon" type="image/x-icon" href="/C-book-Proyecto/img//logo_C_Book.jpg">
+    <script src="../funciones/funcionesDeValidacion/MostrarPsw.js"></script>
     <title>Registro</title>
 </head>
 <body>
@@ -25,7 +26,7 @@
         <div class="container-form-unified">
             <h2>Registro de cuenta</h2>
             
-            <form action="" id="form-registro">
+            <form id="form-registro">
                 <!-- Boleta -->
                 <div class="form-row full-width">
                     <label for="boleta" class="text-label">Número de boleta</label>
@@ -65,7 +66,7 @@
                 <!-- Mostrar contraseña, igual el js -->
                 <div class="form-row full-width checkbox-row">
                     <div class="checkbox-container">
-                        <input type="checkbox" id="mostrar">
+                        <input type="checkbox" id="mostrar"   onclick="VizualizarPsw('mostrar', 'contrasena')">
                         <label for="mostrar" class="checkbox-label">Mostrar Contraseña</label>
                     </div>
                 </div>
