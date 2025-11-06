@@ -68,13 +68,38 @@
                     </div>
                 </div>
                     <div class="container-btn-apartar">
-                        <button class="btn-apartar">apartar libros</button>
+                        <button class="btn-apartar" onclick="mostrarVentanaEmergenteDatos()">apartar libros</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <script src="./js/funcionsRecursos.js"></script>
+        <script src="./js/funcionsRecursos.js"></script>
+        <script src="./funcionesHtml/ventanaEmergenteDatos.js"></script>
+        <script>
+  window.addEventListener("DOMContentLoaded", function() {
+    const tabla = document.getElementById("tabla");
+    let filaSeleccionada = null;
+
+    tabla.addEventListener("click", (event) => {
+      if (event.target.tagName === "TD") {
+        const fila = event.target.parentNode;
+
+        if (filaSeleccionada) filaSeleccionada.style.backgroundColor = "";
+        fila.style.backgroundColor = "#d0ebff";
+        filaSeleccionada = fila;
+
+        const celdas = fila.querySelectorAll("td");
+        const numeroBoleta = celdas[0].textContent.trim();
+        const materialSeleccionado = celdas[1].textContent.trim();
+
+        // Abrir modal con esos datos
+        mostrarVentanaEmergenteDatos(numeroBoleta, materialSeleccionado);
+      }
+    });
+  });
+</script>
+        
 </body>
 
 </html>

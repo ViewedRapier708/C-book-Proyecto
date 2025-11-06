@@ -1,20 +1,25 @@
-function mostrarVentanaEmergenteDatos(numeroBoleta = '', materialSeleccionado = '') {
-    // Si ya existe, la removemos para recrear con valores nuevos
-    const existingOverlay = document.getElementById('overlayVentanaEmergenteDatos');
-    if (existingOverlay) existingOverlay.remove();
+    function mostrarVentanaEmergenteDatos(numeroBoleta = '', materialSeleccionado = '') {
+      const existingOverlay = document.getElementById('overlayVentanaEmergenteDatos');
+      if (existingOverlay) existingOverlay.remove();
 
-    // inject styles for animations once
-    if (!document.getElementById('ventanaEmergenteDatos-styles')) {
+      if (!document.getElementById('ventanaEmergenteDatos-styles')) {
         const style = document.createElement('style');
         style.id = 'ventanaEmergenteDatos-styles';
-        style.textContent = "@keyframes overlayFade { from { opacity: 0 } to { opacity: 1 } }\n@keyframes popIn { from { opacity: 0; transform: translateY(-10px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }\n@keyframes overlayFadeOut { from { opacity: 1 } to { opacity: 0 } }\n@keyframes popOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(8px) scale(.98); } }\n#overlayVentanaEmergenteDatos.overlay-anim { animation: overlayFade .18s ease-out forwards; }\n#ventanaEmergenteDatos.modal-anim { animation: popIn .22s cubic-bezier(.2,.9,.2,1) forwards; transform-origin: center; }\n#overlayVentanaEmergenteDatos.overlay-exit { animation: overlayFadeOut .14s ease-in forwards; }\n#ventanaEmergenteDatos.modal-exit { animation: popOut .16s cubic-bezier(.4,.0,.22,1) forwards; transform-origin: center; }";
+        style.textContent =
+          "@keyframes overlayFade { from { opacity: 0 } to { opacity: 1 } }" +
+          "@keyframes popIn { from { opacity: 0; transform: translateY(-10px) scale(.98);} to { opacity: 1; transform: translateY(0) scale(1);} }" +
+          "@keyframes overlayFadeOut { from { opacity: 1 } to { opacity: 0 } }" +
+          "@keyframes popOut { from { opacity: 1; transform: translateY(0) scale(1);} to { opacity: 0; transform: translateY(8px) scale(.98);} }" +
+          "#overlayVentanaEmergenteDatos.overlay-anim { animation: overlayFade .18s ease-out forwards; }" +
+          "#ventanaEmergenteDatos.modal-anim { animation: popIn .22s cubic-bezier(.2,.9,.2,1) forwards; transform-origin: center; }" +
+          "#overlayVentanaEmergenteDatos.overlay-exit { animation: overlayFadeOut .14s ease-in forwards; }" +
+          "#ventanaEmergenteDatos.modal-exit { animation: popOut .16s cubic-bezier(.4,.0,.22,1) forwards; transform-origin: center; }";
         document.head.appendChild(style);
-    }
+      }
 
-    // overlay oscuro
-    const overlay = document.createElement('div');
-    overlay.id = 'overlayVentanaEmergenteDatos';
-    Object.assign(overlay.style, {
+      const overlay = document.createElement('div');
+      overlay.id = 'overlayVentanaEmergenteDatos';
+      Object.assign(overlay.style, {
         position: 'fixed',
         top: '0',
         left: '0',
@@ -25,29 +30,23 @@ function mostrarVentanaEmergenteDatos(numeroBoleta = '', materialSeleccionado = 
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: '10000'
-    });
+      });
 
-    // modal
-    const modal = document.createElement('div');
-    modal.id = 'ventanaEmergenteDatos';
-    Object.assign(modal.style, {
+      const modal = document.createElement('div');
+      modal.id = 'ventanaEmergenteDatos';
+      Object.assign(modal.style, {
         backgroundColor: '#fff',
         padding: '20px',
-        borderRadius: '6px',
+        borderRadius: '8px',
         width: '320px',
-        boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-        borderRadius: '8px'
-    });
+        boxShadow: '0 4px 16px rgba(0,0,0,0.3)'
+      });
 
-    // titulo y mensaje
-    const title = document.createElement('h3');
-    title.textContent = 'Enviar solicitud';
-    title.style.marginTop = '0';
-    modal.appendChild(title);
+      const title = document.createElement('h3');
+      title.textContent = 'Enviar solicitud';
+      modal.appendChild(title);
 
-   
-    // helper para filas
-    function fila(labelText, control) {
+      function fila(labelText, control) {
         const row = document.createElement('div');
         row.style.marginBottom = '10px';
         const label = document.createElement('label');
@@ -58,175 +57,149 @@ function mostrarVentanaEmergenteDatos(numeroBoleta = '', materialSeleccionado = 
         row.appendChild(label);
         row.appendChild(control);
         return row;
-    }
+      }
 
-    // campos de solo lectura
-    const boletaSpan = document.createElement('span');
-    boletaSpan.textContent = numeroBoleta;
-    boletaSpan.style.display = 'inline-block';
-    boletaSpan.style.padding = '8px';
-    boletaSpan.style.width = '100%';
-    boletaSpan.style.background = '#f5f5f5';
-    boletaSpan.style.border = '1px solid #ddd';
-    modal.appendChild(fila('Número de boleta (vista)', boletaSpan));
+      const boletaSpan = document.createElement('span');
+      boletaSpan.textContent = numeroBoleta;
+      Object.assign(boletaSpan.style, {
+        display: 'inline-block', padding: '8px', width: '100%',
+        background: '#f5f5f5', border: '1px solid #ddd'
+      });
+      modal.appendChild(fila('Número de boleta', boletaSpan));
 
-    const materialSpan = document.createElement('span');
-    materialSpan.textContent = materialSeleccionado;
-    materialSpan.style.display = 'inline-block';
-    materialSpan.style.padding = '8px';
-    materialSpan.style.width = '100%';
-    materialSpan.style.background = '#f5f5f5';
-    materialSpan.style.border = '1px solid #ddd';
-    modal.appendChild(fila('Material seleccionado (vista)', materialSpan));
+      const materialSpan = document.createElement('span');
+      materialSpan.textContent = materialSeleccionado;
+      Object.assign(materialSpan.style, {
+        display: 'inline-block', padding: '8px', width: '100%',
+        background: '#f5f5f5', border: '1px solid #ddd'
+      });
+      modal.appendChild(fila('Material seleccionado', materialSpan));
 
-    // inputs editables
-    const inputGrupo = document.createElement('input');
-    inputGrupo.type = 'text';
-    inputGrupo.placeholder = 'Ej. A';
-    inputGrupo.style.width = '100%';
-    inputGrupo.style.padding = '8px';
-    inputGrupo.style.boxSizing = 'border-box';
-    modal.appendChild(fila('Grupo (input)', inputGrupo));
+      const inputGrupo = document.createElement('input');
+      inputGrupo.type = 'text';
+      inputGrupo.placeholder = 'Ej. A';
+      inputGrupo.style.width = '100%';
+      inputGrupo.style.padding = '8px';
+      modal.appendChild(fila('Grupo', inputGrupo));
 
-    const inputSemestre = document.createElement('input');
-    inputSemestre.type = 'number';
-    inputSemestre.min = '1';
-    inputSemestre.placeholder = 'Ej. 3';
-    inputSemestre.style.width = '100%';
-    inputSemestre.style.padding = '8px';
-    inputSemestre.style.boxSizing = 'border-box';
-    modal.appendChild(fila('Semestre (input)', inputSemestre));
+      const inputSemestre = document.createElement('input');
+      inputSemestre.type = 'number';
+      inputSemestre.min = '1';
+      inputSemestre.placeholder = 'Ej. 3';
+      inputSemestre.style.width = '100%';
+      inputSemestre.style.padding = '8px';
+      modal.appendChild(fila('Semestre', inputSemestre));
 
-    const inputCarrera = document.createElement('input');
-    inputCarrera.type = 'text';
-    inputCarrera.placeholder = 'Ej. Ingeniería';
-    inputCarrera.style.width = '100%';
-    inputCarrera.style.padding = '8px';
-    inputCarrera.style.boxSizing = 'border-box';
-    modal.appendChild(fila('Carrera (input)', inputCarrera));
+      const inputCarrera = document.createElement('input');
+      inputCarrera.type = 'text';
+      inputCarrera.placeholder = 'Ej. Ingeniería';
+      inputCarrera.style.width = '100%';
+      inputCarrera.style.padding = '8px';
+      modal.appendChild(fila('Carrera', inputCarrera));
 
-    // botones
-    const botones = document.createElement('div');
-    botones.style.display = 'flex';
-    botones.style.justifyContent = 'flex-end';
-    botones.style.gap = '8px';
-    botones.style.marginTop = '12px';
+      const botones = document.createElement('div');
+      botones.style.display = 'flex';
+      botones.style.justifyContent = 'flex-end';
+      botones.style.gap = '8px';
+      botones.style.marginTop = '12px';
 
-    const cancelarBtn = document.createElement('button');
-    cancelarBtn.type = 'button';
-    cancelarBtn.textContent = 'Cancelar';
-    Object.assign(cancelarBtn.style, {
+      const cancelarBtn = document.createElement('button');
+      cancelarBtn.textContent = 'Cancelar';
+      Object.assign(cancelarBtn.style, {
         padding: '8px 12px',
         background: '#eee',
         border: '1px solid #ccc',
         cursor: 'pointer'
-    });
-    cancelarBtn.addEventListener('click', closeModal);
+      });
+      cancelarBtn.addEventListener('click', closeModal);
 
-    // close with exit animation
-    function closeModal() {
-        // detach potential event listeners later
-        document.removeEventListener('keydown', onKeyDown);
-        overlay.classList.remove('overlay-anim');
-        modal.classList.remove('modal-anim');
-        overlay.classList.add('overlay-exit');
-        modal.classList.add('modal-exit');
-        // remove once modal animation finishes
-        const onEnd = () => { if (overlay && overlay.parentNode) overlay.remove(); modal.removeEventListener('animationend', onEnd); };
-        modal.addEventListener('animationend', onEnd);
-    }
-
-    function onKeyDown(e){ if(e.key === 'Escape') closeModal(); }
-    document.addEventListener('keydown', onKeyDown);
-
-    const enviarBtn = document.createElement('button');
-    enviarBtn.type = 'button';
-    enviarBtn.textContent = 'Enviar';
-    Object.assign(enviarBtn.style, {
+      const enviarBtn = document.createElement('button');
+      enviarBtn.textContent = 'Enviar';
+      Object.assign(enviarBtn.style, {
         padding: '8px 12px',
         background: '#0078d4',
         color: '#fff',
         border: 'none',
         cursor: 'pointer'
-    });
+      });
 
-    enviarBtn.addEventListener('click', async () => {
+      enviarBtn.addEventListener('click', async () => {
         const payload = {
-            numeroBoleta: numeroBoleta,
-            materialSeleccionado: materialSeleccionado,
-            grupo: inputGrupo.value.trim(),
-            semestre: inputSemestre.value.trim(),
-            carrera: inputCarrera.value.trim()
+          numeroBoleta,
+          materialSeleccionado,
+          grupo: inputGrupo.value.trim(),
+          semestre: inputSemestre.value.trim(),
+          carrera: inputCarrera.value.trim()
         };
 
-        // Validación simple
         if (!payload.grupo || !payload.semestre || !payload.carrera) {
-            alert('Por favor rellena todos los campos requeridos.');
-            return;
+          alert('Por favor rellena todos los campos requeridos.');
+          return;
         }
 
         try {
-            // Cambia la URL '/enviarDatos' por la que necesites
-            const res = await fetch('/enviarDatos', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+          const res = await fetch('/enviarDatos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
 
-            if (!res.ok) throw new Error('Error en la petición');
-
-            const data = await res.json().catch(() => ({}));
-            alert('Enviado correctamente.');
-            closeModal();
-            // puedes manejar "data" si necesitas mostrar respuesta del servidor
+          if (!res.ok) throw new Error('Error en la petición');
+          const data = await res.json().catch(() => ({}));
+          alert('✅ Enviado correctamente.');
+          closeModal();
         } catch (err) {
-            console.error(err);
-            alert('No se pudo enviar. Revisa la consola.');
+          console.error(err);
+          alert('❌ No se pudo enviar. Revisa la consola.');
         }
+      });
 
-    });
+      botones.appendChild(cancelarBtn);
+      botones.appendChild(enviarBtn);
+      modal.appendChild(botones);
 
-    botones.appendChild(cancelarBtn);
-    botones.appendChild(enviarBtn);
-    modal.appendChild(botones);
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
 
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
+      function closeModal() {
+        document.removeEventListener('keydown', onKeyDown);
+        overlay.classList.add('overlay-exit');
+        modal.classList.add('modal-exit');
+        setTimeout(() => overlay.remove(), 200);
+      }
 
-    // trigger entrance animations (add classes after insert so animations run)
-    requestAnimationFrame(() => {
+      function onKeyDown(e) { if (e.key === 'Escape') closeModal(); }
+      document.addEventListener('keydown', onKeyDown);
+
+      requestAnimationFrame(() => {
         overlay.classList.add('overlay-anim');
         modal.classList.add('modal-anim');
-    });
-}
-
-
-function traerDatos() {
-var oneTbody = document.querySelector("#tabla tbody"), //Cuerpo de la primera tabla
-seleccion = [], //Arreglo que almacenará a las filas seleccionadas
-seleccionar = function(event){ //Función a ejecutarse para seleccionar una fila
-    if (event.target.tagName == "TD"){ //Si se pulsó una celda
-        var fila = event.target.parentNode; //Se almacena en una variable a la fila que la contiene
-        
-        //Si no está seleccionada
-        if (fila.dataset.selected < 1){
-            fila.style.backgroundColor = "red"; //Se la pinta de rojo
-            fila.style.color = "white"; //Con un texto en blanco
-            fila.dataset.selected = 1; //Se asigna el valor 1 al pseudoatributo "data-selected"
-            seleccion.push(fila); //Se añade la fila al arreglo de filas seleccionadas
-        }
-        //Si está seleccionada
-        else{
-            fila.style.backgroundColor = ""; //Se retira el color de fondo
-            fila.style.color = ""; //Y el del texto
-            fila.dataset.selected = 0; //El valor del pseudoatributo retorna a 0
-            seleccion.splice(seleccion.indexOf(fila), 1); //Se elimina la fila del arreglo  
-        }           
+      });
     }
-}
 
-//Cuando se produzca el evento "click" en la primera tabla, se ejecutará la función "callback"
-oneTbody.addEventListener("click", seleccionar, false);
- 
+    // ===========================
+    // FUNCION DE SELECCION DE FILA
+    // ===========================
+    function traerDatos() {
+      const tabla = document.getElementById("tabla");
+      let filaSeleccionada = null;
 
-}
+      tabla.addEventListener("click", (event) => {
+        if (event.target.tagName === "TD") {
+          const fila = event.target.parentNode;
+
+          if (filaSeleccionada) filaSeleccionada.style.backgroundColor = "";
+          fila.style.backgroundColor = "#d0ebff";
+          filaSeleccionada = fila;
+
+          const celdas = fila.querySelectorAll("td");
+          const numeroBoleta = celdas[0].textContent.trim();
+          const materialSeleccionado = celdas[1].textContent.trim();
+
+          // Abrir modal con esos datos
+          mostrarVentanaEmergenteDatos(numeroBoleta, materialSeleccionado);
+        }
+      });
+    }
+
+    window.addEventListener("DOMContentLoaded", traerDatos);
