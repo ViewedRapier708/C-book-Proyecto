@@ -6,14 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <link rel="stylesheet" href="./css/StyleGeneral.css">
     <link rel="stylesheet" href="./css/EstiloAside.css">
+    <script src="./funcionesHtml/asideConection.js"></script>
     <script src="./js/funcionsRecursos.js"></script>
+        <link rel="shortcut icon" href="/C-book-Proyecto/img/logo_C_Book.jpg" type="image/x-icon">
     <title>Cancelar solicitudes</title>
 </head>
 
 <body>
     <div class="container-main">
         <div class="container-aside">
-            <script src="./funcionesHtml/asideConection.js"></script>
+        
         </div>
 
         <div class="container-informacion">
@@ -27,7 +29,7 @@
 
                     <div class="layout">
                         <div class="container-tabla">
-                            <table>
+                            <table id="tabla" data-tipo="solicitudes">
                                 <thead>
                                     <tr>
                                         <th>ID Solicitud</th>
@@ -61,6 +63,7 @@
                                         <td></td>
                                         <td></td>
                                     </tr>
+                                   
                                 </tbody>
                             </table>
                         </div>
@@ -94,3 +97,6 @@
 </body>
 
 </html>
+
+
+<!--- En este caso falta poner el tipo de recurso que se quiere obtener esto se tiene que hacer primero en el backend--->

@@ -8,9 +8,9 @@ async function cargarTabla() {
     return;
   }
 
-  console.log('Tabla encontrada:', tabla);
+
   const tipo = tabla.dataset.tipo;
-  console.log('Parametros que usaremos →', { tipo });
+ 
 
   // 2️⃣ Construir la URL con query‑string
   const url = new URL('http://localhost:3000/auth/recursos');
@@ -25,7 +25,7 @@ async function cargarTabla() {
 
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const json = await resp.json();               // esperamos { data: [...] }
-
+    console.log('Datos recibidos para tipo', tipo, ':', json);
 
     // 4️⃣ Rellenar la tabla
     const filas = Array.isArray(json.data) ? json.data : [];
@@ -45,6 +45,7 @@ async function cargarTabla() {
     }
     filas.forEach(reg => {
       const tr = tbody.insertRow();
+
       const columnas = Object.keys(reg);
       console.log('Insertando fila para registro:', reg);
       
@@ -53,7 +54,7 @@ async function cargarTabla() {
         const td = tr.insertCell();
 
 
-        td.textContent = reg[col] != null ? reg[col] === false ?'Disponible' :reg[col] !== true?reg[col] : '' : '';
+        td.textContent = reg[col] != null ? reg[col] === false ?'Disponible' :reg[col] === true ? 'Ocupado' : reg[col] !==true? reg[col] : '' : '';
  
       });
     });

@@ -6,6 +6,7 @@
     <title>Alta de Libros</title>
     <link rel="stylesheet" href="css/asidepostadmin.css">
     <link rel="stylesheet" href="css/altalibros.css">
+        <link rel="shortcut icon" href="/C-book-Proyecto/img/logo_C_Book.jpg" type="image/x-icon">
 </head>
 <body>
     <div class="container-main">
@@ -29,13 +30,6 @@
                             
                             <h2>Solicitudes</h2>
                             <button><a href="solicitudesAlumnosLib.html" class="link-secciones">Libros</a></button>
-                            <button><a href="" class="link-secciones">Computadoras</a></button>
-                            <button><a href="" class="link-secciones">Restiradores</a></button>
-                            <button><a href="" class="link-secciones">Guardaropas</a></button>
-                            
-                            <h2>Consultas</h2>
-                            <button><a href="" class="link-secciones">Alumnos Registrados</a></button>
-                            <button><a href="" class="link-secciones">Historial Préstamos</a></button>
                         </div>
                         <div class="btn-cerrar-sesion">
                             <button><a href="../index.html" class="link-secciones">Cerrar Sesión</a></button>
@@ -55,6 +49,38 @@
                     <h2>Registro de Nuevo Libro</h2>
                     
                     <div class="layout">
+                        <!-- Tabla en el centro (columna izquierda del layout) -->
+                        <div class="container-tabla">
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Título</th>
+                                            <th>Autor</th>
+                                            <th>Editorial</th>
+                                            <th>Carrera</th>
+                                            <th>Disponible</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>001</td>
+                                            <td>Algoritmos y Programación</td>
+                                            <td>Juan Pérez</td>
+                                            <td>McGraw Hill</td>
+                                            <td>Sistemas</td>
+                                            <td>5</td>
+                                            <td><button class="btn-editar">Editar</button></td>
+                                        </tr>
+                                        <!-- Más filas aquí -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Inputs a la derecha -->
                         <div class="container-formulario">
                             <div class="form-group">
                                 <label for="titulo">Título:</label>
@@ -76,70 +102,36 @@
                                 <label for="carrera">Carrera:</label>
                                 <select id="carrera">
                                     <option value="">Seleccione una carrera</option>
-                                    <option value="sistemas">Ingeniería en Sistemas</option>
-                                    <option value="industrial">Ingeniería Industrial</option>
-                                    <option value="mecatronica">Ingeniería Mecatrónica</option>
-                                    <option value="general">Uso General</option>
+                                    <option value="Sistemas Digitales">Sistemas Digitales</option>
+                                    <option value="Programación">Programación</option>
+                                    <option value="Mecatrónica">Mecatrónica</option>
+                                    <option value="Tronco Común">Tronco Común</option>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label for="cantidad">Cantidad Disponible:</label>
-                                <input type="number" id="cantidad" placeholder="Ingrese la cantidad disponible" min="1">
-                            </div>
-                        </div>
-                        
-                        <div class="container-datos-biblioteca">
-                            <h3>Estadísticas Biblioteca</h3>
-                            <div class="dato-item">
-                                <span class="dato-label">Total Libros:</span>
-                                <span class="dato-value">1,245</span>
-                            </div>
-                            <div class="dato-item">
-                                <span class="dato-label">Disponibles:</span>
-                                <span class="dato-value">892</span>
-                            </div>
-                            <div class="dato-item">
-                                <span class="dato-label">Prestados:</span>
-                                <span class="dato-value">353</span>
-                            </div>
-                            <div class="dato-item">
-                                <span class="dato-label">Categorías:</span>
-                                <span class="dato-value">15</span>
-                            </div>
-                            <div class="dato-item">
-                                <span class="dato-label">Última Actualización:</span>
-                                <span class="dato-value">29/10/2025</span>
-                            </div>
-                        </div>
                     </div>
                     
-                    <div class="container-tabla">
-                        <div class="table-responsive">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Título</th>
-                                        <th>Autor</th>
-                                        <th>Editorial</th>
-                                        <th>Carrera</th>
-                                        <th>Disponible</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>001</td>
-                                        <td>Algoritmos y Programación</td>
-                                        <td>Juan Pérez</td>
-                                        <td>McGraw Hill</td>
-                                        <td>Sistemas</td>
-                                        <td>5</td>
-                                        <td><button class="btn-editar">Editar</button></td>
-                                    </tr>
-                                    <!-- Más filas aquí -->
-                                </tbody>
-                            </table>
+                    <!-- Información de biblioteca abajo de todo -->
+                   <div class="container-datos-sistema">
+                        <h3>Información del Sistema</h3>
+                        <div class="dato-item">
+                            <span class="dato-label">Total Computadoras:</span>
+                            <span class="dato-value">25</span>
+                        </div>
+                        <div class="dato-item">
+                            <span class="dato-label">Disponibles:</span>
+                            <span class="dato-value">18</span>
+                        </div>
+                        <div class="dato-item">
+                            <span class="dato-label">En Uso:</span>
+                            <span class="dato-value">5</span>
+                        </div>
+                        <div class="dato-item">
+                            <span class="dato-label">Mantenimiento:</span>
+                            <span class="dato-value">2</span>
+                        </div>
+                        <div class="dato-item">
+                            <span class="dato-label">Última Actualización:</span>
+                            <span class="dato-value">29/10/2025</span>
                         </div>
                     </div>
                     

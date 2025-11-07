@@ -18,7 +18,7 @@ const modelosRecursos = {
 
   const { data: recursos, error } = await supabase
     .from('restiradores')
-    .select('*');
+    .select('id,ocupado');
 
   if (error) {
     return { error, data: null };
