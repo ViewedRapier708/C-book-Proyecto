@@ -1,65 +1,282 @@
-:root {
-    /* Color Palette */
-    --color-primary: #7B0233;
-    --color-primary-hover: #9D306C;
-    --color-secondary: #F2D9E3;
-    --color-tertiary: #8C7E83;
-    --color-dark: #333;
-    --color-white: #ffffff;
-    --color-black: #000000;
-    
-    /* Sidebar */
-    --sidebar-width: 280px;
-    --sidebar-padding: 1.25rem;
-    
-    /* Spacing */
-    --spacing-xs: 0.5rem;
-    --spacing-sm: 0.625rem;
-    --spacing-md: 1rem;
-    --spacing-lg: 1.25rem;
-    --spacing-xl: 1.5rem;
-    
-    /* Transitions */
-    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-smooth: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    
-    /* Shadows */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
-    --shadow-xl: 0 15px 40px rgba(0, 0, 0, 0.25);
-    --shadow-glow: 0 0 20px rgba(123, 2, 51, 0.3);
-    
-    /* Border Radius */
-    --radius-sm: 8px;
-    --radius-md: 10px;
-    --radius-lg: 15px;
-    --radius-xl: 20px;
-    --radius-full: 50%;
-}
+/* ====================================
+   ASIDE - MENÚ DE SERVICIOS
+   Biblioteca Digital
+   ==================================== */
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* ====================================
+   ESTRUCTURA PRINCIPAL DEL ASIDE
+   ==================================== */
 
-body {
-    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+aside,
+.container-aside {
+    width: 280px;
     min-height: 100vh;
-    background: 
-        radial-gradient(circle at 20% 80%, rgba(123, 2, 51, 0.8) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(140, 126, 131, 0.4) 0%, transparent 50%),
-        linear-gradient(180deg, var(--color-primary) 0%, var(--color-black) 100%);
-    background-attachment: fixed;
+    background: linear-gradient(180deg, #FFFFFF 0%, #F9F9F9 100%);
+    box-shadow: 2px 0 15px rgba(123, 2, 51, 0.1);
     display: flex;
     flex-direction: column;
+    z-index: 10;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+    position: relative;
 }
 
-/* Animaciones */
-@keyframes slideInFromLeft {
+/* Asegurar que el contenido principal respete el espacio del aside */
+.container-main {
+    display: flex;
+}
+
+.container-informacion {
+    margin-left: 0;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+/* Scroll personalizado */
+aside::-webkit-scrollbar,
+.container-aside::-webkit-scrollbar {
+    width: 6px;
+}
+
+aside::-webkit-scrollbar-track,
+.container-aside::-webkit-scrollbar-track {
+    background: #F5F5F5;
+}
+
+aside::-webkit-scrollbar-thumb,
+.container-aside::-webkit-scrollbar-thumb {
+    background: #7B0233;
+    border-radius: 3px;
+}
+
+aside::-webkit-scrollbar-thumb:hover,
+.container-aside::-webkit-scrollbar-thumb:hover {
+    background: #9D306C;
+}
+
+/* ====================================
+   CONTENEDOR DE LOGOS
+   ==================================== */
+
+.container-logos {
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
+    position: relative;
+}
+
+.container-logos::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #F2D9E3, #F8D7E8, #F2D9E3);
+}
+
+#linkCuenta {
+    text-decoration: none;
+    display: block;
+}
+
+/* Logo BTZ */
+.logo-containerBTZ {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.logo-containerBTZ:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+}
+
+.logo-containerBTZ img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* ====================================
+   CONTENEDOR DE ENTRADA (MENÚ)
+   ==================================== */
+
+.container-entrada {
+    flex: 1;
+    padding: 2rem 1.5rem 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* Líneas decorativas */
+.linea-aside {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #7B0233, transparent);
+    margin: 0;
+}
+
+/* Título principal */
+.container-entrada > h2 {
+    color: #7B0233;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-align: center;
+    margin: 1rem 0;
+    text-transform: uppercase;
+}
+
+/* ====================================
+   MENÚ INTERACTIVO
+   ==================================== */
+
+.menu-interactivo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-top: 1.5rem;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.menu-interactivo h3 {
+    color: #333;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #F2D9E3 0%, #F8D7E8 100%);
+    border-radius: 10px;
+    border-left: 4px solid #7B0233;
+    flex-shrink: 0;
+}
+
+/* ====================================
+   SECCIONES DE BOTONES
+   ==================================== */
+
+.btn-secciones {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-shrink: 0;
+}
+
+/* Enlaces de secciones */
+.link-secciones {
+    display: flex;
+    align-items: center;
+    padding: 0.9rem 1rem;
+    color: #333;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background: #FFFFFF;
+    border: 2px solid #E8E8E8;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Efecto de fondo al hover */
+.link-secciones::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #7B0233, #9D306C);
+    transition: width 0.3s ease;
+    z-index: -1;
+}
+
+.link-secciones:hover::before {
+    width: 100%;
+}
+
+.link-secciones:hover {
+    color: #FFFFFF;
+    border-color: #7B0233;
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.2);
+}
+
+/* Iconos antes del texto (usando pseudo-elementos) */
+.link-secciones::after {
+    content: '';
+    margin-left: auto;
+    font-weight: bold;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+}
+
+.link-secciones:hover::after {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* ====================================
+   BOTÓN CERRAR SESIÓN
+   ==================================== */
+
+.btn-cerrar-sesion {
+    margin-top: 1rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #E8E8E8;
+    flex-shrink: 0;
+}
+
+.btn-cerrar-sesion .link-secciones {
+    background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
+    color: #FFFFFF;
+    border: none;
+    font-weight: 700;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.3);
+}
+
+.btn-cerrar-sesion .link-secciones::before {
+    display: none;
+}
+
+.btn-cerrar-sesion .link-secciones::after {
+    content: '';
+    margin-left: 0.5rem;
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.btn-cerrar-sesion .link-secciones:hover {
+    background: linear-gradient(135deg, #9D306C 0%, #7B0233 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(123, 2, 51, 0.4);
+}
+
+/* ====================================
+   ANIMACIONES
+   ==================================== */
+
+@keyframes slideInLeft {
     from {
         transform: translateX(-100%);
         opacity: 0;
@@ -70,470 +287,206 @@ body {
     }
 }
 
-@keyframes fadeIn {
+aside,
+.container-aside {
+    animation: slideInLeft 0.4s ease-out;
+}
+
+/* Animación para los enlaces */
+.link-secciones {
+    animation: fadeInUp 0.5s ease-out backwards;
+}
+
+.link-secciones:nth-child(1) { animation-delay: 0.1s; }
+.link-secciones:nth-child(2) { animation-delay: 0.2s; }
+.link-secciones:nth-child(3) { animation-delay: 0.3s; }
+.link-secciones:nth-child(4) { animation-delay: 0.4s; }
+.link-secciones:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes fadeInUp {
     from {
         opacity: 0;
+        transform: translateY(20px);
     }
     to {
         opacity: 1;
-    }
-}
-
-@keyframes scaleIn {
-    from {
-        transform: scale(0.8);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-@keyframes shimmer {
-    0% {
-        background-position: -200% 0;
-    }
-    100% {
-        background-position: 200% 0;
-    }
-}
-
-@keyframes pulse {
-    0%, 100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
-}
-
-@keyframes float {
-    0%, 100% {
         transform: translateY(0);
     }
-    50% {
-        transform: translateY(-5px);
-    }
 }
 
-/* Link Cuenta */
-.linkCuenta {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-lg);
-    padding: var(--spacing-md);
-    text-decoration: none;
-    transition: all var(--transition-base);
-    border-radius: var(--radius-md);
-}
+/* ====================================
+   RESPONSIVE DESIGN
+   ==================================== */
 
-.linkCuenta:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    transform: translateX(5px);
-}
-
-/* Sidebar moderno con Glassmorphism */
-.container-aside {
-    width: var(--sidebar-width);
-    background: linear-gradient(
-        180deg,
-        rgba(242, 217, 227, 0.95) 0%,
-        rgba(140, 126, 131, 0.9) 100%
-    );
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: var(--shadow-xl);
-    overflow-y: auto;
-    overflow-x: hidden;
-    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
-    transform: translateX(0);
-    height: 100vh;
-    position: relative;
-    animation: slideInFromLeft 0.6s var(--transition-smooth);
-    
-    /* Scrollbar personalizado */
-    scrollbar-width: thin;
-    scrollbar-color: rgba(123, 2, 51, 0.5) transparent;
-}
-
-/* Webkit scrollbar */
-.container-aside::-webkit-scrollbar {
-    width: 8px;
-}
-
-.container-aside::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.container-aside::-webkit-scrollbar-thumb {
-    background: rgba(123, 2, 51, 0.5);
-    border-radius: var(--radius-sm);
-    transition: background var(--transition-fast);
-}
-
-.container-aside::-webkit-scrollbar-thumb:hover {
-    background: rgba(123, 2, 51, 0.7);
-}
-
-/* Efecto de brillo sutil en el sidebar */
-.container-aside::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.1) 50%,
-        transparent 100%
-    );
-    animation: shimmer 8s ease-in-out infinite;
-    pointer-events: none;
-}
-
-aside {
-    padding: var(--spacing-md);
-    animation: fadeIn 0.8s var(--transition-smooth) 0.3s backwards;
-}
-
-/* Container de Logos */
-.container-logos {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-md);
-    padding: var(--spacing-lg) var(--spacing-md);
-    margin-bottom: var(--spacing-md);
-    animation: scaleIn 0.6s var(--transition-bounce) 0.4s backwards;
-}
-
-/* Logo de Cuenta - Avatar circular moderno */
-.logo-cuenta {
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
-    border-radius: var(--radius-full);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 
-        0 4px 15px rgba(0, 0, 0, 0.2),
-        inset 0 -2px 5px rgba(0, 0, 0, 0.1);
-    flex-shrink: 0;
-    overflow: hidden;
-    position: relative;
-    transition: all var(--transition-base);
-    cursor: pointer;
-}
-
-.logo-cuenta:hover {
-    transform: scale(1.1) rotate(5deg);
-    box-shadow: 
-        0 6px 20px rgba(0, 0, 0, 0.3),
-        inset 0 -2px 5px rgba(0, 0, 0, 0.1),
-        0 0 20px rgba(123, 2, 51, 0.4);
-}
-
-.logo-cuenta img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform var(--transition-base);
-}
-
-.logo-cuenta:hover img {
-    transform: scale(1.1);
-}
-
-/* Fallback emoji cuando no hay imagen */
-.logo-cuenta:not(:has(img))::before {
-    content: '👤';
-    font-size: 30px;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-}
-
-/* Logo BTZ con animación de float */
-.logo-containerBTZ {
-    width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: transform var(--transition-base);
-    animation: float 3s ease-in-out infinite;
-}
-
-.logo-containerBTZ:hover {
-    transform: scale(1.1);
-    animation-play-state: paused;
-}
-
-.logo-containerBTZ img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
-    transition: filter var(--transition-base);
-}
-
-.logo-containerBTZ:hover img {
-    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
-}
-
-/* Línea divisoria elegante */
-.linea-aside {
-    height: 2px;
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(51, 51, 51, 0.3) 20%,
-        rgba(51, 51, 51, 0.6) 50%,
-        rgba(51, 51, 51, 0.3) 80%,
-        transparent 100%
-    );
-    margin: var(--spacing-md) 0;
-    border: none;
-    position: relative;
-}
-
-.linea-aside::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40px;
-    height: 2px;
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(123, 2, 51, 0.6) 50%,
-        transparent 100%
-    );
-}
-
-/* Título de entrada */
-.container-entrada h2 {
-    font-size: 0.875rem;
-    color: var(--color-dark);
-    text-align: center;
-    font-weight: 700;
-    margin: var(--spacing-lg) 0;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    position: relative;
-    animation: fadeIn 0.8s var(--transition-smooth) 0.5s backwards;
-}
-
-/* Menú interactivo */
-.menu-interactivo {
-    margin-top: var(--spacing-xl);
-    animation: fadeIn 0.8s var(--transition-smooth) 0.6s backwards;
-}
-
-.menu-interactivo h3 {
-    font-size: 1rem;
-    color: var(--color-dark);
-    font-weight: 700;
-    margin-bottom: var(--spacing-lg);
-    text-align: left;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-}
-
-/* Botones de secciones modernos */
-.btn-secciones a,
-.btn-cerrar-sesion a {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    margin-bottom: var(--spacing-md);
-    background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.7) 0%,
-        rgba(255, 255, 255, 0.5) 100%
-    );
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: all var(--transition-base);
-    text-align: left;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-decoration: none;
-    display: block;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Efecto de brillo al pasar el mouse */
-.btn-secciones a::before,
-.btn-cerrar-sesion a::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.3),
-        transparent
-    );
-    transition: left var(--transition-smooth);
-}
-
-.btn-secciones a:hover::before,
-.btn-cerrar-sesion a:hover::before {
-    left: 100%;
-}
-
-.btn-secciones a:hover,
-.btn-cerrar-sesion a:hover {
-    background: linear-gradient(
-        135deg,
-        var(--color-primary-hover) 0%,
-        var(--color-primary) 100%
-    );
-    transform: translateX(8px) scale(1.03);
-    box-shadow: 
-        0 6px 20px rgba(0, 0, 0, 0.25),
-        0 0 20px rgba(157, 48, 108, 0.4);
-    border-color: transparent;
-}
-
-.btn-secciones a:active,
-.btn-cerrar-sesion a:active {
-    transform: translateX(8px) scale(1);
-}
-
-/* Texto de los links */
-.link-secciones {
-    text-decoration: none;
-    color: var(--color-dark);
-    font-size: 0.75rem;
-    font-weight: 600;
-    display: block;
-    width: 100%;
-    transition: color var(--transition-fast);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-}
-
-.btn-secciones a:hover .link-secciones,
-.btn-cerrar-sesion a:hover .link-secciones {
-    color: var(--color-white);
-}
-
-/* Botón de cerrar sesión destacado */
-.btn-cerrar-sesion {
-    margin-top: var(--spacing-xl);
-}
-
-.btn-cerrar-sesion a {
-    background: linear-gradient(
-        135deg,
-        rgba(220, 53, 69, 0.7) 0%,
-        rgba(200, 35, 51, 0.6) 100%
-    );
-    border-color: rgba(220, 53, 69, 0.5);
-}
-
-.btn-cerrar-sesion a:hover {
-    background: linear-gradient(
-        135deg,
-        rgba(220, 53, 69, 1) 0%,
-        rgba(200, 35, 51, 1) 100%
-    );
-    box-shadow: 
-        0 6px 20px rgba(220, 53, 69, 0.4),
-        0 0 20px rgba(220, 53, 69, 0.3);
-}
-
-.btn-cerrar-sesion .link-secciones {
-    color: var(--color-white);
-}
-
-/* Animación escalonada para los botones */
-.btn-secciones:nth-child(1) a {
-    animation: fadeIn 0.6s var(--transition-smooth) 0.7s backwards;
-}
-
-.btn-secciones:nth-child(2) a {
-    animation: fadeIn 0.6s var(--transition-smooth) 0.8s backwards;
-}
-
-.btn-secciones:nth-child(3) a {
-    animation: fadeIn 0.6s var(--transition-smooth) 0.9s backwards;
-}
-
-.btn-secciones:nth-child(4) a {
-    animation: fadeIn 0.6s var(--transition-smooth) 1s backwards;
-}
-
-.btn-secciones:nth-child(5) a {
-    animation: fadeIn 0.6s var(--transition-smooth) 1.1s backwards;
-}
-
-.btn-cerrar-sesion a {
-    animation: fadeIn 0.6s var(--transition-smooth) 1.2s backwards;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
+/* Tablets y menores */
+@media (max-width: 1024px) {
+    aside,
     .container-aside {
-        width: 240px;
+        width: 260px;
     }
     
-    .logo-cuenta {
+    .logo-containerBTZ {
+        width: 70px;
+        height: 70px;
+    }
+}
+
+/* Móviles */
+@media (max-width: 768px) {
+    aside,
+    .container-aside {
+        width: 100%;
+        min-height: auto;
+        box-shadow: 0 2px 10px rgba(123, 2, 51, 0.1);
+    }
+    
+    .container-main {
+        flex-direction: column;
+    }
+    
+    .container-logos {
+        flex-direction: row;
+        justify-content: space-around;
+        padding: 1.5rem 1rem;
+    }
+    
+    .logo-containerBTZ {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .container-entrada {
+        padding: 1.5rem 1rem;
+    }
+    
+    .link-secciones {
+        font-size: 0.85rem;
+        padding: 0.8rem 0.9rem;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+    .logo-containerBTZ {
         width: 50px;
         height: 50px;
     }
     
-    .logo-containerBTZ {
-        width: 65px;
-        height: 65px;
-    }
-}
-
-@media (max-width: 480px) {
-    .container-aside {
-        width: 220px;
+    .container-entrada > h2 {
+        font-size: 0.85rem;
     }
     
-    aside {
-        padding: var(--spacing-sm);
+    .menu-interactivo h3 {
+        font-size: 0.85rem;
+        padding: 0.6rem 0.8rem;
     }
 }
 
-/* Accesibilidad */
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+/* ====================================
+   MENÚ HAMBURGUESA (OPCIONAL)
+   ==================================== */
+
+/* Toggle para móviles */
+.menu-toggle {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 101;
+    background: linear-gradient(135deg, #7B0233, #9D306C);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.3);
+    transition: all 0.3s ease;
+}
+
+.menu-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(123, 2, 51, 0.4);
+}
+
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block;
+    }
+    
+    /* Ocultar aside por defecto en móvil */
+    aside.menu-mobile-hidden {
+        transform: translateX(-100%);
+    }
+    
+    /* Overlay cuando el menú está abierto */
+    .menu-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+    }
+    
+    .menu-overlay.active {
+        display: block;
     }
 }
 
-/* Focus visible para navegación con teclado */
-.btn-secciones a:focus-visible,
-.btn-cerrar-sesion a:focus-visible {
-    outline: 3px solid var(--color-primary);
+/* ====================================
+   ESTADOS ACTIVOS
+   ==================================== */
+
+/* Enlace activo/seleccionado */
+.link-secciones.active {
+    background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
+    color: #FFFFFF;
+    border-color: #7B0233;
+}
+
+.link-secciones.active::before {
+    width: 100%;
+}
+
+
+
+/* Badge de notificaciones (opcional) */
+.link-secciones .badge {
+    margin-left: auto;
+    background: #dc3545;
+    color: #FFFFFF;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+/* Tooltip al hover */
+.link-secciones[data-tooltip] {
+    position: relative;
+}
+
+.link-secciones[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #333;
+    color: #FFFFFF;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+    z-index: 1000;
+}
+
+/* Focus para accesibilidad */
+.link-secciones:focus {
+    outline: 2px solid #9D306C;
     outline-offset: 2px;
-}
-
-.logo-cuenta:focus-visible {
-    outline: 3px solid var(--color-primary);
-    outline-offset: 3px;
 }
