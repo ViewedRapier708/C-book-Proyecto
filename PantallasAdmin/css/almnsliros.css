@@ -1,11 +1,8 @@
-/* Estilos para la pantalla de alumnos solicitantes - Basado en solicitudRestiradores */
-
-* {
+﻿* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
-
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     min-height: 100vh;
@@ -13,14 +10,11 @@ body {
     display: flex;
     flex-direction: column;
 }
-
 .container-main {
     display: flex;
     height: 100vh;
     min-height: 600px;
 }
-
-/* Estilo del aside */
 .container-aside {
     width: 280px;
     background: linear-gradient(180deg, #f2d9e3 0%, #8c7e83 100%);
@@ -33,29 +27,15 @@ body {
     top: 0;
     z-index: 1000;
 }
-
 aside {
     padding: 10px;
 }
-
 .container-logos {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
     padding: 15px;
-}
-
-.logo-cuenta {
-    width: 80px;
-    height: 80px;
-    background-color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    margin-bottom: 10px;
 }
 
 .logo-containerBTZ {
@@ -66,18 +46,15 @@ aside {
     justify-content: center;
     padding: 5px;
 }
-
 .logo-containerBTZ img {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
 }
-
 .linea-aside {
     border-top: 2px solid #333;
     margin: 10px 0;
 }
-
 .container-entrada h2 {
     font-size: 16px;
     color: #333;
@@ -86,11 +63,9 @@ aside {
     margin: 15px 0;
     text-transform: uppercase;
 }
-
 .menu-interactivo {
     margin-top: 20px;
 }
-
 .btn-secciones h2 {
     font-size: 16px;
     color: #333;
@@ -100,7 +75,6 @@ aside {
     padding-left: 10px;
     text-transform: uppercase;
 }
-
 .btn-secciones button,
 .btn-cerrar-sesion button {
     width: 100%;
@@ -117,7 +91,6 @@ aside {
     font-weight: bold;
     border: none;
 }
-
 .btn-secciones button:hover,
 .btn-cerrar-sesion button:hover {
     background-color: #9D306C;
@@ -125,7 +98,6 @@ aside {
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
     color: white;
 }
-
 .link-secciones {
     text-decoration: none;
     color: #333;
@@ -135,27 +107,21 @@ aside {
     width: 100%;
     text-align: left;
 }
-
 .btn-secciones button:hover .link-secciones,
 .btn-cerrar-sesion button:hover .link-secciones {
     color: white;
 }
-
 .btn-cerrar-sesion {
     margin-top: 30px;
     padding: 0 10px;
 }
-
 .btn-cerrar-sesion button {
     background-color: rgba(155, 48, 108, 0.8);
     color: white;
 }
-
 .btn-cerrar-sesion button:hover {
     background-color: #7B0233;
 }
-
-/* Container de la información principal */
 .container-informacion {
     margin-left: 300px;
     flex: 1;
@@ -165,12 +131,9 @@ aside {
     overflow-y: auto;
     box-sizing: border-box;
 }
-
-/* Título principal */
 .container-titulo {
     margin-bottom: 30px;
 }
-
 .container-titulo h1 {
     color: white;
     font-size: 32px;
@@ -178,8 +141,6 @@ aside {
     letter-spacing: 1px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
-
-/* Contenedor del contenido principal */
 .container-contenido {
     background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 100%);
     border-radius: 20px;
@@ -189,8 +150,6 @@ aside {
     box-sizing: border-box;
     width: 100%;
 }
-
-/* Sección de alumnos solicitantes */
 .container-solicitudes h2 {
     color: #333;
     font-size: 28px;
@@ -198,8 +157,6 @@ aside {
     margin-bottom: 25px;
     letter-spacing: 1px;
 }
-
-/* Layout de tabla y datos */
 .layout {
     display: flex;
     gap: 30px;
@@ -207,8 +164,6 @@ aside {
     align-items: flex-start;
     flex-wrap: wrap;
 }
-
-/* Tabla de solicitudes */
 .container-tabla {
     flex: 1 1 60%;
     background: white;
@@ -220,23 +175,19 @@ aside {
     min-width: 280px;
     box-sizing: border-box;
 }
-
 .table-responsive {
     width: 100%;
     overflow-x: auto;
 }
-
 table {
     width: 100%;
     border-collapse: collapse;
     table-layout: auto;
     min-width: 600px;
 }
-
 thead {
     background-color: #f5f5f5;
 }
-
 th {
     padding: 12px;
     text-align: left;
@@ -246,19 +197,15 @@ th {
     font-size: 14px;
     white-space: nowrap;
 }
-
 td {
     padding: 12px;
     border-bottom: 1px solid #eee;
     color: #666;
     white-space: nowrap;
 }
-
 tbody tr:hover {
     background-color: #f9f9f9;
 }
-
-/* Panel de información de estadísticas */
 .container-datos-estadisticas {
     flex: 0 0 320px;
     background: linear-gradient(135deg, #e8d7f8 0%, #dac1f0 100%);
@@ -268,7 +215,6 @@ tbody tr:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     box-sizing: border-box;
 }
-
 .container-datos-estadisticas h3 {
     color: #333;
     font-size: 20px;
@@ -276,11 +222,9 @@ tbody tr:hover {
     margin-bottom: 20px;
     text-align: center;
 }
-
 .dato-item {
     margin-bottom: 15px;
 }
-
 .dato-label {
     color: #333;
     font-weight: bold;
@@ -288,21 +232,17 @@ tbody tr:hover {
     display: block;
     margin-bottom: 5px;
 }
-
 .dato-value {
     color: #666;
     font-size: 14px;
     display: block;
 }
-
-/* Botones de acción */
 .container-btn-acciones {
     display: flex;
     justify-content: center;
     gap: 15px;
     margin-top: 30px;
 }
-
 .btn-aprobar,
 .btn-rechazar,
 .btn-exportar {
@@ -317,48 +257,39 @@ tbody tr:hover {
     text-transform: uppercase;
     letter-spacing: 1px;
 }
-
 .btn-aprobar {
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: white;
 }
-
 .btn-aprobar:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
     background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
 }
-
 .btn-rechazar {
     background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
     color: white;
 }
-
 .btn-rechazar:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
     background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
 }
-
 .btn-exportar {
     background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
     color: white;
 }
-
 .btn-exportar:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
     background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
 }
-
 .btn-aprobar:active,
 .btn-rechazar:active,
 .btn-exportar:active {
     transform: translateY(0);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
-
-/* Responsive */
 @media (max-width: 1200px) {
     .container-tabla {
         flex: 1 1 65%;
@@ -367,65 +298,54 @@ tbody tr:hover {
         flex: 0 0 280px;
     }
 }
-
 @media (max-width: 900px) {
     .container-titulo h1 {
         font-size: 26px;
     }
-
     .layout {
         gap: 20px;
     }
-
     .container-tabla,
     .container-datos-estadisticas {
         flex: 1 1 100%;
         min-width: 0;
     }
-
     table {
         min-width: 600px;
     }
 }
-
 @media (max-width: 768px) {
     .container-aside {
         width: 100%;
         height: auto;
         position: relative;
     }
-    
     .container-informacion {
         margin-left: 0;
         width: 100%;
         padding: 12px 16px;
     }
-    
     .container-titulo h1 {
         font-size: 20px;
     }
-
     .container-contenido {
         padding: 16px;
     }
-
     .container-solicitudes h2 {
         font-size: 18px;
     }
-
     table {
         min-width: 480px;
     }
-
     .btn-aprobar,
     .btn-rechazar,
     .btn-exportar {
         padding: 12px 24px;
         font-size: 14px;
     }
-
     .container-btn-acciones {
         flex-direction: column;
         align-items: center;
     }
 }
+

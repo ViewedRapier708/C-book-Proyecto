@@ -1,55 +1,28 @@
-/* ====================================
-   ÁREA DE CONSULTA - CSS MODERNO
-   Biblioteca Digital
-   ==================================== */
-
-/* ====================================
-   RESET Y BASE
-   ==================================== */
-
-* {
+﻿* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
-
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #F2D9E3 0%, #F8D7E8 50%, #F0C1DA 100%);
     min-height: 100vh;
     color: #333;
 }
-
-/* ====================================
-   LAYOUT PRINCIPAL
-   ==================================== */
-
 .container-main {
     display: flex;
     min-height: 100vh;
 }
-
-/* Aside */
 .container-aside {
     width: 280px;
     flex-shrink: 0;
 }
-
-/* ====================================
-   CONTENEDOR ÁREA DE CONSULTA
-   ==================================== */
-
 .container-area-consulta {
     flex: 1;
     margin-left: 280px;
     padding: 2rem;
     transition: margin-left 0.3s ease;
 }
-
-/* ====================================
-   TÍTULO PRINCIPAL
-   ==================================== */
-
 .container-title {
     background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
     padding: 2rem;
@@ -59,7 +32,6 @@ body {
     position: relative;
     overflow: hidden;
 }
-
 .container-title::before {
     content: '';
     position: absolute;
@@ -70,12 +42,10 @@ body {
     background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
     animation: shine 3s infinite;
 }
-
 @keyframes shine {
     0%, 100% { transform: translateX(-100%); }
     50% { transform: translateX(100%); }
 }
-
 .container-title h1 {
     color: #FFFFFF;
     font-size: 1.8rem;
@@ -86,11 +56,6 @@ body {
     position: relative;
     z-index: 1;
 }
-
-/* ====================================
-   CONTENEDOR DE TABLA/INFORMACIÓN
-   ==================================== */
-
 .container-table-consulta {
     background: #FFFFFF;
     border-radius: 20px;
@@ -98,7 +63,6 @@ body {
     box-shadow: 0 10px 40px rgba(123, 2, 51, 0.15);
     animation: fadeInUp 0.6s ease-out;
 }
-
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -109,15 +73,9 @@ body {
         transform: translateY(0);
     }
 }
-
-/* ====================================
-   INFO DE MESAS
-   ==================================== */
-
 .info-mesas {
     text-align: center;
 }
-
 .info-mesas h2 {
     color: #7B0233;
     font-size: 1.4rem;
@@ -127,18 +85,12 @@ body {
     border-bottom: 3px solid #F2D9E3;
     letter-spacing: 1px;
 }
-
-/* ====================================
-   CARDS DE DATOS
-   ==================================== */
-
 .info-datos {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 2rem;
     margin-top: 2rem;
 }
-
 .info-item {
     background: linear-gradient(135deg, #F2D9E3 0%, #F8D7E8 100%);
     padding: 3rem 2rem;
@@ -149,8 +101,6 @@ body {
     position: relative;
     overflow: hidden;
 }
-
-/* Efecto de brillo en las cards */
 .info-item::before {
     content: '';
     position: absolute;
@@ -167,25 +117,19 @@ body {
     transform: rotate(45deg);
     transition: all 0.5s ease;
 }
-
 .info-item:hover::before {
     left: 100%;
 }
-
 .info-item:hover {
     transform: translateY(-10px) scale(1.05);
     box-shadow: 0 12px 35px rgba(123, 2, 51, 0.3);
 }
-
-/* Animación de entrada escalonada */
 .info-item:nth-child(1) {
     animation: slideInLeft 0.6s ease-out 0.2s backwards;
 }
-
 .info-item:nth-child(2) {
     animation: slideInRight 0.6s ease-out 0.4s backwards;
 }
-
 @keyframes slideInLeft {
     from {
         opacity: 0;
@@ -196,7 +140,6 @@ body {
         transform: translateX(0);
     }
 }
-
 @keyframes slideInRight {
     from {
         opacity: 0;
@@ -207,8 +150,6 @@ body {
         transform: translateX(0);
     }
 }
-
-/* Contenido de la card */
 .info-item {
     display: flex;
     flex-direction: column;
@@ -220,8 +161,6 @@ body {
     color: #333;
     position: relative;
 }
-
-/* Etiqueta superior */
 .info-item::after {
     position: absolute;
     top: 1rem;
@@ -237,16 +176,12 @@ body {
     text-transform: uppercase;
     box-shadow: 0 2px 8px rgba(123, 2, 51, 0.3);
 }
-
 .info-item:first-child::after {
     content: 'MESAS';
 }
-
 .info-item:last-child::after {
     content: 'ESTUDIANTES';
 }
-
-/* Valor numérico */
 .info-valor {
     font-size: 4rem;
     font-weight: 800;
@@ -255,22 +190,14 @@ body {
     margin-top: 2rem;
     line-height: 1;
 }
-
-/* Loading state para valores */
 .info-valor.loading {
     color: #999;
     animation: pulse 1.5s ease-in-out infinite;
 }
-
 @keyframes pulse {
     0%, 100% { opacity: 0.4; }
     50% { opacity: 1; }
 }
-
-/* ====================================
-   SECCIÓN ADICIONAL (OPCIONAL)
-   ==================================== */
-
 .info-descripcion {
     margin-top: 3rem;
     padding: 2rem;
@@ -279,31 +206,23 @@ body {
     border-left: 5px solid #7B0233;
     box-shadow: 0 4px 15px rgba(123, 2, 51, 0.1);
 }
-
 .info-descripcion h3 {
     color: #7B0233;
     font-size: 1.2rem;
     font-weight: 700;
     margin-bottom: 1rem;
 }
-
 .info-descripcion p {
     color: #666;
     line-height: 1.8;
     font-size: 1rem;
 }
-
-/* ====================================
-   ESTADÍSTICAS ADICIONALES (OPCIONAL)
-   ==================================== */
-
 .estadisticas-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1.5rem;
     margin-top: 2rem;
 }
-
 .stat-card {
     background: #FFFFFF;
     padding: 1.5rem;
@@ -312,13 +231,11 @@ body {
     text-align: center;
     transition: all 0.3s ease;
 }
-
 .stat-card:hover {
     border-color: #7B0233;
     transform: translateY(-5px);
     box-shadow: 0 6px 20px rgba(123, 2, 51, 0.15);
 }
-
 .stat-label {
     color: #666;
     font-size: 0.9rem;
@@ -327,17 +244,11 @@ body {
     letter-spacing: 0.5px;
     margin-bottom: 0.5rem;
 }
-
 .stat-value {
     color: #7B0233;
     font-size: 2rem;
     font-weight: 800;
 }
-
-/* ====================================
-   BOTONES DE ACCIÓN (OPCIONAL)
-   ==================================== */
-
 .acciones-container {
     display: flex;
     justify-content: center;
@@ -345,7 +256,6 @@ body {
     margin-top: 2rem;
     flex-wrap: wrap;
 }
-
 .btn-accion {
     background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
     color: #FFFFFF;
@@ -362,32 +272,23 @@ body {
     text-decoration: none;
     display: inline-block;
 }
-
 .btn-accion:hover {
     background: linear-gradient(135deg, #9D306C 0%, #7B0233 100%);
     box-shadow: 0 6px 20px rgba(123, 2, 51, 0.4);
     transform: translateY(-3px);
 }
-
 .btn-accion:active {
     transform: translateY(-1px);
 }
-
 .btn-accion.secundario {
     background: #FFFFFF;
     color: #7B0233;
     border: 2px solid #7B0233;
 }
-
 .btn-accion.secundario:hover {
     background: #7B0233;
     color: #FFFFFF;
 }
-
-/* ====================================
-   GRÁFICO/VISUALIZACIÓN (PLACEHOLDER)
-   ==================================== */
-
 .container-grafico {
     margin-top: 3rem;
     padding: 2rem;
@@ -396,7 +297,6 @@ body {
     border: 2px solid #E8E8E8;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
-
 .container-grafico h3 {
     color: #7B0233;
     font-size: 1.3rem;
@@ -404,7 +304,6 @@ body {
     margin-bottom: 1.5rem;
     text-align: center;
 }
-
 .grafico-placeholder {
     height: 300px;
     background: linear-gradient(135deg, #F9F9F9 0%, #F5F5F5 100%);
@@ -417,103 +316,73 @@ body {
     font-weight: 600;
     border: 2px dashed #DDD;
 }
-
-/* ====================================
-   RESPONSIVE DESIGN
-   ==================================== */
-
-/* Tablets */
 @media (max-width: 1024px) {
     .container-area-consulta {
         margin-left: 0;
         padding: 1.5rem;
     }
-
     .info-datos {
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
-
     .container-title h1 {
         font-size: 1.4rem;
     }
-
     .info-valor {
         font-size: 3rem;
     }
 }
-
-/* Móviles */
 @media (max-width: 768px) {
     .container-area-consulta {
         margin-left: 0;
         padding: 1rem;
     }
-
     .container-title {
         padding: 1.5rem 1rem;
     }
-
     .container-title h1 {
         font-size: 1.1rem;
         letter-spacing: 1px;
     }
-
     .container-table-consulta {
         padding: 1.5rem 1rem;
     }
-
     .info-mesas h2 {
         font-size: 1.1rem;
         line-height: 1.4;
     }
-
     .info-item {
         padding: 2.5rem 1.5rem;
     }
-
     .info-valor {
         font-size: 2.5rem;
         margin-top: 1.5rem;
     }
-
     .acciones-container {
         flex-direction: column;
     }
-
     .btn-accion {
         width: 100%;
     }
 }
-
-/* Móviles pequeños */
 @media (max-width: 480px) {
     .container-title h1 {
         font-size: 0.95rem;
     }
-
     .info-mesas h2 {
         font-size: 0.95rem;
     }
-
     .info-item::after {
         font-size: 0.75rem;
         padding: 0.4rem 1rem;
     }
-
     .info-valor {
         font-size: 2rem;
     }
-
     .estadisticas-grid {
         grid-template-columns: 1fr;
     }
 }
-
-/* ====================================
-   ESTADOS Y ALERTAS
-   ==================================== */
-
 .alerta {
     padding: 1rem 1.5rem;
     border-radius: 10px;
@@ -524,7 +393,6 @@ body {
     font-weight: 500;
     animation: slideDown 0.4s ease-out;
 }
-
 @keyframes slideDown {
     from {
         opacity: 0;
@@ -535,30 +403,21 @@ body {
         transform: translateY(0);
     }
 }
-
 .alerta.info {
     background: #d1ecf1;
     color: #0c5460;
     border: 2px solid #bee5eb;
 }
-
 .alerta.success {
     background: #d4edda;
     color: #155724;
     border: 2px solid #c3e6cb;
 }
-
 .alerta.warning {
     background: #fff3cd;
     color: #856404;
     border: 2px solid #ffeaa7;
 }
-
-/* ====================================
-   MEJORAS VISUALES
-   ==================================== */
-
-/* Badge de estado */
 .badge {
     display: inline-block;
     padding: 0.4rem 1rem;
@@ -568,27 +427,18 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
-
 .badge.activo {
     background: #d4edda;
     color: #155724;
 }
-
 .badge.inactivo {
     background: #f8d7da;
     color: #721c24;
 }
-
-/* ====================================
-   ACCESIBILIDAD
-   ==================================== */
-
 *:focus-visible {
     outline: 2px solid #9D306C;
     outline-offset: 2px;
 }
-
-/* Reducir movimiento para usuarios con preferencias */
 @media (prefers-reduced-motion: reduce) {
     * {
         animation-duration: 0.01ms !important;
@@ -596,19 +446,5 @@ body {
         transition-duration: 0.01ms !important;
     }
 }
-
-/* ====================================
-   MODO OSCURO (OPCIONAL)
-   ==================================== */
-
 @media (prefers-color-scheme: dark) {
-    /* Si decides implementar modo oscuro en el futuro */
-    /* body {
-        background: linear-gradient(135deg, #2C1B1F 0%, #4A2C35 100%);
-    }
-    
-    .container-table-consulta {
-        background: #2C3E50;
-        color: #FFFFFF;
-    } */
 }

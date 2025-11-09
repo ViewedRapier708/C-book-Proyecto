@@ -1,46 +1,28 @@
-* {
+﻿* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
-
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #F2D9E3 0%, #F8D7E8 50%, #F0C1DA 100%);
     min-height: 100vh;
     color: #333;
 }
-
-/* ====================================
-   LAYOUT PRINCIPAL
-   ==================================== */
-
 .container-main {
     display: flex;
     min-height: 100vh;
 }
-
-/* Aside (usando el CSS que ya creamos) */
 .container-aside {
     width: 280px;
     flex-shrink: 0;
 }
-
-/* ====================================
-   CONTENEDOR DE INFORMACIÓN
-   ==================================== */
-
 .container-informacion {
     flex: 1;
     margin-left: 280px;
     padding: 2rem;
     transition: margin-left 0.3s ease;
 }
-
-/* ====================================
-   TÍTULO PRINCIPAL
-   ==================================== */
-
 .container-titulo {
     background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
     padding: 2rem;
@@ -50,7 +32,6 @@ body {
     position: relative;
     overflow: hidden;
 }
-
 .container-titulo::before {
     content: '';
     position: absolute;
@@ -61,12 +42,10 @@ body {
     background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
     animation: shine 3s infinite;
 }
-
 @keyframes shine {
     0%, 100% { transform: translateX(-100%); }
     50% { transform: translateX(100%); }
 }
-
 .container-titulo h1 {
     color: #FFFFFF;
     font-size: 1.8rem;
@@ -77,11 +56,6 @@ body {
     position: relative;
     z-index: 1;
 }
-
-/* ====================================
-   CONTENEDOR DE CONTENIDO
-   ==================================== */
-
 .container-contenido {
     background: #FFFFFF;
     border-radius: 20px;
@@ -89,7 +63,6 @@ body {
     box-shadow: 0 10px 40px rgba(123, 2, 51, 0.15);
     animation: fadeInUp 0.6s ease-out;
 }
-
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -100,11 +73,6 @@ body {
         transform: translateY(0);
     }
 }
-
-/* ====================================
-   SERVICIOS
-   ==================================== */
-
 .container-servicios h2 {
     color: #7B0233;
     font-size: 1.6rem;
@@ -114,22 +82,12 @@ body {
     border-bottom: 3px solid #F2D9E3;
     position: relative;
 }
-
-/* ====================================
-   LAYOUT DE TABLA Y DATOS
-   ==================================== */
-
 .layout {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 2rem;
     margin-bottom: 2rem;
 }
-
-/* ====================================
-   TABLA DE RESTIRADORES
-   ==================================== */
-
 .container-tabla {
     background: #F9F9F9;
     padding: 1.5rem;
@@ -137,18 +95,14 @@ body {
     border: 2px solid #E8E8E8;
     overflow-x: auto;
 }
-
 table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
 }
-
-/* Cabecera de la tabla */
 thead {
     background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
 }
-
 thead th {
     color: #FFFFFF;
     font-weight: 600;
@@ -158,83 +112,60 @@ thead th {
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
-
 thead th:first-child {
     border-radius: 10px 0 0 0;
 }
-
 thead th:last-child {
     border-radius: 0 10px 0 0;
 }
-
-/* Cuerpo de la tabla */
 tbody tr {
     background: #FFFFFF;
     transition: all 0.3s ease;
     border-bottom: 1px solid #E8E8E8;
 }
-
 tbody tr:hover {
     background: #F8D7E8;
     transform: scale(1.02);
     box-shadow: 0 2px 8px rgba(123, 2, 51, 0.1);
 }
-
 tbody tr:last-child td:first-child {
     border-radius: 0 0 0 10px;
 }
-
 tbody tr:last-child td:last-child {
     border-radius: 0 0 10px 0;
 }
-
 tbody td {
     padding: 1rem;
     color: #333;
     font-size: 0.95rem;
 }
-
-/* Estado de disponibilidad */
 tbody td:nth-child(2) {
     font-weight: 600;
 }
-
 tbody tr[data-disponible="true"] td:nth-child(2) {
     color: #28a745;
 }
-
 tbody tr[data-disponible="true"] td:nth-child(2)::before {
     content: '';
     font-size: 1.2rem;
 }
-
 tbody tr[data-disponible="false"] td:nth-child(2) {
     color: #dc3545;
 }
-
 tbody tr[data-disponible="false"] td:nth-child(2)::before {
     content: '';
     font-size: 1.2rem;
 }
-
-/* Selección de fila */
 tbody tr.selected {
     background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
     color: #FFFFFF;
 }
-
 tbody tr.selected td {
     color: #FFFFFF;
 }
-
 tbody tr.selected:hover {
     transform: scale(1);
 }
-
-/* ====================================
-   DATOS DEL USUARIO
-   ==================================== */
-
 .container-datos-usuario {
     background: linear-gradient(135deg, #F2D9E3 0%, #F8D7E8 100%);
     padding: 1.5rem;
@@ -242,7 +173,6 @@ tbody tr.selected:hover {
     border: 2px solid #7B0233;
     box-shadow: 0 4px 15px rgba(123, 2, 51, 0.1);
 }
-
 .container-datos-usuario h3 {
     color: #7B0233;
     font-size: 1.2rem;
@@ -252,7 +182,6 @@ tbody tr.selected:hover {
     padding-bottom: 0.75rem;
     border-bottom: 2px solid #7B0233;
 }
-
 .dato-item {
     display: flex;
     flex-direction: column;
@@ -263,16 +192,13 @@ tbody tr.selected:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
 }
-
 .dato-item:hover {
     transform: translateX(5px);
     box-shadow: 0 4px 12px rgba(123, 2, 51, 0.15);
 }
-
 .dato-item:last-child {
     margin-bottom: 0;
 }
-
 .dato-label {
     color: #7B0233;
     font-weight: 600;
@@ -281,7 +207,6 @@ tbody tr.selected:hover {
     letter-spacing: 0.5px;
     margin-bottom: 0.5rem;
 }
-
 .dato-value {
     color: #333;
     font-size: 1rem;
@@ -289,17 +214,11 @@ tbody tr.selected:hover {
     padding: 0.5rem 0;
     border-bottom: 2px solid #E8E8E8;
 }
-
-/* ====================================
-   BOTÓN APARTAR
-   ==================================== */
-
 .container-btn-apartar {
     display: flex;
     justify-content: center;
     margin-top: 2rem;
 }
-
 .btn-apartar {
     background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
     color: #FFFFFF;
@@ -316,7 +235,6 @@ tbody tr.selected:hover {
     position: relative;
     overflow: hidden;
 }
-
 .btn-apartar::before {
     content: '';
     position: absolute;
@@ -329,147 +247,109 @@ tbody tr.selected:hover {
     transform: translate(-50%, -50%);
     transition: width 0.6s, height 0.6s;
 }
-
 .btn-apartar:hover::before {
     width: 300px;
     height: 300px;
 }
-
 .btn-apartar:hover {
     background: linear-gradient(135deg, #9D306C 0%, #7B0233 100%);
     box-shadow: 0 8px 25px rgba(123, 2, 51, 0.5);
     transform: translateY(-3px);
 }
-
 .btn-apartar:active {
     transform: translateY(-1px);
     box-shadow: 0 4px 15px rgba(123, 2, 51, 0.4);
 }
-
 .btn-apartar:disabled {
     background: #999;
     cursor: not-allowed;
     opacity: 0.6;
     box-shadow: none;
 }
-
 .btn-apartar:disabled:hover {
     transform: none;
 }
-
-/* ====================================
-   RESPONSIVE DESIGN
-   ==================================== */
-
-/* Tablets */
 @media (max-width: 1024px) {
     .container-informacion {
         margin-left: 0;
         padding: 1.5rem;
     }
-    
     .layout {
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
-    
     .container-titulo h1 {
         font-size: 1.4rem;
     }
 }
-
-/* Móviles */
 @media (max-width: 768px) {
     .container-informacion {
         margin-left: 0;
         padding: 1rem;
     }
-    
     .container-titulo {
         padding: 1.5rem 1rem;
     }
-    
     .container-titulo h1 {
         font-size: 1.1rem;
         letter-spacing: 1px;
     }
-    
     .container-contenido {
         padding: 1.5rem 1rem;
     }
-    
     .container-servicios h2 {
         font-size: 1.3rem;
     }
-    
     .layout {
         grid-template-columns: 1fr;
     }
-    
     .container-tabla {
         padding: 1rem;
     }
-    
     table {
         font-size: 0.85rem;
     }
-    
     thead th,
     tbody td {
         padding: 0.75rem 0.5rem;
     }
-    
     .btn-apartar {
         font-size: 0.95rem;
         padding: 1rem 2rem;
         width: 100%;
     }
 }
-
-/* Móviles pequeños */
 @media (max-width: 480px) {
     .container-titulo h1 {
         font-size: 0.95rem;
     }
-    
     .container-servicios h2 {
         font-size: 1.1rem;
     }
-    
     .container-tabla {
         padding: 0.75rem;
         overflow-x: scroll;
     }
-    
     table {
         font-size: 0.8rem;
         min-width: 300px;
     }
-    
     thead th,
     tbody td {
         padding: 0.6rem 0.4rem;
     }
-    
     .container-datos-usuario {
         padding: 1rem;
     }
-    
     .dato-item {
         padding: 0.75rem;
     }
 }
-
-/* ====================================
-   ESTADOS DE CARGA
-   ==================================== */
-
 .loading {
     position: relative;
     pointer-events: none;
     opacity: 0.6;
 }
-
 .loading::after {
     content: '';
     position: absolute;
@@ -483,15 +363,9 @@ tbody tr.selected:hover {
     animation: spin 0.8s linear infinite;
     transform: translate(-50%, -50%);
 }
-
 @keyframes spin {
     to { transform: translate(-50%, -50%) rotate(360deg); }
 }
-
-/* ====================================
-   MENSAJES Y ALERTAS
-   ==================================== */
-
 .mensaje-alerta {
     padding: 1rem 1.5rem;
     border-radius: 10px;
@@ -502,7 +376,6 @@ tbody tr.selected:hover {
     gap: 0.75rem;
     animation: slideDown 0.4s ease-out;
 }
-
 @keyframes slideDown {
     from {
         opacity: 0;
@@ -513,36 +386,26 @@ tbody tr.selected:hover {
         transform: translateY(0);
     }
 }
-
 .mensaje-alerta.success {
     background: #d4edda;
     color: #155724;
     border: 2px solid #c3e6cb;
 }
-
 .mensaje-alerta.error {
     background: #f8d7da;
     color: #721c24;
     border: 2px solid #f5c6cb;
 }
-
 .mensaje-alerta.warning {
     background: #fff3cd;
     color: #856404;
     border: 2px solid #ffeaa7;
 }
-
 .mensaje-alerta.info {
     background: #d1ecf1;
     color: #0c5460;
     border: 2px solid #bee5eb;
 }
-
-/* ====================================
-   MEJORAS VISUALES
-   ==================================== */
-
-/* Sombra para inputs si se agregan */
 input[type="text"],
 input[type="number"],
 select {
@@ -556,7 +419,6 @@ select {
     transition: all 0.3s ease;
     outline: none;
 }
-
 input[type="text"]:focus,
 input[type="number"]:focus,
 select:focus {
@@ -564,37 +426,24 @@ select:focus {
     background: #FFFFFF;
     box-shadow: 0 0 0 3px rgba(157, 48, 108, 0.1);
 }
-
-/* Scroll personalizado */
 .container-tabla::-webkit-scrollbar {
     height: 8px;
 }
-
 .container-tabla::-webkit-scrollbar-track {
     background: #F5F5F5;
     border-radius: 4px;
 }
-
 .container-tabla::-webkit-scrollbar-thumb {
     background: #7B0233;
     border-radius: 4px;
 }
-
 .container-tabla::-webkit-scrollbar-thumb:hover {
     background: #9D306C;
 }
-
-/* ====================================
-   ACCESIBILIDAD
-   ==================================== */
-
-/* Focus visible */
 *:focus-visible {
     outline: 2px solid #9D306C;
     outline-offset: 2px;
 }
-
-/* Reducir movimiento para usuarios con preferencias */
 @media (prefers-reduced-motion: reduce) {
     * {
         animation-duration: 0.01ms !important;

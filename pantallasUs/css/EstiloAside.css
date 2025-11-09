@@ -1,13 +1,4 @@
-/* ====================================
-   ASIDE - MENÚ DE SERVICIOS
-   Biblioteca Digital
-   ==================================== */
-
-/* ====================================
-   ESTRUCTURA PRINCIPAL DEL ASIDE
-   ==================================== */
-
-aside,
+﻿aside,
 .container-aside {
     width: 280px;
     min-height: 100vh;
@@ -20,45 +11,32 @@ aside,
     transition: transform 0.3s ease;
     position: relative;
 }
-
-/* Asegurar que el contenido principal respete el espacio del aside */
 .container-main {
     display: flex;
 }
-
 .container-informacion {
     margin-left: 0;
     flex: 1;
     position: relative;
     z-index: 1;
 }
-
-/* Scroll personalizado */
 aside::-webkit-scrollbar,
 .container-aside::-webkit-scrollbar {
     width: 6px;
 }
-
 aside::-webkit-scrollbar-track,
 .container-aside::-webkit-scrollbar-track {
     background: #F5F5F5;
 }
-
 aside::-webkit-scrollbar-thumb,
 .container-aside::-webkit-scrollbar-thumb {
     background: #7B0233;
     border-radius: 3px;
 }
-
 aside::-webkit-scrollbar-thumb:hover,
 .container-aside::-webkit-scrollbar-thumb:hover {
     background: #9D306C;
 }
-
-/* ====================================
-   CONTENEDOR DE LOGOS
-   ==================================== */
-
 .container-logos {
     padding: 2rem 1.5rem;
     display: flex;
@@ -69,7 +47,6 @@ aside::-webkit-scrollbar-thumb:hover,
     background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
     position: relative;
 }
-
 .container-logos::after {
     content: '';
     position: absolute;
@@ -79,13 +56,10 @@ aside::-webkit-scrollbar-thumb:hover,
     height: 3px;
     background: linear-gradient(90deg, #F2D9E3, #F8D7E8, #F2D9E3);
 }
-
 #linkCuenta {
     text-decoration: none;
     display: block;
 }
-
-/* Logo BTZ */
 .logo-containerBTZ {
     width: 60px;
     height: 60px;
@@ -99,22 +73,15 @@ aside::-webkit-scrollbar-thumb:hover,
     transition: all 0.3s ease;
     cursor: pointer;
 }
-
 .logo-containerBTZ:hover {
     transform: translateY(-3px) scale(1.05);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
 }
-
 .logo-containerBTZ img {
     width: 100%;
     height: 100%;
     object-fit: contain;
 }
-
-/* ====================================
-   CONTENEDOR DE ENTRADA (MENÚ)
-   ==================================== */
-
 .container-entrada {
     flex: 1;
     padding: 2rem 1.5rem 1.5rem 1.5rem;
@@ -122,16 +89,12 @@ aside::-webkit-scrollbar-thumb:hover,
     flex-direction: column;
     min-height: 0;
 }
-
-/* Líneas decorativas */
 .linea-aside {
     border: none;
     height: 2px;
     background: linear-gradient(90deg, transparent, #7B0233, transparent);
     margin: 0;
 }
-
-/* Título principal */
 .container-entrada > h2 {
     color: #7B0233;
     font-size: 1rem;
@@ -141,11 +104,6 @@ aside::-webkit-scrollbar-thumb:hover,
     margin: 1rem 0;
     text-transform: uppercase;
 }
-
-/* ====================================
-   MENÚ INTERACTIVO
-   ==================================== */
-
 .menu-interactivo {
     flex: 1;
     display: flex;
@@ -154,7 +112,6 @@ aside::-webkit-scrollbar-thumb:hover,
     min-height: 0;
     overflow-y: auto;
 }
-
 .menu-interactivo h3 {
     color: #333;
     font-size: 0.95rem;
@@ -166,11 +123,6 @@ aside::-webkit-scrollbar-thumb:hover,
     border-left: 4px solid #7B0233;
     flex-shrink: 0;
 }
-
-/* ====================================
-   SECCIONES DE BOTONES
-   ==================================== */
-
 .btn-secciones {
     display: flex;
     flex-direction: column;
@@ -178,8 +130,6 @@ aside::-webkit-scrollbar-thumb:hover,
     margin-bottom: 1.5rem;
     flex-shrink: 0;
 }
-
-/* Enlaces de secciones */
 .link-secciones {
     display: flex;
     align-items: center;
@@ -195,8 +145,6 @@ aside::-webkit-scrollbar-thumb:hover,
     position: relative;
     overflow: hidden;
 }
-
-/* Efecto de fondo al hover */
 .link-secciones::before {
     content: '';
     position: absolute;
@@ -208,19 +156,15 @@ aside::-webkit-scrollbar-thumb:hover,
     transition: width 0.3s ease;
     z-index: -1;
 }
-
 .link-secciones:hover::before {
     width: 100%;
 }
-
 .link-secciones:hover {
     color: #FFFFFF;
     border-color: #7B0233;
     transform: translateX(5px);
     box-shadow: 0 4px 12px rgba(123, 2, 51, 0.2);
 }
-
-/* Iconos antes del texto (usando pseudo-elementos) */
 .link-secciones::after {
     content: '';
     margin-left: auto;
@@ -229,23 +173,16 @@ aside::-webkit-scrollbar-thumb:hover,
     transform: translateX(-10px);
     transition: all 0.3s ease;
 }
-
 .link-secciones:hover::after {
     opacity: 1;
     transform: translateX(0);
 }
-
-/* ====================================
-   BOTÓN CERRAR SESIÓN
-   ==================================== */
-
 .btn-cerrar-sesion {
     margin-top: 1rem;
     padding-top: 1.5rem;
     border-top: 2px solid #E8E8E8;
     flex-shrink: 0;
 }
-
 .btn-cerrar-sesion .link-secciones {
     background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
     color: #FFFFFF;
@@ -254,28 +191,20 @@ aside::-webkit-scrollbar-thumb:hover,
     justify-content: center;
     box-shadow: 0 4px 12px rgba(123, 2, 51, 0.3);
 }
-
 .btn-cerrar-sesion .link-secciones::before {
     display: none;
 }
-
 .btn-cerrar-sesion .link-secciones::after {
     content: '';
     margin-left: 0.5rem;
     opacity: 1;
     transform: translateX(0);
 }
-
 .btn-cerrar-sesion .link-secciones:hover {
     background: linear-gradient(135deg, #9D306C 0%, #7B0233 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(123, 2, 51, 0.4);
 }
-
-/* ====================================
-   ANIMACIONES
-   ==================================== */
-
 @keyframes slideInLeft {
     from {
         transform: translateX(-100%);
@@ -286,23 +215,18 @@ aside::-webkit-scrollbar-thumb:hover,
         opacity: 1;
     }
 }
-
 aside,
 .container-aside {
     animation: slideInLeft 0.4s ease-out;
 }
-
-/* Animación para los enlaces */
 .link-secciones {
     animation: fadeInUp 0.5s ease-out backwards;
 }
-
 .link-secciones:nth-child(1) { animation-delay: 0.1s; }
 .link-secciones:nth-child(2) { animation-delay: 0.2s; }
 .link-secciones:nth-child(3) { animation-delay: 0.3s; }
 .link-secciones:nth-child(4) { animation-delay: 0.4s; }
 .link-secciones:nth-child(5) { animation-delay: 0.5s; }
-
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -313,25 +237,16 @@ aside,
         transform: translateY(0);
     }
 }
-
-/* ====================================
-   RESPONSIVE DESIGN
-   ==================================== */
-
-/* Tablets y menores */
 @media (max-width: 1024px) {
     aside,
     .container-aside {
         width: 260px;
     }
-    
     .logo-containerBTZ {
         width: 70px;
         height: 70px;
     }
 }
-
-/* Móviles */
 @media (max-width: 768px) {
     aside,
     .container-aside {
@@ -339,54 +254,39 @@ aside,
         min-height: auto;
         box-shadow: 0 2px 10px rgba(123, 2, 51, 0.1);
     }
-    
     .container-main {
         flex-direction: column;
     }
-    
     .container-logos {
         flex-direction: row;
         justify-content: space-around;
         padding: 1.5rem 1rem;
     }
-    
     .logo-containerBTZ {
         width: 60px;
         height: 60px;
     }
-    
     .container-entrada {
         padding: 1.5rem 1rem;
     }
-    
     .link-secciones {
         font-size: 0.85rem;
         padding: 0.8rem 0.9rem;
     }
 }
-
-/* Móviles pequeños */
 @media (max-width: 480px) {
     .logo-containerBTZ {
         width: 50px;
         height: 50px;
     }
-    
     .container-entrada > h2 {
         font-size: 0.85rem;
     }
-    
     .menu-interactivo h3 {
         font-size: 0.85rem;
         padding: 0.6rem 0.8rem;
     }
 }
-
-/* ====================================
-   MENÚ HAMBURGUESA (OPCIONAL)
-   ==================================== */
-
-/* Toggle para móviles */
 .menu-toggle {
     display: none;
     position: fixed;
@@ -403,23 +303,17 @@ aside,
     box-shadow: 0 4px 12px rgba(123, 2, 51, 0.3);
     transition: all 0.3s ease;
 }
-
 .menu-toggle:hover {
     transform: scale(1.05);
     box-shadow: 0 6px 16px rgba(123, 2, 51, 0.4);
 }
-
 @media (max-width: 768px) {
     .menu-toggle {
         display: block;
     }
-    
-    /* Ocultar aside por defecto en móvil */
     aside.menu-mobile-hidden {
         transform: translateX(-100%);
     }
-    
-    /* Overlay cuando el menú está abierto */
     .menu-overlay {
         display: none;
         position: fixed;
@@ -430,30 +324,18 @@ aside,
         background: rgba(0, 0, 0, 0.5);
         z-index: 99;
     }
-    
     .menu-overlay.active {
         display: block;
     }
 }
-
-/* ====================================
-   ESTADOS ACTIVOS
-   ==================================== */
-
-/* Enlace activo/seleccionado */
 .link-secciones.active {
     background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
     color: #FFFFFF;
     border-color: #7B0233;
 }
-
 .link-secciones.active::before {
     width: 100%;
 }
-
-
-
-/* Badge de notificaciones (opcional) */
 .link-secciones .badge {
     margin-left: auto;
     background: #dc3545;
@@ -463,12 +345,9 @@ aside,
     border-radius: 10px;
     font-weight: 700;
 }
-
-/* Tooltip al hover */
 .link-secciones[data-tooltip] {
     position: relative;
 }
-
 .link-secciones[data-tooltip]:hover::after {
     content: attr(data-tooltip);
     position: absolute;
@@ -484,8 +363,6 @@ aside,
     margin-left: 0.5rem;
     z-index: 1000;
 }
-
-/* Focus para accesibilidad */
 .link-secciones:focus {
     outline: 2px solid #9D306C;
     outline-offset: 2px;

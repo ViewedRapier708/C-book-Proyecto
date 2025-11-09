@@ -1,37 +1,28 @@
-/* Estilos para la pantalla de Área de Consulta */
-
-* {
+﻿* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
-
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     min-height: 100vh;
     background: linear-gradient(180deg, #7B0233 50%, black 100%);
     overflow-x: hidden;
 }
-
 .container-main {
     display: flex;
     height: 100vh;
 }
-
-/* Contenedor principal del área de consulta */
 .container-area-consulta {
     flex: 1;
     display: flex;
     flex-direction: column;
     padding: 40px;
 }
-
-/* Título principal */
 .container-title {
     text-align: center;
     margin-bottom: 60px;
 }
-
 .container-title h1 {
     color: white;
     font-size: 36px;
@@ -40,16 +31,12 @@ body {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     text-transform: uppercase;
 }
-
-/* Contenedor de la información de consulta */
 .container-table-consulta {
     flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
 }
-
-/* Cuadro con gradiente */
 .info-mesas {
     background: linear-gradient(180deg, #F2D9E3 0%, #8C7E83 100%);
     border-radius: 15px;
@@ -58,8 +45,6 @@ body {
     min-width: 600px;
     max-width: 800px;
 }
-
-/* Título del cuadro */
 .info-mesas h2 {
     color: #000;
     font-size: 22px;
@@ -69,53 +54,41 @@ body {
     text-transform: uppercase;
     letter-spacing: 1px;
 }
-
-/* Contenedor de los datos */
 .info-datos {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
-
-/* Cada fila de información */
 .info-item {
     color: #000;
     font-size: 18px;
     font-weight: 500;
 }
-
-/* Responsive */
 @media (max-width: 1024px) {
     .info-mesas {
         min-width: 500px;
         padding: 40px 60px;
     }
 }
-
 @media (max-width: 768px) {
     .container-area-consulta {
         padding: 20px;
     }
-    
     .container-title {
         margin-bottom: 40px;
     }
-    
     .container-title h1 {
         font-size: 24px;
     }
-    
     .info-mesas {
         min-width: auto;
         width: 90%;
         padding: 30px 40px;
     }
-    
     .info-mesas h2 {
         font-size: 18px;
         margin-bottom: 30px;
     }
-    
     .info-item {
         font-size: 16px;
     }

@@ -1,15 +1,8 @@
-/* ===================================
-   CUENTA PERSONAL - ESTILOS MODERNOS V2
-   CECyT 9 "Juan de Dios Batiz"
-   Integrado con el diseño existente
-   =================================== */
-
-* {
+﻿* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
-    
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #D0D0D0;
@@ -19,37 +12,25 @@ body {
     margin: 0;
     padding: 0;
 }
-
-/* ===================================
-   LAYOUT PRINCIPAL
-   =================================== */
 .container-main {
     display: flex;
     min-height: 100vh;
     position: relative;
 }
-
-/* El aside ya está en EstiloAside.css */
 .container-aside {
     flex: 0 0 280px;
     min-height: 100%;
     position: relative;
 }
-
 .container-informacion {
     flex: 1;
     background: #D0D0D0;
     overflow-x: hidden;
 }
-
-/* ===================================
-   TÍTULO DE SECCIÓN
-   =================================== */
 .container-titulo {
     background: #7B0233;
     padding: 1.5rem 2rem;
 }
-
 .container-titulo h1 {
     color: #FFFFFF;
     font-size: 2rem;
@@ -57,23 +38,17 @@ body {
     letter-spacing: 2px;
     margin: 0;
 }
-
-/* ===================================
-   CONTENEDOR DE CONTENIDO
-   =================================== */
 .container-contenido {
     padding: 2.5rem 3rem;
     max-width: 1400px;
     margin: 0 auto;
 }
-
 .container-cuenta {
     background: #ECECEC;
     border-radius: 12px;
     padding: 2.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-
 .container-cuenta h2 {
     color: #333;
     font-size: 1.6rem;
@@ -83,20 +58,12 @@ body {
     text-transform: uppercase;
     letter-spacing: 1px;
 }
-
-/* ===================================
-   LAYOUT DE PERFIL
-   =================================== */
 .layout-perfil {
     display: grid;
     grid-template-columns: 320px 1fr;
     gap: 2rem;
     align-items: start;
 }
-
-/* ===================================
-   FOTO DE PERFIL
-   =================================== */
 .container-foto-perfil {
     background: #FFFFFF;
     border-radius: 12px;
@@ -104,7 +71,6 @@ body {
     text-align: center;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
-
 .logo-cuenta {
     width: 200px;
     height: 200px;
@@ -118,16 +84,12 @@ body {
     position: relative;
     overflow: hidden;
 }
-
-/* Eliminado el ícono de usuario */
-
 .nombre-usuario {
     font-size: 1.4rem;
     font-weight: 700;
     color: #333;
     margin-bottom: 1rem;
 }
-
 .rol-usuario {
     display: inline-block;
     background: #F0C1DA;
@@ -138,17 +100,12 @@ body {
     font-weight: 600;
     letter-spacing: 0.5px;
 }
-
-/* ===================================
-   DATOS DEL USUARIO
-   =================================== */
 .container-datos-usuario {
     background: #FFFFFF;
     border-radius: 12px;
     padding: 2.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
-
 .container-datos-usuario h3 {
     color: #333;
     font-size: 1.3rem;
@@ -157,11 +114,9 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
-
 .dato-item {
     margin-bottom: 1.5rem;
 }
-
 .dato-label {
     display: block;
     font-weight: 700;
@@ -171,7 +126,6 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
-
 .dato-value {
     display: block;
     width: 100%;
@@ -184,31 +138,22 @@ body {
     transition: all 0.3s ease;
     font-weight: 500;
 }
-
 .dato-value:hover {
     border-color: #9D306C;
     box-shadow: 0 0 0 3px rgba(157, 48, 108, 0.1);
 }
-
-/* Si quieres inputs editables */
 input.dato-value {
     outline: none;
 }
-
 input.dato-value:focus {
     border-color: #9D306C;
     box-shadow: 0 0 0 3px rgba(157, 48, 108, 0.15);
 }
-
-/* ===================================
-   BOTONES DE ACCIÓN
-   =================================== */
 .container-btn-acciones {
     display: flex;
     gap: 1.2rem;
     margin-top: 2.5rem;
 }
-
 .btn-editar,
 .btn-cambiar-password {
     flex: 1;
@@ -222,127 +167,94 @@ input.dato-value:focus {
     text-transform: uppercase;
     letter-spacing: 1px;
 }
-
 .btn-editar {
     background: #2C3E50;
     color: #FFFFFF;
     box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3);
 }
-
 .btn-editar:hover {
     background: #34495E;
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(44, 62, 80, 0.4);
 }
-
 .btn-editar:active {
     transform: translateY(0);
 }
-
 .btn-cambiar-password {
     background: #7B0233;
     color: #FFFFFF;
     box-shadow: 0 4px 12px rgba(123, 2, 51, 0.3);
 }
-
 .btn-cambiar-password:hover {
     background: #9D306C;
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(157, 48, 108, 0.4);
 }
-
 .btn-cambiar-password:active {
     transform: translateY(0);
 }
-
-/* ===================================
-   RESPONSIVE DESIGN
-   =================================== */
-
-/* Tablets */
 @media (max-width: 1024px) {
     .layout-perfil {
         grid-template-columns: 1fr;
         gap: 2rem;
     }
-    
     .container-foto-perfil {
         max-width: 450px;
         margin: 0 auto;
     }
 }
-
-/* Móviles grandes */
 @media (max-width: 768px) {
     .header-container {
         flex-direction: column;
         gap: 1rem;
         padding: 1rem;
     }
-    
     .title-container {
         font-size: 0.85rem;
         margin: 0;
     }
-    
     .logo-containerBTZ img,
     .logo-containerIPN img {
         height: 50px;
     }
-    
     .container-main {
         flex-direction: column;
     }
-    
     .container-aside {
         flex: none;
     }
-    
     .container-contenido {
         padding: 1.5rem;
     }
-    
     .container-cuenta {
         padding: 1.5rem;
     }
-    
     .container-titulo h1 {
         font-size: 1.5rem;
     }
-    
     .container-btn-acciones {
         flex-direction: column;
     }
 }
-
-/* Móviles pequeños */
 @media (max-width: 480px) {
     .container-titulo h1 {
         font-size: 1.3rem;
         letter-spacing: 1px;
     }
-    
     .container-cuenta h2 {
         font-size: 1.3rem;
     }
-    
     .logo-cuenta {
         width: 150px;
         height: 150px;
     }
-    
     .logo-cuenta::before {
         font-size: 70px;
     }
-    
     .nombre-usuario {
         font-size: 1.2rem;
     }
 }
-
-/* ===================================
-   ANIMACIONES SUAVES
-   =================================== */
 @keyframes slideInUp {
     from {
         opacity: 0;
@@ -353,26 +265,17 @@ input.dato-value:focus {
         transform: translateY(0);
     }
 }
-
 .container-cuenta {
     animation: slideInUp 0.5s ease-out;
 }
-
 .dato-item {
     animation: slideInUp 0.4s ease-out backwards;
 }
-
 .dato-item:nth-child(1) { animation-delay: 0.05s; }
 .dato-item:nth-child(2) { animation-delay: 0.1s; }
 .dato-item:nth-child(3) { animation-delay: 0.15s; }
 .dato-item:nth-child(4) { animation-delay: 0.2s; }
 .dato-item:nth-child(5) { animation-delay: 0.25s; }
-
-/* ===================================
-   EFECTOS ADICIONALES
-   =================================== */
-
-/* Efecto de brillo en la foto de perfil */
 .logo-cuenta::after {
     content: '';
     position: absolute;
@@ -384,7 +287,6 @@ input.dato-value:focus {
     transform: rotate(45deg);
     animation: shine 3s infinite;
 }
-
 @keyframes shine {
     0%, 100% {
         transform: rotate(45deg) translateX(-100%);
@@ -393,13 +295,10 @@ input.dato-value:focus {
         transform: rotate(45deg) translateX(100%);
     }
 }
-
-/* Bordes decorativos */
 .container-datos-usuario {
     position: relative;
     border-left: 4px solid #7B0233;
 }
-
 .container-foto-perfil {
     position: relative;
     border-top: 4px solid #F0C1DA;

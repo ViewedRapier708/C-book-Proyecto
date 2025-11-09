@@ -1,22 +1,9 @@
-/**
- * POST INICIO - Pantalla de Bienvenida Usuario
- * Siguiendo estándares ISO 9241 y WCAG 2.1
- * Última actualización: Noviembre 2025
- */
-
-/* ========================================
-   CONTENEDOR PRINCIPAL
-   ======================================== */
-.container-main {
+﻿.container-main {
     display: flex;
     min-height: 100vh;
     width: 100%;
     overflow: hidden;
 }
-
-/* ========================================
-   CONTENEDOR DE TEXTO DE BIENVENIDA
-   ======================================== */
 .container-txtInicio {
     flex: 1;
     background: linear-gradient(180deg, #7B0233 0%, #000000 100%);
@@ -26,7 +13,6 @@
     padding: 3rem;
     text-align: center;
 }
-
 .container-txtInicio h1 {
     color: #FFFFFF;
     font-size: 2.5rem;
@@ -39,10 +25,6 @@
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     animation: fadeIn 1s ease-out;
 }
-
-/* ========================================
-   ANIMACIONES
-   ======================================== */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -53,46 +35,28 @@
         transform: translateY(0);
     }
 }
-
-/* ========================================
-   RESPONSIVE DESIGN
-   ======================================== */
-
-/* Tablets */
 @media (max-width: 992px) {
     .container-txtInicio {
         padding: 2rem;
     }
-
     .container-txtInicio h1 {
         font-size: 2rem;
     }
 }
-
-/* Móviles */
 @media (max-width: 576px) {
     .container-txtInicio {
         padding: 1.5rem;
     }
-
     .container-txtInicio h1 {
         font-size: 1.5rem;
         line-height: 1.4;
     }
 }
-
-/* ========================================
-   ACCESIBILIDAD
-   ======================================== */
-
-/* Reducir movimiento */
 @media (prefers-reduced-motion: reduce) {
     .container-txtInicio h1 {
         animation: none;
     }
 }
-
-/* Modo de alto contraste */
 @media (prefers-contrast: high) {
     .container-txtInicio h1 {
         text-shadow: 2px 2px 0 #000000;
