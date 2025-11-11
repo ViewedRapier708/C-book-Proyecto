@@ -29,7 +29,9 @@ async function cargarTabla() {
 
     // 4️⃣ Rellenar la tabla
     const filas = Array.isArray(json.data) ? json.data : [];
- 
+
+    //Filas que se ingresan a la tabla 
+    console.log('Filas a insertar en la tabla:', filas);
     const tbody = tabla.querySelector('tbody');
    
     // 4.2 Insertar filas
@@ -61,7 +63,6 @@ async function cargarTabla() {
 
   } catch (err) {
     console.error('Error al cargar la tabla:', err);
-    alert('No se pudieron cargar los recursos. Revisa la consola.');
   }
 }
 
