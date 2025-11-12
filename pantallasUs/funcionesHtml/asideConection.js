@@ -16,17 +16,6 @@
             document.body.appendChild(container);
         }
 
-        // Si replace es true, elimina asides previos
-        if (replace) {
-            const prev = container.querySelectorAll('aside');
-            prev.forEach(n => n.remove());
-        } else {
-            // Evita insertar duplicados exactos (opcional)
-            if (container.querySelector('aside')) {
-                return container.querySelector('aside');
-            }
-        }
-
         const aside = document.createElement('aside');
 
         try {

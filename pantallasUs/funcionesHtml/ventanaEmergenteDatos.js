@@ -41,7 +41,7 @@ function mostrarVentanaEmergenteDatos(numeroBoleta = '', materialSeleccionado = 
 
     // titulo y mensaje
     const title = document.createElement('h3');
-    title.textContent = 'Enviar solicitud';
+    title.textContent = 'Confirmar solicitud';
     title.style.marginTop = '0';
     modal.appendChild(title);
 
@@ -61,50 +61,7 @@ function mostrarVentanaEmergenteDatos(numeroBoleta = '', materialSeleccionado = 
     }
 
     // campos de solo lectura
-    const boletaSpan = document.createElement('span');
-    boletaSpan.textContent = numeroBoleta;
-    boletaSpan.style.display = 'inline-block';
-    boletaSpan.style.padding = '8px';
-    boletaSpan.style.width = '100%';
-    boletaSpan.style.background = '#f5f5f5';
-    boletaSpan.style.border = '1px solid #ddd';
-    modal.appendChild(fila('Número de boleta (vista)', boletaSpan));
-
-    const materialSpan = document.createElement('span');
-    materialSpan.textContent = materialSeleccionado;
-    materialSpan.style.display = 'inline-block';
-    materialSpan.style.padding = '8px';
-    materialSpan.style.width = '100%';
-    materialSpan.style.background = '#f5f5f5';
-    materialSpan.style.border = '1px solid #ddd';
-    modal.appendChild(fila('Material seleccionado (vista)', materialSpan));
-
-    // inputs editables
-    const inputGrupo = document.createElement('input');
-    inputGrupo.type = 'text';
-    inputGrupo.placeholder = 'Ej. A';
-    inputGrupo.style.width = '100%';
-    inputGrupo.style.padding = '8px';
-    inputGrupo.style.boxSizing = 'border-box';
-    modal.appendChild(fila('Grupo (input)', inputGrupo));
-
-    const inputSemestre = document.createElement('input');
-    inputSemestre.type = 'number';
-    inputSemestre.min = '1';
-    inputSemestre.placeholder = 'Ej. 3';
-    inputSemestre.style.width = '100%';
-    inputSemestre.style.padding = '8px';
-    inputSemestre.style.boxSizing = 'border-box';
-    modal.appendChild(fila('Semestre (input)', inputSemestre));
-
-    const inputCarrera = document.createElement('input');
-    inputCarrera.type = 'text';
-    inputCarrera.placeholder = 'Ej. Ingeniería';
-    inputCarrera.style.width = '100%';
-    inputCarrera.style.padding = '8px';
-    inputCarrera.style.boxSizing = 'border-box';
-    modal.appendChild(fila('Carrera (input)', inputCarrera));
-
+    
     // botones
     const botones = document.createElement('div');
     botones.style.display = 'flex';
