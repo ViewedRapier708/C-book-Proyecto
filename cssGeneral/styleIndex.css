@@ -3,6 +3,8 @@
     padding: 0;
     box-sizing: border-box;
 }
+/* Tipografía base responsiva para ajustar tamaños según viewport */
+html { font-size: clamp(14px, 1.8vw, 16px); }
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #F2D9E3 0%, #F8D7E8 50%, #F0C1DA 100%);
@@ -16,8 +18,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem 2rem;
-    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.3);
+    padding: 0.6rem 1rem;
+    box-shadow: 0 3px 8px rgba(123, 2, 51, 0.22);
     position: relative;
 }
 .header-container::after {
@@ -37,7 +39,7 @@ body {
 }
 .logo-containerBTZ img,
 .logo-containerIPN img {
-    height: 70px;
+    height: 42px;
     width: auto;
     object-fit: contain;
     filter: brightness(1.1);
@@ -50,29 +52,33 @@ body {
 .title-container {
     flex: 1;
     text-align: center;
-    font-size: 1.8rem;
+    font-size: clamp(0.85rem, 2vw, 1.3rem);
     font-weight: 700;
     color: #FFFFFF;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-    padding: 0 2rem;
+    padding: 0 1rem;
 }
 .container-main {
     flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 2rem 1rem;
+    padding: clamp(1rem, 2.5vw, 1.8rem) 0.5rem;
+    /* Make sure the main area always fills the viewport minus header visual space */
+    min-height: calc(100vh - 60px);
 }
 .container-form {
     background: #FFFFFF;
-    border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(123, 2, 51, 0.2);
-    padding: 2.5rem 2rem;
-    width: 100%;
-    max-width: 450px;
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(123, 2, 51, 0.14);
+    padding: clamp(0.5rem, 1.2vw, 1rem);
+    width: min(96%, 400px);
+    max-width: 400px;
     position: relative;
     overflow: hidden;
+    /* allow the form to scale slightly on very large screens while staying centered */
+    transform-origin: center center;
 }
 .container-form::before {
     content: '';
@@ -85,13 +91,13 @@ body {
 }
 .container-title {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: clamp(0.5rem, 1.5vw, 1rem);
 }
 .container-title h2 {
     color: #7B0233;
-    font-size: 1.8rem;
+    font-size: clamp(1.2rem, 2.4vw, 1.4rem);
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
     position: relative;
     display: inline-block;
     padding-bottom: 0.5rem;
@@ -110,21 +116,21 @@ body {
 #form {
     display: flex;
     flex-direction: column;
-    gap: 1.2rem;
+    gap: clamp(0.4rem, 1vw, 0.7rem);
 }
 label {
     color: #333;
     font-weight: 600;
-    font-size: 0.95rem;
-    margin-bottom: 0.3rem;
+    font-size: clamp(0.8rem, 1.4vw, 0.88rem);
+    margin-bottom: 0.2rem;
 }
 input[type="text"],
 input[type="password"] {
     width: 100%;
-    padding: 0.9rem 1rem;
+    padding: clamp(0.45rem, 1.2vw, 0.65rem) clamp(0.6rem, 1.4vw, 0.8rem);
     border: 2px solid #E8E8E8;
-    border-radius: 10px;
-    font-size: 1rem;
+    border-radius: 8px;
+    font-size: clamp(0.85rem, 1.4vw, 0.95rem);
     color: #333;
     background: #F9F9F9;
     transition: all 0.3s ease;
@@ -144,8 +150,8 @@ input[type="password"]::placeholder {
 .checkbox-container {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-top: -0.5rem;
+    gap: 0.4rem;
+    margin-top: -0.3rem;
 }
 input[type="checkbox"] {
     width: 18px;
@@ -161,23 +167,23 @@ input[type="checkbox"] {
     cursor: pointer;
 }
 .messaje {
-    min-height: 20px;
+    min-height: 12px;
     text-align: center;
-    font-size: 0.9rem;
+    font-size: clamp(0.75rem, 1.3vw, 0.85rem);
     color: #7B0233;
     font-weight: 500;
 }
 .btn-crear-cuenta,
 button[type="submit"] {
     width: 100%;
-    padding: 1rem;
+    padding: clamp(0.6rem, 1.8vw, 1rem);
     border: none;
     border-radius: 10px;
-    font-size: 1rem;
+    font-size: clamp(0.95rem, 1.6vw, 1rem);
     font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.22s ease;
     text-decoration: none;
     text-align: center;
     display: block;
@@ -186,7 +192,7 @@ button[type="submit"] {
     background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
     color: #FFFFFF;
     box-shadow: 0 4px 15px rgba(123, 2, 51, 0.3);
-    margin-top: 0.5rem;
+    margin-top: 0.2rem;
 }
 button[type="submit"]:hover {
     background: linear-gradient(135deg, #9D306C 0%, #7B0233 100%);
@@ -213,8 +219,9 @@ button[type="submit"]:active {
     text-align: center;
     color: #8C7E83;
     font-weight: 600;
+    font-size: clamp(0.8rem, 1.3vw, 0.9rem);
     position: relative;
-    margin: 1.5rem 0;
+    margin: clamp(0.4rem, 1vw, 0.8rem) 0;
 }
 .separator::before,
 .separator::after {
@@ -234,7 +241,7 @@ button[type="submit"]:active {
 .divider {
     height: 1px;
     background: linear-gradient(to right, transparent, #DDD, transparent);
-    margin: 1.5rem 0;
+    margin: clamp(0.4rem, 1vw, 0.8rem) 0;
 }
 #form a:not(.btn-crear-cuenta) {
     color: #666;
@@ -250,44 +257,53 @@ button[type="submit"]:active {
 }
 @media (max-width: 768px) {
     .header-container {
-        padding: 1rem;
+        padding: 0.5rem 0.8rem;
         flex-wrap: wrap;
     }
     .title-container {
-        font-size: 1.2rem;
-        letter-spacing: 1px;
-        padding: 0.5rem 1rem;
+        font-size: 0.95rem;
+        letter-spacing: 0.6px;
+        padding: 0.3rem 0.6rem;
         order: 3;
         flex-basis: 100%;
-        margin-top: 1rem;
+        margin-top: 0.4rem;
     }
     .logo-containerBTZ img,
     .logo-containerIPN img {
-        height: 50px;
+        height: 36px;
     }
     .container-form {
-        padding: 2rem 1.5rem;
-        margin: 1rem;
+        padding: 0.6rem 0.7rem;
+        margin: 0.3rem;
+        width: calc(100% - 0.6rem);
+        max-width: calc(100% - 1rem);
+        border-radius: 8px;
     }
     .container-title h2 {
-        font-size: 1.5rem;
+        font-size: clamp(1rem, 2.5vw, 1.2rem);
     }
 }
 @media (max-width: 480px) {
     .title-container {
-        font-size: 1rem;
+        font-size: 0.8rem;
     }
     .logo-containerBTZ img,
     .logo-containerIPN img {
-        height: 40px;
+        height: 32px;
     }
     .container-form {
-        padding: 1.5rem 1rem;
+        padding: 0.5rem 0.6rem;
+        margin: 0.2rem;
+        width: calc(100% - 0.4rem);
+        border-radius: 6px;
     }
     button[type="submit"],
     .btn-crear-cuenta {
-        padding: 0.85rem;
-        font-size: 0.95rem;
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+    #form {
+        gap: 0.3rem;
     }
 }
 @keyframes fadeIn {

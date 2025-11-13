@@ -61,7 +61,24 @@ function mostrarVentanaEmergenteDatos(numeroBoleta = '', materialSeleccionado = 
     }
 
     // campos de solo lectura
-    
+    const boletaSpan = document.createElement('span');
+    boletaSpan.textContent = numeroBoleta;
+    boletaSpan.style.display = 'inline-block';
+    boletaSpan.style.padding = '8px';
+    boletaSpan.style.width = '100%';
+    boletaSpan.style.background = '#f5f5f5';
+    boletaSpan.style.border = '1px solid #ddd';
+    modal.appendChild(fila('Número de boleta (vista)', boletaSpan));
+
+    const materialSpan = document.createElement('span');
+    materialSpan.textContent = materialSeleccionado;
+    materialSpan.style.display = 'inline-block';
+    materialSpan.style.padding = '8px';
+    materialSpan.style.width = '100%';
+    materialSpan.style.background = '#f5f5f5';
+    materialSpan.style.border = '1px solid #ddd';
+    modal.appendChild(fila('Material seleccionado ', materialSpan));
+
     // botones
     const botones = document.createElement('div');
     botones.style.display = 'flex';
