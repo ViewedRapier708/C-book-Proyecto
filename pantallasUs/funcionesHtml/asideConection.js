@@ -41,6 +41,7 @@
         let toggle = document.querySelector('.menu-toggle');
         if (!toggle) {
             toggle = document.createElement('button');
+            
             toggle.className = 'menu-toggle';
             toggle.type = 'button';
             toggle.setAttribute('aria-label', 'Abrir menú');
