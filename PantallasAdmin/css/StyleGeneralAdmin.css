@@ -47,8 +47,12 @@ body {
 
 .container-contenido {
     padding: 2.5rem 3rem;
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
 }
 
 .container-servicios h2 {
@@ -61,11 +65,28 @@ body {
     position: relative;
 }
 
+/* Centrar todos los divs contenedores principales */
+.container-inicio,
+.container-libros,
+.container-computadoras,
+.container-restiradores,
+.container-guardaropas,
+.container-solicitud,
+.container-servicios {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
 .layout {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr;
     gap: 2rem;
     margin-bottom: 2rem;
+    width: 100%;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .container-tabla {
@@ -393,3 +414,59 @@ label {
     outline: 2px solid #9D306C;
     outline-offset: 2px;
 }
+
+/* Animaciones de componentes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.component-enter {
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.component-enter-table {
+    animation: slideInLeft 0.6s ease-out forwards;
+}
+
+.component-enter-form {
+    animation: fadeInUp 0.5s ease-out 0.1s forwards;
+    opacity: 0;
+}
+
+.component-enter-stats {
+    animation: fadeInUp 0.5s ease-out 0.2s forwards;
+    opacity: 0;
+}
+
+.component-enter-buttons {
+    animation: fadeInUp 0.5s ease-out 0.3s forwards;
+    opacity: 0;
+}
+

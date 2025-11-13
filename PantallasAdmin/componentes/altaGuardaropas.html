@@ -1,0 +1,78 @@
+<div class="container-guardarropas">
+    <h2>Registro de Nuevos Guardaropas</h2>
+    
+    <div class="layout">
+        <!-- Tabla en el centro (columna izquierda del layout) -->
+        <div class="container-tabla">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Ubicación</th>
+                            <th>Piso</th>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>G001</td>
+                            <td>Entrada Principal</td>
+                            <td>PB</td>
+                            <td>Pequeño</td>
+                            <td>Disponible</td>
+                            <td><button class="btn-editar">Editar</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Inputs a la derecha -->
+        <div class="container-formulario">
+            <div class="form-group">
+                <label for="cantidad">Cantidad a Agregar:</label>
+                <input type="number" id="cantidad" placeholder="Ingrese la cantidad" min="1">
+            </div>
+            <div class="form-group">
+                <label for="estado">Estado Inicial:</label>
+                <select id="estado">
+                    <option value="disponible">Disponible</option>
+                    <option value="mantenimiento">En Mantenimiento</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Información de guardaropas abajo de todo -->
+    <div class="container-datos-sistema">
+        <h3>Información del Sistema</h3>
+        <div class="dato-item">
+            <span class="dato-label">Total Guardaropas:</span>
+            <span class="dato-value">12</span>
+        </div>
+        <div class="dato-item">
+            <span class="dato-label">Disponibles:</span>
+            <span class="dato-value">10</span>
+        </div>
+        <div class="dato-item">
+            <span class="dato-label">En Uso:</span>
+            <span class="dato-value">1</span>
+        </div>
+        <div class="dato-item">
+            <span class="dato-label">Mantenimiento:</span>
+            <span class="dato-value">1</span>
+        </div>
+        <div class="dato-item">
+            <span class="dato-label">Última Actualización:</span>
+            <span class="dato-value">13/11/2025</span>
+        </div>
+    </div>
+    
+    <div class="container-btn-alta">
+        <button class="btn-limpiar" id="btn-limpiar">Limpiar Campos</button>
+        <button class="btn-alta" id="btn-agregar">Agregar Guardaropas</button>
+    </div>
+</div>

@@ -1,0 +1,79 @@
+<div class="container-restiradores">
+    <h2>Registro de Nuevos Restiradores</h2>
+    
+    <div class="layout">
+        <!-- Tabla en el centro (columna izquierda del layout) -->
+        <div class="container-tabla">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Ubicación</th>
+                            <th>Tipo</th>
+                            <th>Tamaño</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>R001</td>
+                            <td>Aula 101</td>
+                            <td>Madera</td>
+                            <td>Grande</td>
+                            <td>Disponible</td>
+                            <td><button class="btn-editar">Editar</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Inputs a la derecha -->
+        <div class="container-formulario">
+            <div class="form-group">
+                <label for="cantidad">Cantidad a Agregar:</label>
+                <input type="number" id="cantidad" placeholder="Ingrese la cantidad" min="1">
+            </div>
+           
+            <div class="form-group">
+                <label for="estado">Estado Inicial:</label>
+                <select id="estado">
+                    <option value="disponible">Disponible</option>
+                    <option value="mantenimiento">En Mantenimiento</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Información de restiradores abajo de todo -->
+    <div class="container-datos-restiradores">
+        <h3>Estadísticas Restiradores</h3>
+        <div class="dato-item">
+            <span class="dato-label">Total Restiradores:</span>
+            <span class="dato-value">75</span>
+        </div>
+        <div class="dato-item">
+            <span class="dato-label">Disponibles:</span>
+            <span class="dato-value">62</span>
+        </div>
+        <div class="dato-item">
+            <span class="dato-label">En Uso:</span>
+            <span class="dato-value">10</span>
+        </div>
+        <div class="dato-item">
+            <span class="dato-label">Mantenimiento:</span>
+            <span class="dato-value">3</span>
+        </div>
+        <div class="dato-item">
+            <span class="dato-label">Última Actualización:</span>
+            <span class="dato-value">13/11/2025</span>
+        </div>
+    </div>
+    
+    <div class="container-btn-alta">
+        <button class="btn-limpiar" id="btn-limpiar">Limpiar Campos</button>
+        <button class="btn-alta" id="btn-agregar">Agregar Restiradores</button>
+    </div>
+</div>
