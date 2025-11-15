@@ -8,36 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const overlay = document.querySelector('.menu-overlay');
     const toggle = document.querySelector('.menu-toggle');
 
-    // Gestión del menú móvil
-    const closeMenu = () => {
-        if (aside) {
-            aside.classList.remove('open');
-        }
-        if (overlay) {
-            overlay.classList.remove('show', 'active');
-        }
-    };
-
-    const openMenu = () => {
-        if (aside) {
-            aside.classList.add('open');
-        }
-        if (overlay) {
-            overlay.classList.add('show', 'active');
-        }
-    };
-
-    if (toggle) {
-        toggle.addEventListener('click', openMenu);
-    }
-    
-    if (overlay) {
-        overlay.addEventListener('click', closeMenu);
-    }
-
-    window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeMenu();
-    });
 
     // Sistema de carga de componentes
     const loadComponent = (componentName, title) => {
@@ -73,9 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 // Cerrar menú en móvil después de cargar
-                if (window.innerWidth <= 1024) {
-                    closeMenu();
-                }
+                
             })
             .catch(err => {
                 console.error('Error cargando componente:', err);

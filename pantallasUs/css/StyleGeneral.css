@@ -47,30 +47,58 @@ img {
     -webkit-overflow-scrolling: touch;
 }
 
-/* Utility to reduce gaps on very small devices */
-.compact {
-    gap: 0.35rem;
-    padding: 0.35rem;
-}
-
+/* PC / pantallas grandes */
 .container-main {
     display: flex;
+    flex: 1;
     min-height: 100vh;
+    margin-left: var(--aside-width, 280px);
+    box-sizing: border-box;
+    width: calc(100% - var(--aside-width, 280px));
+    transition: margin-left 0.28s ease, width 0.28s ease;
+    padding: 7rem;
 }
 
 
 .container-informacion {
-    display: flexbox;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin-left: calc(var(--aside-width) + 7%);
-    padding: clamp(0.6rem, 1.6vw, 1.2rem);
-    transition: margin-left 0.3s ease, padding 0.2s ease;
+    /* CENTRADO UNIVERSAL SIN FLEX */
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+
+    /* ESPACIADO RESPONSIVE */
+    padding: clamp(0.8rem, 1.8vw, 1.5rem);
+    box-sizing: border-box;
+
+    /* DISEÑO */
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(249, 249, 249, 0.98) 100%
+    );
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(123, 2, 51, 0.08);
+    backdrop-filter: blur(8px) saturate(110%);
+    border: 1px solid rgba(157, 48, 108, 0.08);
+    transition: all 0.3s ease;
+    height: 70vh;
+    /* POSICIÓN */
     position: relative;
-    z-index: 1;
-    max-width: 1200px;
-    margin-right: auto;
+   
+
+    /* OPCIONAL:
+       Si NO quieres centrar el texto, quita esta línea:
+    */
+    text-align: center;
+}
+
+
+
+
+
+.container-informacion:hover {
+    box-shadow: 0 12px 32px rgba(123, 2, 51, 0.12);
+    transform: translateY(-2px);
 }
 
 .container-titulo {
@@ -80,7 +108,7 @@ img {
     box-shadow: var(--card-shadow);
     margin-bottom: 0.9rem;
     position: relative;
-    overflow: hidden;
+    
     border: 1px solid rgba(255, 255, 255, 0.06);
     backdrop-filter: saturate(120%) blur(6px);
 }
@@ -119,17 +147,6 @@ img {
     z-index: 1;
 }
 
-.container-contenido {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.96));
-    border-radius: calc(var(--radius) + 4px);
-    padding: clamp(0.5rem, 1.4vw, 0.9rem);
-    box-shadow: var(--card-shadow);
-    animation: fadeInUp 0.44s ease-out;
-    border: 1px solid rgba(157, 48, 108, 0.05);
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
-}
 
 @keyframes fadeInUp {
     from {
@@ -147,7 +164,6 @@ img {
     color: var(--primary-1);
     font-size: clamp(0.95rem, 1.8vw, 1.3rem);
     font-weight: 700;
-    margin-bottom: 1rem;
     padding-bottom: 0.6rem;
     border-bottom: 3px solid var(--accent);
     position: relative;
@@ -173,8 +189,7 @@ img {
     margin-bottom: 1rem;
     width: 100%;
     max-width: 1000px;
-    margin-left: auto;
-    margin-right: auto;
+
 }
 
 .container-tabla {
@@ -345,7 +360,7 @@ tbody tr.selected:hover {
     transition: transform 0.22s ease, box-shadow 0.22s ease;
     text-transform: uppercase;
     position: relative;
-    overflow: hidden;
+ 
 }
 
 .btn-apartar::before {
@@ -393,10 +408,7 @@ tbody tr.selected:hover {
 }
 
 @media (max-width: 1024px) {
-    .container-informacion {
-        margin-left: 0;
-        padding: 1rem;
-    }
+  
 
     .layout {
         grid-template-columns: 1fr;
@@ -426,19 +438,16 @@ tbody tr.selected:hover {
         --aside-width: 0px;
     }
 
-    .container-informacion {
+    .container-main {
         margin-left: 0;
-        padding: 0.7rem;
+        width: 100%;
     }
 
     .container-titulo {
         padding: 0.75rem 0.6rem;
     }
 
-    .container-contenido {
-        padding: 0.6rem;
-    }
-
+   
     .layout {
         gap: 0.6rem;
     }
@@ -466,9 +475,9 @@ tbody tr.selected:hover {
 }
 
 @media (max-width: 768px) {
-    .container-informacion {
+    .container-main {
         margin-left: 0;
-        padding: 0.9rem;
+        width: 100%;
     }
 
     .container-titulo {
@@ -480,9 +489,6 @@ tbody tr.selected:hover {
         letter-spacing: 0.8px;
     }
 
-    .container-contenido {
-        padding: 1rem 0.8rem;
-    }
 
     .container-servicios h2 {
         font-size: 1.15rem;
@@ -552,6 +558,7 @@ tbody tr.selected:hover {
 }
 
 .mensaje-alerta {
+    position: relative;
     padding: 1rem 1.5rem;
     border-radius: 10px;
     margin-bottom: 1.5rem;
