@@ -1,3 +1,4 @@
+const { json } = require('express');
 
 
 //Funcion para iniciar sesión de un usuario
@@ -34,7 +35,7 @@ const supabase = getClient();
 }
 
 //Funcion para registrar a un nuevo usuario en base a la existencia de la boleta
-async function registerUser({ boleta, nombre, apellido, correo, password, tiene_documentos = false }) {
+async function registerUser({ boleta, correo, password, tiene_documentos = false }) {
   const bcrypt = require('bcryptjs');
   const { getClient } = require('../config/db');
   const supabase = getClient();
@@ -71,8 +72,25 @@ async function registerUser({ boleta, nombre, apellido, correo, password, tiene_
   }
 }
 
+//Este modelo se aplica al momento de hacer la solicitud de la creacion de la cuenta para que el sistema pueda mandar el codigo de verificacion al correo del alumno
+async function verificarBoleta(boleta) {
+  const { getClient } = require('../config/db');
+  const supabase = getClient();
+  const { data, error } = await supabase
+    .from('usuarios_web_movil')
+    .select('boleta')
+    .eq('boleta', boleta)
+    .maybeSingle();
 
+  if (error) {
+    return false;
+  } 
+  return true;
 
+}
 
-module.exports = { loginUser, registerUser };
-// ✅ Esto imprime el resultado real
+async function ValidacionCodigo(boleta) {
+
+}
+module.exports = { loginUser, registerUser, verificarBoleta, ValidacionCodigo };
+
