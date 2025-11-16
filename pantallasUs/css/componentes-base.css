@@ -1,0 +1,195 @@
+/* ========================================
+   ESTILOS BASE COMPARTIDOS - COMPONENTES
+   ======================================== */
+
+/* Contenedores principales de componentes */
+.container-inicio,
+.container-solicitud-libros,
+.container-solicitud-computadoras,
+.container-solicitud-restiradores,
+.container-area-consulta,
+.container-cancelar-solicitudes {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Títulos de componentes */
+.container-inicio > h1,
+.container-solicitud-libros > h2,
+.container-solicitud-computadoras > h2,
+.container-solicitud-restiradores > h2,
+.container-area-consulta > h2,
+.container-cancelar-solicitudes > h2 {
+    color: var(--primary-1);
+    font-size: clamp(0.95rem, 1.8vw, 1.3rem);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 3px solid var(--accent);
+    position: relative;
+}
+
+/* Layouts con tabla y botones */
+.layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(0.5rem, 1.2vw, 1rem);
+    margin-bottom: 1rem;
+    width: 100%;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Contenedor de tablas */
+.container-tabla {
+    background: linear-gradient(180deg, #fff, #fbfbfb);
+    padding: clamp(0.4rem, 1.2vw, 0.8rem);
+    border-radius: 8px;
+    border: 1px solid var(--muted);
+    overflow-x: auto;
+    box-shadow: var(--soft-shadow);
+}
+
+/* Tablas */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+thead {
+    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+}
+
+thead th {
+    color: #FFFFFF;
+    font-weight: 600;
+    text-align: left;
+    padding: 0.45rem 0.6rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+thead th:first-child {
+    border-radius: 10px 0 0 0;
+}
+
+thead th:last-child {
+    border-radius: 0 10px 0 0;
+}
+
+tbody tr {
+    background: #FFFFFF;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #E8E8E8;
+}
+
+tbody tr:hover {
+    background: linear-gradient(90deg, rgba(250, 230, 240, 0.6), rgba(248, 215, 232, 0.6));
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(123, 2, 51, 0.08);
+}
+
+tbody tr:last-child td:first-child {
+    border-radius: 0 0 0 10px;
+}
+
+tbody tr:last-child td:last-child {
+    border-radius: 0 0 10px 0;
+}
+
+tbody td {
+    padding: 0.65rem;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+tbody tr.selected {
+    background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
+    color: #FFFFFF;
+}
+
+tbody tr.selected td {
+    color: #FFFFFF;
+}
+
+/* Botones de acción */
+.container-btn-apartar {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+    gap: 1rem;
+}
+
+.btn-apartar,
+.btn-seleccionar,
+.btn-cancelar {
+    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+    color: #FFFFFF;
+    font-size: clamp(0.85rem, 1vw, 1rem);
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: clamp(0.7rem, 1.2vw, 1rem) clamp(1.5rem, 2vw, 2.5rem);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(123, 2, 51, 0.4);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-apartar:hover,
+.btn-seleccionar:hover,
+.btn-cancelar:hover {
+    background: linear-gradient(135deg, var(--primary-2) 0%, #B0387A 100%);
+    box-shadow: 0 8px 25px rgba(123, 2, 51, 0.5);
+    transform: translateY(-3px);
+}
+
+.btn-apartar:active,
+.btn-seleccionar:active,
+.btn-cancelar:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(123, 2, 51, 0.4);
+}
+
+/* Animaciones de componentes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.component-enter {
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.component-enter-table {
+    animation: slideInLeft 0.6s ease-out forwards;
+}
+
+.component-enter-buttons {
+    animation: fadeInUp 0.5s ease-out 0.2s forwards;
+    opacity: 0;
+}

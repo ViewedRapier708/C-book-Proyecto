@@ -1,0 +1,22 @@
+/* ========================================
+   ESTILOS PARA COMPONENTE: SOLICITUD DE LIBROS
+   ======================================== */
+
+.container-solicitud-libros {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.container-solicitud-libros > h2 {
+    margin-bottom: 1.5rem;
+}
+
+.container-solicitud-libros .container-tabla {
+    margin-bottom: 1rem;
+}
+
+.container-solicitud-libros table th:nth-child(1) { width: 10%; }
+.container-solicitud-libros table th:nth-child(2) { width: 25%; }
+.container-solicitud-libros table th:nth-child(3) { width: 15%; }
+.container-solicitud-libros table th:nth-child(4) { width: 20%; }
+.container-solicitud-libros table th:nth-child(5) { width: 15%; }
+.container-solicitud-libros table th:nth-child(6) { width: 15%; }

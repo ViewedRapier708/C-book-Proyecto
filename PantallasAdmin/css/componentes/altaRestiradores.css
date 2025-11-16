@@ -1,0 +1,32 @@
+/* ========================================
+   ESTILOS PARA COMPONENTE: ALTA DE RESTIRADORES
+   ======================================== */
+
+.container-restiradores {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.container-restiradores > h2 {
+    margin-bottom: 2rem;
+}
+
+.container-restiradores .container-tabla {
+    margin-bottom: 2rem;
+}
+
+.container-restiradores table th:nth-child(1) { width: 12%; }
+.container-restiradores table th:nth-child(2) { width: 20%; }
+.container-restiradores table th:nth-child(3) { width: 15%; }
+.container-restiradores table th:nth-child(4) { width: 15%; }
+.container-restiradores table th:nth-child(5) { width: 12%; }
+
+.container-formulario {
+    background: #FFFFFF;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}

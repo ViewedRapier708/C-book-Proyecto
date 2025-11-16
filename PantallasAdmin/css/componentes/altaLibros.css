@@ -1,0 +1,72 @@
+/* ========================================
+   ESTILOS PARA COMPONENTE: ALTA DE LIBROS
+   ======================================== */
+
+.container-libros {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.container-libros > h2 {
+    margin-bottom: 2rem;
+}
+
+.container-libros .container-tabla {
+    margin-bottom: 2rem;
+}
+
+.container-libros table th:nth-child(1) { width: 8%; }
+.container-libros table th:nth-child(2) { width: 20%; }
+.container-libros table th:nth-child(3) { width: 15%; }
+.container-libros table th:nth-child(4) { width: 15%; }
+.container-libros table th:nth-child(5) { width: 15%; }
+.container-libros table th:nth-child(6) { width: 12%; }
+.container-libros table th:nth-child(7) { width: 15%; }
+
+.container-formulario {
+    background: #FFFFFF;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    font-weight: 700;
+    color: #333;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 2px solid #7B0233;
+    border-radius: 10px;
+    font-size: 1rem;
+    color: #333;
+    background: #FFFFFF;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+    border-color: #9D306C;
+    background: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(157, 48, 108, 0.15);
+}

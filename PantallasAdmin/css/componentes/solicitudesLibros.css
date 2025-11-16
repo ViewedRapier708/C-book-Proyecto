@@ -1,0 +1,46 @@
+/* ========================================
+   ESTILOS PARA COMPONENTE: SOLICITUDES DE LIBROS
+   ======================================== */
+
+.container-solicitud {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.container-solicitud > h2 {
+    margin-bottom: 2rem;
+}
+
+.container-solicitud .container-tabla {
+    margin-bottom: 2rem;
+}
+
+.container-solicitud table th:nth-child(1) { width: 12%; }
+.container-solicitud table th:nth-child(2) { width: 20%; }
+.container-solicitud table th:nth-child(3) { width: 18%; }
+.container-solicitud table th:nth-child(4) { width: 15%; }
+.container-solicitud table th:nth-child(5) { width: 12%; }
+.container-solicitud table th:nth-child(6) { width: 23%; }
+
+.btn-aprobar,
+.btn-rechazar {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    margin: 0 0.25rem;
+    white-space: nowrap;
+}
+
+.btn-aprobar {
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+}
+
+.btn-aprobar:hover {
+    background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+}
+
+.btn-rechazar {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+.btn-rechazar:hover {
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+}

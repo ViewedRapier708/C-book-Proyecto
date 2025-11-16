@@ -1,6 +1,6 @@
 
 
-
+//Funcion para iniciar sesión de un usuario
 async function loginUser(boleta, password) {
 
 //Obtiene el acceso a la base de datos
@@ -33,6 +33,7 @@ const supabase = getClient();
   return { error: null, data: safeUser };
 }
 
+//Funcion para registrar a un nuevo usuario en base a la existencia de la boleta
 async function registerUser({ boleta, nombre, apellido, correo, password, tiene_documentos = false }) {
   const bcrypt = require('bcryptjs');
   const { getClient } = require('../config/db');

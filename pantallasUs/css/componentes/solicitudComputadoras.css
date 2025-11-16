@@ -1,0 +1,28 @@
+/* ========================================
+   ESTILOS PARA COMPONENTE: SOLICITUD DE COMPUTADORAS
+   ======================================== */
+
+.container-solicitud-computadoras {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.container-solicitud-computadoras > h2 {
+    margin-bottom: 1.5rem;
+}
+
+.container-solicitud-computadoras .container-tabla {
+    margin-bottom: 1rem;
+}
+
+.container-solicitud-computadoras table th:nth-child(1) { width: 10%; }
+.container-solicitud-computadoras table th:nth-child(2) { width: 20%; }
+.container-solicitud-computadoras table th:nth-child(3) { width: 20%; }
+.container-solicitud-computadoras table th:nth-child(4) { width: 15%; }
+.container-solicitud-computadoras table th:nth-child(5) { width: 15%; }
+.container-solicitud-computadoras table th:nth-child(6) { width: 20%; }
+
+.btn-seleccionar {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}

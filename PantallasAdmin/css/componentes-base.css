@@ -1,0 +1,250 @@
+/* ========================================
+   ESTILOS BASE COMPARTIDOS - COMPONENTES ADMIN
+   ======================================== */
+
+/* Contenedores principales de componentes */
+.container-inicio,
+.container-libros,
+.container-computadoras,
+.container-restiradores,
+.container-guardaropas,
+.container-solicitud {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Títulos de componentes */
+.container-libros > h2,
+.container-computadoras > h2,
+.container-restiradores > h2,
+.container-guardaropas > h2,
+.container-solicitud > h2 {
+    color: #7B0233;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 3px solid #9D306C;
+    position: relative;
+}
+
+/* Layouts con tabla y botones */
+.layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    width: 100%;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Contenedor de tablas */
+.container-tabla {
+    background: #FFFFFF;
+    padding: 1.5rem;
+    border-radius: 15px;
+    border: 2px solid #E8E8E8;
+    overflow-x: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Tablas */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+thead {
+    background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
+}
+
+thead th {
+    color: #FFFFFF;
+    font-weight: 600;
+    text-align: left;
+    padding: 1rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+thead th:first-child {
+    border-radius: 10px 0 0 0;
+}
+
+thead th:last-child {
+    border-radius: 0 10px 0 0;
+}
+
+tbody tr {
+    background: #FFFFFF;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #E8E8E8;
+}
+
+tbody tr:hover {
+    background: #F2D9E3;
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(123, 2, 51, 0.1);
+}
+
+tbody tr:last-child td:first-child {
+    border-radius: 0 0 0 10px;
+}
+
+tbody tr:last-child td:last-child {
+    border-radius: 0 0 10px 0;
+}
+
+tbody td {
+    padding: 1rem;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+/* Botones de acción */
+.container-btn-alta {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-agregar,
+.btn-alta,
+.btn-editar,
+.btn-eliminar {
+    background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
+    color: #FFFFFF;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 1.2rem 3rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(123, 2, 51, 0.4);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-agregar:hover,
+.btn-alta:hover,
+.btn-editar:hover,
+.btn-eliminar:hover {
+    background: linear-gradient(135deg, #9D306C 0%, #B0387A 100%);
+    box-shadow: 0 8px 25px rgba(123, 2, 51, 0.5);
+    transform: translateY(-3px);
+}
+
+.btn-agregar:active,
+.btn-alta:active,
+.btn-editar:active,
+.btn-eliminar:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(123, 2, 51, 0.4);
+}
+
+/* Contenedor de datos del sistema */
+.container-datos-sistema {
+    background: #FFFFFF;
+    padding: 1.5rem;
+    border-radius: 15px;
+    border: 2px solid #E8E8E8;
+    box-shadow: 0 4px 15px rgba(123, 2, 51, 0.1);
+    margin-bottom: 2rem;
+}
+
+.container-datos-sistema h3 {
+    color: #7B0233;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #7B0233;
+}
+
+.dato-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #F9F9F9;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.dato-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.15);
+}
+
+.dato-item:last-child {
+    margin-bottom: 0;
+}
+
+.dato-label {
+    color: #7B0233;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.dato-value {
+    color: #333;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0.5rem 0;
+    border-bottom: 2px solid #E8E8E8;
+}
+
+/* Animaciones de componentes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.component-enter {
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.component-enter-table {
+    animation: slideInLeft 0.6s ease-out forwards;
+}
+
+.component-enter-stats {
+    animation: fadeInUp 0.5s ease-out 0.2s forwards;
+    opacity: 0;
+}
+
+.component-enter-buttons {
+    animation: fadeInUp 0.5s ease-out 0.3s forwards;
+    opacity: 0;
+}

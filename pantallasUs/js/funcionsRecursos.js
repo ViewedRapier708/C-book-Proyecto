@@ -10,7 +10,7 @@ async function cargarTabla() {
 
 
   const tipo = tabla.dataset.tipo;
- 
+ console.log('Cargando tabla de tipo:', tipo);
 
   // 2️⃣ Construir la URL con query‑string
   const url = new URL('http://localhost:3000/auth/recursos');
@@ -65,10 +65,3 @@ async function cargarTabla() {
     console.error('Error al cargar la tabla:', err);
   }
 }
-
-// Ejecutar cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', cargarTabla);
-
-// Ejemplo de uso:
-// cargarTabla('/api/users');                 // llamada simple
-// cargarTabla('/api/users', 'TU_TOKEN_AQUI'); // con token Bearer

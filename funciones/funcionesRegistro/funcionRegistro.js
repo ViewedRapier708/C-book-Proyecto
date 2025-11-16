@@ -4,8 +4,6 @@ const boleta = document.getElementById("boleta").value;
     if (boletasValidas.includes(boleta)) {
         const datosUsuario = {
             boleta: boleta,
-            nombre: document.getElementById("nombre").value,
-            apellido: document.getElementById("apellidos").value,
             email: document.getElementById("correo").value
         };
     } else {

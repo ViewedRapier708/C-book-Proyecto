@@ -26,7 +26,7 @@ function connect() {
 }
 
 function getClient() {
-  return client || connect();
+  return connect();
 }
 
 module.exports = { connect, getClient };

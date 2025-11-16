@@ -4,15 +4,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const contentLoader = document.getElementById('content-loader');
     const pageTitle = document.getElementById('page-title');
     const navLinks = document.querySelectorAll('.nav-link');
-    const aside = document.querySelector('aside');
-    const overlay = document.querySelector('.menu-overlay');
-    const toggle = document.querySelector('.menu-toggle');
-
 
     // Sistema de carga de componentes
     const loadComponent = (componentName, title) => {
         if (!contentLoader) return;
-
         const componentPath = `componentes/${componentName}.html`;
 
         fetch(componentPath)
@@ -23,27 +18,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.text();
             })
             .then(html => {
-                // Agregar clase de animación al contenedor
+                // Quitar la clase de entrada para resetear cualquier animación previa
                 contentLoader.classList.remove('component-enter');
+                // Insertar el HTML del componente cargado en el contenedor
                 contentLoader.innerHTML = html;
                 
-                // Forzar reflow para que la animación se ejecute
+                // Forzar reflow (lectura de layout) para que el navegador reconozca el cambio
+                // y permita reiniciar la animación al volver a añadir la clase
                 void contentLoader.offsetWidth;
+                // Añadir la clase que activa la animación de entrada del contenedor
                 contentLoader.classList.add('component-enter');
                 
-                // Animar elementos dentro del componente
+                // Seleccionar elementos que tendrán animaciones internas específicas
                 const tables = contentLoader.querySelectorAll('.container-tabla');
                 const buttons = contentLoader.querySelectorAll('.container-btn-apartar');
                 
+                // Añadir clases de animación a cada tabla encontrada
                 tables.forEach(el => el.classList.add('component-enter-table'));
+                // Añadir clases de animación a cada grupo de botones encontrado
                 buttons.forEach(el => el.classList.add('component-enter-buttons'));
                 
+                // Actualizar el título de la página si el elemento existe
                 if (pageTitle) {
                     pageTitle.textContent = title;
                 }
 
-                // Cerrar menú en móvil después de cargar
-                
+                // Cargar tabla si el componente contiene una
+                if (tables.length > 0) {
+                    cargarTabla().catch(err => {
+                        console.error('Error cargando tabla:', err);
+                    });
+                }
             })
             .catch(err => {
                 console.error('Error cargando componente:', err);

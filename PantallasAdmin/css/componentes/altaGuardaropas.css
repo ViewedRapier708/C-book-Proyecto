@@ -1,0 +1,32 @@
+/* ========================================
+   ESTILOS PARA COMPONENTE: ALTA DE GUARDAROPAS
+   ======================================== */
+
+.container-guardaropas {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.container-guardaropas > h2 {
+    margin-bottom: 2rem;
+}
+
+.container-guardaropas .container-tabla {
+    margin-bottom: 2rem;
+}
+
+.container-guardaropas table th:nth-child(1) { width: 12%; }
+.container-guardaropas table th:nth-child(2) { width: 20%; }
+.container-guardaropas table th:nth-child(3) { width: 15%; }
+.container-guardaropas table th:nth-child(4) { width: 15%; }
+.container-guardaropas table th:nth-child(5) { width: 12%; }
+
+.container-formulario {
+    background: #FFFFFF;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
