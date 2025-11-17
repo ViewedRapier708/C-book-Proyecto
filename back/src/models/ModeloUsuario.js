@@ -92,5 +92,18 @@ async function verificarBoleta(boleta) {
 async function ValidacionCodigo(boleta) {
 
 }
-module.exports = { loginUser, registerUser, verificarBoleta, ValidacionCodigo };
+async function guardarCodigoVerificacion(correo, codigo) {
+  const { getClient } = require('../config/db');
+  const supabase = getClient();
+  const { data, error } = await supabase
+    .from('codigos_verificacion')
+    .insert([{ correo, codigo }]);
+
+  if (error) {
+    return { error, data: null };
+  } 
+
+  return true;
+}
+module.exports = { loginUser, registerUser, verificarBoleta, ValidacionCodigo, guardarCodigoVerificacion };
 
