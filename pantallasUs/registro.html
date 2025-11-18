@@ -19,6 +19,7 @@
             <div class="logo-placeholder">LOGO IPN</div>
             <img src="../img/logo-IPN.png" alt="Logo IPN">
         </div>
+        <script src="/pantallasUs/js/registro.js"></script>
     </header>
     
     <div class="container-main">
@@ -26,7 +27,7 @@
         <div class="container-form-unified">
             <h2>Registro de cuenta</h2>
             
-            <form id="form-registro">
+            <form id="form-registro" onsubmit="registro()">
                 <!-- Boleta -->
                 <div class="form-row full-width">
                     <label for="boleta" class="text-label">Número de boleta</label>
@@ -66,13 +67,13 @@
                            name="confirmar_contrasena" maxlength="100" 
                            placeholder="Ingrese nuevamente su contraseña">
                 </div>
-                
+                <div class="messaje"></div>
                 <!-- Botón de registro -->
                 <div class="form-row full-width">
                     <button type="submit" id="btn-registrar">
                         <a href="./cuenta.html">Registrar</a>
                     </button>
-                  <button type="button" id="btn-registrar"><a href="../index.html">Regresar al inicio </a></button>
+                  <button type="button" id="btn-registrar"><a id="b"href="../index.html">Regresar al inicio </a></button>
                 </div>
             </form>
         </div>
