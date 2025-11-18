@@ -4,7 +4,7 @@ const modelosRecursos = require('../models/ModeloRecursos');
 async function obtenerRecursosPorTipo(req, res) {
   // <-- ahora leemos la query‑string, no el cuerpo
   const { tipo } = req.query;
-
+  
   if (!tipo) {
     return res.status(400).json({ error: 'Falta el parámetro tipo' });
   }
