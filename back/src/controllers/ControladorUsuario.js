@@ -40,66 +40,67 @@ async function ValidacionCodigo(req, res) {
   }
 }
 //Validacion de la boleta
-async function validarBoleta(req, res) {
-  try {
-    const { boleta, correo, password } = req.body;
+async function registro(req, res) {
+  const { getClient } = require('../config/db.js');
+  const supabase = getClient();
+  function validarBoleta(boleta) {
+    const {verificarBoleta}=require('../models/ModeloUsuario.js');
+    return true; // Placeholder
+  }
 
+  try {
+    const { boleta, correo, password, confPsw } = req.body;
+
+    // VALIDACIONES
     if (!boleta || !correo || !password) {
       return res.status(400).json({ error: "Faltan datos" });
     }
 
-    // Validar boleta en BD
-    if (verificarBoleta(boleta) === false) {
+    if (!validarBoleta(boleta)) {
       return res.status(400).json({
         error: "Boleta no registrada, verifica nuevamente que esté bien escrita"
       });
     }
 
-    // Enviar correo
-    await enviarCorreo(correo);
-    return res.json({ message: "Código enviado al correo" });
+    if (password !== confPsw) {
+      return res.status(400).json({ error: "Las contraseñas no coinciden" });
+    }
+
+    // CREAR USUARIO EN SUPABASE
+    const { data: userData, error: createError } =
+      await supabase.auth.admin.createUser({
+        email: correo,
+        password: password,
+        email_confirm: false,
+        user_metadata: { boleta }
+      });
+
+    if (createError) {
+      return res.status(400).json({ error: createError.message });
+    }
+
+    // ENVIAR CORREO DE VERIFICACIÓN
+    const { error: emailError } = await supabase.auth.admin.generateLink({
+      type: "signup",
+      email: correo,
+      options: {
+        redirectTo: "http://localhost:3000/verificado" // ← PON AQUÍ TU URL REAL
+      }
+    });
+
+    if (emailError) {
+      return res.status(400).json({ error: emailError.message });
+    }
+
+    return res.status(200).json({
+      message: "Usuario creado. Revisa tu correo para verificar la cuenta."
+    });
 
   } catch (err) {
-    console.error("Error en validarBoleta:", err);
+    console.error("Error en registro:", err);
     res.status(500).json({ error: "Error interno" });
   }
 }
-
-
-// ======================================================
-//   FUNCIÓN QUE GENERA Y ENVÍA EL CÓDIGO
-// ======================================================
-const enviarCorreo = async (correo) => {
-  const transporter = createTransport({
-    service: "gmail",
-    auth: {
-      user: "TU_CORREO@gmail.com",
-      pass: "TU_CONTRASEÑA_APP"
-    }
-  });
-
-  const codigoVerificacion = Math.floor(100000 + Math.random() * 900000); // 6 dígitos
-  const expiracion = Date.now() + 15 * 60 * 1000; // 15 minutos
-  // Guardar el código en BD
-  await guardarCodigoVerificacion(correo, codigoVerificacion, expiracion);
-
-  const mailOptions = {
-    from: "C-book <TU_CORREO@gmail.com>",
-    to: correo,
-    subject: "Código de verificación",
-    html: `
-      <div style="font-family: Arial; color: #333;">
-        <h2 style="color:#2b6cb0;">Código de Verificación</h2>
-        <p>Tu código es:</p>
-        <h1 style="color:#e53e3e;">${codigoVerificacion}</h1>
-        <p>Ingresa este código en la aplicación.</p>
-      </div>
-    `
-  };
-
-  await transporter.sendMail(mailOptions);
-};
-
 
 //Se debe de crear una funcion la cual haga la validacion de la boleta y el codigo que se le envia al correo del alumno,y al momento de pasar la primera validacion se genera un token para que se pueda crear la cuenta
 async function LoginUser(req, res) {
