@@ -1,20 +1,38 @@
+// archivo: controllers/registro.js
 const nodemailer = require('nodemailer');
+const { getClient } = require('../config/db.js');
+const { validarRegistro } = require('../models/ModeloUsuario.js');
 
 async function registro(req, res) {
-  const {validarRegistro} = require('../models/ModeloUsuario.js');
-  const { getClient } = require('../config/db.js');
   const supabase = getClient();
 
   if (!req.body) {
-    return res.status(400).json({ error: 'No se recibió información' });
+    return res.status(400).json({ error: 'No se recibió información en el cuerpo de la petición' });
   }
 
   try {
     const { boleta, correo, password, confPsw } = req.body;
+    console.log(boleta, correo, password, confPsw);
 
-    // VALIDACIONES (igual que tu código)
-    if (!boleta || !correo || !password) {
+    // VALIDACIONES
+    if (!boleta || !correo || !password || !confPsw) {
       return res.status(400).json({ error: "Faltan datos" });
+    }
+
+    if (boleta.length !== 10 || !/^\d{10}$/.test(boleta)) {
+      return res.status(400).json({ error: "Boleta con formato invalido (solo 10 números)" });
+    }
+
+    if ((await validarRegistro(boleta)).existe) {
+      return res.status(400).json({ error: "Boleta ya registrada" });
+    }
+
+    if (!/^[\w.-]+@[\w.-]+\.\w+$/.test(correo)) {
+      return res.status(400).json({ error: "Correo con formato invalido" });
+    }
+
+    if (password.length < 6 || password.length > 16) {
+      return res.status(400).json({ error: "Contraseña debe tener entre 6 y 16 caracteres" });
     }
 
     if (password !== confPsw) {
@@ -29,26 +47,33 @@ async function registro(req, res) {
       user_metadata: { boleta }
     });
 
-    if (createError) return res.status(400).json({ error: createError.message });
+    if (createError) {
+      return res.status(400).json({ error: createError.message });
+    }
 
     // GENERAR LINK DE VERIFICACIÓN
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: "signup",
       email: correo,
       options: {
-        redirectTo: "http://127.0.0.1:5500/pantallasUs/confirmacionCorreo.html"
+        redirectTo: "https://viewedrapier708.github.io/C-book-Proyecto/pantallasUs/confirmacionCorreo.html"
       }
     });
-    if (linkError) return res.status(400).json({ error: linkError.message });
+
+    if (linkError) {
+      return res.status(400).json({ error: linkError.message });
+    }
+
     const actionLink = linkData?.properties?.action_link;
+
     // CONFIGURAR SMTP (Gmail)
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 465,
       secure: true,
       auth: {
-        user: "cbook.uttab@gmail.com",
-        pass: "yotg vlas dkfp qqbh"
+        user: "cbook.uttab@gmail.com", // Tu correo Gmail
+        pass: "yotg vlas dkfp qqbh"    // Contraseña de aplicación
       }
     });
 
@@ -57,7 +82,10 @@ async function registro(req, res) {
       from: '"Cbook" <cbook.uttab@gmail.com>',
       to: correo,
       subject: "Confirma tu correo",
-      html: `<p>Hola! Haz clic <a href="${actionLink}">aquí</a> para confirmar tu correo.</p>`
+      html: `
+        <p>Hola! Haz clic <a href="${actionLink}">aquí</a> para confirmar tu correo.</p>
+        <p>Si no solicitaste esta cuenta, ignora este correo.</p>
+      `
     });
 
     return res.status(200).json({
@@ -66,10 +94,9 @@ async function registro(req, res) {
 
   } catch (err) {
     console.error("Error en registro:", err);
-    res.status(500).json({ error: "Error interno" });
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 }
-
 
 //Se debe de crear una funcion la cual haga la validacion de la boleta y el codigo que se le envia al correo del alumno,y al momento de pasar la primera validacion se genera un token para que se pueda crear la cuenta
 async function LoginUser(req, res) {
@@ -83,8 +110,8 @@ async function LoginUser(req, res) {
   if (result.error) {
     return res.status(400).json({ mensaje: 'Usuario o contraseña incorrectos' });
   }
-  return res.status(200).json({
+  return res.status(200).json({ 
     mensaje: `Inicio de sesión exitoso`
   });
 }
-module.exports = { LoginUser, registro };
+module.exports = {  LoginUser,registro };
