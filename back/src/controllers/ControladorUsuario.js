@@ -1,65 +1,20 @@
+const nodemailer = require('nodemailer');
 
-async function RegisterUser(req,res) {
-    const {boleta,correo, password} = req.body;  
-    
-    //Verificacion de la existencia de la boleta en la base de datos
-
-//En caso que no exista la boleta manda un error
-  if(validarBoleta(boleta)===false){
-    return res.status(400).json({ error: 'Boleta no registrada, verifica nuevamente que este bien escrita' });
-  }
-    const { registerUser } = require('../models/ModeloUsuario.js');
-    const result = await registerUser({ boleta,correo, password });
-    if (result.error) {
-        return res.status(400).json({ error: result.error.message });
-    }
-    return res.status(201).json({ user: result.data });
-
-  }
-async function ValidacionCodigo(req, res) {
-  try {
-    const { correo, codigo } = req.body;
-    
-    if (!correo || !codigo) {
-      return res.status(400).json({ error: "Faltan datos" });
-    }
-
-    const esValido = await validarCodigoVerificacion(correo, codigo);
-    if (!esValido) {
-      return res.status(400).json({ error: "Código de verificación incorrecto" });
-    }
-
-    // Generar token para creación de cuenta
-
-
-    return res.json({ message: "Código verificado", token });
-
-  } catch (err) {
-    console.error("Error en ValidacionCodigo:", err);
-    res.status(500).json({ error: "Error interno" });
-  }
-}
-//Validacion de la boleta
 async function registro(req, res) {
+  const {validarRegistro} = require('../models/ModeloUsuario.js');
   const { getClient } = require('../config/db.js');
   const supabase = getClient();
-  function validarBoleta(boleta) {
-    const {verificarBoleta}=require('../models/ModeloUsuario.js');
-    return true; // Placeholder
+
+  if (!req.body) {
+    return res.status(400).json({ error: 'No se recibió información' });
   }
 
   try {
     const { boleta, correo, password, confPsw } = req.body;
 
-    // VALIDACIONES
+    // VALIDACIONES (igual que tu código)
     if (!boleta || !correo || !password) {
       return res.status(400).json({ error: "Faltan datos" });
-    }
-
-    if (!validarBoleta(boleta)) {
-      return res.status(400).json({
-        error: "Boleta no registrada, verifica nuevamente que esté bien escrita"
-      });
     }
 
     if (password !== confPsw) {
@@ -67,30 +22,43 @@ async function registro(req, res) {
     }
 
     // CREAR USUARIO EN SUPABASE
-    const { data: userData, error: createError } =
-      await supabase.auth.admin.createUser({
-        email: correo,
-        password: password,
-        email_confirm: false,
-        user_metadata: { boleta }
-      });
+    const { data: userData, error: createError } = await supabase.auth.admin.createUser({
+      email: correo,
+      password: password,
+      email_confirm: false,
+      user_metadata: { boleta }
+    });
 
-    if (createError) {
-      return res.status(400).json({ error: createError.message });
-    }
+    if (createError) return res.status(400).json({ error: createError.message });
 
-    // ENVIAR CORREO DE VERIFICACIÓN
-    const { error: emailError } = await supabase.auth.admin.generateLink({
+    // GENERAR LINK DE VERIFICACIÓN
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: "signup",
       email: correo,
       options: {
-        redirectTo: "http://localhost:3000/verificado" // ← PON AQUÍ TU URL REAL
+        redirectTo: "http://127.0.0.1:5500/pantallasUs/confirmacionCorreo.html"
+      }
+    });
+    if (linkError) return res.status(400).json({ error: linkError.message });
+    const actionLink = linkData?.properties?.action_link;
+    // CONFIGURAR SMTP (Gmail)
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: "cbook.uttab@gmail.com",
+        pass: "yotg vlas dkfp qqbh"
       }
     });
 
-    if (emailError) {
-      return res.status(400).json({ error: emailError.message });
-    }
+    // ENVIAR CORREO
+    await transporter.sendMail({
+      from: '"Cbook" <cbook.uttab@gmail.com>',
+      to: correo,
+      subject: "Confirma tu correo",
+      html: `<p>Hola! Haz clic <a href="${actionLink}">aquí</a> para confirmar tu correo.</p>`
+    });
 
     return res.status(200).json({
       message: "Usuario creado. Revisa tu correo para verificar la cuenta."
@@ -101,6 +69,7 @@ async function registro(req, res) {
     res.status(500).json({ error: "Error interno" });
   }
 }
+
 
 //Se debe de crear una funcion la cual haga la validacion de la boleta y el codigo que se le envia al correo del alumno,y al momento de pasar la primera validacion se genera un token para que se pueda crear la cuenta
 async function LoginUser(req, res) {
@@ -114,8 +83,8 @@ async function LoginUser(req, res) {
   if (result.error) {
     return res.status(400).json({ mensaje: 'Usuario o contraseña incorrectos' });
   }
-  return res.status(200).json({ 
+  return res.status(200).json({
     mensaje: `Inicio de sesión exitoso`
   });
 }
-module.exports = { RegisterUser, LoginUser };
+module.exports = { LoginUser, registro };

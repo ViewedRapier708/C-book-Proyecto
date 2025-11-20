@@ -89,21 +89,39 @@ async function verificarBoleta(boleta) {
 
 }
 
-async function ValidacionCodigo(boleta) {
-
-}
-async function guardarCodigoVerificacion(correo, codigo) {
+async function validarRegistro(boleta) {
   const { getClient } = require('../config/db');
   const supabase = getClient();
-  const { data, error } = await supabase
-    .from('codigos_verificacion')
-    .insert([{ correo, codigo }]);
-
-  if (error) {
-    return { error, data: null };
-  } 
-
-  return true;
+  
+  try {
+    const { data, error } = await supabase
+      .from('usuarios_web_movil')
+      .select('boleta')
+      .eq('boleta', boleta)
+      .maybeSingle();
+    console.log(data);
+    console.log(error);
+    // Si hay error en la consulta
+    if (error) {
+      console.error('Error al validar registro:', error);
+      return { existe: false, error };
+    }
+    
+    // Si data existe, la boleta ya está registrada
+    if (data) {
+      return { existe: true, error: null };
+    }
+    
+    // Si data es null, la boleta NO está registrada
+    return { existe: false, error: null };
+    
+  } catch (err) {
+    console.error('Error en validarRegistro:', err);
+    return { existe: false, error: err };
+  }
 }
-module.exports = { loginUser, registerUser, verificarBoleta, ValidacionCodigo, guardarCodigoVerificacion };
+
+
+
+module.exports = { loginUser, registerUser, verificarBoleta,validarRegistro };
 
