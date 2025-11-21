@@ -52,14 +52,6 @@
                            maxlength="100" placeholder="Ingrese su contraseña">
                 </div>
                 
-                <!-- Mostrar contraseña, igual el js -->
-                <div class="form-row full-width checkbox-row">
-                    <div class="checkbox-container">
-                        <input type="checkbox" id="mostrar"   onclick="VizualizarPsw('mostrar', 'contrasena')">
-                        <label for="mostrar" class="checkbox-label">Mostrar Contraseña</label>
-                    </div>
-                </div>
-                
                 <!-- Confirmar contraseña, cofirmar -->
                 <div class="form-row full-width">
                     <label for="confirmar_contrasena" class="text-label">Confirmación de contraseña</label>
@@ -67,6 +59,16 @@
                            name="confirmar_contrasena" maxlength="100" 
                            placeholder="Ingrese nuevamente su contraseña">
                 </div>
+                
+                <!-- Mostrar contraseña, igual el js -->
+                <div class="form-row full-width checkbox-row">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="mostrar"   onclick="VizualizarPsw('mostrar', ['contrasena', 'confirmar_contrasena'])">
+                        <label for="mostrar" class="checkbox-label">Mostrar Contraseña</label>
+                    </div>
+                </div>
+                
+                
                 <div class="messaje"></div>
                 <!-- Botón de registro -->
                 <div class="form-row full-width">

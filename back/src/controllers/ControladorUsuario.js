@@ -53,7 +53,10 @@ async function registro(req, res) {
     }
 
     const actionLink = data?.properties?.action_link;
+
+    
 /*
+Codigo para enviar el correos 
     // CONFIGURAR SMTP (Gmail)
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
