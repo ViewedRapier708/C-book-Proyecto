@@ -64,18 +64,15 @@ p{margin:0 0 20px;color:rgba(255,255,255,0.85)}
 
 <div class="container" role="status" aria-live="polite">
     <div class="icon" aria-hidden="true">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
-            <path d="M3 8.5V18a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M21 6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v.5L12 13l9-6.5V6z" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+            <polyline points="22,6 12,13 2,6"></polyline>
         </svg>
     </div>
-
     <h1>Confirma tu correo electrónico</h1>
     <p>Hemos enviado un correo a la dirección que proporcionaste. Revisa tu bandeja de entrada (y la carpeta de spam) y sigue el enlace para activar tu cuenta.</p>
-
-    <a class="btn" href="../index.html">Ir al inicio</a>
-
-    <div class="small">Si no recibes el correo en unos minutos, contacta al soporte.</div>
+    <div class="esperando-confirmacion">
+    </div>
 </div>
 </body>
-</html>
+</html> 
