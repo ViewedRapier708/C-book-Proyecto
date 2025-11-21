@@ -39,33 +39,21 @@ async function registro(req, res) {
       return res.status(400).json({ error: "Las contraseñas no coinciden" });
     }
 
-    // CREAR USUARIO EN SUPABASE
-    const { data: userData, error: createError } = await supabase.auth.admin.createUser({
+    // GENERAR LINK DE VERIFICACIÓN
+    const { data, error } = await supabase.auth.signUp({
       email: correo,
       password: password,
-      email_confirm: false,
-      user_metadata: { boleta }
-    });
-
-    if (createError) {
-      return res.status(400).json({ error: createError.message });
-    }
-
-    // GENERAR LINK DE VERIFICACIÓN
-    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-      type: "signup",
-      email: correo,
       options: {
-        redirectTo: "https://viewedrapier708.github.io/C-book-Proyecto/pantallasUs/confirmacionCorreo.html"
+       emailRedirectTo: "https://viewedrapier708.github.io/C-book-Proyecto/pantallasUs/confirmacionCorreo.html",
+        data: { boleta } // metadata
       }
     });
-
-    if (linkError) {
-      return res.status(400).json({ error: linkError.message });
+    if (error) {
+      return res.status(400).json({ error: error.message });
     }
 
-    const actionLink = linkData?.properties?.action_link;
-
+    const actionLink = data?.properties?.action_link;
+/*
     // CONFIGURAR SMTP (Gmail)
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
@@ -87,7 +75,7 @@ async function registro(req, res) {
         <p>Si no solicitaste esta cuenta, ignora este correo.</p>
       `
     });
-
+*/
     return res.status(200).json({
       message: "Usuario creado. Revisa tu correo para verificar la cuenta."
     });
