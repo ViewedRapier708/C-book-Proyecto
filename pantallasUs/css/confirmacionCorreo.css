@@ -1,0 +1,159 @@
+:root{
+    /* Paleta de colores principal de la aplicación - CECyT Theme */
+    --app-bg: var(--color-bg, #f8f4f6);
+    --app-surface: var(--color-surface, #ffffff);
+    --app-text: var(--color-text, #2C2C2C);
+    --app-muted: var(--color-muted, #8C7E83);
+    --app-primary: var(--color-primary, #7B0233);
+    --app-primary-dark: var(--color-primary-dark, #5a0125);
+    --app-on-primary: var(--color-on-primary, #ffffff);
+    --app-success: var(--color-success, #9D306C);
+    --app-success-light: var(--color-success-light, #F2D9E3);
+    --app-border: var(--color-border, #e8d9e0);
+    --app-shadow: rgba(123, 2, 51, 0.15);
+}
+
+* { box-sizing: border-box }
+
+body{
+    margin:0;
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(135deg, var(--app-bg) 0%, color-mix(in srgb, var(--app-primary) 8%, var(--app-bg)) 100%);
+    color: var(--app-text);
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    line-height: 1.6;
+}
+
+.card{
+    width: 100%;
+    max-width: 540px;
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: 20px;
+    box-shadow: 
+        0 4px 6px -1px var(--app-shadow),
+        0 2px 4px -1px rgba(123, 2, 51, 0.08);
+    padding: 40px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover{
+    transform: translateY(-2px);
+    box-shadow: 
+        0 10px 15px -3px var(--app-shadow),
+        0 4px 6px -2px rgba(123, 2, 51, 0.12);
+}
+
+.icon{
+    width: 64px; 
+    height: 64px;
+    background: linear-gradient(135deg, var(--app-success-light) 0%, color-mix(in srgb, var(--app-success) 20%, #fff) 100%);
+    border: 2px solid color-mix(in srgb, var(--app-success) 30%, transparent);
+    border-radius: 50%;
+    display: grid; 
+    place-items: center;
+    margin-bottom: 20px;
+    animation: scaleIn 0.5s ease;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+h1{ 
+    margin: 0 0 12px; 
+    font-size: clamp(22px, 3vw, 30px);
+    font-weight: 700;
+    color: var(--app-text);
+    letter-spacing: -0.02em;
+}
+
+p{
+    margin: 0 0 16px;
+    color: color-mix(in srgb, var(--app-text) 85%, transparent);
+    line-height: 1.65;
+}
+
+.hint{ 
+    color: var(--app-muted); 
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.actions{ 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 12px; 
+    margin-top: 28px;
+}
+
+.footer{ 
+    margin-top: 32px; 
+    padding-top: 24px;
+    border-top: 1px solid var(--app-border);
+    font-size: 13px; 
+    color: var(--app-muted);
+    text-align: center;
+}
+
+@media (prefers-color-scheme: dark){
+    :root{
+        --app-bg: var(--color-bg, #1a0a0f);
+        --app-surface: var(--color-surface, #2a1520);
+        --app-text: var(--color-text, #f8f4f6);
+        --app-muted: var(--color-muted, #b39fa7);
+        --app-primary: var(--color-primary, #c93668);
+        --app-primary-dark: var(--color-primary-dark, #9D306C);
+        --app-success-light: var(--color-success-light, #3d1a2a);
+        --app-border: var(--color-border, #3d2830);
+        --app-shadow: rgba(199, 54, 104, 0.25);
+    }
+    
+    body{
+        background: linear-gradient(135deg, var(--app-bg) 0%, color-mix(in srgb, var(--app-primary) 10%, var(--app-bg)) 100%);
+    }
+    
+    .card{ 
+        box-shadow: 
+            0 10px 15px -3px rgba(123, 2, 51, 0.4),
+            0 4px 6px -2px rgba(123, 2, 51, 0.3);
+    }
+    
+    .card:hover{
+        box-shadow: 
+            0 20px 25px -5px rgba(123, 2, 51, 0.5),
+            0 10px 10px -5px rgba(123, 2, 51, 0.4);
+    }
+    
+    .icon{ 
+        background: linear-gradient(135deg, var(--app-success-light) 0%, color-mix(in srgb, var(--app-success) 25%, transparent) 100%);
+        border-color: color-mix(in srgb, var(--app-success) 40%, transparent);
+    }
+}
+
+/* Responsive */
+@media (max-width: 480px){
+    .card{
+        padding: 28px 24px;
+        border-radius: 16px;
+    }
+    
+    h1{
+        font-size: 24px;
+    }
+    
+    .icon{
+        width: 56px;
+        height: 56px;
+    }
+}
