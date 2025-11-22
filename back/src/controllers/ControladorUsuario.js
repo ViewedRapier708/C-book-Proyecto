@@ -88,7 +88,12 @@ Codigo para enviar el correos
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }
+async function verificarConfirmacionCorreo(boleta) {
+  const supabase = getClient();
+  const { data, error } = await supabase.from('usuarios').select('confirmado').eq('email', boleta).single();
 
+
+}
 //Se debe de crear una funcion la cual haga la validacion de la boleta y el codigo que se le envia al correo del alumno,y al momento de pasar la primera validacion se genera un token para que se pueda crear la cuenta
 async function LoginUser(req, res) {
   const { loginUser } = require('../models/ModeloUsuario.js');
