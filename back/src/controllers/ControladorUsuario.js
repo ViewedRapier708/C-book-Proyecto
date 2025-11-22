@@ -52,9 +52,7 @@ async function registro(req, res) {
       return res.status(400).json({ error: error.message });
     }
 
-    const actionLink = data?.properties?.action_link;
-
-    
+ 
 /*
 Codigo para enviar el correos 
     // CONFIGURAR SMTP (Gmail)
@@ -88,7 +86,9 @@ Codigo para enviar el correos
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }
+async function crearCuenta(req, res) {
 
+}
 //Se debe de crear una funcion la cual haga la validacion de la boleta y el codigo que se le envia al correo del alumno,y al momento de pasar la primera validacion se genera un token para que se pueda crear la cuenta
 async function LoginUser(req, res) {
   const { loginUser } = require('../models/ModeloUsuario.js');

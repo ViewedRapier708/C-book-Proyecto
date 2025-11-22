@@ -34,44 +34,6 @@ const supabase = getClient();
   return { error: null, data: safeUser };
 }
 
-//Funcion para registrar a un nuevo usuario en base a la existencia de la boleta
-async function registerUser({ boleta, correo, password, tiene_documentos = false }) {
-  const bcrypt = require('bcryptjs');
-  const { getClient } = require('../config/db');
-  const supabase = getClient();
-  try {
-    // Verificar que la boleta no exista
-    const { data: existing, error: checkError } = await supabase
-      .from('usuarios_web_movil')
-      .select('boleta')
-      .eq('boleta', boleta)
-      .maybeSingle();
-
-    if (checkError) return { error: checkError, data: null };
-    if (existing) return { error: new Error('Boleta ya registrada'), data: null };
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const { data, error } = await supabase
-      .from('usuarios_web_movil')
-      .insert([{
-        boleta,
-        nombre,
-        apellido,
-        correo,
-        password: hashedPassword,
-        tiene_documentos
-      }])
-      .select('boleta, nombre, apellido, correo, tiene_documentos')
-      .single();
-
-    if (error) return { error, data: null };
-    return { error: null, data };
-  } catch (err) {
-    return { error: err instanceof Error ? err : new Error('Error interno'), data: null };
-  }
-}
-
 //Este modelo se aplica al momento de hacer la solicitud de la creacion de la cuenta para que el sistema pueda mandar el codigo de verificacion al correo del alumno
 async function verificarBoleta(boleta) {
   const { getClient } = require('../config/db');
@@ -123,5 +85,5 @@ async function validarRegistro(boleta) {
 
 
 
-module.exports = { loginUser, registerUser, verificarBoleta,validarRegistro };
+module.exports = { loginUser,  verificarBoleta,validarRegistro };
 
