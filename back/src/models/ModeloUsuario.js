@@ -50,12 +50,12 @@ async function verificarBoleta(boleta) {
   return true;
 
 }
-
-async function validarRegistro(correo) {
+//Validacion si no hay alguna cuenta con la misma boleta
+async function validarBoleta(boleta) {
   const { getClient } = require('../config/db');
   const supabase = getClient();
   try {
-    const { data, error } = await supabase.from('auth.users').select('email_confirmed_at').eq('email', correo).single();
+    const { data, error } = await supabase.from('auth.users').select('raw_user_meta_data').eq('raw_user_meta_data.boleta', boleta).single();
 
     if (error) return false;
 
@@ -68,9 +68,5 @@ async function validarRegistro(correo) {
 
 
 
-<<<<<<< HEAD
-module.exports = { loginUser,  verificarBoleta,validarRegistro };
-=======
-module.exports = { loginUser, registerUser, verificarBoleta, validarRegistro };
->>>>>>> 4fbf9ac48c91ac725764d4e348f876f1a5d5355f
+module.exports = { loginUser, verificarBoleta, validarBoleta };
 
