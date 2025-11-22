@@ -70,7 +70,7 @@ function registro(event){
        
     })
     .catch(error => {
-        mensajeDiv.textContent = 'Error en el registro. Intenta nuevamente.';
-        mensajeDiv.style.color = 'red';
+        //Depuracion de errores
+        return console.error('Error:', error);
     });
 }

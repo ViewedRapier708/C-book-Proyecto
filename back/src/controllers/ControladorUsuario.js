@@ -2,7 +2,34 @@
 const nodemailer = require('nodemailer');
 const { getClient } = require('../config/db.js');
 const { validarRegistro } = require('../models/ModeloUsuario.js');
+async function verifyUser(req, res) {
 
+
+
+
+
+
+
+
+
+  const supabase = getClient();
+  const { correo } = req.body;
+  if (!correo) {
+    return res.status(400).json({ error: 'Falta ingresar algun correo' });
+  }
+  try {
+    const { data, error } = await supabase.from('auth.users').select('email_confirmed_at').eq('email', correo).single();
+    if (error) {
+      return res.status(400).json({ error: 'Error al verificar el correo' });
+    }
+    if (data && data.email_confirmed_at) {
+      return res.status(200).json({ verificado: true });
+    }
+    return res.status(200).json({ verificado: false });
+  } catch (err) {
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+} 
 async function registro(req, res) {
   const supabase = getClient();
 
@@ -52,7 +79,6 @@ async function registro(req, res) {
       return res.status(400).json({ error: error.message });
     }
 
-    const actionLink = data?.properties?.action_link;
 
     
 /*
@@ -87,6 +113,10 @@ Codigo para enviar el correos
     console.error("Error en registro:", err);
     res.status(500).json({ error: "Error interno del servidor" });
   }
+}
+function verificarExistencia() {
+  const supabase = getClient();
+  // Lógica para verificar existencia
 }
 async function verificarConfirmacionCorreo(boleta) {
   const supabase = getClient();
