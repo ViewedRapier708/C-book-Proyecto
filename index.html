@@ -1,12 +1,11 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <script src="/"></script>
- <script src="./funciones/funcionesDeValidacion/MostrarPsw.js"></script>
- <script src="funciones/funcionInicioSesion.js"></script>
+    <script src="/"></script>
+    <script src="./funciones/funcionesDeValidacion/MostrarPsw.js"></script>
+    <script src="funciones/funcionInicioSesion.js"></script>
 
     <link rel="stylesheet" href="./cssGeneral/styleIndex.css">
     <link rel="shortcut icon" href="/C-book-Proyecto/img/logo_C_Book.jpg" type="image/x-icon">
@@ -25,57 +24,68 @@
             <img src="./img/logo-IPN.png" alt="Logo IPN">
         </div>
     </header>
-
     
-    <div class="container-main">
-        <div class="container-form">
-            
-            <div class="container-title">
-                <h2>INICIAR SESION</h2>
+    
+    <div class="content-wrapper">
+        
+        <div class="Container-info">
+            <div class="Container-text-info">
+                <h2>C-Book</h2>
+                <p>¿Qué es C-book?</p>
+                <p>C-book es una plataforma digital creada para facilitar el acceso a recursos educativos y fomentar el aprendizaje en línea. Nuestro objetivo es proporcionar a los estudiantes y educadores una herramienta eficiente y accesible para compartir conocimientos y materiales de estudio.</p>
             </div>
-            <form id="form" onsubmit="return iniciarSesion(event)">
-                
-                <label for="boleta">Usuario</label>
-                <input 
-                    type="text" 
-                    id="boleta" 
-                    name="boleta" 
-                    placeholder="Ingrese su usuario"
-                    onkeypress="return ValidarCamposNumericos(event)" 
-                    maxlength="10"
-                    required>
-
-                <label for="password">Contraseña</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    placeholder="Ingrese su contraseña"
-                    onkeypress="return ValidarCamposPassword(event)"
-                    required>
-                
-                <div class="checkbox-container">
-                    <input 
-                        type="checkbox" 
-                        id="mostrar" 
-                        onclick="VizualizarPsw('mostrar', 'password')"
-                    >
-                    <label for="mostrar">Mostrar contraseña</label>
+        </div>
+        
+        
+        <div class="container-main">
+            <div class="container-form">
+                <div class="container-title">
+                    <h2>INICIAR SESIÓN</h2>
                 </div>
-                <div class="messaje"></div>
-                <button type="submit" class="btn-crear-cuenta">ACCEDER</button>
+                <form id="form" onsubmit="return iniciarSesion(event)">
+                    
+                    <label for="boleta">Usuario</label>
+                    <input 
+                        type="text" 
+                        id="boleta" 
+                        name="boleta" 
+                        placeholder="Ingrese su usuario"
+                        onkeypress="return ValidarCamposNumericos(event)" 
+                        maxlength="10"
+                        required>
 
-                <div class="separator">O</div>
-                <button class="btn-crear-cuenta" onclick="window.open('./pantallasUs/registro.html')"> Crear cuenta</button>
-            
+                    <label for="password">Contraseña</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        placeholder="Ingrese su contraseña"
+                        onkeypress="return ValidarCamposPassword(event)"
+                        required>
+                    
+                    <div class="checkbox-container">
+                        <input 
+                            type="checkbox" 
+                            id="mostrar" 
+                            onclick="VizualizarPsw('mostrar', 'password')"
+                        >
+                        <label for="mostrar">Mostrar contraseña</label>
+                    </div>
+                    <div class="messaje"></div>
+                    <button type="submit" class="btn-crear-cuenta">ACCEDER</button>
+
+                    <div class="separator">O</div>
+                    <button class="btn-crear-cuenta" onclick="window.open('./pantallasUs/registro.html')"> Crear cuenta</button>
                 
-                
-                <div class="divider"></div> 
-                <a href="./PantallasAdmin/admin.html">admin</a>
-                <a href="./pantallasUs/usuario.html">usuario</a>
+                    
+                    
+                    <div class="divider"></div> 
+                    <a href="./PantallasAdmin/admin.html">admin</a>
+                    <a href="./pantallasUs/usuario.html">usuario</a>
 
 
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </body>
