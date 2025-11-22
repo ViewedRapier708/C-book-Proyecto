@@ -2,7 +2,34 @@
 const nodemailer = require('nodemailer');
 const { getClient } = require('../config/db.js');
 const { validarRegistro } = require('../models/ModeloUsuario.js');
+async function verifyUser(req, res) {
 
+
+
+
+
+
+
+
+
+  const supabase = getClient();
+  const { correo } = req.body;
+  if (!correo) {
+    return res.status(400).json({ error: 'Falta ingresar algun correo' });
+  }
+  try {
+    const { data, error } = await supabase.from('auth.users').select('email_confirmed_at').eq('email', correo).single();
+    if (error) {
+      return res.status(400).json({ error: 'Error al verificar el correo' });
+    }
+    if (data && data.email_confirmed_at) {
+      return res.status(200).json({ verificado: true });
+    }
+    return res.status(200).json({ verificado: false });
+  } catch (err) {
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+} 
 async function registro(req, res) {
   const supabase = getClient();
 
@@ -52,7 +79,12 @@ async function registro(req, res) {
       return res.status(400).json({ error: error.message });
     }
 
+<<<<<<< HEAD
  
+=======
+
+    
+>>>>>>> 4fbf9ac48c91ac725764d4e348f876f1a5d5355f
 /*
 Codigo para enviar el correos 
     // CONFIGURAR SMTP (Gmail)
@@ -86,8 +118,20 @@ Codigo para enviar el correos
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }
+<<<<<<< HEAD
 async function crearCuenta(req, res) {
 
+=======
+function verificarExistencia() {
+  const supabase = getClient();
+  // Lógica para verificar existencia
+}
+async function verificarConfirmacionCorreo(boleta) {
+  const supabase = getClient();
+  const { data, error } = await supabase.from('usuarios').select('confirmado').eq('email', boleta).single();
+
+
+>>>>>>> 4fbf9ac48c91ac725764d4e348f876f1a5d5355f
 }
 //Se debe de crear una funcion la cual haga la validacion de la boleta y el codigo que se le envia al correo del alumno,y al momento de pasar la primera validacion se genera un token para que se pueda crear la cuenta
 async function LoginUser(req, res) {

@@ -164,7 +164,7 @@ aside::-webkit-scrollbar-thumb:hover,
     display: flex;
     align-items: center;
     padding: 0.9rem 1rem;
-    color: #333;
+    color: #000000;
     text-decoration: none;
     font-size: 0.9rem;
     font-weight: 500;
@@ -198,8 +198,7 @@ aside::-webkit-scrollbar-thumb:hover,
     color: #FFFFFF;
     border-color: #7B0233;
     transform: translateX(5px);
-    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.2);
-  
+    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.3);
 }
 
 .btn-cerrar-sesion {
@@ -216,20 +215,22 @@ aside::-webkit-scrollbar-thumb:hover,
 }
 
 .btn-cerrar-sesion .link-secciones {
-    background: rgba(155, 48, 108, 0.8);
-    color: #FFFFFF;
-    border: none;
+    background: #FFFFFF;
+    color: #000000;
+    border: 2px solid #E8E8E8;
     font-weight: 700;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .btn-cerrar-sesion .link-secciones::before {
-    display: none;
+    background: linear-gradient(90deg, #7B0233, #9D306C);
 }
 
 .btn-cerrar-sesion .link-secciones:hover {
-    background: linear-gradient(135deg, #9D306C 0%, #B0387A 100%);
+    background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
+    color: #FFFFFF;
+    border-color: #7B0233;
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(123, 2, 51, 0.4);
 }
@@ -268,37 +269,7 @@ aside::-webkit-scrollbar-thumb:hover,
         font-size: 1.8rem;
     }
 }
-.btn-secciones button:hover,
-.btn-cerrar-sesion button:hover{
-    background-color: #9D306C;
-    transform: translateY(-2px);
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
-    color: white;
-}
-.link-secciones {
-    text-decoration: none;
-    color: #333;
-    font-size: 14px;
-    font-weight: 500;
-    display: block;
-    width: 100%;
-    text-align: left;
-}
-.link-secciones,
-.link-secciones {
-    color: white;
-}
-.btn-cerrar-sesion {
-    margin-top: 30px;
-    padding: 0 10px;
-}
-.btn-cerrar-sesion button {
-    background-color: rgba(155, 48, 108, 0.8);
-    color: white;
-}
-.btn-cerrar-sesion button:hover {
-    background-color: #7B0233;
-}
+
 .container-txtInicio {
     flex: 1;
     display: flex;

@@ -37,7 +37,40 @@ function registro(event){
         mensajeDiv.style.color='red';
         return;
     }
+    //Almacenar los datos en un objeto y guardarlos en localStorage
+    const datosRegistro={
+        boleta:boleta,
+        correo:correo,
+        password:password,
+        confPsw:confPsw
+    };
+    localStorage.setItem('datosRegistro', JSON.stringify(datosRegistro));
 
     //Petición al servidor
-    
+    const respuesta=fetch('http://localhost:3000/registro',{
+        method:'POST',
+        headers:{
+            'Content-Type':'application/json'
+        },
+        body: JSON.stringify({
+            boleta:boleta,
+            correo:correo,
+            password:password,
+            confPsw:confPsw
+        })
+    });
+    respuesta.then(res=>res.json())
+    .then(data=>{
+        if(data.error){
+            mensajeDiv.textContent = data.error;
+            mensajeDiv.style.color = 'red';
+            return;
+        }
+        window.location.href = '/pantallasUs/confirmacionCorreo.html';
+       
+    })
+    .catch(error => {
+        //Depuracion de errores
+        return console.error('Error:', error);
+    });
 }
