@@ -1,7 +1,7 @@
 // archivo: controllers/registro.js
 
 const { getClient } = require('../config/db.js');
-const { validarRegistro } = require('../models/ModeloUsuario.js');
+const { validarRegistro, RegisterUserAuth } = require('../models/ModeloUsuario.js');
 //Se hace el bucle en el front con la peticion fetch para validar si el usuario ya confirmo su correo
 function verifyUser(req, res) {
   const {boleta} = req.body;
@@ -16,9 +16,14 @@ function verifyUser(req, res) {
   if (!emailConfirmed) {
     return res.status(200).json({confirmado: false });
   }
-  return res.status(200).json({confirmado: true });
+ 
 } 
-async function registro(req, res) {
+function crearUsuario(boleta, correo) {
+  
+}
+
+
+async function RegisterUserAuth(req, res) {
   const supabase = getClient();
 
   if (!req.body) {
@@ -56,7 +61,7 @@ async function registro(req, res) {
     }
 
     //crear usuario en supabase auth y se envia al correo de confirmacion
-   const resultadoRegistro = await RegisterUser(boleta, correo, password);
+   const resultadoRegistro = await RegisterUserAuth(boleta, correo, password);
     if (!resultadoRegistro) {
       return res.status(400).json({ error: "Error al registrar usuario" });
     }
@@ -115,4 +120,4 @@ async function LoginUser(req, res) {
     mensaje: `Inicio de sesión exitoso`
   });
 }
-module.exports = {  LoginUser,registro };
+module.exports = {  LoginUser,RegisterUserAuth,verifyUser };

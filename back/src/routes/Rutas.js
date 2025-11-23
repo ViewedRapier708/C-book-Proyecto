@@ -6,6 +6,7 @@ const controladorSolicitudes = require('../controllers/ControladorSolicitudes.js
 const {verificarDisponibilidad} = require('../middleware/verificacionRecursos.js');
 router.post('/login', LoginUser);
 router.post('/registro', registro);
+router.post('/registro/verificarUsuario', verifyUser);
 router.get('/recursos', obtenerRecursosPorTipo);
 router.post('/solicitud', verificarDisponibilidad, controladorSolicitudes.crearSolicitud);
 

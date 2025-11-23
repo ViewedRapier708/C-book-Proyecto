@@ -34,22 +34,6 @@ async function loginUser(boleta, password) {
   return { error: null, data: safeUser };
 }
 
-//Este modelo se aplica al momento de hacer la solicitud de la creacion de la cuenta para que el sistema pueda mandar el codigo de verificacion al correo del alumno
-async function verificarBoleta(boleta) {
-  const { getClient } = require('../config/db');
-  const supabase = getClient();
-  const { data, error } = await supabase
-    .from('usuarios_web_movil')
-    .select('boleta')
-    .eq('boleta', boleta)
-    .maybeSingle();
-
-  if (error) {
-    return false;
-  }
-  return true;
-
-}
 //Validacion si no hay alguna cuenta con la misma boleta
 async function validarBoleta(boleta) {
   const { getClient } = require('../config/db');
@@ -66,7 +50,49 @@ async function validarBoleta(boleta) {
   }
 }
 
+async function RegisterUserAuth(boleta,correo,password) {
+  const { getClient } = require('../config/db');
+  const supabase = getClient();
+  try {
+      const { data, error } = await supabase.auth.signUp({
+      email: correo,
+      password: password,
+      options: {
+       emailRedirectTo: "https://viewedrapier708.github.io/C-book-Proyecto/pantallasUs/confirmacionCorreo.html",
+        data: { boleta } // metadata
+      }
+    });
+    if (error) {
+      return false;
+    }
+  if (data) {
+      return true;
+  }  
+  } catch (error) {
+    
+  }
+}
+async function validarConfirmacion(boleta) {
+  const { getClient } = require('../config/db');
+  const supabase = getClient();
+  try {
+    const { data, error } = await supabase.from('auth.users').select('email_confirmed_at').eq('raw_user_meta_data.boleta', boleta).single();
+    if (error) return false;
 
+    if (data && data.email_confirmed_at) {
+      return true;
+    }
+    
+  } catch (error) {
 
-module.exports = { loginUser, verificarBoleta, validarBoleta };
+    return false;
+  }
+}
 
+function createUser(boleta, correo) {
+  const { getClient } = require('../config/db');
+  const supabase = getClient();
+  supabase.from('usuarios_web_movil').insert([{ boleta: boleta, correo: correo, tiene_documentos: false }]);
+}
+
+module.exports = { loginUser, RegisterUserAuth, validarBoleta, validarConfirmacion, createUser };

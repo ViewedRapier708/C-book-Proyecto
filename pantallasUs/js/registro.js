@@ -1,6 +1,8 @@
-function registro(event){
+async function registro(event){
+
         event.preventDefault();
-    //Se recuperan los datos del formulario
+    const url='https://c-book-proyecto.onrender.com/api/registro';
+        //Se recuperan los datos del formulario
     const regularExpCorreo=/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const regularExpPassword=/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,16}$/;
     const boleta=document.getElementById("boleta").value;
@@ -37,40 +39,10 @@ function registro(event){
         mensajeDiv.style.color='red';
         return;
     }
-    //Almacenar los datos en un objeto y guardarlos en localStorage
-    const datosRegistro={
-        boleta:boleta,
-        correo:correo,
-        password:password,
-        confPsw:confPsw
-    };
-    localStorage.setItem('datosRegistro', JSON.stringify(datosRegistro));
 
     //Petición al servidor
-    const respuesta=fetch('http://localhost:3000/registro',{
-        method:'POST',
-        headers:{
-            'Content-Type':'application/json'
-        },
-        body: JSON.stringify({
-            boleta:boleta,
-            correo:correo,
-            password:password,
-            confPsw:confPsw
-        })
-    });
-    respuesta.then(res=>res.json())
-    .then(data=>{
-        if(data.error){
-            mensajeDiv.textContent = data.error;
-            mensajeDiv.style.color = 'red';
-            return;
-        }
-        window.location.href = '/pantallasUs/confirmacionCorreo.html';
-       
-    })
-    .catch(error => {
-        //Depuracion de errores
-        return console.error('Error:', error);
+        const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' }
     });
 }
