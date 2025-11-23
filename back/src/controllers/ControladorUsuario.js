@@ -1,34 +1,22 @@
 // archivo: controllers/registro.js
-const nodemailer = require('nodemailer');
+
 const { getClient } = require('../config/db.js');
 const { validarRegistro } = require('../models/ModeloUsuario.js');
-async function verifyUser(req, res) {
-
-
-
-
-
-
-
-
-
-  const supabase = getClient();
-  const { correo } = req.body;
-  if (!correo) {
-    return res.status(400).json({ error: 'Falta ingresar algun correo' });
+//Se hace el bucle en el front con la peticion fetch para validar si el usuario ya confirmo su correo
+function verifyUser(req, res) {
+  const {boleta} = req.body;
+  if (!boleta) {
+    return res.status(400).json({ error: 'Falta ingresar alguna boleta' });
   }
-  try {
-    const { data, error } = await supabase.from('auth.users').select('email_confirmed_at').eq('email', correo).single();
-    if (error) {
-      return res.status(400).json({ error: 'Error al verificar el correo' });
-    }
-    if (data && data.email_confirmed_at) {
-      return res.status(200).json({ verificado: true });
-    }
-    return res.status(200).json({ verificado: false });
-  } catch (err) {
-    return res.status(500).json({ error: 'Error interno del servidor' });
+  if(!/^\d{10}$/.test(boleta)){
+    return res.status(400).json({ error: 'Boleta con formato invalido (solo 10 números)' });
   }
+  const {validarConfirmacion} =require('../models/ModeloUsuario.js');
+  const emailConfirmed = validarConfirmacion(boleta);
+  if (!emailConfirmed) {
+    return res.status(200).json({confirmado: false });
+  }
+  return res.status(200).json({confirmado: true });
 } 
 async function registro(req, res) {
   const supabase = getClient();
@@ -39,6 +27,7 @@ async function registro(req, res) {
 
   try {
     const { boleta, correo, password, confPsw } = req.body;
+   const {RegisterUser} = require('../models/ModeloUsuario.js');
     console.log(boleta, correo, password, confPsw);
 
     // VALIDACIONES
@@ -49,9 +38,9 @@ async function registro(req, res) {
     if (boleta.length !== 10 || !/^\d{10}$/.test(boleta)) {
       return res.status(400).json({ error: "Boleta con formato invalido (solo 10 números)" });
     }
-
-    if ((await validarRegistro(boleta)).existe) {
-      return res.status(400).json({ error: "Boleta ya registrada" });
+    // Verificar si la boleta ya está registrada en otra cuenta 
+    if ((await validarBoleta(boleta)).existe) {
+      return res.status(400).json({ error: "Boleta ya registrada en otra cuenta contacte al administrador en caso de problemas" });
     }
 
     if (!/^[\w.-]+@[\w.-]+\.\w+$/.test(correo)) {
@@ -66,25 +55,14 @@ async function registro(req, res) {
       return res.status(400).json({ error: "Las contraseñas no coinciden" });
     }
 
-    // GENERAR LINK DE VERIFICACIÓN
-    const { data, error } = await supabase.auth.signUp({
-      email: correo,
-      password: password,
-      options: {
-       emailRedirectTo: "https://viewedrapier708.github.io/C-book-Proyecto/pantallasUs/confirmacionCorreo.html",
-        data: { boleta } // metadata
-      }
-    });
-    if (error) {
-      return res.status(400).json({ error: error.message });
+    //crear usuario en supabase auth y se envia al correo de confirmacion
+   const resultadoRegistro = await RegisterUser(boleta, correo, password);
+    if (!resultadoRegistro) {
+      return res.status(400).json({ error: "Error al registrar usuario" });
     }
 
-<<<<<<< HEAD
- 
-=======
 
     
->>>>>>> 4fbf9ac48c91ac725764d4e348f876f1a5d5355f
 /*
 Codigo para enviar el correos 
     // CONFIGURAR SMTP (Gmail)
@@ -118,21 +96,9 @@ Codigo para enviar el correos
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }
-<<<<<<< HEAD
-async function crearCuenta(req, res) {
-
-=======
-function verificarExistencia() {
-  const supabase = getClient();
-  // Lógica para verificar existencia
-}
-async function verificarConfirmacionCorreo(boleta) {
-  const supabase = getClient();
-  const { data, error } = await supabase.from('usuarios').select('confirmado').eq('email', boleta).single();
 
 
->>>>>>> 4fbf9ac48c91ac725764d4e348f876f1a5d5355f
-}
+
 //Se debe de crear una funcion la cual haga la validacion de la boleta y el codigo que se le envia al correo del alumno,y al momento de pasar la primera validacion se genera un token para que se pueda crear la cuenta
 async function LoginUser(req, res) {
   const { loginUser } = require('../models/ModeloUsuario.js');
