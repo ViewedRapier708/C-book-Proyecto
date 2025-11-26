@@ -1,12 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const { LoginUser,registro } = require('../controllers/ControladorUsuario.js');
+const { LoginUser,RegisterUserAuth,verifyUser } = require('../controllers/ControladorUsuario.js');
 const { obtenerRecursosPorTipo } = require('../controllers/ControladorRecursos.js');
 const controladorSolicitudes = require('../controllers/ControladorSolicitudes.js');
 const {verificarDisponibilidad} = require('../middleware/verificacionRecursos.js');
-router.post('/login', LoginUser);
-router.post('/registro', registro);
-router.post('/registro/verificarUsuario', verifyUser);
+
+
+
+
+
+//Rutas de usuario
+router.post('/login', LoginUser);//Posible eliminacion y cambio a frontend
+router.post('/registro', RegisterUserAuth);
+router.post('/registro/verificarUsuario', verifyUser);//Ruta para verificar el usuario mediante el codigo enviado al correo
+
+
+//Rutas de recursos y solicitudes
 router.get('/recursos', obtenerRecursosPorTipo);
 router.post('/solicitud', verificarDisponibilidad, controladorSolicitudes.crearSolicitud);
 

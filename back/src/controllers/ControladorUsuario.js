@@ -1,9 +1,7 @@
-// archivo: controllers/registro.js
-
 const { getClient } = require('../config/db.js');
-const { validarRegistro, RegisterUserAuth } = require('../models/ModeloUsuario.js');
-//Se hace el bucle en el front con la peticion fetch para validar si el usuario ya confirmo su correo
+//Se hace la verificacion y la creacion de usuario en base al correo confirmado
 function verifyUser(req, res) {
+  const {createUser} = require('../models/ModeloUsuario');
   const {boleta} = req.body;
   if (!boleta) {
     return res.status(400).json({ error: 'Falta ingresar alguna boleta' });
@@ -16,6 +14,7 @@ function verifyUser(req, res) {
   if (!emailConfirmed) {
     return res.status(200).json({confirmado: false });
   }
+<<<<<<< HEAD
   if (emailConfirmed) {
     crearUsuario(boleta);
   }
@@ -25,6 +24,16 @@ function crearUsuario(boleta) {
 
 }
 
+=======
+  //Crear usuario en la tabla usuarios_web_movil despues de la confirmacion de correo
+  createUser(boleta).then(() => {
+    return res.status(200).json({ mensaje: 'Usuario creado exitosamente', confirmado: true });
+  }).catch((error) => {
+    console.error("Error al crear usuario en usuarios_web_movil:", error);
+    return res.status(400).json({ error: 'Error al crear usuario en la base de datos' });
+  });
+} 
+>>>>>>> 09f1c79810e999d44e87ec669893548c95e6bff3
 
 async function RegisterUserAuth(req, res) {
   const supabase = getClient();
@@ -35,8 +44,7 @@ async function RegisterUserAuth(req, res) {
 
   try {
     const { boleta, correo, password, confPsw } = req.body;
-   const {RegisterUser} = require('../models/ModeloUsuario.js');
-    console.log(boleta, correo, password, confPsw);
+   const {RegisterUserAuth} = require('../models/ModeloUsuario.js');
 
     // VALIDACIONES
     if (!boleta || !correo || !password || !confPsw) {
@@ -65,12 +73,12 @@ async function RegisterUserAuth(req, res) {
 
     //crear usuario en supabase auth y se envia al correo de confirmacion
    const resultadoRegistro = await RegisterUserAuth(boleta, correo, password);
-    if (!resultadoRegistro) {
+
+   console.log("Resultado del registro:", resultadoRegistro); // Debug
+   
+   if (!resultadoRegistro) {
       return res.status(400).json({ error: "Error al registrar usuario" });
     }
-
-
-    
 /*
 Codigo para enviar el correos 
     // CONFIGURAR SMTP (Gmail)
@@ -104,23 +112,28 @@ Codigo para enviar el correos
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }
-
-
-
 //Se debe de crear una funcion la cual haga la validacion de la boleta y el codigo que se le envia al correo del alumno,y al momento de pasar la primera validacion se genera un token para que se pueda crear la cuenta
+/*
 async function LoginUser(req, res) {
   const { loginUser } = require('../models/ModeloUsuario.js');
   const { boleta, password } = req.body;
   if (!boleta || !password) {
     return res.status(400).json({ error: 'Faltan boleta o contraseña' });
   }
+  
   const result = await loginUser(boleta, password);
-  console.log(result.error);
+  
   if (result.error) {
+    console.error("Login error:", result.error);
     return res.status(400).json({ mensaje: 'Usuario o contraseña incorrectos' });
   }
+
+  // result.data contiene { user, session } de Supabase Auth
   return res.status(200).json({ 
-    mensaje: `Inicio de sesión exitoso`
+    mensaje: 'Inicio de sesión exitoso',
+    session: result.data.session,
+    user: result.data.user
   });
-}
-module.exports = {  LoginUser,RegisterUserAuth,verifyUser };
+}\
+*/
+module.exports = {  /*LoginUser,*/ RegisterUserAuth, verifyUser };

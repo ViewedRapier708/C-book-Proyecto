@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="css/componentes/areaConsulta.css">
     <link rel="stylesheet" href="css/componentes/cancelarSolicitudes.css">
     <link rel="shortcut icon" href="../img/logo_C_Book.jpg" type="image/x-icon">
+    <script src="../funciones/sessionGuard.js"></script>
 </head>
 <body>
     
@@ -41,7 +42,7 @@
                     <a href="#" class="link-secciones nav-link" data-component="cancelarSolicitudes" data-title="VISUALIZAR MIS SOLICITUDES">Visualizar Solicitudes Hechas</a>
                 </div>
                 <div class="btn-cerrar-sesion">
-                    <a href="../index.html" class="link-secciones">Cerrar Sesión</a>
+                    <a href="#" class="link-secciones" onclick="logout()">Cerrar Sesión</a>
                 </div>
             </div>
         </div>

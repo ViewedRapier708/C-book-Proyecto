@@ -1,7 +1,7 @@
 async function registro(event){
 
         event.preventDefault();
-    const url='https://c-book-proyecto.onrender.com/api/registro';
+    const url='http://localhost:3000/registro';
         //Se recuperan los datos del formulario
     const regularExpCorreo=/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const regularExpPassword=/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,16}$/;
@@ -40,9 +40,12 @@ async function registro(event){
         return;
     }
 
+    const datosRegistro={
+        boleta:boleta,
+        correo:correo,
+        password:password
+    };
+    localStorage.setItem('dataUser', datosRegistro);
+     // Guardar la boleta en el almacenamiento local
     //Petición al servidor
-        const resp = await fetch(url, {
-      method: 'POST',
-      headers: { 'Accept': 'application/json' }
-    });
 }

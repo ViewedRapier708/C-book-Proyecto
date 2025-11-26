@@ -27,12 +27,21 @@ async function iniciarSesion(event) {
             mensajeDiv.textContent = `${data.mensaje || 'Usuario o contraseña incorrectos'}`;
             mensajeDiv.style.color = 'red';
         } else {
+            // Guardar sesión de Supabase en localStorage
+            if (data.session && data.session.access_token) {
+                localStorage.setItem('sb-access-token', data.session.access_token);
+                localStorage.setItem('sb-refresh-token', data.session.refresh_token);
+                if (data.user) {
+                    localStorage.setItem('sb-user', JSON.stringify(data.user));
+                }
+            }
+
             mensajeDiv.textContent = `${data.mensaje || 'Inicio de sesión correcto'}`;
             mensajeDiv.style.color = 'green';
-            // Redirigir al dashboard (ruta relativa desde index.html)
+            // Redirigir al dashboard
             setTimeout(() => {
-                console.log('Redirigiendo a pantallasUs/postInicio.html');
-                window.location.href = './pantallasUs/postInicio.html';
+                console.log('Redirigiendo a pantallasUs/usuario.html');
+                window.location.href = './pantallasUs/usuario.html';
             }, 600);
         }
         return false; // asegura que el form no recargue
