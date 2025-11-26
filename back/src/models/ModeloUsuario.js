@@ -88,11 +88,21 @@ async function validarConfirmacion(boleta) {
     return false;
   }
 }
-
-function createUser(boleta, correo) {
+function getUserAuth(boleta) {
   const { getClient } = require('../config/db');
   const supabase = getClient();
-  supabase.from('usuarios_web_movil').insert([{ boleta: boleta, correo: correo, tiene_documentos: false }]);
+  const { data, error } = supabase.from('auth.users').select('email,encrypted_password').eq('raw_user_meta_data.boleta', boleta).single();
+  if (error) {
+    return null;
+  }
+  return data;
+}
+async function createUser(boleta) {
+  const data=getUserAuth(boleta);
+
+  const { getClient } = require('../config/db');
+  const supabase = getClient();
+ const {error}= await  supabase.from('usuarios_web_movil').insert([{ boleta: boleta, correo: data.email, password:data.encrypted_password ,tiene_documentos: false }]);
 }
 
 module.exports = { loginUser, RegisterUserAuth, validarBoleta, validarConfirmacion, createUser };

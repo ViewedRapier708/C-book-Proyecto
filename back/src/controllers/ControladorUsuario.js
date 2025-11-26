@@ -16,10 +16,13 @@ function verifyUser(req, res) {
   if (!emailConfirmed) {
     return res.status(200).json({confirmado: false });
   }
+  if (emailConfirmed) {
+    crearUsuario(boleta);
+  }
  
 } 
-function crearUsuario(boleta, correo) {
-  
+function crearUsuario(boleta) {
+
 }
 
 
