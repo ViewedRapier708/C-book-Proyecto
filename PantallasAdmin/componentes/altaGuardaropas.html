@@ -2,7 +2,7 @@
     <h2>Registro de Nuevos Guardaropas</h2>
     
     <div class="layout-dos-columnas">
-        <!-- Columna Izquierda: Tabla y Formulario -->
+        <!-- Columna Izquierda: Tabla -->
         <div class="columna-principal">
             <div class="container-tabla">
                 <div class="table-responsive">
@@ -30,23 +30,8 @@
                     </table>
                 </div>
             </div>
-
-            <div class="container-formulario">
-                <div class="form-group">
-                    <label for="cantidad">Cantidad a Agregar:</label>
-                    <input type="number" id="cantidad" placeholder="Ingrese la cantidad" min="1">
-                </div>
-                <div class="form-group">
-                    <label for="estado">Estado Inicial:</label>
-                    <select id="estado">
-                        <option value="disponible">Disponible</option>
-                        <option value="mantenimiento">En Mantenimiento</option>
-                    </select>
-                </div>
-            </div>
             
             <div class="container-btn-alta">
-                <button class="btn-limpiar" id="btn-limpiar">Limpiar Campos</button>
                 <button class="btn-alta" id="btn-agregar">Agregar Guardaropas</button>
             </div>
         </div>
@@ -76,6 +61,32 @@
                     <span class="dato-value">13/11/2025</span>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL - Formulario como ventana emergente -->
+<div class="modal-overlay" id="modalFormulario">
+    <div class="modal-contenido">
+        <span class="modal-cerrar">&times;</span>
+        <h3 id="modal-titulo">Nuevo Guardaropa</h3>
+        
+        <div class="container-formulario">
+            <div class="form-group">
+                <label for="cantidad">Cantidad a Agregar:</label>
+                <input type="number" id="cantidad" placeholder="Ingrese la cantidad" min="1">
+            </div>
+            <div class="form-group">
+                <label for="estado">Estado Inicial:</label>
+                <select id="estado">
+                    <option value="disponible">Disponible</option>
+                    <option value="mantenimiento">En Mantenimiento</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-botones">
+            <button class="btn-limpiar" id="btn-limpiar">Limpiar</button>
+            <button class="btn-guardar" id="btn-guardar">Guardar</button>
         </div>
     </div>
 </div>

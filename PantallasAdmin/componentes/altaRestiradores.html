@@ -2,7 +2,7 @@
     <h2>Registro de Nuevos Restiradores</h2>
     
     <div class="layout-dos-columnas">
-        <!-- Columna Izquierda: Tabla y Formulario -->
+        <!-- Columna Izquierda: Tabla -->
         <div class="columna-principal">
             <div class="container-tabla">
                 <div class="table-responsive">
@@ -10,8 +10,6 @@
                         <thead>
                             <tr>
                                 <th>No.</th>
-                                <th>Ubicación</th>
-                                <th>Tipo</th>
                                 <th>Tamaño</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
@@ -20,8 +18,6 @@
                         <tbody>
                             <tr>
                                 <td>R001</td>
-                                <td>Aula 101</td>
-                                <td>Madera</td>
                                 <td>Grande</td>
                                 <td>Disponible</td>
                                 <td><button class="btn-editar">Editar</button></td>
@@ -30,31 +26,15 @@
                     </table>
                 </div>
             </div>
-
-            <div class="container-formulario">
-                <div class="form-group">
-                    <label for="cantidad">Cantidad a Agregar:</label>
-                    <input type="number" id="cantidad" placeholder="Ingrese la cantidad" min="1">
-                </div>
-               
-                <div class="form-group">
-                    <label for="estado">Estado Inicial:</label>
-                    <select id="estado">
-                        <option value="disponible">Disponible</option>
-                        <option value="mantenimiento">En Mantenimiento</option>
-                    </select>
-                </div>
-            </div>
             
             <div class="container-btn-alta">
-                <button class="btn-limpiar" id="btn-limpiar">Limpiar Campos</button>
                 <button class="btn-alta" id="btn-agregar">Agregar Restiradores</button>
             </div>
         </div>
         
         <!-- Columna Derecha: Estadísticas -->
         <div class="columna-estadisticas">
-            <div class="container-datos-restiradores">
+            <div class="container-datos-sistema">
                 <h3>Estadísticas Restiradores</h3>
                 <div class="dato-item">
                     <span class="dato-label">Total Restiradores:</span>
@@ -77,6 +57,41 @@
                     <span class="dato-value">13/11/2025</span>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL - Formulario como ventana emergente -->
+<div class="modal-overlay" id="modalFormulario">
+    <div class="modal-contenido">
+        <span class="modal-cerrar">&times;</span>
+        <h3 id="modal-titulo">Nuevo Restirador</h3>
+        
+        <div class="container-formulario">
+            <div class="form-group">
+                <label for="cantidad">Cantidad a Agregar:</label>
+                <input type="number" id="cantidad" placeholder="Ingrese la cantidad" min="1">
+            </div>
+            <div class="form-group">
+                <label for="tamano">Tamaño:</label>
+                <select id="tamano">
+                    <option value="">Seleccione un tamaño</option>
+                    <option value="Pequeño">Pequeño</option>
+                    <option value="Mediano">Mediano</option>
+                    <option value="Grande">Grande</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="estado">Estado Inicial:</label>
+                <select id="estado">
+                    <option value="disponible">Disponible</option>
+                    <option value="mantenimiento">En Mantenimiento</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-botones">
+            <button class="btn-limpiar" id="btn-limpiar">Limpiar</button>
+            <button class="btn-guardar" id="btn-guardar">Guardar</button>
         </div>
     </div>
 </div>
