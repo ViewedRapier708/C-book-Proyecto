@@ -1,6 +1,6 @@
 // Registro de usuario con Supabase
 async function registro(event) {
-    if (event) event.preventDefault();
+event.preventDefault();
 
     const boleta = document.getElementById('boleta').value;
     const correo = document.getElementById('correo').value;
@@ -54,6 +54,7 @@ async function registro(event) {
 
         const data = await res.json();
         console.log('Registro response:', res.status, data);
+        alert(JSON.stringify(data));
 
         if (!res.ok) {
             mensajeDiv.textContent = data.error || 'Error al registrar';
@@ -65,8 +66,7 @@ async function registro(event) {
         mensajeDiv.textContent = '¡Registro exitoso! Revisa tu correo para confirmar tu cuenta.';
         mensajeDiv.style.color = 'green';
 
-        // Guardar datos temporales en localStorage como backup
-        localStorage.setItem('datosRegistro', JSON.stringify({ boleta, correo, grupo }));
+    
 
         // Redirigir a página de confirmación después de 2 segundos
         setTimeout(() => {

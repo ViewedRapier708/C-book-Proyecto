@@ -45,6 +45,16 @@ async function RegisterUserAuth(boleta,correo,password) {
         data: { boleta } // metadata
       }
     });
+      console.log("Registro en ModeloUsuario:", data, error);//Debug
+      if (error) {
+  console.log("Error:", error.message);
+} else {
+  if (data.user.email_confirmed_at) {
+    console.log("Correo ya confirmado antes");
+  } else {
+    console.log("Correo pendiente de confirmar, reenviando.");
+  }
+}
     if (error) {
       return false;
     }
@@ -61,10 +71,23 @@ async function validarBoleta(boleta) {
   const { getClient } = require('../config/db');
   const supabase = getClient();
   try {
-    const { data, error } = await supabase.from('auth.users').select('raw_user_meta_data').eq('raw_user_meta_data.boleta', boleta).single();
+const { data, error } = await supabase.auth.admin.listUsers();
+
+if (error) {
+  console.error(error);
+}
+
+const usuario = data.users.find(
+  (u) => u.user_metadata?.boleta === boleta
+);
+
+if (usuario) {
+  console.log("Boleta repetida");
+}
+
     
     console.log("Validacion de boleta en ModeloUsuario:", data);//Debug
-
+    console.log("Error en validacion de boleta:", error);//Debug
     if (error) return "Error de nuestra parte intente mas tarde";
 
     if (data) {return true;}
