@@ -2,41 +2,29 @@ const { getClient } = require('../config/db.js');
 //Se hace la verificacion y la creacion de usuario en base al correo confirmado
 function verifyUser(req, res) {
   const {createUser} = require('../models/ModeloUsuario');
-  const {boleta} = req.body;
-  if (!boleta) {
+  const data = req.body;
+  if (!data.boleta) {
     return res.status(400).json({ error: 'Falta ingresar alguna boleta' });
   }
-  if(!/^\d{10}$/.test(boleta)){
+  if(!/^\d{10}$/.test(data.boleta)){
     return res.status(400).json({ error: 'Boleta con formato invalido (solo 10 números)' });
   }
   const {validarConfirmacion} =require('../models/ModeloUsuario.js');
-  const emailConfirmed = validarConfirmacion(boleta);
+  const emailConfirmed = validarConfirmacion(data.boleta);
   if (!emailConfirmed) {
     return res.status(200).json({confirmado: false });
   }
-<<<<<<< HEAD
-  if (emailConfirmed) {
-    crearUsuario(boleta);
-  }
- 
-} 
-function crearUsuario(boleta) {
-
-}
-
-=======
   //Crear usuario en la tabla usuarios_web_movil despues de la confirmacion de correo
-  createUser(boleta).then(() => {
+  createUser(data).then(() => {
     return res.status(200).json({ mensaje: 'Usuario creado exitosamente', confirmado: true });
   }).catch((error) => {
     console.error("Error al crear usuario en usuarios_web_movil:", error);
     return res.status(400).json({ error: 'Error al crear usuario en la base de datos' });
   });
 } 
->>>>>>> 09f1c79810e999d44e87ec669893548c95e6bff3
-
+//Registro de usuario en la tabla auth de supabase
 async function RegisterUserAuth(req, res) {
-  const supabase = getClient();
+
 
   if (!req.body) {
     return res.status(400).json({ error: 'No se recibió información en el cuerpo de la petición' });
@@ -112,6 +100,8 @@ Codigo para enviar el correos
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }
+
+
 //Se debe de crear una funcion la cual haga la validacion de la boleta y el codigo que se le envia al correo del alumno,y al momento de pasar la primera validacion se genera un token para que se pueda crear la cuenta
 /*
 async function LoginUser(req, res) {

@@ -10,6 +10,7 @@ async function registro(event){
     const password=document.getElementById("password").value;
     const confPsw=document.getElementById("confPsw").value;
     const mensajeDiv=document.querySelector('.messaje');
+    const grupo=document.getElementById("grupo").value;
 
     //Validaciones para el registro
     if(boleta==="" || correo==="" || password===""){
@@ -39,13 +40,27 @@ async function registro(event){
         mensajeDiv.style.color='red';
         return;
     }
-
+    const response=0//Completar
+    if (response.error){
+        mensajeDiv.textContent=response.error;
+        mensajeDiv.style.color='red';
+        return;
+    }
+    if (!response.error) {
     const datosRegistro={
         boleta:boleta,
         correo:correo,
-        password:password
-    };
-    localStorage.setItem('dataUser', datosRegistro);
+        grupo:grupo
+    };   
+
+    localStorage.setItem('datosRegistro', JSON.stringify(datosRegistro));
+    //Redirigir a la página de confirmación de correo
+    window.location.href='confirmacionCorreo.html';
+    }
+
+    
+
+  
      // Guardar la boleta en el almacenamiento local
     //Petición al servidor
 }
