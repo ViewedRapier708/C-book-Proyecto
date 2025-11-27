@@ -33,34 +33,34 @@ async function loginUser(boleta, password) {
 }
 */
 //Validacion si no hay alguna cuenta con la misma boleta
-async function RegisterUserAuth(boleta,correo,password) {
+async function RegisterUserAuth(boleta, correo, password) {
   const { getClient } = require('../config/db');
   const supabase = getClient();
   try {
-      const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: correo,
       password: password,
       options: {
-       emailRedirectTo: "https://viewedrapier708.github.io/C-book-Proyecto/pantallasUs/confirmacionCorreo.html",
+        emailRedirectTo: "https://viewedrapier708.github.io/C-book-Proyecto/pantallasUs/confirmacionCorreo.html",
         data: { boleta } // metadata
       }
     });
-      console.log("Registro en ModeloUsuario:", data, error);//Debug
-      if (error) {
-  console.log("Error:", error.message);
-} else {
-  if (data.user.email_confirmed_at) {
-    console.log("Correo ya confirmado antes");
-  } else {
-    console.log("Correo pendiente de confirmar, reenviando.");
-  }
-}
+    console.log("Registro en ModeloUsuario:", data, error);//Debug
+    if (error) {
+      console.log("Error:", error.message);
+    } else {
+      if (data.user.email_confirmed_at) {
+        console.log("Correo ya confirmado antes");
+      } else {
+        console.log("Correo pendiente de confirmar, reenviando.");
+      }
+    }
     if (error) {
       return false;
     }
-  if (data) {
+    if (data) {
       return true;
-  }  
+    }
   } catch (error) {
     return false;
   }
@@ -71,26 +71,22 @@ async function validarBoleta(boleta) {
   const { getClient } = require('../config/db');
   const supabase = getClient();
   try {
-const { data, error } = await supabase.auth.admin.listUsers();
+    const { data, error } = await supabase.auth.admin.listUsers();
 
-if (error) {
-  console.error(error);
-}
+    if (error) {
+      console.error(error);
+    }
 
-const usuario = data.users.find(
-  (u) => u.user_metadata?.boleta === boleta
-);
+    const usuario = data.users.find(
+      (u) => u.user_metadata?.boleta === boleta
+    );
 
-if (usuario) {
-  console.log("Boleta repetida");
-}
+    if (usuario) {
+     return true;
+    }
 
-    
-    console.log("Validacion de boleta en ModeloUsuario:", data);//Debug
-    console.log("Error en validacion de boleta:", error);//Debug
     if (error) return "Error de nuestra parte intente mas tarde";
 
-    if (data) {return true;}
     return false;
   } catch (err) {
     return false;
@@ -110,7 +106,7 @@ async function validarConfirmacion(boleta) {
     }//Inidica que el correo ya fue confirmado
 
     return false;//No ha confirmado su correo
-    
+
   } catch (error) {
 
     return false;//Por si hay un error
@@ -120,20 +116,20 @@ async function validarConfirmacion(boleta) {
 async function createUser(data) {
   const { getClient } = require('../config/db');
   const supabase = getClient();
-  
+
   try {
-    const { error } = await supabase.from('usuarios_web_movil').insert([{ 
-      boleta: data.boleta, 
-      correo: data.correo, 
+    const { error } = await supabase.from('usuarios_web_movil').insert([{
+      boleta: data.boleta,
+      correo: data.correo,
       grupo: data.grupo || null,
-      tiene_documentos: false 
+      tiene_documentos: false
     }]);
-    
+
     if (error) {
       console.error("Error al crear usuario en usuarios_web_movil:", error);
       return false;
     }
-    
+
     return true;
   } catch (err) {
     console.error("Error en createUser:", err);
