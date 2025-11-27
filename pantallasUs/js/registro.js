@@ -1,66 +1,92 @@
-async function registro(event){
+// Registro de usuario con Supabase
+async function registro(event) {
+    if (event) event.preventDefault();
 
-        event.preventDefault();
-    const url='http://localhost:3000/registro';
-        //Se recuperan los datos del formulario
-    const regularExpCorreo=/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const regularExpPassword=/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,16}$/;
-    const boleta=document.getElementById("boleta").value;
-    const correo=document.getElementById("correo").value;
-    const password=document.getElementById("password").value;
-    const confPsw=document.getElementById("confPsw").value;
-    const mensajeDiv=document.querySelector('.messaje');
-    const grupo=document.getElementById("grupo").value;
+    const boleta = document.getElementById('boleta').value;
+    const correo = document.getElementById('correo').value;
+    const password = document.getElementById('contrasena').value;
+    const confPsw = document.getElementById('confirmar_contrasena').value;
+    const grupo = document.getElementById('grupo')?.value || '';
+    const mensajeDiv = document.querySelector('.messaje');
 
-    //Validaciones para el registro
-    if(boleta==="" || correo==="" || password===""){
-       mensajeDiv.textContent='Por favor, complete todos los campos';
-       mensajeDiv.style.color='red';
-       return;
-    }else if(boleta.length < 10){
-        mensajeDiv.textContent='La boleta debe tener al menos 10 caracteres';
-        mensajeDiv.style.color='red';
-        return;
-    }else if(!regularExpCorreo.test(correo)){
-        mensajeDiv.textContent='El formato del correo es incorrecto';
-        mensajeDiv.style.color='red';
-        return;
-    }else if(!regularExpPassword.test(password)){
-        mensajeDiv.textContent='La contraseña debe tener entre 6 y 16 caracteres, incluir al menos una letra mayúscula, una letra minúscula, un número y un carácter especial';
-        mensajeDiv.style.color='red';
-        return;
-    }
-    else if(password.length < 6 || password.length > 16){
-        mensajeDiv.textContent='El formato del correo es incorrecto';
-        mensajeDiv.style.color='red';
-        return;
-    }
-    else if(password!==confPsw){
-        mensajeDiv.textContent='Las contraseñas no coinciden';
-        mensajeDiv.style.color='red';
-        return;
-    }
-    const response=0//Completar
-    if (response.error){
-        mensajeDiv.textContent=response.error;
-        mensajeDiv.style.color='red';
-        return;
-    }
-    if (!response.error) {
-    const datosRegistro={
-        boleta:boleta,
-        correo:correo,
-        grupo:grupo
-    };   
-
-    localStorage.setItem('datosRegistro', JSON.stringify(datosRegistro));
-    //Redirigir a la página de confirmación de correo
-    window.location.href='confirmacionCorreo.html';
+    // Validaciones
+    if (!boleta || !correo || !password || !confPsw) {
+        mensajeDiv.textContent = 'Por favor, complete todos los campos obligatorios';
+        mensajeDiv.style.color = 'red';
+        return false;
     }
 
-    
+    if (!/^\d{10}$/.test(boleta)) {
+        mensajeDiv.textContent = 'La boleta debe tener exactamente 10 dígitos numéricos';
+        mensajeDiv.style.color = 'red';
+        return false;
+    }
 
-  
-     // Guardar la boleta en el almacenamiento local
-    //Petición al servidor
+    if (!/^[\w.-]+@[\w.-]+\.\w+$/.test(correo)) {
+        mensajeDiv.textContent = 'Correo con formato inválido';
+        mensajeDiv.style.color = 'red';
+        return false;
+    }
+
+    if (password.length < 6 || password.length > 16) {
+        mensajeDiv.textContent = 'La contraseña debe tener entre 6 y 16 caracteres';
+        mensajeDiv.style.color = 'red';
+        return false;
+    }
+
+    if (password !== confPsw) {
+        mensajeDiv.textContent = 'Las contraseñas no coinciden';
+        mensajeDiv.style.color = 'red';
+        return false;
+    }
+
+    try {
+        mensajeDiv.textContent = 'Registrando usuario...';
+        mensajeDiv.style.color = 'blue';
+
+        // Enviar al backend con credentials para mantener la sesión
+        const res = await fetch('http://localhost:3000/auth/registro', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', // Importante para enviar/recibir cookies de sesión
+            body: JSON.stringify({ boleta, correo, password, confPsw, grupo })
+        });
+
+        const data = await res.json();
+        console.log('Registro response:', res.status, data);
+
+        if (!res.ok) {
+            mensajeDiv.textContent = data.error || 'Error al registrar';
+            mensajeDiv.style.color = 'red';
+            return false;
+        }
+
+        // Registro exitoso
+        mensajeDiv.textContent = '¡Registro exitoso! Revisa tu correo para confirmar tu cuenta.';
+        mensajeDiv.style.color = 'green';
+
+        // Guardar datos temporales en localStorage como backup
+        localStorage.setItem('datosRegistro', JSON.stringify({ boleta, correo, grupo }));
+
+        // Redirigir a página de confirmación después de 2 segundos
+        setTimeout(() => {
+            window.location.href = 'confirmacionCorreo.html';
+        }, 2000);
+
+        return false;
+
+    } catch (err) {
+        console.error('Error en registro:', err);
+        mensajeDiv.textContent = 'Error de conexión al servidor';
+        mensajeDiv.style.color = 'red';
+        return false;
+    }
 }
+
+// Asignar al formulario cuando cargue la página
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('form-registro');
+    if (form) {
+        form.addEventListener('submit', registro);
+    }
+});

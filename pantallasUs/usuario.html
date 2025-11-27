@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Solicitudes - C-Book</title>
-     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <link rel="stylesheet" href="css/EstiloAside.css">
     <link rel="stylesheet" href="css/StyleGeneral.css">
@@ -18,6 +19,7 @@
     <link rel="stylesheet" href="css/componentes/cancelarSolicitudes.css">
     <link rel="shortcut icon" href="../img/logo_C_Book.jpg" type="image/x-icon">
     <script src="../funciones/sessionGuard.js"></script>
+    <script src="../funciones/funcionCerrarSesion.js"></script>
 </head>
 <body>
     
@@ -42,7 +44,7 @@
                     <a href="#" class="link-secciones nav-link" data-component="cancelarSolicitudes" data-title="VISUALIZAR MIS SOLICITUDES">Visualizar Solicitudes Hechas</a>
                 </div>
                 <div class="btn-cerrar-sesion">
-                    <a href="#" class="link-secciones" onclick="logout()">Cerrar Sesión</a>
+                    <a href="#" class="link-secciones" onclick="cerrarSesion(); return false;">Cerrar Sesión</a>
                 </div>
             </div>
         </div>

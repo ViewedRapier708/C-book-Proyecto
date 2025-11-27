@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Correo Verificado - C-Book</title>
+    <title>Verificación de Correo - C-Book</title>
     <link rel="stylesheet" href="css/confirmacionCorreo.css">
     <link rel="shortcut icon" href="../img/logo_C_Book.jpg" type="image/x-icon">
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="background-decoration">
@@ -15,97 +17,106 @@
     </div>
     
     <main class="card" role="status" aria-live="polite">
-        <div class="icon-container">
-            <div class="icon-background"></div>
-            <div class="icon">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                    <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
+        <!-- Estado: Verificando -->
+        <div id="estado-verificando">
+            <div class="icon-container">
+                <div class="icon-background loading"></div>
+                <div class="icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="spin">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                </div>
+            </div>
+            <h1>Verificando tu correo...</h1>
+            <p class="subtitle">Por favor espera mientras verificamos tu cuenta</p>
+            <p id="mensaje-estado" style="margin-top: 1rem; color: #666;"></p>
+        </div>
+
+        <!-- Estado: Éxito (oculto por defecto) -->
+        <div id="estado-exito" style="display: none;">
+            <div class="icon-container">
+                <div class="icon-background"></div>
+                <div class="icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                </div>
+            </div>
+
+            <h1>¡Correo Verificado!</h1>
+            <p class="subtitle">Tu correo electrónico ha sido verificado exitosamente</p>
+            
+            <div class="success-details">
+                <div class="detail-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B0233" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    <span>Tu cuenta ha sido creada con éxito</span>
+                </div>
+                <div class="detail-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B0233" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="8.5" cy="7" r="4"/>
+                        <polyline points="17 11 19 13 23 9"/>
+                    </svg>
+                    <span>Tu perfil está listo para usar</span>
+                </div>
+            </div>
+
+            <div class="actions">
+                <a href="../index.html" class="btn btn-primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                        <polyline points="10 17 15 12 10 7"/>
+                        <line x1="15" y1="12" x2="3" y2="12"/>
+                    </svg>
+                    Iniciar Sesión
+                </a>
             </div>
         </div>
 
-        <h1>¡Correo Verificado!</h1>
-        <p class="subtitle">Tu correo electrónico ha sido verificado exitosamente</p>
-        
-        <div class="success-details">
-            <div class="detail-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B0233" stroke-width="2">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                    <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-                <span>Tu cuenta ha sido creada con éxito</span>
+        <!-- Estado: Esperando confirmación (oculto por defecto) -->
+        <div id="estado-esperando" style="display: none;">
+            <div class="icon-container">
+                <div class="icon-background" style="background: linear-gradient(135deg, #f0ad4e 0%, #ec971f 100%);"></div>
+                <div class="icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                </div>
             </div>
-            <div class="detail-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B0233" stroke-width="2">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="8.5" cy="7" r="4"/>
-                    <polyline points="17 11 19 13 23 9"/>
-                </svg>
-                <span>Tu perfil está listo para usar</span>
-            </div>
-            <div class="detail-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B0233" stroke-width="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                    <line x1="16" y1="2" x2="16" y2="6"/>
-                    <line x1="8" y1="2" x2="8" y2="6"/>
-                    <line x1="3" y1="10" x2="21" y2="10"/>
-                    <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/>
-                </svg>
-                <span>Ya puedes acceder a todos los servicios</span>
-            </div>
+            <h1>Confirma tu correo</h1>
+            <p class="subtitle">Hemos enviado un enlace de verificación a tu correo electrónico.</p>
+            <p style="margin-top: 1rem;">Revisa tu bandeja de entrada y haz clic en el enlace para activar tu cuenta.</p>
+            <button id="btn-verificar" class="btn btn-primary" style="margin-top: 2rem;">
+                Ya confirmé mi correo
+            </button>
+            <a href="../index.html" class="btn" style="margin-top: 1rem; background: #eee; color: #333;">
+                Volver al inicio
+            </a>
         </div>
 
-        <!-- Componente de Próximos Pasos -->
-        <div class="next-steps-component">
-            <h3 class="next-steps-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B0233" stroke-width="2">
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                </svg>
-                Próximos Pasos
-            </h3>
-            <div class="steps-grid">
-                <div class="step-card">
-                    <div class="step-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9D306C" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
-                        </svg>
-                    </div>
-                    <h4>Completa tu Perfil</h4>
-                    <p>Agrega información adicional para personalizar tu experiencia</p>
-                </div>
-                <div class="step-card">
-                    <div class="step-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9D306C" stroke-width="2">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                        </svg>
-                    </div>
-                    <h4>Explora Recursos</h4>
-                    <p>Descubre libros, computadoras y más recursos disponibles</p>
-                </div>
-                <div class="step-card">
-                    <div class="step-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9D306C" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <polyline points="12 6 12 12 16 14"/>
-                        </svg>
-                    </div>
-                    <h4>Haz tu Primera Solicitud</h4>
-                    <p>Comienza a reservar los recursos que necesitas</p>
+        <!-- Estado: Error (oculto por defecto) -->
+        <div id="estado-error" style="display: none;">
+            <div class="icon-container">
+                <div class="icon-background" style="background: linear-gradient(135deg, #d9534f 0%, #c9302c 100%);"></div>
+                <div class="icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>
                 </div>
             </div>
-        </div>
-
-        <div class="actions">
-            <a href="../index.html" class="btn btn-primary">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-                    <polyline points="10 17 15 12 10 7"/>
-                    <line x1="15" y1="12" x2="3" y2="12"/>
-                </svg>
-                Iniciar Sesión
+            <h1>Error en la verificación</h1>
+            <p class="subtitle" id="mensaje-error">Ocurrió un error al verificar tu cuenta.</p>
+            <a href="registro.html" class="btn btn-primary" style="margin-top: 2rem;">
+                Intentar de nuevo
             </a>
         </div>
 
@@ -113,5 +124,91 @@
             <p>¡Bienvenido! Estamos emocionados de tenerte con nosotros.</p>
         </div>
     </main>
+
+    <script>
+        const SUPABASE_URL = 'https://yondcnkwcekmkovdeaso.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvbmRjbmt3Y2VrbWtvdmRlYXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA2ODYyMDQsImV4cCI6MjA3NjI2MjIwNH0.4NqF_hCv7RiXrOjO9fxfRHPzikpZ61siqMZV_rlUQew';
+
+        async function verificarUsuario() {
+            const estadoVerificando = document.getElementById('estado-verificando');
+            const estadoExito = document.getElementById('estado-exito');
+            const estadoEsperando = document.getElementById('estado-esperando');
+            const estadoError = document.getElementById('estado-error');
+            const mensajeEstado = document.getElementById('mensaje-estado');
+
+            try {
+                mensajeEstado.textContent = 'Conectando con el servidor...';
+
+                // Llamar al backend para verificar y crear usuario
+                const res = await fetch('http://localhost:3000/auth/verificar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+                console.log('Verificación response:', data);
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'Error en la verificación');
+                }
+
+                if (data.confirmado) {
+                    // Éxito - correo confirmado y usuario creado
+                    estadoVerificando.style.display = 'none';
+                    estadoExito.style.display = 'block';
+                    localStorage.removeItem('datosRegistro');
+                } else {
+                    // Aún no ha confirmado el correo
+                    estadoVerificando.style.display = 'none';
+                    estadoEsperando.style.display = 'block';
+                }
+
+            } catch (err) {
+                console.error('Error:', err);
+                estadoVerificando.style.display = 'none';
+                
+                // Si no hay sesión, mostrar estado de espera
+                if (err.message.includes('sesión') || err.message.includes('registro')) {
+                    estadoEsperando.style.display = 'block';
+                } else {
+                    estadoError.style.display = 'block';
+                    document.getElementById('mensaje-error').textContent = err.message;
+                }
+            }
+        }
+
+        // Botón para verificar manualmente
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnVerificar = document.getElementById('btn-verificar');
+            if (btnVerificar) {
+                btnVerificar.addEventListener('click', () => {
+                    document.getElementById('estado-esperando').style.display = 'none';
+                    document.getElementById('estado-verificando').style.display = 'block';
+                    verificarUsuario();
+                });
+            }
+
+            // Verificar automáticamente al cargar
+            verificarUsuario();
+        });
+    </script>
+
+    <style>
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+    </style>
 </body>
 </html>

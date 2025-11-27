@@ -1,54 +1,72 @@
 const { getClient } = require('../config/db.js');
-//Se hace la verificacion y la creacion de usuario en base al correo confirmado
-function verifyUser(req, res) {
-  const {createUser} = require('../models/ModeloUsuario');
-  const data = req.body;
-  if (!data.boleta) {
-    return res.status(400).json({ error: 'Falta ingresar alguna boleta' });
-  }
-  if(!/^\d{10}$/.test(data.boleta)){
-    return res.status(400).json({ error: 'Boleta con formato invalido (solo 10 números)' });
-  }
-  const {validarConfirmacion} =require('../models/ModeloUsuario.js');
-  const emailConfirmed = validarConfirmacion(data.boleta);
-  if (!emailConfirmed) {
-    return res.status(200).json({confirmado: false });
-  }
-  //Crear usuario en la tabla usuarios_web_movil despues de la confirmacion de correo
-  createUser(data).then(() => {
-    return res.status(200).json({ mensaje: 'Usuario creado exitosamente', confirmado: true });
-  }).catch((error) => {
-    console.error("Error al crear usuario en usuarios_web_movil:", error);
-    return res.status(400).json({ error: 'Error al crear usuario en la base de datos' });
-  });
-} 
-//Registro de usuario en la tabla auth de supabase
-async function RegisterUserAuth(req, res) {
+const { validarBoleta, RegisterUserAuth, validarConfirmacion, createUser } = require('../models/ModeloUsuario.js');
 
+// Verificar usuario después de confirmar correo y crear en usuarios_web_movil
+async function verifyUser(req, res) {
+  try {
+    // Obtener datos de la sesión
+    const datosUsuario = req.session?.usuario;
+    
+    if (!datosUsuario || !datosUsuario.boleta) {
+      return res.status(400).json({ error: 'No hay datos de registro en sesión. Registra nuevamente.' });
+    }
+    
+    const { boleta, correo, grupo } = datosUsuario;
 
+    // Verificar si el correo fue confirmado
+    const emailConfirmed = await validarConfirmacion(boleta);
+    
+    if (!emailConfirmed) {
+      return res.status(200).json({ confirmado: false, mensaje: 'Correo aún no confirmado' });
+    }
+
+    // Crear usuario en la tabla usuarios_web_movil
+    const usuarioCreado = await createUser({ boleta, correo, grupo });
+    
+    if (!usuarioCreado) {
+      return res.status(400).json({ error: 'Error al crear usuario en la base de datos' });
+    }
+
+    // Limpiar sesión después de crear usuario
+    req.session.usuario = null;
+
+    return res.status(200).json({ 
+      mensaje: 'Usuario verificado y creado exitosamente', 
+      confirmado: true 
+    });
+
+  } catch (err) {
+    console.error("Error en verifyUser:", err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+// Registro de usuario en Supabase Auth (guarda datos en sesión)
+async function registro(req, res) {
   if (!req.body) {
     return res.status(400).json({ error: 'No se recibió información en el cuerpo de la petición' });
   }
 
   try {
-    const { boleta, correo, password, confPsw } = req.body;
-   const {RegisterUserAuth} = require('../models/ModeloUsuario.js');
+    const { boleta, correo, password, confPsw, grupo } = req.body;
 
     // VALIDACIONES
     if (!boleta || !correo || !password || !confPsw) {
-      return res.status(400).json({ error: "Faltan datos" });
+      return res.status(400).json({ error: "Faltan datos obligatorios" });
     }
 
     if (boleta.length !== 10 || !/^\d{10}$/.test(boleta)) {
-      return res.status(400).json({ error: "Boleta con formato invalido (solo 10 números)" });
+      return res.status(400).json({ error: "Boleta con formato inválido (solo 10 números)" });
     }
-    // Verificar si la boleta ya está registrada en otra cuenta 
-    if ((await validarBoleta(boleta)).existe) {
-      return res.status(400).json({ error: "Boleta ya registrada en otra cuenta contacte al administrador en caso de problemas" });
+
+    // Verificar si la boleta ya está registrada
+    const boletaExiste = await validarBoleta(boleta);
+    if (boletaExiste === true) {
+      return res.status(400).json({ error: "Esta boleta ya tiene una cuenta registrada" });
     }
 
     if (!/^[\w.-]+@[\w.-]+\.\w+$/.test(correo)) {
-      return res.status(400).json({ error: "Correo con formato invalido" });
+      return res.status(400).json({ error: "Correo con formato inválido" });
     }
 
     if (password.length < 6 || password.length > 16) {
@@ -59,14 +77,79 @@ async function RegisterUserAuth(req, res) {
       return res.status(400).json({ error: "Las contraseñas no coinciden" });
     }
 
-    //crear usuario en supabase auth y se envia al correo de confirmacion
-   const resultadoRegistro = await RegisterUserAuth(boleta, correo, password);
-
-   console.log("Resultado del registro:", resultadoRegistro); // Debug
-   
-   if (!resultadoRegistro) {
-      return res.status(400).json({ error: "Error al registrar usuario" });
+    // Crear usuario en Supabase Auth
+    const resultado = await RegisterUserAuth(boleta, correo, password);
+    
+    console.log("Resultado del registro:", resultado);
+    
+    if (!resultado) {
+      return res.status(400).json({ error: "Error al registrar usuario. El correo puede estar en uso." });
     }
+
+    // Guardar datos en sesión para usarlos después de la verificación
+    req.session.usuario = {
+      boleta,
+      correo,
+      grupo: grupo || null
+    };
+
+    console.log("Datos guardados en sesión:", req.session.usuario);
+
+    return res.status(200).json({
+      message: "Usuario creado. Revisa tu correo para verificar la cuenta."
+    });
+
+  } catch (err) {
+    console.error("Error en registro:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
+// Login de usuario (opcional, se puede hacer desde frontend)
+async function LoginUser(req, res) {
+  const supabase = getClient();
+  const { boleta, password } = req.body;
+  
+  if (!boleta || !password) {
+    return res.status(400).json({ error: 'Faltan boleta o contraseña' });
+  }
+
+  try {
+    // Buscar correo asociado a la boleta
+    const { data: userData, error: userError } = await supabase
+      .from('usuarios_web_movil')
+      .select('correo')
+      .eq('boleta', boleta)
+      .maybeSingle();
+
+    if (userError || !userData) {
+      return res.status(400).json({ mensaje: 'Usuario no encontrado' });
+    }
+
+    // Iniciar sesión con Supabase Auth
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: userData.correo,
+      password: password
+    });
+
+    if (error) {
+      console.error("Login error:", error);
+      return res.status(400).json({ mensaje: 'Usuario o contraseña incorrectos' });
+    }
+
+    return res.status(200).json({ 
+      mensaje: 'Inicio de sesión exitoso',
+      session: data.session,
+      user: data.user
+    });
+
+  } catch (err) {
+    console.error("Error en LoginUser:", err);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+module.exports = { LoginUser, registro, verifyUser };
 /*
 Codigo para enviar el correos 
     // CONFIGURAR SMTP (Gmail)
@@ -90,18 +173,7 @@ Codigo para enviar el correos
         <p>Si no solicitaste esta cuenta, ignora este correo.</p>
       `
     });
-*/
-    return res.status(200).json({
-      message: "Usuario creado. Revisa tu correo para verificar la cuenta."
-    });
-
-  } catch (err) {
-    console.error("Error en registro:", err);
-    res.status(500).json({ error: "Error interno del servidor" });
-  }
-}
-
-
+*/  
 //Se debe de crear una funcion la cual haga la validacion de la boleta y el codigo que se le envia al correo del alumno,y al momento de pasar la primera validacion se genera un token para que se pueda crear la cuenta
 /*
 async function LoginUser(req, res) {
@@ -126,4 +198,3 @@ async function LoginUser(req, res) {
   });
 }\
 */
-module.exports = {  /*LoginUser,*/ RegisterUserAuth, verifyUser };

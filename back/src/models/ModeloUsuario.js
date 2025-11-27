@@ -79,33 +79,45 @@ async function validarConfirmacion(boleta) {
   const supabase = getClient();
   try {
     const { data, error } = await supabase.from('auth.users').select('email_confirmed_at').eq('raw_user_meta_data.boleta', boleta).single();
-    if (error) return false;
+
+    if (error) return false; //retorna false si hay un error
 
     if (data && data.email_confirmed_at) {
       return true;
-    }
+    }//Inidica que el correo ya fue confirmado
+
+    return false;//No ha confirmado su correo
     
   } catch (error) {
 
-    return false;
+    return false;//Por si hay un error
   }
 }
 //Crear usuario en la tabla usuarios_web_movil despues de la confirmacion de correo
 async function createUser(data) {
-
   const { getClient } = require('../config/db');
   const supabase = getClient();
- const {error}= await  supabase.from('usuarios_web_movil').insert([{ boleta: data.boleta, correo: data.email, password:data.encrypted_password ,tiene_documentos: false }]);
+  
+  try {
+    const { error } = await supabase.from('usuarios_web_movil').insert([{ 
+      boleta: data.boleta, 
+      correo: data.correo, 
+      grupo: data.grupo || null,
+      tiene_documentos: false 
+    }]);
     
- if (error)return null;
- 
-  return true;
+    if (error) {
+      console.error("Error al crear usuario en usuarios_web_movil:", error);
+      return false;
+    }
+    
+    return true;
+  } catch (err) {
+    console.error("Error en createUser:", err);
+    return false;
+  }
 }
 
-async function createUser(boleta) {
-  const data=getUserAuth(boleta);
 
- 
-}
 
 module.exports = { /*loginUser,*/ RegisterUserAuth, validarBoleta, validarConfirmacion, createUser };

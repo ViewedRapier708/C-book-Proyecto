@@ -1,15 +1,32 @@
 const cors = require('cors');
 const express = require('express');
 const app = express();
-const authRoutes = require('./src/routes/Rutas.js'); // ajusta la ruta según tu proyecto
+const authRoutes = require('./src/routes/Rutas.js');
+const session = require('express-session');
 require('dotenv').config();
 
 // Middleware para leer JSON
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Configuración de CORS para permitir cookies de sesión
 app.use(cors({
-  origin: '*',
+  origin: ['http://localhost:5500', 'http://127.0.0.1:5500', 'https://viewedrapier708.github.io'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
+}));
+
+// Configuración de la sesión
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'cbook_secreto_seguro_2024',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 1000 * 60 * 60, // 1 hora
+    httpOnly: true,
+    secure: false, // true en producción con HTTPS
+    sameSite: 'lax'
+  }
 }));
 // Ruta raíz
 app.get('/', (req, res) => {
