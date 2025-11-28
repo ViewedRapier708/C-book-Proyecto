@@ -6,8 +6,6 @@
     <title>Verificación de Correo - C-Book</title>
     <link rel="stylesheet" href="css/confirmacionCorreo.css">
     <link rel="shortcut icon" href="../img/logo_C_Book.jpg" type="image/x-icon">
-    <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="background-decoration">
@@ -93,10 +91,12 @@
             <h1>Confirma tu correo</h1>
             <p class="subtitle">Hemos enviado un enlace de verificación a tu correo electrónico.</p>
             <p style="margin-top: 1rem;">Revisa tu bandeja de entrada y haz clic en el enlace para activar tu cuenta.</p>
-            <button id="btn-verificar" class="btn btn-primary" style="margin-top: 2rem;">
-                Ya confirmé mi correo
+            <p id="contador-intentos" style="margin-top: 0.5rem; color: #888; font-size: 0.9rem;"></p>
+        
+            <button id="btn-verificar" class="btn" style="margin-top: 1rem; background: #7B0233; color: #fff; border: none; cursor: pointer;">
+                Verificar ahora
             </button>
-            <a href="../index.html" class="btn" style="margin-top: 1rem; background: #eee; color: #333;">
+            <a href="../index.html" class="btn" style="margin-top: 0.5rem; background: #eee; color: #333;">
                 Volver al inicio
             </a>
         </div>
@@ -125,74 +125,8 @@
         </div>
     </main>
 
-    <script>
-        const SUPABASE_URL = 'https://yondcnkwcekmkovdeaso.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvbmRjbmt3Y2VrbWtvdmRlYXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA2ODYyMDQsImV4cCI6MjA3NjI2MjIwNH0.4NqF_hCv7RiXrOjO9fxfRHPzikpZ61siqMZV_rlUQew';
-
-        async function verificarUsuario() {
-            const estadoVerificando = document.getElementById('estado-verificando');
-            const estadoExito = document.getElementById('estado-exito');
-            const estadoEsperando = document.getElementById('estado-esperando');
-            const estadoError = document.getElementById('estado-error');
-            const mensajeEstado = document.getElementById('mensaje-estado');
-
-            try {
-                mensajeEstado.textContent = 'Conectando con el servidor...';
-
-                // Llamar al backend para verificar y crear usuario
-                const res = await fetch('http://localhost:3000/auth/verificar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include'
-                });
-
-                const data = await res.json();
-                console.log('Verificación response:', data);
-
-                if (!res.ok) {
-                    throw new Error(data.error || 'Error en la verificación');
-                }
-
-                if (data.confirmado) {
-                    // Éxito - correo confirmado y usuario creado
-                    estadoVerificando.style.display = 'none';
-                    estadoExito.style.display = 'block';
-                    localStorage.removeItem('datosRegistro');
-                } else {
-                    // Aún no ha confirmado el correo
-                    estadoVerificando.style.display = 'none';
-                    estadoEsperando.style.display = 'block';
-                }
-
-            } catch (err) {
-                console.error('Error:', err);
-                estadoVerificando.style.display = 'none';
-                
-                // Si no hay sesión, mostrar estado de espera
-                if (err.message.includes('sesión') || err.message.includes('registro')) {
-                    estadoEsperando.style.display = 'block';
-                } else {
-                    estadoError.style.display = 'block';
-                    document.getElementById('mensaje-error').textContent = err.message;
-                }
-            }
-        }
-
-        // Botón para verificar manualmente
-        document.addEventListener('DOMContentLoaded', () => {
-            const btnVerificar = document.getElementById('btn-verificar');
-            if (btnVerificar) {
-                btnVerificar.addEventListener('click', () => {
-                    document.getElementById('estado-esperando').style.display = 'none';
-                    document.getElementById('estado-verificando').style.display = 'block';
-                    verificarUsuario();
-                });
-            }
-
-            // Verificar automáticamente al cargar
-            verificarUsuario();
-        });
-    </script>
+    <!-- Script externo de verificación -->
+    <script src="../js/auth/verificacionCorreo.js"></script>
 
     <style>
         .spin {

@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/registro.css">
     <link rel="icon" type="image/x-icon" href="/C-book-Proyecto/img//logo_C_Book.jpg">
-    <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../funciones/sessionGuard.js"></script>
-    <script src="../funciones/funcionesDeValidacion/MostrarPsw.js"></script>
+    <script src="../js/auth/sessionGuard.js"></script>
+    <script src="../js/validacion/MostrarPsw.js"></script>
     <title>Registro</title>
 </head>
 <body>
@@ -22,7 +20,7 @@
             <div class="logo-placeholder">LOGO IPN</div>
             <img src="../img/logo-IPN.png" alt="Logo IPN">
         </div>
-        <script src="/pantallasUs/js/registro.js"></script>
+        <script src="../js/auth/registro.js"></script>
     </header>
     
     <div class="container-main">
@@ -30,7 +28,7 @@
         <div class="container-form-unified">
             <h2>Registro de cuenta</h2>
             
-            <form id="form-registro" onsubmit="registro()">
+            <form id="form-registro" onsubmit="return registro(event)">
                 <!-- Boleta -->
                 <div class="form-row full-width">
                     <label for="boleta" class="text-label">Número de boleta</label>
@@ -89,6 +87,6 @@
         </div>
     </div>
     
-    <script src="./js/registro.js"></script>
+    <script src="../js/auth/registro.js"></script>
 </body>
 </html>

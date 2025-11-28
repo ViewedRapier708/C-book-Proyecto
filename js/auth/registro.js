@@ -1,6 +1,6 @@
-// Registro de usuario con Supabase
+// Registro de usuario - Llama al backend
 async function registro(event) {
-event.preventDefault();
+    event.preventDefault();
 
     const boleta = document.getElementById('boleta').value;
     const correo = document.getElementById('correo').value;
@@ -9,7 +9,7 @@ event.preventDefault();
     const grupo = document.getElementById('grupo')?.value || '';
     const mensajeDiv = document.querySelector('.messaje');
 
-    // Validaciones
+    // Validaciones básicas en frontend
     if (!boleta || !correo || !password || !confPsw) {
         mensajeDiv.textContent = 'Por favor, complete todos los campos obligatorios';
         mensajeDiv.style.color = 'red';
@@ -44,17 +44,16 @@ event.preventDefault();
         mensajeDiv.textContent = 'Registrando usuario...';
         mensajeDiv.style.color = 'blue';
 
-        // Enviar al backend con credentials para mantener la sesión
+        // Llamar al backend
         const res = await fetch('http://localhost:3000/auth/registro', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include', // Importante para enviar/recibir cookies de sesión
+            credentials: 'include',
             body: JSON.stringify({ boleta, correo, password, confPsw, grupo })
         });
 
         const data = await res.json();
-        console.log('Registro response:', res.status, data);
-        alert(JSON.stringify(data));
+        console.log('Registro response:', data); //debug
 
         if (!res.ok) {
             mensajeDiv.textContent = data.error || 'Error al registrar';
@@ -62,13 +61,18 @@ event.preventDefault();
             return false;
         }
 
+        // Guardar datos en localStorage para la verificación
+        localStorage.setItem('datosRegistro', JSON.stringify({
+            boleta,
+            correo,
+            grupo
+        }));
+
         // Registro exitoso
-        mensajeDiv.textContent = '¡Registro exitoso! Revisa tu correo para confirmar tu cuenta.';
+        mensajeDiv.textContent = data.message || '¡Registro exitoso! Revisa tu correo.';
         mensajeDiv.style.color = 'green';
 
-    
-
-        // Redirigir a página de confirmación después de 2 segundos
+        // Redirigir a confirmación
         setTimeout(() => {
             window.location.href = 'confirmacionCorreo.html';
         }, 2000);
@@ -83,7 +87,7 @@ event.preventDefault();
     }
 }
 
-// Asignar al formulario cuando cargue la página
+// Asignar al formulario
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('form-registro');
     if (form) {
