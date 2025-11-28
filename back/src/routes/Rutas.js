@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { LoginUser, registro, verifyUser } = require('../controllers/ControladorUsuario.js');
+const { registro, verificarCorreo, login } = require('../controllers/ControladorUsuario.js');
 const { obtenerRecursosPorTipo } = require('../controllers/ControladorRecursos.js');
 const controladorSolicitudes = require('../controllers/ControladorSolicitudes.js');
 const {verificarDisponibilidad} = require('../middleware/verificacionRecursos.js');
 
 
-// Rutas de usuario
-router.post('/login', LoginUser);
+// Rutas de autenticación
 router.post('/registro', registro);
-router.post('/verificar', verifyUser);
+router.post('/verificar', verificarCorreo);
+router.post('/login', login);
 
 
 //Rutas de recursos y solicitudes

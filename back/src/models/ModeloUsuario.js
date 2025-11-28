@@ -1,40 +1,51 @@
+const { getClient } = require('../config/db');
 
-//Funcion para iniciar sesión de un usuario usando Supabase Auth
-/*
-async function loginUser(boleta, password) {
-  const { getClient } = require('../config/db');
+// ==================== REGISTRO ====================
+
+// Verificar si la boleta ya existe en usuarios_web_movil
+async function validarBoletaEnTabla(boleta) {
   const supabase = getClient();
+  try {
+    const { data, error } = await supabase
+      .from('usuarios_web_movil')
+      .select('boleta')
+      .eq('boleta', boleta)
+      .maybeSingle();
 
-  // 1. Buscar el correo asociado a la boleta en la tabla usuarios_web_movil
-  const { data: userData, error: userError } = await supabase
-    .from('usuarios_web_movil')
-    .select('correo')
-    .eq('boleta', boleta)
-    .maybeSingle();
-
-  if (userError || !userData) {
-    return { error: new Error('Usuario no encontrado'), data: null };
+    if (error) {
+      console.error("Error validando boleta:", error);
+      return false;
+    }
+    return !!data; // true si existe
+  } catch (err) {
+    console.error("Error en validarBoletaEnTabla:", err);
+    return false;
   }
-
-  const email = userData.correo;
-
-  // 2. Iniciar sesión en Supabase Auth con el correo y la contraseña
-  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-    email: email,
-    password: password
-  });
-
-  if (authError) {
-    return { error: new Error('Contraseña incorrecta'), data: null };
-  }
-
-  // Retornar la sesión y el usuario de Supabase Auth
-  return { error: null, data: authData };
 }
-*/
-//Validacion si no hay alguna cuenta con la misma boleta
-async function RegisterUserAuth(boleta, correo, password) {
-  const { getClient } = require('../config/db');
+
+// Verificar si el correo ya existe en usuarios_web_movil
+async function validarCorreoEnTabla(correo) {
+  const supabase = getClient();
+  try {
+    const { data, error } = await supabase
+      .from('usuarios_web_movil')
+      .select('correo')
+      .eq('correo', correo)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error validando correo:", error);
+      return false;
+    }
+    return !!data; // true si existe
+  } catch (err) {
+    console.error("Error en validarCorreoEnTabla:", err);
+    return false;
+  }
+}
+
+// Registrar usuario en Supabase Auth
+async function registrarEnAuth(boleta, correo, password, grupo) {
   const supabase = getClient();
   try {
     const { data, error } = await supabase.auth.signUp({
@@ -42,101 +53,151 @@ async function RegisterUserAuth(boleta, correo, password) {
       password: password,
       options: {
         emailRedirectTo: "https://viewedrapier708.github.io/C-book-Proyecto/pantallasUs/confirmacionCorreo.html",
-        data: { boleta } // metadata
+        data: { 
+          boleta: boleta,
+          grupo: grupo || null
+        }
       }
     });
-    console.log("Registro en ModeloUsuario:", data, error);//Debug
+
+    console.log("Registro Auth:", data?.user?.id, error?.message); //debug
+
     if (error) {
-      console.log("Error:", error.message);
-    } else {
-      if (data.user.email_confirmed_at) {
-        console.log("Correo ya confirmado antes");
-      } else {
-        console.log("Correo pendiente de confirmar, reenviando.");
-      }
+      return { success: false, error: error.message };
     }
-    if (error) {
-      return false;
-    }
-    if (data) {
-      return true;
-    }
-  } catch (error) {
-    return false;
+
+    return { success: true, user: data.user };
+  } catch (err) {
+    console.error("Error en registrarEnAuth:", err);
+    return { success: false, error: 'Error interno del servidor' };
   }
 }
 
-//Funcion que valide que no haya otra cuenta con la misma boleta
-async function validarBoleta(boleta) {
-  const { getClient } = require('../config/db');
+// Crear usuario en la tabla usuarios_web_movil
+async function crearUsuarioEnTabla(boleta, correo, grupo) {
+  const supabase = getClient();
+  try {
+    console.log("Creando usuario en tabla:", { boleta, correo }); //debug
+    
+    const { data, error } = await supabase
+      .from('usuarios_web_movil')
+      .insert([{
+        boleta: parseInt(boleta),
+        correo: correo,
+        tiene_documentos: false
+      }])
+      .select();
+
+    if (error) {
+      console.error("Error insertando usuario:", error.message, error.details);
+      return { success: false, error: error.message };
+    }
+
+    console.log("Usuario creado:", data); //debug
+    return { success: true, data: data };
+  } catch (err) {
+    console.error("Error en crearUsuarioEnTabla:", err);
+    return { success: false, error: 'Error interno' };
+  }
+}
+
+// ==================== VERIFICACIÓN ====================
+
+// Verificar si el correo fue confirmado por boleta
+async function verificarConfirmacionPorBoleta(boleta) {
   const supabase = getClient();
   try {
     const { data, error } = await supabase.auth.admin.listUsers();
 
     if (error) {
-      console.error(error);
+      console.error("Error listando usuarios:", error);
+      return { confirmado: false, error: error.message };
     }
 
-    const usuario = data.users.find(
-      (u) => u.user_metadata?.boleta === boleta
-    );
+    const usuario = data.users.find(u => u.user_metadata?.boleta === boleta);
 
-    if (usuario) {
-     return true;
+    if (!usuario) {
+      return { confirmado: false, error: 'Usuario no encontrado' };
     }
 
-    if (error) return "Error de nuestra parte intente mas tarde";
-
-    return false;
+    const confirmado = !!usuario.email_confirmed_at;
+    return { 
+      confirmado: confirmado, 
+      usuario: usuario,
+      correo: usuario.email 
+    };
   } catch (err) {
-    return false;
+    console.error("Error en verificarConfirmacionPorBoleta:", err);
+    return { confirmado: false, error: 'Error interno' };
   }
 }
-//Validacion de confirmación de correo se necesita un bucle para verificar cada cierto tiempo si el usuario ya confirmó su correo
-async function validarConfirmacion(boleta) {
-  const { getClient } = require('../config/db');
+
+// ==================== LOGIN ====================
+
+// Buscar correo por boleta
+async function buscarCorreoPorBoleta(boleta) {
   const supabase = getClient();
   try {
-    const { data, error } = await supabase.from('auth.users').select('email_confirmed_at').eq('raw_user_meta_data.boleta', boleta).single();
-
-    if (error) return false; //retorna false si hay un error
-
-    if (data && data.email_confirmed_at) {
-      return true;
-    }//Inidica que el correo ya fue confirmado
-
-    return false;//No ha confirmado su correo
-
-  } catch (error) {
-
-    return false;//Por si hay un error
-  }
-}
-//Crear usuario en la tabla usuarios_web_movil despues de la confirmacion de correo
-async function createUser(data) {
-  const { getClient } = require('../config/db');
-  const supabase = getClient();
-
-  try {
-    const { error } = await supabase.from('usuarios_web_movil').insert([{
-      boleta: data.boleta,
-      correo: data.correo,
-      grupo: data.grupo || null,
-      tiene_documentos: false
-    }]);
+    const { data, error } = await supabase
+      .from('usuarios_web_movil')
+      .select('correo')
+      .eq('boleta', boleta)
+      .maybeSingle();
 
     if (error) {
-      console.error("Error al crear usuario en usuarios_web_movil:", error);
-      return false;
+      console.error("Error buscando correo:", error);
+      return { success: false, error: error.message };
     }
 
-    return true;
+    if (!data) {
+      return { success: false, error: 'Usuario no encontrado' };
+    }
+
+    return { success: true, correo: data.correo };
   } catch (err) {
-    console.error("Error en createUser:", err);
-    return false;
+    console.error("Error en buscarCorreoPorBoleta:", err);
+    return { success: false, error: 'Error interno' };
   }
 }
 
+// Iniciar sesión con Supabase Auth
+async function loginConAuth(correo, password) {
+  const supabase = getClient();
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: correo,
+      password: password
+    });
 
+    console.log("Login Auth:", data?.session ? 'Sesión creada' : 'Sin sesión', error?.message); //debug
 
-module.exports = { /*loginUser,*/ RegisterUserAuth, validarBoleta, validarConfirmacion, createUser };
+    if (error) {
+      let mensaje = 'Error al iniciar sesión';
+      if (error.message.includes('Invalid login credentials')) {
+        mensaje = 'Contraseña incorrecta';
+      } else if (error.message.includes('Email not confirmed')) {
+        mensaje = 'Debes confirmar tu correo antes de iniciar sesión';
+      }
+      return { success: false, error: mensaje };
+    }
+
+    return { 
+      success: true, 
+      session: data.session,
+      user: data.user
+    };
+  } catch (err) {
+    console.error("Error en loginConAuth:", err);
+    return { success: false, error: 'Error interno del servidor' };
+  }
+}
+
+module.exports = { 
+  validarBoletaEnTabla, 
+  validarCorreoEnTabla, 
+  registrarEnAuth, 
+  crearUsuarioEnTabla,
+  verificarConfirmacionPorBoleta,
+  buscarCorreoPorBoleta,
+  loginConAuth
+};
