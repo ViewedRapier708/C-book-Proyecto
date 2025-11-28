@@ -6,7 +6,6 @@ async function registro(event) {
     const correo = document.getElementById('correo').value;
     const password = document.getElementById('contrasena').value;
     const confPsw = document.getElementById('confirmar_contrasena').value;
-    const grupo = document.getElementById('grupo')?.value || '';
     const mensajeDiv = document.querySelector('.messaje');
 
     // Validaciones básicas en frontend
@@ -49,7 +48,7 @@ async function registro(event) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ boleta, correo, password, confPsw, grupo })
+            body: JSON.stringify({ boleta, correo, password, confPsw })
         });
 
         const data = await res.json();

@@ -155,10 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
     inicializarElementos();
     
     // Botón para reintentar verificación
-    const btnVerificar = document.getElementById('btn-verificar');
-    if (btnVerificar) {
-        btnVerificar.addEventListener('click', reiniciarVerificacion);
-    }
 
     // Iniciar verificación automática
     iniciarVerificacion();

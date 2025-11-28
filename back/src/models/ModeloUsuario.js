@@ -45,7 +45,7 @@ async function validarCorreoEnTabla(correo) {
 }
 
 // Registrar usuario en Supabase Auth
-async function registrarEnAuth(boleta, correo, password, grupo) {
+async function registrarEnAuth(boleta, correo, password) {
   const supabase = getClient();
   try {
     const { data, error } = await supabase.auth.signUp({
@@ -55,7 +55,7 @@ async function registrarEnAuth(boleta, correo, password, grupo) {
         emailRedirectTo: "https://viewedrapier708.github.io/C-book-Proyecto/pantallasUs/confirmacionCorreo.html",
         data: { 
           boleta: boleta,
-          grupo: grupo || null
+  
         }
       }
     });

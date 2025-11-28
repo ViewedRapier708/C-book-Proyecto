@@ -15,7 +15,7 @@ async function registro(req, res) {
   }
 
   try {
-    const { boleta, correo, password, confPsw, grupo } = req.body;
+    const { boleta, correo, password, confPsw } = req.body;
 
     // Validaciones básicas
     if (!boleta || !correo || !password || !confPsw) {
@@ -63,8 +63,7 @@ async function registro(req, res) {
     // Guardar datos en sesión para la verificación
     req.session.registro = {
       boleta,
-      correo,
-      grupo: grupo || null
+      correo
     };
 
     console.log("Datos guardados en sesión:", req.session.registro); //debug
@@ -84,7 +83,7 @@ async function registro(req, res) {
 async function verificarCorreo(req, res) {
   try {
     // Obtener datos del body (enviados desde localStorage del frontend)
-    const { boleta, correo, grupo } = req.body;
+    const { boleta, correo } = req.body;
     
     if (!boleta || !correo) {
       return res.status(400).json({ 
@@ -174,6 +173,9 @@ async function login(req, res) {
       email: loginResult.user.email,
       boleta: boleta
     };
+    console.log("Datos guardados en sesión:", req.session.user); //debug
+    conosle.log("Sesión del servidor:", req.session); //debug
+    
 
     return res.status(200).json({ 
       success: true,
