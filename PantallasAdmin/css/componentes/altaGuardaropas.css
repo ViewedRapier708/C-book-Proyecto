@@ -2,39 +2,33 @@
    ESTILOS PARA COMPONENTE: ALTA DE GUARDAROPAS
    ======================================== */
 
-.container-guardaropas {
+.container-guardarropas {
     animation: fadeInUp 0.5s ease-out;
 }
 
-.container-guardaropas > h2 {
+.container-guardarropas > h2 {
     margin-bottom: 2rem;
 }
 
-.container-guardarropas .container-tabla,
-.container-guardaropas .container-tabla {
+.container-guardarropas .container-tabla {
     margin-bottom: 2rem;
     overflow: hidden;
 }
 
 .container-guardarropas .container-tabla,
-.container-guardarropas .table-responsive,
-.container-guardaropas .container-tabla,
-.container-guardaropas .table-responsive {
+.container-guardarropas .table-responsive {
     overflow-x: hidden !important;
     overflow-y: hidden !important;
 }
 
-.container-guardarropas table,
-.container-guardaropas table {
+.container-guardarropas table {
     width: 100%;
     table-layout: fixed;
     border-collapse: collapse;
 }
 
 .container-guardarropas table th,
-.container-guardarropas table td,
-.container-guardaropas table th,
-.container-guardaropas table td {
+.container-guardarropas table td {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -43,21 +37,14 @@
 }
 
 /* 6 columnas: No., Ubicación, Piso, Tipo, Estado, Acciones */
-.container-guardarropas table th:nth-child(1),
-.container-guardaropas table th:nth-child(1) { width: 10%; }
-.container-guardarropas table th:nth-child(2),
-.container-guardaropas table th:nth-child(2) { width: 22%; }
-.container-guardarropas table th:nth-child(3),
-.container-guardaropas table th:nth-child(3) { width: 12%; }
-.container-guardarropas table th:nth-child(4),
-.container-guardaropas table th:nth-child(4) { width: 16%; }
-.container-guardarropas table th:nth-child(5),
-.container-guardaropas table th:nth-child(5) { width: 18%; }
-.container-guardarropas table th:nth-child(6),
-.container-guardaropas table th:nth-child(6) { width: 22%; }
+.container-guardarropas table th:nth-child(1) { width: 10%; }
+.container-guardarropas table th:nth-child(2) { width: 22%; }
+.container-guardarropas table th:nth-child(3) { width: 12%; }
+.container-guardarropas table th:nth-child(4) { width: 16%; }
+.container-guardarropas table th:nth-child(5) { width: 18%; }
+.container-guardarropas table th:nth-child(6) { width: 22%; }
 
-.container-guardarropas .btn-editar,
-.container-guardaropas .btn-editar {
+.container-guardarropas .btn-editar {
     padding: 0.4rem 0.8rem;
     font-size: 0.85rem;
 }
