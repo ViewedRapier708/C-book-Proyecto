@@ -63,6 +63,7 @@ async function registrarEnAuth(boleta, correo, password) {
     console.log("Registro Auth:", data?.user?.id, error?.message); //debug
 
     if (error) {
+      console.error("Error registrando en Auth:", error);
       return { success: false, error: error.message };
     }
 
@@ -74,7 +75,7 @@ async function registrarEnAuth(boleta, correo, password) {
 }
 
 // Crear usuario en la tabla usuarios_web_movil
-async function crearUsuarioEnTabla(boleta, correo, grupo) {
+async function crearUsuarioEnTabla(boleta, correo) {
   const supabase = getClient();
   try {
     console.log("Creando usuario en tabla:", { boleta, correo }); //debug
@@ -184,11 +185,30 @@ async function loginConAuth(correo, password) {
     return { 
       success: true, 
       session: data.session,
-      user: data.user
+      user: data.user,
+      nombre: data.user.user_metadata?.nombre || '',
+      grupo: data.user.user_metadata?.grupo || ''
     };
   } catch (err) {
     console.error("Error en loginConAuth:", err);
     return { success: false, error: 'Error interno del servidor' };
+  }
+}
+
+async function traerUsuarios() {
+  const supabase = getClient();
+  try {
+    const { data, error } = await supabase
+      .from('usuarios_web_movil')
+      .select('boleta, correo, tiene_documentos,boletas()');
+    if (error) {
+      console.error("Error trayendo usuarios:", error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, data: data };
+  } catch (err) {
+    console.error("Error en traerUsuarios:", err);
+    return { success: false, error: 'Error interno' };
   }
 }
 

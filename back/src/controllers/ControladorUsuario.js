@@ -51,7 +51,7 @@ async function registro(req, res) {
     }
 
     // Registrar en Supabase Auth
-    const resultadoAuth = await registrarEnAuth(boleta, correo, password, grupo);
+    const resultadoAuth = await registrarEnAuth(boleta, correo, password);
     
     if (!resultadoAuth.success) {
       console.error("Error en Auth:", resultadoAuth.error);
@@ -107,7 +107,7 @@ async function verificarCorreo(req, res) {
     }
 
     // Correo confirmado - Crear usuario en la tabla
-    const usuarioCreado = await crearUsuarioEnTabla(boleta, correo, grupo);
+    const usuarioCreado = await crearUsuarioEnTabla(boleta, correo);
     
     if (!usuarioCreado.success) {
       console.error("Error creando usuario en tabla:", usuarioCreado.error);
@@ -170,11 +170,15 @@ async function login(req, res) {
     // Guardar info en sesión del servidor (opcional)
     req.session.user = {
       id: loginResult.user.id,
+      nombre: loginResult.user.user_metadata?.nombre || '',
       email: loginResult.user.email,
-      boleta: boleta
+      boleta: boleta,
+      grupo: loginResult.user.user_metadata?.grupo || ''
     };
+
+
     console.log("Datos guardados en sesión:", req.session.user); //debug
-    conosle.log("Sesión del servidor:", req.session); //debug
+    console.log("Sesión del servidor:", req.session); //debug
     
 
     return res.status(200).json({ 
