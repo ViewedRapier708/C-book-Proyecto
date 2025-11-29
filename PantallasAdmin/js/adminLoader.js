@@ -99,6 +99,42 @@ document.addEventListener('DOMContentLoaded', function() {
         // Si no existe enlace de inicio, cargar directamente
         loadComponent('inicio', 'BIENVENIDO ADMINISTRADOR');
     }
+    
+    // Función para inicializar componentes con backend
+    function inicializarComponente(componentName) {
+        // Esperar un poco para que el DOM esté listo
+        setTimeout(() => {
+            switch(componentName) {
+                case 'altaComputadoras':
+                    if (typeof inicializarComputadoras === 'function') {
+                        inicializarComputadoras();
+                    }
+                    break;
+                case 'altaLibros':
+                    if (typeof inicializarLibros === 'function') {
+                        inicializarLibros();
+                    }
+                    break;
+                case 'altaRestiradores':
+                    if (typeof inicializarRestiradores === 'function') {
+                        inicializarRestiradores();
+                    }
+                    break;
+                case 'altaGuardaropas':
+                    if (typeof inicializarGuardaropas === 'function') {
+                        inicializarGuardaropas();
+                    }
+                    break;
+                case 'solicitudesLibros':
+                    if (typeof inicializarSolicitudes === 'function') {
+                        inicializarSolicitudes();
+                    }
+                    break;
+                default:
+                    console.log(`No hay inicialización para: ${componentName}`);
+            }
+        }, 100);
+    }
 });
 
 // Función para inicializar el modal de computadoras
