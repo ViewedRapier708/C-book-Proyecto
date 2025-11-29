@@ -206,7 +206,8 @@ body {
     margin-bottom: 0.5rem;
 }
 
-#form {
+#form-login,
+#form-registro {
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -221,7 +222,8 @@ label {
 }
 
 input[type="text"],
-input[type="password"] {
+input[type="password"],
+input[type="email"] {
     width: 100%;
     padding: 0.75rem 1rem;
     border: 2px solid #E8E8E8;
@@ -234,14 +236,16 @@ input[type="password"] {
 }
 
 input[type="text"]:focus,
-input[type="password"]:focus {
+input[type="password"]:focus,
+input[type="email"]:focus {
     border-color: #9D306C;
     background: #FFFFFF;
     box-shadow: 0 0 0 3px rgba(157, 48, 108, 0.1);
 }
 
 input[type="text"]::placeholder,
-input[type="password"]::placeholder {
+input[type="password"]::placeholder,
+input[type="email"]::placeholder {
     color: #999;
     font-style: italic;
 }
@@ -250,7 +254,8 @@ input[type="password"]::placeholder {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-top: -0.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
 input[type="checkbox"] {
@@ -356,7 +361,8 @@ button[type="submit"]:active {
     margin: 1rem 0;
 }
 
-#form a:not(.btn-crear-cuenta) {
+#form-login a:not(.btn-crear-cuenta),
+#form-registro a:not(.btn-crear-cuenta) {
     color: #7B0233;
     font-size: 0.85rem;
     text-decoration: none;
@@ -364,9 +370,12 @@ button[type="submit"]:active {
     padding: 0.3rem;
     transition: color 0.3s ease;
     font-weight: 500;
+    display: inline-block;
+    margin: 0.5rem;
 }
 
-#form a:not(.btn-crear-cuenta):hover {
+#form-login a:not(.btn-crear-cuenta):hover,
+#form-registro a:not(.btn-crear-cuenta):hover {
     color: #9D306C;
     text-decoration: underline;
 }
@@ -490,7 +499,8 @@ button[type="submit"]:active {
 }
 
 input[type="text"]:focus,
-input[type="password"]:focus {
+input[type="password"]:focus,
+input[type="email"]:focus {
     animation: pulse 0.4s ease-in-out;
 }
 

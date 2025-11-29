@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="/"></script>
     <script src="./funciones/funcionesDeValidacion/MostrarPsw.js"></script>
     <script src="funciones/funcionInicioSesion.js"></script>
+    <script src="./pantallasUs/js/CambiarFormulario.js"></script>
 
     <link rel="stylesheet" href="./cssGeneral/styleIndex.css">
     <link rel="shortcut icon" href="/C-book-Proyecto/img/logo_C_Book.jpg" type="image/x-icon">
@@ -42,7 +42,11 @@
                 <div class="container-title">
                     <h2>INICIAR SESIÓN</h2>
                 </div>
-                <form id="form" onsubmit="return iniciarSesion(event)">
+
+                <!-- ========================================
+                     FORMULARIO DE INICIO DE SESIÓN
+                     ======================================== -->
+                <form id="form-login" onsubmit="return iniciarSesion(event)">
                     
                     <label for="boleta">Usuario</label>
                     <input 
@@ -66,28 +70,111 @@
                     <div class="checkbox-container">
                         <input 
                             type="checkbox" 
-                            id="mostrar" 
-                            onclick="VizualizarPsw('mostrar', 'password')"
+                            id="mostrar-login" 
+                            onclick="VizualizarPsw('mostrar-login', 'password')"
                         >
-                        <label for="mostrar">Mostrar contraseña</label>
+                        <label for="mostrar-login">Mostrar contraseña</label>
                     </div>
+
                     <div class="messaje"></div>
+
                     <button type="submit" class="btn-crear-cuenta">ACCEDER</button>
 
                     <div class="separator">O</div>
-                    <button class="btn-crear-cuenta" onclick="window.open('./pantallasUs/registro.html')"> Crear cuenta</button>
+
+                    <!-- Botón que cambia al formulario de registro -->
+                    <button type="button" class="btn-crear-cuenta" onclick="mostrarRegistro()">
+                        Crear cuenta
+                    </button>
                 
-                    
-                    
                     <div class="divider"></div> 
                     <a href="./PantallasAdmin/admin.html">admin</a>
                     <a href="./pantallasUs/usuario.html">usuario</a>
 
+                </form>
+
+                <!-- ========================================
+                     FORMULARIO DE REGISTRO (OCULTO POR DEFECTO)
+                     ======================================== -->
+                <form id="form-registro" onsubmit="registro(event)" style="display: none;">
+                    
+                    <!-- Número de Boleta -->
+                    <label for="boleta-registro">Número de boleta</label>
+                    <input 
+                        type="text" 
+                        id="boleta-registro" 
+                        name="boleta" 
+                        placeholder="Ingrese su número de boleta"
+                        onkeypress="return ValidarCamposNumericos(event)" 
+                        maxlength="10"
+                        required>
+
+                    <!-- Grupo -->
+                    <label for="grupo">Grupo</label>
+                    <input 
+                        type="text" 
+                        id="grupo" 
+                        name="grupo" 
+                        placeholder="Ingrese su grupo"
+                        maxlength="4"
+                        required>
+
+                    <!-- Correo Institucional -->
+                    <label for="correo">Correo Institucional</label>
+                    <input 
+                        type="email" 
+                        id="correo" 
+                        name="correo" 
+                        placeholder="Ingrese su correo institucional"
+                        maxlength="100"
+                        required>
+
+                    <!-- Contraseña -->
+                    <label for="password-registro">Contraseña</label>
+                    <input 
+                        type="password" 
+                        id="password-registro" 
+                        name="password" 
+                        placeholder="Ingrese su contraseña"
+                        maxlength="100"
+                        required>
+
+                    <!-- Confirmar Contraseña -->
+                    <label for="confirmar-password">Confirmación de contraseña</label>
+                    <input 
+                        type="password" 
+                        id="confirmar-password" 
+                        name="confirmar_password" 
+                        placeholder="Ingrese nuevamente su contraseña"
+                        maxlength="100"
+                        required>
+                    
+                    <!-- Checkbox mostrar contraseña -->
+                    <div class="checkbox-container">
+                        <input 
+                            type="checkbox" 
+                            id="mostrar-registro" 
+                            onclick="VizualizarPsw('mostrar-registro', ['password-registro', 'confirmar-password'])"
+                        >
+                        <label for="mostrar-registro">Mostrar contraseña</label>
+                    </div>
+
+                    <div class="messaje"></div>
+
+                    <!-- Botón de registrar -->
+                    <button type="submit" class="btn-crear-cuenta">REGISTRAR</button>
+
+                    <div class="separator">O</div>
+
+                    <!-- Botón para volver al login -->
+                    <button type="button" class="btn-crear-cuenta" onclick="mostrarLogin()">
+                        Ya tengo cuenta
+                    </button>
 
                 </form>
+
             </div>
         </div>
     </div>
 </body>
 </html>
-
