@@ -13,6 +13,13 @@
 .container-computadoras .container-tabla {
     margin-bottom: 2rem;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.container-computadoras .table-responsive {
+    flex: 1;
 }
 
 .container-computadoras .container-tabla,
@@ -238,7 +245,12 @@ select:focus {
     display: grid;
     grid-template-columns: 1fr 300px;
     gap: 2rem;
-    align-items: start;
+    /* align-items: start; Eliminado para que tengan la misma altura */
+}
+
+.columna-principal {
+    display: flex;
+    flex-direction: column;
 }
 
 .columna-estadisticas {

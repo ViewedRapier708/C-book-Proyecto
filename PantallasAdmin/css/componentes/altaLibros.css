@@ -13,6 +13,13 @@
 .container-libros .container-tabla {
     margin-bottom: 2rem;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.container-libros .table-responsive {
+    flex: 1;
 }
 
 .container-libros .container-tabla,
@@ -226,7 +233,12 @@ textarea:focus {
     display: grid;
     grid-template-columns: 1fr 300px;
     gap: 2rem;
-    align-items: start;
+    /* align-items: start; Eliminado para simetría de altura */
+}
+
+.columna-principal {
+    display: flex;
+    flex-direction: column;
 }
 
 .columna-estadisticas {
