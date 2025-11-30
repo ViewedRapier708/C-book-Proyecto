@@ -45,6 +45,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (pageTitle) {
                     pageTitle.textContent = title;
                 }
+
+                // Inicializar funcionalidades específicas del componente
+                if (componentName === 'altaComputadoras') {
+                    inicializarModalComputadoras();
+                } else if (componentName === 'altaLibros') {
+                    inicializarModalLibros();
+                } else if (componentName === 'altaRestiradores') {
+                    inicializarModalRestiradores();
+                } else if (componentName === 'altaGuardaropas') {
+                    inicializarModalGuardaropas();
+                }
               
             })
             .catch(err => {
@@ -88,4 +99,381 @@ document.addEventListener('DOMContentLoaded', function() {
         // Si no existe enlace de inicio, cargar directamente
         loadComponent('inicio', 'BIENVENIDO ADMINISTRADOR');
     }
+    
+    // Función para inicializar componentes con backend
+    function inicializarComponente(componentName) {
+        // Esperar un poco para que el DOM esté listo
+        setTimeout(() => {
+            switch(componentName) {
+                case 'altaComputadoras':
+                    if (typeof inicializarComputadoras === 'function') {
+                        inicializarComputadoras();
+                    }
+                    break;
+                case 'altaLibros':
+                    if (typeof inicializarLibros === 'function') {
+                        inicializarLibros();
+                    }
+                    break;
+                case 'altaRestiradores':
+                    if (typeof inicializarRestiradores === 'function') {
+                        inicializarRestiradores();
+                    }
+                    break;
+                case 'altaGuardaropas':
+                    if (typeof inicializarGuardaropas === 'function') {
+                        inicializarGuardaropas();
+                    }
+                    break;
+                case 'solicitudesLibros':
+                    if (typeof inicializarSolicitudes === 'function') {
+                        inicializarSolicitudes();
+                    }
+                    break;
+                default:
+                    console.log(`No hay inicialización para: ${componentName}`);
+            }
+        }, 100);
+    }
 });
+
+// Función para inicializar el modal de computadoras
+function inicializarModalComputadoras() {
+    const modal = document.getElementById('modalFormulario');
+    const modalTitulo = document.getElementById('modal-titulo');
+    const btnAgregar = document.getElementById('btn-agregar');
+    const btnCerrar = document.querySelector('.modal-cerrar');
+    const btnLimpiar = document.getElementById('btn-limpiar');
+    const btnGuardar = document.getElementById('btn-guardar');
+    const tbody = document.querySelector('tbody');
+
+    if (!modal) return;
+
+    // Función para abrir modal
+    function abrirModal() {
+        modal.classList.add('activo');
+    }
+
+    // Función para cerrar modal
+    function cerrarModal() {
+        modal.classList.remove('activo');
+    }
+
+    // Función para limpiar formulario
+    function limpiarFormulario() {
+        document.getElementById('procesador').value = '';
+        document.getElementById('programas').value = '';
+        document.getElementById('carrera').value = '';
+        document.getElementById('ram').value = '';
+        document.getElementById('estado').value = 'disponible';
+    }
+
+    // Evento: Botón Agregar
+    if (btnAgregar) {
+        btnAgregar.addEventListener('click', () => {
+            modalTitulo.textContent = 'Nueva Computadora';
+            limpiarFormulario();
+            abrirModal();
+        });
+    }
+
+    // Evento: Botones Editar (delegación de eventos para filas dinámicas)
+    if (tbody) {
+        tbody.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn-editar')) {
+                const fila = e.target.closest('tr');
+                
+                // Cargar datos de la fila en el formulario
+                document.getElementById('procesador').value = fila.cells[1].textContent;
+                document.getElementById('ram').value = fila.cells[2].textContent;
+                document.getElementById('carrera').value = fila.cells[3].textContent;
+                document.getElementById('estado').value = fila.cells[4].textContent.toLowerCase();
+                
+                modalTitulo.textContent = 'Editar Computadora';
+                abrirModal();
+            }
+        });
+    }
+
+    // Evento: Cerrar con la X
+    if (btnCerrar) {
+        btnCerrar.addEventListener('click', cerrarModal);
+    }
+
+    // Evento: Botón Limpiar
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener('click', limpiarFormulario);
+    }
+
+    // Evento: Botón Guardar
+    if (btnGuardar) {
+        btnGuardar.addEventListener('click', () => {
+            // Aquí puedes agregar la lógica para guardar
+            const datos = {
+                procesador: document.getElementById('procesador').value,
+                programas: document.getElementById('programas').value,
+                carrera: document.getElementById('carrera').value,
+                ram: document.getElementById('ram').value,
+                estado: document.getElementById('estado').value
+            };
+            
+            console.log('Datos a guardar:', datos);
+            // Aquí iría la lógica para enviar al servidor
+            
+            alert('Computadora guardada correctamente');
+            cerrarModal();
+        });
+    }
+
+    // Evento: Cerrar al hacer clic fuera
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            cerrarModal();
+        }
+    });
+
+    // Evento: Cerrar con tecla Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('activo')) {
+            cerrarModal();
+        }
+    });
+}
+
+// Función para inicializar el modal de libros
+function inicializarModalLibros() {
+    const modal = document.getElementById('modalFormulario');
+    const modalTitulo = document.getElementById('modal-titulo');
+    const btnAgregar = document.getElementById('btn-agregar');
+    const btnCerrar = document.querySelector('.modal-cerrar');
+    const btnLimpiar = document.getElementById('btn-limpiar');
+    const btnGuardar = document.getElementById('btn-guardar');
+    const tbody = document.querySelector('tbody');
+
+    if (!modal) return;
+
+    function abrirModal() {
+        modal.classList.add('activo');
+    }
+
+    function cerrarModal() {
+        modal.classList.remove('activo');
+    }
+
+    function limpiarFormulario() {
+        document.getElementById('titulo').value = '';
+        document.getElementById('autor').value = '';
+        document.getElementById('editorial').value = '';
+        document.getElementById('isbn').value = '';
+        document.getElementById('carrera').value = '';
+        document.getElementById('cantidad').value = '';
+    }
+
+    if (btnAgregar) {
+        btnAgregar.addEventListener('click', () => {
+            modalTitulo.textContent = 'Nuevo Libro';
+            limpiarFormulario();
+            abrirModal();
+        });
+    }
+
+    if (tbody) {
+        tbody.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn-editar')) {
+                const fila = e.target.closest('tr');
+                document.getElementById('titulo').value = fila.cells[1].textContent;
+                document.getElementById('autor').value = fila.cells[2].textContent;
+                document.getElementById('editorial').value = fila.cells[3].textContent;
+                document.getElementById('carrera').value = fila.cells[4].textContent;
+                document.getElementById('cantidad').value = fila.cells[5].textContent;
+                
+                modalTitulo.textContent = 'Editar Libro';
+                abrirModal();
+            }
+        });
+    }
+
+    if (btnCerrar) {
+        btnCerrar.addEventListener('click', cerrarModal);
+    }
+
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener('click', limpiarFormulario);
+    }
+
+    if (btnGuardar) {
+        btnGuardar.addEventListener('click', () => {
+            const datos = {
+                titulo: document.getElementById('titulo').value,
+                autor: document.getElementById('autor').value,
+                editorial: document.getElementById('editorial').value,
+                isbn: document.getElementById('isbn').value,
+                carrera: document.getElementById('carrera').value,
+                cantidad: document.getElementById('cantidad').value
+            };
+            console.log('Libro a guardar:', datos);
+            alert('Libro guardado correctamente');
+            cerrarModal();
+        });
+    }
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) cerrarModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('activo')) cerrarModal();
+    });
+}
+
+// Función para inicializar el modal de restiradores
+function inicializarModalRestiradores() {
+    const modal = document.getElementById('modalFormulario');
+    const modalTitulo = document.getElementById('modal-titulo');
+    const btnAgregar = document.getElementById('btn-agregar');
+    const btnCerrar = document.querySelector('.modal-cerrar');
+    const btnLimpiar = document.getElementById('btn-limpiar');
+    const btnGuardar = document.getElementById('btn-guardar');
+    const tbody = document.querySelector('tbody');
+
+    if (!modal) return;
+
+    function abrirModal() {
+        modal.classList.add('activo');
+    }
+
+    function cerrarModal() {
+        modal.classList.remove('activo');
+    }
+
+    function limpiarFormulario() {
+        document.getElementById('cantidad').value = '';
+        document.getElementById('tamano').value = '';
+        document.getElementById('estado').value = 'disponible';
+    }
+
+    if (btnAgregar) {
+        btnAgregar.addEventListener('click', () => {
+            modalTitulo.textContent = 'Nuevo Restirador';
+            limpiarFormulario();
+            abrirModal();
+        });
+    }
+
+    if (tbody) {
+        tbody.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn-editar')) {
+                const fila = e.target.closest('tr');
+                document.getElementById('tamano').value = fila.cells[1].textContent;
+                document.getElementById('estado').value = fila.cells[2].textContent.toLowerCase();
+                
+                modalTitulo.textContent = 'Editar Restirador';
+                abrirModal();
+            }
+        });
+    }
+
+    if (btnCerrar) {
+        btnCerrar.addEventListener('click', cerrarModal);
+    }
+
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener('click', limpiarFormulario);
+    }
+
+    if (btnGuardar) {
+        btnGuardar.addEventListener('click', () => {
+            const datos = {
+                cantidad: document.getElementById('cantidad').value,
+                tamano: document.getElementById('tamano').value,
+                estado: document.getElementById('estado').value
+            };
+            console.log('Restirador a guardar:', datos);
+            alert('Restirador guardado correctamente');
+            cerrarModal();
+        });
+    }
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) cerrarModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('activo')) cerrarModal();
+    });
+}
+
+// Función para inicializar el modal de guardaropas
+function inicializarModalGuardaropas() {
+    const modal = document.getElementById('modalFormulario');
+    const modalTitulo = document.getElementById('modal-titulo');
+    const btnAgregar = document.getElementById('btn-agregar');
+    const btnCerrar = document.querySelector('.modal-cerrar');
+    const btnLimpiar = document.getElementById('btn-limpiar');
+    const btnGuardar = document.getElementById('btn-guardar');
+    const tbody = document.querySelector('tbody');
+
+    if (!modal) return;
+
+    function abrirModal() {
+        modal.classList.add('activo');
+    }
+
+    function cerrarModal() {
+        modal.classList.remove('activo');
+    }
+
+    function limpiarFormulario() {
+        document.getElementById('cantidad').value = '';
+        document.getElementById('estado').value = 'disponible';
+    }
+
+    if (btnAgregar) {
+        btnAgregar.addEventListener('click', () => {
+            modalTitulo.textContent = 'Nuevo Guardaropa';
+            limpiarFormulario();
+            abrirModal();
+        });
+    }
+
+    if (tbody) {
+        tbody.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn-editar')) {
+                const fila = e.target.closest('tr');
+                // Cargar el estado de la fila
+                document.getElementById('estado').value = fila.cells[4].textContent.toLowerCase();
+                
+                modalTitulo.textContent = 'Editar Guardaropa';
+                abrirModal();
+            }
+        });
+    }
+
+    if (btnCerrar) {
+        btnCerrar.addEventListener('click', cerrarModal);
+    }
+
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener('click', limpiarFormulario);
+    }
+
+    if (btnGuardar) {
+        btnGuardar.addEventListener('click', () => {
+            const datos = {
+                cantidad: document.getElementById('cantidad').value,
+                estado: document.getElementById('estado').value
+            };
+            console.log('Guardaropa a guardar:', datos);
+            alert('Guardaropa guardado correctamente');
+            cerrarModal();
+        });
+    }
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) cerrarModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('activo')) cerrarModal();
+    });
+}

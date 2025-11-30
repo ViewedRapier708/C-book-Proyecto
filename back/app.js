@@ -1,8 +1,13 @@
 const cors = require('cors');
 const express = require('express');
 const app = express();
+<<<<<<< HEAD
 const authRoutes = require('./src/routes/Rutas.js');
 const session = require('express-session');
+=======
+const authRoutes = require('./src/routes/Rutas.js'); // ajusta la ruta según tu proyecto
+const adminRoutes = require('./src/routes/RutasAdmin.js'); // Rutas de administrador
+>>>>>>> bf7e8e10c8234f6d22344d84a088d033869e50b8
 require('dotenv').config();
 
 // Middleware para leer JSON
@@ -54,6 +59,9 @@ app.get('/', (req, res) => {
 
 // Rutas de autenticación
 app.use('/auth', authRoutes);
+
+// Rutas de administrador
+app.use('/api/admin', adminRoutes);
 
 // Puerto
 const PORT = process.env.PORT || 3000;

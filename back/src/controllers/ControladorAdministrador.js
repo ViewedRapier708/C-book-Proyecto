@@ -1,0 +1,1217 @@
+const { getClient } = require('../config/db');
+
+// ==================== COMPUTADORAS ====================
+/**
+ * Obtener todas las computadoras
+ */
+const obtenerComputadoras = async (req, res) => {
+  try {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from('computadoras')
+      .select('*')
+      .order('id', { ascending: true });
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al obtener computadoras', 
+        error: error.message 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      data 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Crear una nueva computadora
+ */
+const crearComputadora = async (req, res) => {
+  try {
+    const { procesador, programas, carrera } = req.body;
+
+    // Validar datos requeridos
+    if (!procesador || !programas || !carrera) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Faltan datos requeridos: procesador, programas, carrera' 
+      });
+    }
+
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from('computadoras')
+      .insert([{ 
+        procesador, 
+        programas, 
+        carrera, 
+        ocupado: false 
+      }])
+      .select();
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al crear computadora', 
+        error: error.message 
+      });
+    }
+
+    return res.status(201).json({ 
+      success: true, 
+      message: 'Computadora creada exitosamente', 
+      data: data[0] 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Actualizar una computadora existente
+ */
+const actualizarComputadora = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { procesador, programas, carrera, ocupado } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'ID de computadora requerido' 
+      });
+    }
+
+    const updateData = {};
+    if (procesador !== undefined) updateData.procesador = procesador;
+    if (programas !== undefined) updateData.programas = programas;
+    if (carrera !== undefined) updateData.carrera = carrera;
+    if (ocupado !== undefined) updateData.ocupado = ocupado;
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'No hay datos para actualizar' 
+      });
+    }
+
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from('computadoras')
+      .update(updateData)
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al actualizar computadora', 
+        error: error.message 
+      });
+    }
+
+    if (data.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Computadora no encontrada' 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Computadora actualizada exitosamente', 
+      data: data[0] 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Eliminar una computadora
+ */
+const eliminarComputadora = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'ID de computadora requerido' 
+      });
+    }
+
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from('computadoras')
+      .delete()
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al eliminar computadora', 
+        error: error.message 
+      });
+    }
+
+    if (data.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Computadora no encontrada' 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Computadora eliminada exitosamente', 
+      data: data[0] 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+// ==================== LIBROS ====================
+/**
+ * Obtener todos los libros
+ */
+const obtenerLibros = async (req, res) => {
+  try {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from('libros')
+      .select('*')
+      .order('id', { ascending: true });
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al obtener libros', 
+        error: error.message 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      data 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Crear un nuevo libro
+ */
+const crearLibro = async (req, res) => {
+  try {
+    const { titulo, autor, isbn, editorial, año_publicacion, categoria, descripcion } = req.body;
+
+    // Validar datos requeridos
+    if (!titulo || !autor) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Faltan datos requeridos: titulo, autor' 
+      });
+    }
+
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from('libros')
+      .insert([{ 
+        titulo, 
+        autor, 
+        isbn, 
+        editorial, 
+        año_publicacion, 
+        categoria, 
+        descripcion,
+        ocupado: false 
+      }])
+      .select();
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al crear libro', 
+        error: error.message 
+      });
+    }
+
+    return res.status(201).json({ 
+      success: true, 
+      message: 'Libro creado exitosamente', 
+      data: data[0] 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Actualizar un libro existente
+ */
+const actualizarLibro = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { titulo, autor, isbn, editorial, año_publicacion, categoria, descripcion, ocupado } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'ID de libro requerido' 
+      });
+    }
+
+    const updateData = {};
+    if (titulo !== undefined) updateData.titulo = titulo;
+    if (autor !== undefined) updateData.autor = autor;
+    if (isbn !== undefined) updateData.isbn = isbn;
+    if (editorial !== undefined) updateData.editorial = editorial;
+    if (año_publicacion !== undefined) updateData.año_publicacion = año_publicacion;
+    if (categoria !== undefined) updateData.categoria = categoria;
+    if (descripcion !== undefined) updateData.descripcion = descripcion;
+    if (ocupado !== undefined) updateData.ocupado = ocupado;
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'No hay datos para actualizar' 
+      });
+    }
+
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from('libros')
+      .update(updateData)
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al actualizar libro', 
+        error: error.message 
+      });
+    }
+
+    if (data.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Libro no encontrado' 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Libro actualizado exitosamente', 
+      data: data[0] 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Eliminar un libro
+ */
+const eliminarLibro = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'ID de libro requerido' 
+      });
+    }
+
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from('libros')
+      .delete()
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al eliminar libro', 
+        error: error.message 
+      });
+    }
+
+    if (data.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Libro no encontrado' 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Libro eliminado exitosamente', 
+      data: data[0] 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+// ==================== RESTIRADORES ====================
+/**
+ * Obtener todos los restiradores
+ */
+const obtenerRestiradores = async (req, res) => {
+  try {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from('restiradores')
+      .select('*')
+      .order('id', { ascending: true });
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al obtener restiradores', 
+        error: error.message 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      data 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Crear un nuevo restirador
+ */
+const crearRestirador = async (req, res) => {
+  try {
+    const { ubicacion, descripcion } = req.body;
+
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from('restiradores')
+      .insert([{ 
+        ubicacion, 
+        descripcion,
+        ocupado: false 
+      }])
+      .select();
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al crear restirador', 
+        error: error.message 
+      });
+    }
+
+    return res.status(201).json({ 
+      success: true, 
+      message: 'Restirador creado exitosamente', 
+      data: data[0] 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Actualizar un restirador existente
+ */
+const actualizarRestirador = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { ubicacion, descripcion, ocupado } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'ID de restirador requerido' 
+      });
+    }
+
+    const updateData = {};
+    if (ubicacion !== undefined) updateData.ubicacion = ubicacion;
+    if (descripcion !== undefined) updateData.descripcion = descripcion;
+    if (ocupado !== undefined) updateData.ocupado = ocupado;
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'No hay datos para actualizar' 
+      });
+    }
+
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from('restiradores')
+      .update(updateData)
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al actualizar restirador', 
+        error: error.message 
+      });
+    }
+
+    if (data.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Restirador no encontrado' 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Restirador actualizado exitosamente', 
+      data: data[0] 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Eliminar un restirador
+ */
+const eliminarRestirador = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'ID de restirador requerido' 
+      });
+    }
+
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from('restiradores')
+      .delete()
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al eliminar restirador', 
+        error: error.message 
+      });
+    }
+
+    if (data.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Restirador no encontrado' 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Restirador eliminado exitosamente', 
+      data: data[0] 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+// ==================== GUARDAROPAS ====================
+/**
+ * Obtener todos los guardaropas
+ */
+const obtenerGuardaropas = async (req, res) => {
+  try {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from('guardaropas')
+      .select('*')
+      .order('id', { ascending: true });
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al obtener guardaropas', 
+        error: error.message 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      data 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Crear un nuevo guardaropa
+ */
+const crearGuardaropa = async (req, res) => {
+  try {
+    const { numero, ubicacion, descripcion } = req.body;
+
+    if (!numero) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Número de guardaropa requerido' 
+      });
+    }
+
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from('guardaropas')
+      .insert([{ 
+        numero,
+        ubicacion, 
+        descripcion,
+        ocupado: false 
+      }])
+      .select();
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al crear guardaropa', 
+        error: error.message 
+      });
+    }
+
+    return res.status(201).json({ 
+      success: true, 
+      message: 'Guardaropa creado exitosamente', 
+      data: data[0] 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Actualizar un guardaropa existente
+ */
+const actualizarGuardaropa = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { numero, ubicacion, descripcion, ocupado } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'ID de guardaropa requerido' 
+      });
+    }
+
+    const updateData = {};
+    if (numero !== undefined) updateData.numero = numero;
+    if (ubicacion !== undefined) updateData.ubicacion = ubicacion;
+    if (descripcion !== undefined) updateData.descripcion = descripcion;
+    if (ocupado !== undefined) updateData.ocupado = ocupado;
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'No hay datos para actualizar' 
+      });
+    }
+
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from('guardaropas')
+      .update(updateData)
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al actualizar guardaropa', 
+        error: error.message 
+      });
+    }
+
+    if (data.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Guardaropa no encontrado' 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Guardaropa actualizado exitosamente', 
+      data: data[0] 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Eliminar un guardaropa
+ */
+const eliminarGuardaropa = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'ID de guardaropa requerido' 
+      });
+    }
+
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from('guardaropas')
+      .delete()
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al eliminar guardaropa', 
+        error: error.message 
+      });
+    }
+
+    if (data.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Guardaropa no encontrado' 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Guardaropa eliminado exitosamente', 
+      data: data[0] 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+// ==================== SOLICITUDES ====================
+/**
+ * Obtener todas las solicitudes
+ */
+const obtenerSolicitudes = async (req, res) => {
+  try {
+    const { estado, tipo } = req.query;
+    
+    const supabase = getClient();
+    let query = supabase
+      .from('solicitudes')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    // Filtrar por estado si se proporciona
+    if (estado) {
+      query = query.eq('estado', estado);
+    }
+
+    // Filtrar por tipo si se proporciona
+    if (tipo) {
+      query = query.eq('tipo', tipo);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al obtener solicitudes', 
+        error: error.message 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      data 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Obtener detalles de una solicitud específica
+ */
+const obtenerSolicitudPorId = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'ID de solicitud requerido' 
+      });
+    }
+
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from('solicitudes')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al obtener solicitud', 
+        error: error.message 
+      });
+    }
+
+    if (!data) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Solicitud no encontrada' 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      data 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Aprobar una solicitud
+ */
+const aprobarSolicitud = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'ID de solicitud requerido' 
+      });
+    }
+
+    const supabase = getClient();
+
+    // Actualizar estado de la solicitud
+    const { data, error } = await supabase
+      .from('solicitudes')
+      .update({ 
+        estado: 'aprobada',
+        fecha_aprobacion: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al aprobar solicitud', 
+        error: error.message 
+      });
+    }
+
+    if (data.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Solicitud no encontrada' 
+      });
+    }
+
+    // Marcar el recurso como ocupado
+    const solicitud = data[0];
+    const { error: errorRecurso } = await supabase
+      .from(solicitud.tipo)
+      .update({ ocupado: true })
+      .eq('id', solicitud.recurso_id);
+
+    if (errorRecurso) {
+      console.error('Error al actualizar estado del recurso:', errorRecurso);
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Solicitud aprobada exitosamente', 
+      data: data[0] 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Rechazar una solicitud
+ */
+const rechazarSolicitud = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { motivo } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'ID de solicitud requerido' 
+      });
+    }
+
+    const supabase = getClient();
+
+    // Actualizar estado de la solicitud
+    const { data, error } = await supabase
+      .from('solicitudes')
+      .update({ 
+        estado: 'rechazada',
+        fecha_rechazo: new Date().toISOString(),
+        motivo_rechazo: motivo || 'No especificado'
+      })
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al rechazar solicitud', 
+        error: error.message 
+      });
+    }
+
+    if (data.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Solicitud no encontrada' 
+      });
+    }
+
+    // Liberar el recurso si estaba ocupado
+    const solicitud = data[0];
+    const { error: errorRecurso } = await supabase
+      .from(solicitud.tipo)
+      .update({ ocupado: false })
+      .eq('id', solicitud.recurso_id);
+
+    if (errorRecurso) {
+      console.error('Error al actualizar estado del recurso:', errorRecurso);
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Solicitud rechazada exitosamente', 
+      data: data[0] 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Cancelar una solicitud (por admin o sistema)
+ */
+const cancelarSolicitud = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { motivo } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'ID de solicitud requerido' 
+      });
+    }
+
+    const supabase = getClient();
+
+    // Actualizar estado de la solicitud
+    const { data, error } = await supabase
+      .from('solicitudes')
+      .update({ 
+        estado: 'cancelada',
+        fecha_cancelacion: new Date().toISOString(),
+        motivo_cancelacion: motivo || 'Cancelada por administrador'
+      })
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al cancelar solicitud', 
+        error: error.message 
+      });
+    }
+
+    if (data.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Solicitud no encontrada' 
+      });
+    }
+
+    // Liberar el recurso
+    const solicitud = data[0];
+    const { error: errorRecurso } = await supabase
+      .from(solicitud.tipo)
+      .update({ ocupado: false })
+      .eq('id', solicitud.recurso_id);
+
+    if (errorRecurso) {
+      console.error('Error al actualizar estado del recurso:', errorRecurso);
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Solicitud cancelada exitosamente', 
+      data: data[0] 
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Obtener estadísticas del dashboard
+ */
+const obtenerEstadisticas = async (req, res) => {
+  try {
+    const supabase = getClient();
+
+    // Contar computadoras
+    const { count: totalComputadoras } = await supabase
+      .from('computadoras')
+      .select('*', { count: 'exact', head: true });
+
+    const { count: computadorasOcupadas } = await supabase
+      .from('computadoras')
+      .select('*', { count: 'exact', head: true })
+      .eq('ocupado', true);
+
+    // Contar libros
+    const { count: totalLibros } = await supabase
+      .from('libros')
+      .select('*', { count: 'exact', head: true });
+
+    const { count: librosOcupados } = await supabase
+      .from('libros')
+      .select('*', { count: 'exact', head: true })
+      .eq('ocupado', true);
+
+    // Contar restiradores
+    const { count: totalRestiradores } = await supabase
+      .from('restiradores')
+      .select('*', { count: 'exact', head: true });
+
+    const { count: restiradoresOcupados } = await supabase
+      .from('restiradores')
+      .select('*', { count: 'exact', head: true })
+      .eq('ocupado', true);
+
+    // Contar guardaropas
+    const { count: totalGuardaropas } = await supabase
+      .from('guardaropas')
+      .select('*', { count: 'exact', head: true });
+
+    const { count: guardaropasOcupados } = await supabase
+      .from('guardaropas')
+      .select('*', { count: 'exact', head: true })
+      .eq('ocupado', true);
+
+    // Contar solicitudes por estado
+    const { count: solicitudesPendientes } = await supabase
+      .from('solicitudes')
+      .select('*', { count: 'exact', head: true })
+      .eq('estado', 'pendiente');
+
+    const { count: solicitudesAprobadas } = await supabase
+      .from('solicitudes')
+      .select('*', { count: 'exact', head: true })
+      .eq('estado', 'aprobada');
+
+    const { count: solicitudesRechazadas } = await supabase
+      .from('solicitudes')
+      .select('*', { count: 'exact', head: true })
+      .eq('estado', 'rechazada');
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        recursos: {
+          computadoras: {
+            total: totalComputadoras || 0,
+            ocupadas: computadorasOcupadas || 0,
+            disponibles: (totalComputadoras || 0) - (computadorasOcupadas || 0)
+          },
+          libros: {
+            total: totalLibros || 0,
+            ocupados: librosOcupados || 0,
+            disponibles: (totalLibros || 0) - (librosOcupados || 0)
+          },
+          restiradores: {
+            total: totalRestiradores || 0,
+            ocupados: restiradoresOcupados || 0,
+            disponibles: (totalRestiradores || 0) - (restiradoresOcupados || 0)
+          },
+          guardaropas: {
+            total: totalGuardaropas || 0,
+            ocupados: guardaropasOcupados || 0,
+            disponibles: (totalGuardaropas || 0) - (guardaropasOcupados || 0)
+          }
+        },
+        solicitudes: {
+          pendientes: solicitudesPendientes || 0,
+          aprobadas: solicitudesAprobadas || 0,
+          rechazadas: solicitudesRechazadas || 0,
+          total: (solicitudesPendientes || 0) + (solicitudesAprobadas || 0) + (solicitudesRechazadas || 0)
+        }
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error al obtener estadísticas', 
+      error: error.message 
+    });
+  }
+};
+
+module.exports = {
+  // Computadoras
+  obtenerComputadoras,
+  crearComputadora,
+  actualizarComputadora,
+  eliminarComputadora,
+  
+  // Libros
+  obtenerLibros,
+  crearLibro,
+  actualizarLibro,
+  eliminarLibro,
+  
+  // Restiradores
+  obtenerRestiradores,
+  crearRestirador,
+  actualizarRestirador,
+  eliminarRestirador,
+  
+  // Guardaropas
+  obtenerGuardaropas,
+  crearGuardaropa,
+  actualizarGuardaropa,
+  eliminarGuardaropa,
+  
+  // Solicitudes
+  obtenerSolicitudes,
+  obtenerSolicitudPorId,
+  aprobarSolicitud,
+  rechazarSolicitud,
+  cancelarSolicitud,
+  
+  // Estadísticas
+  obtenerEstadisticas
+};
