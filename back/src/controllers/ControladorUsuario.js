@@ -5,7 +5,8 @@ const {
   crearUsuarioEnTabla,
   verificarConfirmacionPorBoleta,
   buscarCorreoPorBoleta,
-  loginConAuth
+  loginConAuth,
+  traerUsuarioInfo
 } = require('../models/ModeloUsuario.js');
 
 // ==================== REGISTRO ====================
@@ -164,16 +165,17 @@ async function login(req, res) {
     if (!loginResult.success) {
       return res.status(400).json({ error: loginResult.error });
     }
-
+    const userData = await traerUsuarioInfo(boleta);
+    console.log("Datos del usuario:", userData); //debug
     console.log("Login exitoso, sesión creada"); //debug
 
     // Guardar info en sesión del servidor (opcional)
     req.session.user = {
       id: loginResult.user.id,
-      nombre: loginResult.user.user_metadata?.nombre || '',
+      nombre: userData.data?.nombre || '',
       email: loginResult.user.email,
       boleta: boleta,
-      grupo: loginResult.user.user_metadata?.grupo || ''
+      grupo: userData.data?.Grupo || ''
     };
 
 

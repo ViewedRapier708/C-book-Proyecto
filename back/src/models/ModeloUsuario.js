@@ -181,7 +181,7 @@ async function loginConAuth(correo, password) {
       }
       return { success: false, error: mensaje };
     }
-
+ 
     return { 
       success: true, 
       session: data.session,
@@ -195,23 +195,35 @@ async function loginConAuth(correo, password) {
   }
 }
 
-async function traerUsuarios() {
+async function traerUsuarioInfo(boleta) {
   const supabase = getClient();
   try {
     const { data, error } = await supabase
       .from('usuarios_web_movil')
-      .select('boleta, correo, tiene_documentos,boletas()');
+      .select(`
+        boleta,
+        correo,
+        tiene_documentos,
+        boletas (
+          boleta,
+          nombre,
+          Grupo
+        )
+      `)
+      .eq('boleta', boleta)
+      .single(); // Opcional si solo esperas un resultado
+
     if (error) {
       console.error("Error trayendo usuarios:", error);
       return { success: false, error: error.message };
     }
-    return { success: true, data: data };
+
+    return { success: true, data };
   } catch (err) {
     console.error("Error en traerUsuarios:", err);
     return { success: false, error: 'Error interno' };
   }
 }
-
 module.exports = { 
   validarBoletaEnTabla, 
   validarCorreoEnTabla, 
@@ -219,5 +231,6 @@ module.exports = {
   crearUsuarioEnTabla,
   verificarConfirmacionPorBoleta,
   buscarCorreoPorBoleta,
-  loginConAuth
+  loginConAuth,
+  traerUsuarioInfo
 };
