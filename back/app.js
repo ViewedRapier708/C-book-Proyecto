@@ -29,6 +29,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
+  
 }));
 
 // Configuración de sesión
@@ -40,7 +41,6 @@ app.use(session({
     maxAge: 1000 * 60 * 60, // 1 hora
     httpOnly: true,
     secure: false,
-    sameSite: 'lax'
   }
 }));
 
