@@ -1,10 +1,5 @@
 // Iniciar sesión - Llama al backend
 
-// Detectar entorno: GitHub Pages o localhost
-const API_URL_LOGIN = window.location.hostname.includes('github.io')
-    ? 'https://c-book-backend.onrender.com'  // Backend en Render/Railway/etc
-    : 'http://localhost:3000';
-
 async function iniciarSesion(event) {
     event.preventDefault();
 
@@ -32,7 +27,7 @@ async function iniciarSesion(event) {
         console.log('Intentando login para boleta:', boleta); //debug
 
         // Llamar al backend
-        const res = await fetch(`${API_URL_LOGIN}/auth/login`, {
+        const res = await fetch('http://localhost:3000/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',

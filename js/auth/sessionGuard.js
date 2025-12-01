@@ -1,12 +1,6 @@
-// Guardia de sesión - Funciona en localhost y GitHub Pages
+// Guardia de sesión
 
 (function() {
-    // Detectar entorno: GitHub Pages o localhost
-    const isGitHub = window.location.hostname.includes('github.io');
-    const API_URL = isGitHub
-        ? 'https://c-book-backend.onrender.com'  // Backend en Render/Railway/etc
-        : 'http://localhost:3000';
-
     // Detecta tipo de página actual (públicas vs protegidas)
     const paginaActual = window.location.pathname;
     const esIndex = paginaActual.includes('index.html') || paginaActual.endsWith('/') || paginaActual.endsWith('/C-book-Proyecto/');
@@ -28,45 +22,12 @@
         return null;
     }
 
-    // Verificar sesión contra el backend (para producción con cookies)
-    async function verificarSesionBackend() {
-        try {
-            const res = await fetch(`${API_URL}/auth/sesion`, {
-                method: 'GET',
-                credentials: 'include'
-            });
-            const data = await res.json();
-            if (data.autenticado && data.user) {
-                // Sincronizar con localStorage
-                localStorage.setItem('user_data', JSON.stringify(data.user));
-                return data.user;
-            }
-            return null;
-        } catch (err) {
-            console.error('Error verificando sesión con backend:', err);
-            return null;
-        }
-    }
-
-    // Obtener usuario según el entorno
-    async function obtenerUsuario() {
-        // Siempre verificar localStorage primero (más rápido)
-        let usuario = obtenerUsuarioLocal();
-        
-        // En GitHub Pages, también verificar con backend para sincronizar
-        if (isGitHub && !usuario) {
-            usuario = await verificarSesionBackend();
-        }
-        
-        return usuario;
-    }
-
     // Función principal de control de navegación
-    async function aplicarReglasDeSesion() {
-        const usuario = await obtenerUsuario();
+    function aplicarReglasDeSesion() {
+        const usuario = obtenerUsuarioLocal();
         const sesionValida = !!usuario;
         
-        console.log('SessionGuard -', isGitHub ? 'GitHub' : 'Local', '- Página:', paginaActual, '- Sesión:', sesionValida);
+        console.log('SessionGuard - Página:', paginaActual, '- Sesión:', sesionValida);
 
         if (sesionValida) {
             // Usuario autenticado: bloquear acceso a páginas públicas
@@ -101,11 +62,6 @@
     // Función global para obtener datos del usuario actual
     window.obtenerUsuarioActual = function() {
         return obtenerUsuarioLocal();
-    };
-
-    // Función global para obtener la URL del API
-    window.getApiUrl = function() {
-        return API_URL;
     };
 
     // Aplicar reglas al cargar

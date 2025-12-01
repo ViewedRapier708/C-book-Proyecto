@@ -1,10 +1,5 @@
 // ---------- funcionesRecursos.js ----------
 
-// Detectar entorno: GitHub Pages o localhost
-const API_URL_RECURSOS = window.location.hostname.includes('github.io')
-    ? 'https://c-book-backend.onrender.com'  // Backend en Render/Railway/etc
-    : 'http://localhost:3000';
-
 /** Carga la tabla #tabla con los recursos del tipo indicado */
 async function cargarTabla() {
   const tabla = document.getElementById('tabla');
@@ -19,7 +14,7 @@ async function cargarTabla() {
  console.log('Cargando tabla de tipo:', tipo);
 
   // 2️⃣ Construir la URL con query‑string
-  const url = new URL(`${API_URL_RECURSOS}/auth/recursos`);
+  const url = new URL('http://localhost:3000/auth/recursos');
   url.searchParams.set('tipo', tipo);
 
   try {

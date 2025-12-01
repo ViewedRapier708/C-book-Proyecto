@@ -1,14 +1,9 @@
 // Función para cerrar sesión
 
-// Detectar entorno: GitHub Pages o localhost
-const API_URL_LOGOUT = window.location.hostname.includes('github.io')
-    ? 'https://c-book-backend.onrender.com'  // Backend en Render/Railway/etc
-    : 'http://localhost:3000';
-
 async function cerrarSesion() {
     try {
         // Cerrar sesión en el backend
-        await fetch(`${API_URL_LOGOUT}/auth/logout`, {
+        await fetch('http://localhost:3000/auth/logout', {
             method: 'POST',
             credentials: 'include'
         });

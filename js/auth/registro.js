@@ -1,10 +1,5 @@
 // Registro de usuario - Llama al backend
 
-// Detectar entorno: GitHub Pages o localhost
-const API_URL_REGISTRO = window.location.hostname.includes('github.io')
-    ? 'https://c-book-backend.onrender.com'  // Backend en Render/Railway/etc
-    : 'http://localhost:3000';
-
 async function registro(event) {
     event.preventDefault();
 
@@ -61,7 +56,7 @@ async function registro(event) {
         mensajeDiv.style.color = 'blue';
 
         // Llamar al backend
-        const res = await fetch(`${API_URL_REGISTRO}/auth/registro`, {
+        const res = await fetch('http://localhost:3000/auth/registro', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
