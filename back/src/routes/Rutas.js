@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { registro, verificarCorreo, login } = require('../controllers/ControladorUsuario.js');
+const { registro, verificarCorreo, login, verificarSesion, cerrarSesion } = require('../controllers/ControladorUsuario.js');
 const { obtenerRecursosPorTipo } = require('../controllers/ControladorRecursos.js');
 const controladorSolicitudes = require('../controllers/ControladorSolicitudes.js');
 const {verificarDisponibilidad} = require('../middleware/verificacionRecursos.js');
@@ -10,6 +10,8 @@ const {verificarDisponibilidad} = require('../middleware/verificacionRecursos.js
 router.post('/registro', registro);
 router.post('/verificar', verificarCorreo);
 router.post('/login', login);
+router.get('/sesion', verificarSesion);
+router.post('/logout', cerrarSesion);
 
 
 //Rutas de recursos y solicitudes

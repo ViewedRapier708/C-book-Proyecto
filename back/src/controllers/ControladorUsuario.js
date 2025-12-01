@@ -40,13 +40,16 @@ async function registro(req, res) {
     }
 
     // Verificar si la boleta ya existe
+    
     const boletaExiste = await validarBoletaEnTabla(boleta);
+
+
     if (boletaExiste) {
       return res.status(400).json({ error: "Esta boleta ya tiene una cuenta registrada" });
     }
 
     // Verificar si el correo ya existe
-    const correoExiste = await validarCorreoEnTabla(correo);
+     const correoExiste = await validarCorreoEnTabla(correo);
     if (correoExiste) {
       return res.status(400).json({ error: "Este correo ya tiene una cuenta registrada" });
     }
@@ -166,38 +169,72 @@ async function login(req, res) {
       return res.status(400).json({ error: loginResult.error });
     }
     const userData = await traerUsuarioInfo(boleta);
+    const nombre = (userData.data?.boletas?.nombre || '');
+    const grupo = userData.data?.boletas?.Grupo || '';
     console.log("Datos del usuario:", userData); //debug
     console.log("Login exitoso, sesión creada"); //debug
 
-    // Guardar info en sesión del servidor (opcional)
+    /*
+    Datos del usuario: {
+  success: true,
+  data: {
+    boleta: 2024090190,
+    correo: 'delena.roberto1@gmail.com',
+    tiene_documentos: false,
+    boletas: {
+      Grupo: '5iv8',
+      boleta: 2024090190,
+      nombre: 'Jose Roberto Delena Caballero\n'
+    }
+  }
+}
+    */
+
+    // Guardar info en sesión del servidor
     req.session.user = {
       id: loginResult.user.id,
-      nombre: userData.data?.nombre || '',
+      nombre,
       email: loginResult.user.email,
       boleta: boleta,
-      grupo: userData.data?.Grupo || ''
+      grupo
     };
 
-
     console.log("Datos guardados en sesión:", req.session.user); //debug
-    console.log("Sesión del servidor:", req.session); //debug
-    
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       success: true,
       mensaje: 'Inicio de sesión exitoso',
-      session: loginResult.session,
-      user: {
-        id: loginResult.user.id,
-        email: loginResult.user.email,
-        boleta: boleta
-      }
+      user: req.session.user
     });
-
   } catch (err) {
     console.error("Error en login:", err);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
 
-module.exports = { registro, verificarCorreo, login };
+// ==================== VERIFICAR SESIÓN ====================
+function verificarSesion(req, res) {
+  if (req.session && req.session.user) {
+    return res.status(200).json({
+      autenticado: true,
+      user: req.session.user
+    });
+  }
+  return res.status(200).json({
+    autenticado: false
+  });
+}
+
+// ==================== CERRAR SESIÓN ====================
+function cerrarSesion(req, res) {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Error al cerrar sesión:', err);
+      return res.status(500).json({ error: 'Error al cerrar sesión' });
+    }
+    res.clearCookie('connect.sid');
+    return res.status(200).json({ success: true, mensaje: 'Sesión cerrada' });
+  });
+}
+
+module.exports = { registro, verificarCorreo, login, verificarSesion, cerrarSesion };

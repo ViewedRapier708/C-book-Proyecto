@@ -1,33 +1,29 @@
 const cors = require('cors');
 const express = require('express');
+const path = require('path');
 const app = express();
-<<<<<<< HEAD
 const authRoutes = require('./src/routes/Rutas.js');
 const session = require('express-session');
-=======
-const authRoutes = require('./src/routes/Rutas.js'); // ajusta la ruta según tu proyecto
-const adminRoutes = require('./src/routes/RutasAdmin.js'); // Rutas de administrador
->>>>>>> bf7e8e10c8234f6d22344d84a088d033869e50b8
 require('dotenv').config();
+
+// Detectar entorno
+const isProduction = process.env.NODE_ENV === 'production';
 
 // Middleware para leer JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Configuración de CORS para permitir cookies de sesión
+// Configuración de CORS
 const allowedOrigins = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
-  'http://localhost:3001',
-  'http://127.0.0.1:3001',
   'http://localhost:5500',
   'http://127.0.0.1:5500',
-  'http://localhost:8080'
+  'https://viewedrapier708.github.io' // GitHub Pages en producción
 ];
 
 app.use(cors({
   origin: function(origin, callback) {
-    // allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) !== -1) {
       return callback(null, true);
@@ -40,7 +36,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Configuración de la sesión
+// Configuración de la sesión - adaptada para desarrollo y producción
 app.use(session({
   secret: process.env.SESSION_SECRET || 'cbook_secreto_seguro_2024',
   resave: false,
@@ -48,10 +44,16 @@ app.use(session({
   cookie: {
     maxAge: 1000 * 60 * 60, // 1 hora
     httpOnly: true,
-    secure: false, // true en producción con HTTPS
-    sameSite: 'lax'
+    secure: isProduction,           // true en producción (HTTPS)
+    sameSite: isProduction ? 'none' : 'lax'  // 'none' requiere secure:true
   }
 }));
+
+// En desarrollo, servir archivos estáticos del frontend
+if (!isProduction) {
+  app.use(express.static(path.join(__dirname, '..')));
+  console.log('Modo desarrollo: sirviendo archivos estáticos desde', path.join(__dirname, '..'));
+}
 // Ruta raíz
 app.get('/', (req, res) => {
   res.send('Servidor funcionando');
@@ -61,7 +63,7 @@ app.get('/', (req, res) => {
 app.use('/auth', authRoutes);
 
 // Rutas de administrador
-app.use('/api/admin', adminRoutes);
+
 
 // Puerto
 const PORT = process.env.PORT || 3000;

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Verificación de Correo - C-Book</title>
+    <title>Correo confirmado - C-Book</title>
     <link rel="stylesheet" href="css/confirmacionCorreo.css">
 </head>
 <body>
@@ -12,184 +12,34 @@
         <div class="circle circle-2"></div>
         <div class="circle circle-3"></div>
     </div>
-    
+
     <main class="card" role="status" aria-live="polite">
-        <!-- Estado: Verificando -->
-        <div id="estado-verificando">
-            <div class="icon-container">
-                <div class="icon-background loading"></div>
-                <div class="icon">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="spin">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M12 6v6l4 2"/>
-                    </svg>
-                </div>
-            </div>
-            <h1>Verificando tu correo...</h1>
-            <p class="subtitle">Por favor espera mientras verificamos tu cuenta</p>
-            <p id="mensaje-estado" style="margin-top: 1rem; color: #666;"></p>
-        </div>
-
-        <!-- Estado: Éxito (oculto por defecto) -->
-        <div id="estado-exito" style="display: none;">
-            <div class="icon-container">
-                <div class="icon-background"></div>
-                <div class="icon">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                        <polyline points="22 4 12 14.01 9 11.01"/>
-                    </svg>
-                </div>
-            </div>
-
-            <h1>¡Correo Verificado!</h1>
-            <p class="subtitle">Tu correo electrónico ha sido verificado exitosamente</p>
-            
-            <div class="success-details">
-                <div class="detail-item">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B0233" stroke-width="2">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                        <polyline points="22 4 12 14.01 9 11.01"/>
-                    </svg>
-                    <span>Tu cuenta ha sido creada con éxito</span>
-                </div>
-                <div class="detail-item">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B0233" stroke-width="2">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="8.5" cy="7" r="4"/>
-                        <polyline points="17 11 19 13 23 9"/>
-                    </svg>
-                    <span>Tu perfil está listo para usar</span>
-                </div>
-            </div>
-
-            <div class="actions">
-                <a href="../index.html" class="btn btn-primary">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-                        <polyline points="10 17 15 12 10 7"/>
-                        <line x1="15" y1="12" x2="3" y2="12"/>
-                    </svg>
-                    Iniciar Sesión
-                </a>
-            </div>
-        </div>
-
-        <!-- Estado: Esperando confirmación (oculto por defecto) -->
-        <div id="estado-esperando" style="display: none;">
-            <div class="icon-container">
-                <div class="icon-background" style="background: linear-gradient(135deg, #f0ad4e 0%, #ec971f 100%);"></div>
-                <div class="icon">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" y1="8" x2="12" y2="12"/>
-                        <line x1="12" y1="16" x2="12.01" y2="16"/>
-                    </svg>
-                </div>
-            </div>
-            <h1>Confirma tu correo</h1>
-            <p class="subtitle">Hemos enviado un enlace de verificación a tu correo electrónico.</p>
-            <p style="margin-top: 1rem;">Revisa tu bandeja de entrada y haz clic en el enlace para activar tu cuenta.</p>
-            <p id="contador-intentos" style="margin-top: 0.5rem; color: #888; font-size: 0.9rem;"></p>
-        
-            <button id="btn-verificar" class="btn" style="margin-top: 1rem; background: #7B0233; color: #fff; border: none; cursor: pointer;">
-                Verificar ahora
-            </button>
-            <a href="../index.html" class="btn" style="margin-top: 0.5rem; background: #eee; color: #333;">
-                Volver al inicio
-            </a>
-        </div>
-
-<<<<<<< HEAD
-        <!-- Estado: Error (oculto por defecto) -->
-        <div id="estado-error" style="display: none;">
-            <div class="icon-container">
-                <div class="icon-background" style="background: linear-gradient(135deg, #d9534f 0%, #c9302c 100%);"></div>
-                <div class="icon">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="15" y1="9" x2="9" y2="15"/>
-                        <line x1="9" y1="9" x2="15" y2="15"/>
-                    </svg>
-                </div>
-            </div>
-            <h1>Error en la verificación</h1>
-            <p class="subtitle" id="mensaje-error">Ocurrió un error al verificar tu cuenta.</p>
-            <a href="registro.html" class="btn btn-primary" style="margin-top: 2rem;">
-                Intentar de nuevo
-=======
-        <div class="actions">
-            <a href="../index.html" class="btn btn-primary">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-                    <polyline points="10 17 15 12 10 7"/>
-                    <line x1="15" y1="12" x2="3" y2="12"/>
+        <div class="icon-container">
+            <div class="icon-background"></div>
+            <div class="icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
                 </svg>
-                Iniciar Sesión
->>>>>>> bf7e8e10c8234f6d22344d84a088d033869e50b8
-            </a>
-        </div>
-
-        <!-- Componente: Características destacadas -->
-        <div class="features-highlight">
-            <h3>¿Qué puedes hacer ahora?</h3>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7B0233" stroke-width="2">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                        </svg>
-                    </div>
-                    <h4>Reserva Libros</h4>
-                    <p>Accede a nuestra biblioteca digital</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7B0233" stroke-width="2">
-                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
-                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-                        </svg>
-                    </div>
-                    <h4>Solicita Computadoras</h4>
-                    <p>Reserva equipos para tus proyectos</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7B0233" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
-                        </svg>
-                    </div>
-                    <h4>Gestiona tu Perfil</h4>
-                    <p>Personaliza tu experiencia</p>
-                </div>
             </div>
         </div>
 
-        <div class="footer">
-            <p>¡Bienvenido! Estamos emocionados de tenerte con nosotros.</p>
+        <h1>¡Correo confirmado!</h1>
+        <p class="subtitle">Tu cuenta de C-Book ya está activa.</p>
+
+        <div class="success-details" style="margin-top: 1.5rem;">
+            <div class="detail-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B0233" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="16" rx="2" ry="2"/>
+                    <polyline points="22 6 12 13 2 6"/>
+                </svg>
+                <span>Ya puedes volver a la aplicación y continuar con tus solicitudes.</span>
+            </div>
+        </div>
+
+        <div class="footer" style="margin-top: 2rem;">
+            <p>Gracias por formar parte de C-Book.</p>
         </div>
     </main>
-
-    <!-- Script externo de verificación -->
-    <script src="../js/auth/verificacionCorreo.js"></script>
-
-    <style>
-        .spin {
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        .loading {
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-    </style>
 </body>
 </html>

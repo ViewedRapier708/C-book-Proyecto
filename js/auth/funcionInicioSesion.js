@@ -1,4 +1,10 @@
 // Iniciar sesión - Llama al backend
+// Adaptado para desarrollo y producción
+
+// Detectar entorno y URL del API
+const API_URL_LOGIN = (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+    ? 'https://tu-backend-en-produccion.com'  // Cambiar por URL real
+    : 'http://localhost:3000';
 
 async function iniciarSesion(event) {
     event.preventDefault();
@@ -27,7 +33,7 @@ async function iniciarSesion(event) {
         console.log('Intentando login para boleta:', boleta); //debug
 
         // Llamar al backend
-        const res = await fetch('http://localhost:3000/auth/login', {
+        const res = await fetch(`${API_URL_LOGIN}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -44,11 +50,10 @@ async function iniciarSesion(event) {
         }
 
         // Login exitoso
-        console.log('Login exitoso! Sesión:', data.session); //debug
+        console.log('Login exitoso! Sesión:', data); //debug
         
-        // Guardar la sesión en localStorage para usarla en el frontend
-        if (data.session) {
-            localStorage.setItem('supabase_session', JSON.stringify(data.session));
+        // Guardar datos del usuario en localStorage
+        if (data.user) {
             localStorage.setItem('user_data', JSON.stringify(data.user));
         }
 
@@ -58,7 +63,7 @@ async function iniciarSesion(event) {
         // Redirigir al dashboard
         setTimeout(() => {
             window.location.href = './pantallasUs/usuario.html';
-        }, 800);
+        }, 500);
 
         return false;
 

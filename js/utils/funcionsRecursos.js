@@ -1,4 +1,11 @@
 // ---------- funcionesRecursos.js ----------
+// Adaptado para desarrollo y producción
+
+// Detectar entorno y URL del API
+const API_URL_RECURSOS = (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+    ? 'https://tu-backend-en-produccion.com'  // Cambiar por URL real
+    : 'http://localhost:3000';
+
 /** Carga la tabla #tabla con los recursos del tipo indicado */
 async function cargarTabla() {
   const tabla = document.getElementById('tabla');
@@ -13,7 +20,7 @@ async function cargarTabla() {
  console.log('Cargando tabla de tipo:', tipo);
 
   // 2️⃣ Construir la URL con query‑string
-  const url = new URL('http://localhost:3000/auth/recursos');
+  const url = new URL(`${API_URL_RECURSOS}/auth/recursos`);
   url.searchParams.set('tipo', tipo);
 
   try {

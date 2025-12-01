@@ -1,12 +1,30 @@
 // Registro de usuario - Llama al backend
+// Adaptado para desarrollo y producción
+
+// Detectar entorno y URL del API
+const API_URL_REGISTRO = (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+    ? 'https://tu-backend-en-produccion.com'  // Cambiar por URL real
+    : 'http://localhost:3000';
+
 async function registro(event) {
     event.preventDefault();
 
-    const boleta = document.getElementById('boleta').value;
-    const correo = document.getElementById('correo').value;
-    const password = document.getElementById('contrasena').value;
-    const confPsw = document.getElementById('confirmar_contrasena').value;
-    const mensajeDiv = document.querySelector('.messaje');
+    const form = event.target;
+    const boletaInput = form.querySelector('#boleta-registro') || form.querySelector('#boleta');
+    const correoInput = form.querySelector('#correo');
+    const passwordInput = form.querySelector('#password-registro') || form.querySelector('#contrasena');
+    const confirmInput = form.querySelector('#confirmar-password') || form.querySelector('#confirmar_contrasena');
+    const mensajeDiv = form.querySelector('.messaje') || document.querySelector('.messaje');
+
+    if (!boletaInput || !correoInput || !passwordInput || !confirmInput) {
+        console.error('Formulario de registro incompleto: faltan campos esperados');
+        return false;
+    }
+
+    const boleta = boletaInput.value.trim();
+    const correo = correoInput.value.trim();
+    const password = passwordInput.value;
+    const confPsw = confirmInput.value;
 
     // Validaciones básicas en frontend
     if (!boleta || !correo || !password || !confPsw) {
@@ -44,7 +62,7 @@ async function registro(event) {
         mensajeDiv.style.color = 'blue';
 
         // Llamar al backend
-        const res = await fetch('http://localhost:3000/auth/registro', {
+        const res = await fetch(`${API_URL_REGISTRO}/auth/registro`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -63,8 +81,7 @@ async function registro(event) {
         // Guardar datos en localStorage para la verificación
         localStorage.setItem('datosRegistro', JSON.stringify({
             boleta,
-            correo,
-            grupo
+            correo
         }));
 
         // Registro exitoso
@@ -73,7 +90,7 @@ async function registro(event) {
 
         // Redirigir a confirmación
         setTimeout(() => {
-            window.location.href = 'confirmacionCorreo.html';
+            window.location.href = './pantallasUs/confirmacion.html';
         }, 2000);
 
         return false;

@@ -1,5 +1,11 @@
 // verificacionCorreo.js
 // Bucle de polling que consulta al backend
+// Adaptado para desarrollo y producción
+
+// Detectar entorno y URL del API
+const API_URL_VERIFICACION = (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+    ? 'https://tu-backend-en-produccion.com'  // Cambiar por URL real
+    : 'http://localhost:3000';
 
 // Variables de control
 let intervalId = null;
@@ -8,7 +14,7 @@ const MAX_INTENTOS = 100; // ~5 minutos
 let intentos = 0;
 
 // Referencias a elementos del DOM
-let estadoVerificando, estadoExito, estadoEsperando, estadoError, mensajeEstado, mensajeError;
+let estadoVerificando, estadoExito, estadoEsperando, estadoError, mensajeEstado, mensajeError, contadorIntentos, btnVerificar;
 
 function inicializarElementos() {
     estadoVerificando = document.getElementById('estado-verificando');
@@ -17,6 +23,12 @@ function inicializarElementos() {
     estadoError = document.getElementById('estado-error');
     mensajeEstado = document.getElementById('mensaje-estado');
     mensajeError = document.getElementById('mensaje-error');
+    contadorIntentos = document.getElementById('contador-intentos');
+    btnVerificar = document.getElementById('btn-verificar');
+
+    if (btnVerificar) {
+        btnVerificar.addEventListener('click', reiniciarVerificacion);
+    }
 }
 
 // Función principal de verificación - Llama al backend
@@ -26,6 +38,10 @@ async function verificarUsuario() {
         
         if (mensajeEstado) {
             mensajeEstado.textContent = `Verificando... (intento ${intentos})`;
+        }
+
+        if (contadorIntentos) {
+            contadorIntentos.textContent = `Intento ${intentos} de ${MAX_INTENTOS}`;
         }
 
         console.log('Verificando... intento', intentos); //debug
@@ -41,7 +57,7 @@ async function verificarUsuario() {
         const { boleta, correo, grupo } = JSON.parse(datosRegistro);
 
         // Llamar al backend con los datos
-        const res = await fetch('http://localhost:3000/auth/verificar', {
+        const res = await fetch(`${API_URL_VERIFICACION}/auth/verificar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -67,6 +83,9 @@ async function verificarUsuario() {
             localStorage.removeItem('datosRegistro');
             detenerVerificacion();
             mostrarEstadoExito();
+            setTimeout(() => {
+                window.location.href = '../index.html';
+            }, 3000);
         } else {
             // Aún no confirmado
             mostrarEstadoEsperando();
@@ -134,6 +153,9 @@ function mostrarEstadoEsperando() {
     if (estadoExito) estadoExito.style.display = 'none';
     if (estadoEsperando) estadoEsperando.style.display = 'block';
     if (estadoError) estadoError.style.display = 'none';
+    if (contadorIntentos) {
+        contadorIntentos.textContent = `Intento ${intentos} de ${MAX_INTENTOS}`;
+    }
 }
 
 function mostrarEstadoError(mensaje) {
@@ -146,6 +168,7 @@ function mostrarEstadoError(mensaje) {
 
 // Reiniciar verificación manualmente
 function reiniciarVerificacion() {
+    intentos = 0;
     mostrarEstadoVerificando();
     iniciarVerificacion();
 }
@@ -154,8 +177,6 @@ function reiniciarVerificacion() {
 document.addEventListener('DOMContentLoaded', () => {
     inicializarElementos();
     
-    // Botón para reintentar verificación
-
     // Iniciar verificación automática
     iniciarVerificacion();
 });
