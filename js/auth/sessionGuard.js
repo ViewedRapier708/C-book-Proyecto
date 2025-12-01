@@ -1,11 +1,10 @@
-// Guardia de sesión - Adaptado para desarrollo y producción
-// En desarrollo usa localStorage, en producción verifica contra backend
+// Guardia de sesión - Funciona en localhost y GitHub Pages
 
 (function() {
-    // Detectar entorno
-    const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-    const API_URL = isProduction 
-        ? 'https://tu-backend-en-produccion.com'  // Cambiar por URL real del backend
+    // Detectar entorno: GitHub Pages o localhost
+    const isGitHub = window.location.hostname.includes('github.io');
+    const API_URL = isGitHub
+        ? 'https://c-book-backend.onrender.com'  // Backend en Render/Railway/etc
         : 'http://localhost:3000';
 
     // Detecta tipo de página actual (públicas vs protegidas)
@@ -54,8 +53,8 @@
         // Siempre verificar localStorage primero (más rápido)
         let usuario = obtenerUsuarioLocal();
         
-        // En producción, también verificar con backend para sincronizar
-        if (isProduction && !usuario) {
+        // En GitHub Pages, también verificar con backend para sincronizar
+        if (isGitHub && !usuario) {
             usuario = await verificarSesionBackend();
         }
         
@@ -67,7 +66,7 @@
         const usuario = await obtenerUsuario();
         const sesionValida = !!usuario;
         
-        console.log('SessionGuard -', isProduction ? 'PROD' : 'DEV', '- Página:', paginaActual, '- Sesión:', sesionValida);
+        console.log('SessionGuard -', isGitHub ? 'GitHub' : 'Local', '- Página:', paginaActual, '- Sesión:', sesionValida);
 
         if (sesionValida) {
             // Usuario autenticado: bloquear acceso a páginas públicas

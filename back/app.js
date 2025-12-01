@@ -6,28 +6,29 @@ const authRoutes = require('./src/routes/Rutas.js');
 const session = require('express-session');
 require('dotenv').config();
 
-// Detectar entorno
+// Detectar entorno (Render, Railway, etc. configuran NODE_ENV=production)
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Middleware para leer JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Configuración de CORS
+// Configuración de CORS - localhost y GitHub Pages
 const allowedOrigins = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'http://localhost:5500',
   'http://127.0.0.1:5500',
-  'https://viewedrapier708.github.io' // GitHub Pages en producción
+  'https://viewedrapier708.github.io'  // GitHub Pages
 ];
 
 app.use(cors({
   origin: function(origin, callback) {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (allowedOrigins.some(allowed => origin.startsWith(allowed))) {
       return callback(null, true);
     } else {
+      console.log('CORS bloqueado para:', origin);
       return callback(new Error('CORS policy: Origin not allowed'));
     }
   },
@@ -36,7 +37,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Configuración de la sesión - adaptada para desarrollo y producción
+// Configuración de sesión
 app.use(session({
   secret: process.env.SESSION_SECRET || 'cbook_secreto_seguro_2024',
   resave: false,
@@ -44,8 +45,8 @@ app.use(session({
   cookie: {
     maxAge: 1000 * 60 * 60, // 1 hora
     httpOnly: true,
-    secure: isProduction,           // true en producción (HTTPS)
-    sameSite: isProduction ? 'none' : 'lax'  // 'none' requiere secure:true
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax'
   }
 }));
 

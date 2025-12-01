@@ -1,10 +1,9 @@
 // verificacionCorreo.js
 // Bucle de polling que consulta al backend
-// Adaptado para desarrollo y producción
 
-// Detectar entorno y URL del API
-const API_URL_VERIFICACION = (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
-    ? 'https://tu-backend-en-produccion.com'  // Cambiar por URL real
+// Detectar entorno: GitHub Pages o localhost
+const API_URL_VERIFICACION = window.location.hostname.includes('github.io')
+    ? 'https://c-book-backend.onrender.com'  // Backend en Render/Railway/etc
     : 'http://localhost:3000';
 
 // Variables de control
