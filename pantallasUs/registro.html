@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/registro.css">
     <link rel="icon" type="image/x-icon" href="/C-book-Proyecto/img//logo_C_Book.jpg">
-    <script src="../funciones/funcionesDeValidacion/MostrarPsw.js"></script>
+    <script src="../js/auth/sessionGuard.js"></script>
+    <script src="../js/validacion/MostrarPsw.js"></script>
+    <script src="../js/auth/registro.js"></script>
     <title>Registro</title>
 </head>
 <body>
@@ -19,7 +21,6 @@
             <div class="logo-placeholder">LOGO IPN</div>
             <img src="../img/logo-IPN.png" alt="Logo IPN">
         </div>
-        <script src="/pantallasUs/js/registro.js"></script>
     </header>
     
     <div class="container-main">
@@ -27,7 +28,7 @@
         <div class="container-form-unified">
             <h2>Registro de cuenta</h2>
             
-            <form id="form-registro" onsubmit="registro()">
+            <form id="form-registro" onsubmit="return registro(event)">
                 <!-- Boleta -->
                 <div class="form-row full-width">
                     <label for="boleta" class="text-label">Número de boleta</label>
@@ -60,6 +61,13 @@
                            placeholder="Ingrese nuevamente su contraseña">
                 </div>
                 
+                <!-- Grupo -->
+                <div class="form-row full-width">
+                    <label for="grupo" class="text-label">Grupo</label>
+                    <input type="text" class="input-field" id="grupo" name="grupo" 
+                           maxlength="10" placeholder="Ingrese su grupo (ej: 4CV1)">
+                </div>
+                
                 <!-- Mostrar contraseña, igual el js -->
                 <div class="form-row full-width checkbox-row">
                     <div class="checkbox-container">
@@ -72,15 +80,12 @@
                 <div class="messaje"></div>
                 <!-- Botón de registro -->
                 <div class="form-row full-width">
-                    <button type="submit" id="btn-registrar">
-                        <a href="./cuenta.html">Registrar</a>
-                    </button>
-                  <button type="button" id="btn-registrar"><a id="b"href="../index.html">Regresar al inicio </a></button>
+                    <button type="submit" id="btn-registrar">Registrar</button>
+                    <button type="button" id="btn-regresar" onclick="window.location.href='../index.html'">Regresar al inicio</button>
                 </div>
             </form>
         </div>
     </div>
     
-    <script src="registro.js"></script>
 </body>
 </html>

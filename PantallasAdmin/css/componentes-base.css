@@ -41,6 +41,44 @@
     margin-right: auto;
 }
 
+/* Layout de dos columnas con Grid para componentes de alta */
+.layout-dos-columnas {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    height: calc(100vh - 250px);
+    min-height: 500px;
+}
+
+.columna-principal {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    overflow: hidden;
+}
+
+.columna-estadisticas {
+    display: flex;
+    flex-direction: column;
+}
+
+.layout-dos-columnas .container-tabla {
+    flex: 0 0 auto;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 0;
+}
+
+.layout-dos-columnas .container-formulario {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.layout-dos-columnas .container-btn-alta {
+    flex: 0 0 auto;
+    margin-top: 0;
+}
+
 /* Contenedor de tablas */
 .container-tabla {
     background: #FFFFFF;
@@ -154,16 +192,21 @@ tbody td {
 }
 
 /* Contenedor de datos del sistema */
-.container-datos-sistema {
+.container-datos-sistema,
+.container-datos-restiradores {
     background: #FFFFFF;
     padding: 1.5rem;
     border-radius: 15px;
     border: 2px solid #E8E8E8;
     box-shadow: 0 4px 15px rgba(123, 2, 51, 0.1);
     margin-bottom: 2rem;
+    height: fit-content;
+    max-height: 100%;
+    overflow-y: auto;
 }
 
-.container-datos-sistema h3 {
+.container-datos-sistema h3,
+.container-datos-restiradores h3 {
     color: #7B0233;
     font-size: 1.2rem;
     font-weight: 700;
@@ -175,8 +218,9 @@ tbody td {
 
 .dato-item {
     display: flex;
-    flex-direction: column;
-    margin-bottom: 1.5rem;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.2rem;
     padding: 1rem;
     background: #F9F9F9;
     border-radius: 10px;
@@ -187,6 +231,7 @@ tbody td {
 .dato-item:hover {
     transform: translateX(5px);
     box-shadow: 0 4px 12px rgba(123, 2, 51, 0.15);
+    background: #F2D9E3;
 }
 
 .dato-item:last-child {
@@ -196,18 +241,18 @@ tbody td {
 .dato-label {
     color: #7B0233;
     font-weight: 600;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.3px;
 }
 
 .dato-value {
     color: #333;
-    font-size: 1rem;
-    font-weight: 500;
-    padding: 0.5rem 0;
-    border-bottom: 2px solid #E8E8E8;
+    font-size: 1.1rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 /* Animaciones de componentes */
@@ -249,4 +294,35 @@ tbody td {
 .component-enter-buttons {
     animation: fadeInUp 0.5s ease-out 0.3s forwards;
     opacity: 0;
+}
+
+/* Responsive para layout de dos columnas */
+@media (max-width: 1200px) {
+    .layout-dos-columnas {
+        grid-template-columns: 1.5fr 1fr;
+    }
+}
+
+@media (max-width: 968px) {
+    .layout-dos-columnas {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+    
+    .columna-principal {
+        order: 1;
+    }
+    
+    .columna-estadisticas {
+        order: 2;
+        margin-top: 1rem;
+    }
+    
+    .layout-dos-columnas .container-tabla {
+        max-height: 300px;
+    }
+    
+    .layout-dos-columnas .container-formulario {
+        max-height: none;
+    }
 }

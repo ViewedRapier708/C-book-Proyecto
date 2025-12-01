@@ -1,127 +1,236 @@
-const { json } = require('express');
-
-
-//Funcion para iniciar sesión de un usuario
-async function loginUser(boleta, password) {
-
-//Obtiene el acceso a la base de datos
 const { getClient } = require('../config/db');
-//Importa bcrypt para el hash de contraseñas
-const bcrypt = require('bcryptjs');
-//Carga las variables de entorno
 
-  
-//Conecta con la base de datos
-const supabase = getClient();
-  const { data: user, error } = await supabase
-    .from('usuarios_web_movil')
-    .select('boleta, nombre, apellido, correo, tiene_documentos,password')
-    .eq('boleta', boleta)
-    .maybeSingle();
+// ==================== REGISTRO ====================
 
-  //Obtiene el hash de la contraseña del usuario
-  const passwordHash = user ? user.password : null;
-  //Verifica si hubo un error en la consulta
-  if (error) return { error, data: null };
-  //Verifica si el usuario existe
-  if (!user) return { error: new Error('Usuario no encontrado'), data: null };
-//Compara la contraseña ingresada con el hash almacenado
-  const isValid = await bcrypt.compare(password, passwordHash || '');
-  //Si la contraseña no es válida, retorna un error
-  if (!isValid) return { error: new Error('Contraseña incorrecta'), data: null };
-  //Elimina el hash de la contraseña antes de retornar los datos del usuario
-  const { passwordHash: _, ...safeUser } = user;
-  return { error: null, data: safeUser };
-}
-
-//Funcion para registrar a un nuevo usuario en base a la existencia de la boleta
-async function registerUser({ boleta, correo, password, tiene_documentos = false }) {
-  const bcrypt = require('bcryptjs');
-  const { getClient } = require('../config/db');
+// Verificar si la boleta ya existe en usuarios_web_movil
+async function validarBoletaEnTabla(boleta) {
   const supabase = getClient();
   try {
-    // Verificar que la boleta no exista
-    const { data: existing, error: checkError } = await supabase
+    const { data, error } = await supabase
       .from('usuarios_web_movil')
       .select('boleta')
       .eq('boleta', boleta)
       .maybeSingle();
 
-    if (checkError) return { error: checkError, data: null };
-    if (existing) return { error: new Error('Boleta ya registrada'), data: null };
+    if (error) {
+      console.error("Error validando boleta:", error);
+      return false;
+    }
+    return !!data; // true si existe
+  } catch (err) {
+    console.error("Error en validarBoletaEnTabla:", err);
+    return false;
+  }
+}
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+// Verificar si el correo ya existe en usuarios_web_movil
+async function validarCorreoEnTabla(correo) {
+  const supabase = getClient();
+  try {
+    const { data, error } = await supabase
+      .from('usuarios_web_movil')
+      .select('correo')
+      .eq('correo', correo)
+      .maybeSingle();
 
+    if (error) {
+      console.error("Error validando correo:", error);
+      return false;
+    }
+    return !!data; // true si existe
+  } catch (err) {
+    console.error("Error en validarCorreoEnTabla:", err);
+    return false;
+  }
+}
+
+// Registrar usuario en Supabase Auth
+async function registrarEnAuth(boleta, correo, password) {
+  const supabase = getClient();
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email: correo,
+      password: password,
+      options: {
+        emailRedirectTo: "https://viewedrapier708.github.io/C-book-Proyecto/pantallasUs/confirmacionCorreo.html",
+        data: { 
+          boleta: boleta,
+  
+        }
+      }
+    });
+
+    console.log("Registro Auth:", data?.user?.id, error?.message); //debug
+
+    if (error) {
+      console.error("Error registrando en Auth:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, user: data.user };
+  } catch (err) {
+    console.error("Error en registrarEnAuth:", err);
+    return { success: false, error: 'Error interno del servidor' };
+  }
+}
+
+// Crear usuario en la tabla usuarios_web_movil
+async function crearUsuarioEnTabla(boleta, correo) {
+  const supabase = getClient();
+  try {
+    console.log("Creando usuario en tabla:", { boleta, correo }); //debug
+    
     const { data, error } = await supabase
       .from('usuarios_web_movil')
       .insert([{
-        boleta,
-        nombre,
-        apellido,
-        correo,
-        password: hashedPassword,
-        tiene_documentos
+        boleta: parseInt(boleta),
+        correo: correo,
+        tiene_documentos: false
       }])
-      .select('boleta, nombre, apellido, correo, tiene_documentos')
-      .single();
+      .select();
 
-    if (error) return { error, data: null };
-    return { error: null, data };
+    if (error) {
+      console.error("Error insertando usuario:", error.message, error.details);
+      return { success: false, error: error.message };
+    }
+
+    console.log("Usuario creado:", data); //debug
+    return { success: true, data: data };
   } catch (err) {
-    return { error: err instanceof Error ? err : new Error('Error interno'), data: null };
+    console.error("Error en crearUsuarioEnTabla:", err);
+    return { success: false, error: 'Error interno' };
   }
 }
 
-//Este modelo se aplica al momento de hacer la solicitud de la creacion de la cuenta para que el sistema pueda mandar el codigo de verificacion al correo del alumno
-async function verificarBoleta(boleta) {
-  const { getClient } = require('../config/db');
+// ==================== VERIFICACIÓN ====================
+
+// Verificar si el correo fue confirmado por boleta
+async function verificarConfirmacionPorBoleta(boleta) {
   const supabase = getClient();
-  const { data, error } = await supabase
-    .from('usuarios_web_movil')
-    .select('boleta')
-    .eq('boleta', boleta)
-    .maybeSingle();
+  try {
+    const { data, error } = await supabase.auth.admin.listUsers();
 
-  if (error) {
-    return false;
-  } 
-  return true;
+    if (error) {
+      console.error("Error listando usuarios:", error);
+      return { confirmado: false, error: error.message };
+    }
 
+    const usuario = data.users.find(u => u.user_metadata?.boleta === boleta);
+
+    if (!usuario) {
+      return { confirmado: false, error: 'Usuario no encontrado' };
+    }
+
+    const confirmado = !!usuario.email_confirmed_at;
+    return { 
+      confirmado: confirmado, 
+      usuario: usuario,
+      correo: usuario.email 
+    };
+  } catch (err) {
+    console.error("Error en verificarConfirmacionPorBoleta:", err);
+    return { confirmado: false, error: 'Error interno' };
+  }
 }
 
-async function validarRegistro(boleta) {
-  const { getClient } = require('../config/db');
+// ==================== LOGIN ====================
+
+// Buscar correo por boleta
+async function buscarCorreoPorBoleta(boleta) {
   const supabase = getClient();
-  
   try {
     const { data, error } = await supabase
       .from('usuarios_web_movil')
-      .select('boleta')
+      .select('correo')
       .eq('boleta', boleta)
       .maybeSingle();
-    console.log(data);
-    console.log(error);
-    // Si hay error en la consulta
+
     if (error) {
-      console.error('Error al validar registro:', error);
-      return { existe: false, error };
+      console.error("Error buscando correo:", error);
+      return { success: false, error: error.message };
     }
-    
-    // Si data existe, la boleta ya está registrada
-    if (data) {
-      return { existe: true, error: null };
+
+    if (!data) {
+      return { success: false, error: 'Usuario no encontrado' };
     }
-    
-    // Si data es null, la boleta NO está registrada
-    return { existe: false, error: null };
-    
+
+    return { success: true, correo: data.correo };
   } catch (err) {
-    console.error('Error en validarRegistro:', err);
-    return { existe: false, error: err };
+    console.error("Error en buscarCorreoPorBoleta:", err);
+    return { success: false, error: 'Error interno' };
   }
 }
 
+// Iniciar sesión con Supabase Auth
+async function loginConAuth(correo, password) {
+  const supabase = getClient();
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: correo,
+      password: password
+    });
 
+    console.log("Login Auth:", data?.session ? 'Sesión creada' : 'Sin sesión', error?.message); //debug
 
-module.exports = { loginUser, registerUser, verificarBoleta,validarRegistro };
+    if (error) {
+      let mensaje = 'Error al iniciar sesión';
+      if (error.message.includes('Invalid login credentials')) {
+        mensaje = 'Contraseña incorrecta';
+      } else if (error.message.includes('Email not confirmed')) {
+        mensaje = 'Debes confirmar tu correo antes de iniciar sesión';
+      }
+      return { success: false, error: mensaje };
+    }
+ 
+    return { 
+      success: true, 
+      session: data.session,
+      user: data.user,
+      nombre: data.user.user_metadata?.nombre || '',
+      grupo: data.user.user_metadata?.grupo || ''
+    };
+  } catch (err) {
+    console.error("Error en loginConAuth:", err);
+    return { success: false, error: 'Error interno del servidor' };
+  }
+}
 
+async function traerUsuarioInfo(boleta) {
+  const supabase = getClient();
+  try {
+    const { data, error } = await supabase
+      .from('usuarios_web_movil')
+      .select(`
+        boleta,
+        correo,
+        tiene_documentos,
+        boletas (
+          boleta,
+          nombre,
+          Grupo
+        )
+      `)
+      .eq('boleta', boleta)
+      .single(); // Opcional si solo esperas un resultado
+
+    if (error) {
+      console.error("Error trayendo usuarios:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+  } catch (err) {
+    console.error("Error en traerUsuarios:", err);
+    return { success: false, error: 'Error interno' };
+  }
+}
+module.exports = { 
+  validarBoletaEnTabla, 
+  validarCorreoEnTabla, 
+  registrarEnAuth, 
+  crearUsuarioEnTabla,
+  verificarConfirmacionPorBoleta,
+  buscarCorreoPorBoleta,
+  loginConAuth,
+  traerUsuarioInfo
+};

@@ -1,4 +1,5 @@
 // ---------- funcionesRecursos.js ----------
+
 /** Carga la tabla #tabla con los recursos del tipo indicado */
 async function cargarTabla() {
   const tabla = document.getElementById('tabla');

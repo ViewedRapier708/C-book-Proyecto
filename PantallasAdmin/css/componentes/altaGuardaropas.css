@@ -2,23 +2,59 @@
    ESTILOS PARA COMPONENTE: ALTA DE GUARDAROPAS
    ======================================== */
 
-.container-guardaropas {
+.container-guardarropas {
     animation: fadeInUp 0.5s ease-out;
 }
 
-.container-guardaropas > h2 {
+.container-guardarropas > h2 {
     margin-bottom: 2rem;
 }
 
-.container-guardaropas .container-tabla {
+.container-guardarropas .container-tabla {
     margin-bottom: 2rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
-.container-guardaropas table th:nth-child(1) { width: 12%; }
-.container-guardaropas table th:nth-child(2) { width: 20%; }
-.container-guardaropas table th:nth-child(3) { width: 15%; }
-.container-guardaropas table th:nth-child(4) { width: 15%; }
-.container-guardaropas table th:nth-child(5) { width: 12%; }
+.container-guardarropas .table-responsive {
+    flex: 1;
+}
+
+.container-guardarropas .container-tabla,
+.container-guardarropas .table-responsive {
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+}
+
+.container-guardarropas table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+.container-guardarropas table th,
+.container-guardarropas table td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0.8rem 0.6rem;
+    text-align: center;
+}
+
+/* 6 columnas: No., Ubicación, Piso, Tipo, Estado, Acciones */
+.container-guardarropas table th:nth-child(1) { width: 10%; }
+.container-guardarropas table th:nth-child(2) { width: 22%; }
+.container-guardarropas table th:nth-child(3) { width: 12%; }
+.container-guardarropas table th:nth-child(4) { width: 16%; }
+.container-guardarropas table th:nth-child(5) { width: 18%; }
+.container-guardarropas table th:nth-child(6) { width: 22%; }
+
+.container-guardarropas .btn-editar {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+}
 
 .container-formulario {
     background: #FFFFFF;
@@ -29,4 +65,225 @@
 
 .form-group {
     margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    font-weight: 700;
+    color: #333;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 2px solid #7B0233;
+    border-radius: 10px;
+    font-size: 1rem;
+    color: #333;
+    background: #FFFFFF;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+    border-color: #9D306C;
+    background: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(157, 48, 108, 0.15);
+}
+
+/* ========================================
+   ESTILOS PARA EL MODAL DE FORMULARIO
+   ======================================== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.activo {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-contenido {
+    background: #FFFFFF;
+    border-radius: 15px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    transform: scale(0.8) translateY(-20px);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.activo .modal-contenido {
+    transform: scale(1) translateY(0);
+}
+
+.modal-cerrar {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 2rem;
+    color: #7B0233;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.modal-cerrar:hover {
+    color: #9D306C;
+    transform: rotate(90deg);
+}
+
+.modal-contenido h3 {
+    color: #7B0233;
+    font-size: 1.4rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    border-bottom: 2px solid #7B0233;
+    padding-bottom: 0.8rem;
+}
+
+.modal-contenido .container-formulario {
+    padding: 0;
+    box-shadow: none;
+    background: transparent;
+}
+
+.modal-contenido .form-group {
+    margin-bottom: 1.2rem;
+}
+
+.modal-botones {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.modal-botones .btn-limpiar {
+    padding: 0.8rem 1.5rem;
+    border: 2px solid #7B0233;
+    background: transparent;
+    color: #7B0233;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-botones .btn-limpiar:hover {
+    background: #7B0233;
+    color: white;
+}
+
+.modal-botones .btn-guardar {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    background: linear-gradient(135deg, #7B0233, #9D306C);
+    color: white;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-botones .btn-guardar:hover {
+    background: linear-gradient(135deg, #9D306C, #7B0233);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.3);
+}
+
+/* ========================================
+   ESTILOS PARA LA COLUMNA DE ESTADÍSTICAS
+   ======================================== */
+
+.layout-dos-columnas {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 2rem;
+    /* align-items: start; Eliminado para simetría de altura */
+}
+
+.columna-principal {
+    display: flex;
+    flex-direction: column;
+}
+
+.columna-estadisticas {
+    background: #FFFFFF;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 2rem;
+}
+
+.container-datos-sistema h3 {
+    color: #7B0233;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    border-bottom: 2px solid #7B0233;
+    padding-bottom: 0.5rem;
+}
+
+.dato-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.dato-item:last-child {
+    border-bottom: none;
+}
+
+.dato-label {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.dato-value {
+    font-weight: 700;
+    color: #7B0233;
+    font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .layout-dos-columnas {
+        grid-template-columns: 1fr;
+    }
+    
+    .columna-estadisticas {
+        position: static;
+    }
 }
