@@ -1,12 +1,6 @@
 const { getClient } = require('../config/db');
 
-const tipos = {
-    computadoras: {
-        tabla: "solicitudes_computadora",
-        query:[]/
-    
-    },
-};
+
 
 // ==================== CREAR SOLICITUD ====================
 async function CrearSolicitud(tipoSolicitud, boleta, idRecurso) {
@@ -21,18 +15,19 @@ async function CrearSolicitud(tipoSolicitud, boleta, idRecurso) {
         return { success: false, error: 'Tipo de solicitud inválido' };
     }
 
-    const tabla = tipos[tipoSolicitud];
-    console.log("Tabla seleccionada para la solicitud:", tabla); //debug
+    
 
     try {
-        const { data, error } = await supabase
-            .from(tabla)
-            .insert(``));
 
-        if (error) {
-            console.error("Error insertando solicitud de computadora:", error);
-            return { success: false, error: error.message || 'Error al crear solicitud' };
-        }
+        switch (tipoSolicitud) {
+            case 'computadora':
+            
+            break;
+            default:
+                return { success: false, error: 'Tipo de solicitud no manejado' };
+        }       
+   
+      
     } catch (err) {
         console.error("Error en solicitudes de computadora:", err);
         return { success: false, error: 'Error interno del servidor' };
@@ -40,17 +35,108 @@ async function CrearSolicitud(tipoSolicitud, boleta, idRecurso) {
 
 
 }
-async function verificarSolicitudExistente(tipo, boleta) {
+
+
+//==================Funciones de los materiales para agregar los registros==================
+async function CrearSolicitudComputadora(boleta, idRecurso) {
     const supabase = getClient();
     try {
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from('solicitudes_computadora')
-    } catch (error) {
+            .insert([{usuario_boleta: boleta, recurso_id: idRecurso}]);
+            //El estado se pone automáticamente en 'pendiente'
+        if (error) {
+            console.error("Error creando solicitud de computadora:", error);
+            return { success: false, error: error.message };
+        }
+        return { success: true };
+    } catch (err) {
+        console.error("Error en CrearSolicitudComputadora:", err);
+        return { success: false, error: 'Error interno del servidor' };
+    }
 
+}
+async function CrearSolicitudRestiradores(boleta, idRecurso) {
+    const supabase = getClient();
+    try {
+        const { error } = await supabase
+            .from('solicitudes_restirador')
+            .insert([{usuario_boleta: boleta, restirador_id: idRecurso}]);
+
+        if (error) {
+            console.error("Error creando solicitud de restirador:", error);
+            return { success: false, error: error.message };
+        }
+
+        //Se crea la solicitud y se autocompletan los campos de tiempo actual y fecha limite a llegar 
+        return { success: true };
+    } catch (err) {
+        console.error("Error en CrearSolicitudRestiradores:", err);
+        return { success: false, error: 'Error interno del servidor' };
+    }
+
+}
+async function CrearSolicitudlibro(boleta, idRecurso) {
+    const supabase = getClient();
+    try {
+        const { error } = await supabase
+            .from('solicitudes_libros')
+            .insert([{usuario_boleta: boleta, ejemplar_id: idRecurso}]);
+        if (error) {
+            console.error("Error creando solicitud de libro:", error);
+            return { success: false, error: error.message };
+        }
+        return { success: true};
+    } catch (err) {
+        console.error("Error en CrearSolicitudlibro:", err);
+        return { success: false, error: 'Error interno del servidor' };
     }
 }
+
+
+//=====================Verificar disponibilidad de recursos middleware=====================
+async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {
+//Funcion general para la verificacion de disponibilidad
+    const supabase = getClient();
+    
+
+}
+
+async function VerificarDisponibilidadComputadora(idRecurso) {
+    const supabase = getClient();
+    try {
+        const { data, error } = await supabase.from('computadoras').select('ocupado').eq('id', idRecurso).single();
+        console.log("Disponibilidad Computadora:", data, error); //debug
+        if (error) {
+            console.error("Error verificando disponibilidad:", error);
+            return { disponible: false, error: error.message };
+        }
+
+        if (data) {
+            return true;
+        }
+    } catch (error) {
+        
+    }
+}
+async function VerificarDisponibilidadRestirador(idRecurso) {
+    const supabase = getClient();
+}
+async function VerificarDisponibilidadLibro(idRecurso) {
+    const supabase = getClient();
+}
+
+
+// ==================== OBTENER SOLICITUDES ACTIVAS ====================
+async function ObtenerSolicitudesActivasPorBoleta(boleta) {}
+
+async function CancelarSolicitud(solicitudId) {}
+
+
 // ==================== CANCELACION DE SOLICITUD ====================
 
+
+// ==================== EXPORTAR FUNCIONES ====================
 
 
 

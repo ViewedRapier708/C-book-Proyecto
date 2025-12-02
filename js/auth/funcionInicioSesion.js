@@ -1,5 +1,7 @@
 // Iniciar sesión - Llama al backend
 
+const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
+
 async function iniciarSesion(event) {
     event.preventDefault();
 
@@ -27,7 +29,7 @@ async function iniciarSesion(event) {
         console.log('Intentando login para boleta:', boleta); //debug
 
         // Llamar al backend
-        const res = await fetch('http://localhost:3000/auth/login', {
+        const res = await fetch(`${API_BASE}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -36,7 +38,6 @@ async function iniciarSesion(event) {
 
         const data = await res.json();
         console.log('Login response:', data); //debug
-
         if (!res.ok) {
             mensajeDiv.textContent = data.error || 'Error al iniciar sesión';
             mensajeDiv.style.color = 'red';
@@ -46,7 +47,7 @@ async function iniciarSesion(event) {
         // Login exitoso
         console.log('Login exitoso! Sesión:', data); //debug
         
-        // Guardar datos del usuario en localStorage
+        // Guardar datos del usuario en localStorage (solo información pública)
         if (data.user) {
             localStorage.setItem('user_data', JSON.stringify(data.user));
         }
@@ -57,7 +58,7 @@ async function iniciarSesion(event) {
         // Redirigir al dashboard
         setTimeout(() => {
             window.location.href = './pantallasUs/usuario.html';
-        }, 500);
+        }, 400);
 
         return false;
 

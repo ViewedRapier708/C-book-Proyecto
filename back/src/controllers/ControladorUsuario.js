@@ -6,8 +6,12 @@ const {
   verificarConfirmacionPorBoleta,
   buscarCorreoPorBoleta,
   loginConAuth,
-  traerUsuarioInfo
+  traerUsuarioInfo,
+  refrescarSesionSupabase,
+  revocarSesionesSupabase
 } = require('../models/ModeloUsuario.js');
+
+const SESSION_SAFETY_WINDOW_MS = Number(process.env.SESSION_REFRESH_THRESHOLD_MS) || 60000; // 1 min por defecto
 
 // ==================== REGISTRO ====================
 async function registro(req, res) {
@@ -169,42 +173,41 @@ async function login(req, res) {
       return res.status(400).json({ error: loginResult.error });
     }
     const userData = await traerUsuarioInfo(boleta);
-    const nombre = (userData.data?.boletas?.nombre || '');
+    const nombre = (userData.data?.boletas?.nombre || '').trim();
     const grupo = userData.data?.boletas?.Grupo || '';
     console.log("Datos del usuario:", userData); //debug
     console.log("Login exitoso, sesión creada"); //debug
 
-    /*
-    Datos del usuario: {
-  success: true,
-  data: {
-    boleta: 2024090190,
-    correo: 'delena.roberto1@gmail.com',
-    tiene_documentos: false,
-    boletas: {
-      Grupo: '5iv8',
-      boleta: 2024090190,
-      nombre: 'Jose Roberto Delena Caballero\n'
-    }
-  }
-}
-    */
+    const supabaseSession = loginResult.session;
 
-    // Guardar info en sesión del servidor
+    if (!supabaseSession) {
+      return res.status(500).json({ error: 'No se pudo crear la sesión en Supabase' });
+    }
+
+    await regenerateSession(req);
+
     req.session.user = {
-      id: loginResult.user.id,
+      supabaseUserId: loginResult.user.id,
       nombre,
       email: loginResult.user.email,
-      boleta: boleta,
-      grupo
+      boleta,
+      grupo,
+      tokens: {
+        accessToken: supabaseSession.access_token,
+        refreshToken: supabaseSession.refresh_token,
+        expiresAt: supabaseSession.expires_at ? supabaseSession.expires_at * 1000 : null,
+        expiresIn: supabaseSession.expires_in
+      }
     };
+
+    await saveSession(req);
 
     console.log("Datos guardados en sesión:", req.session.user); //debug
 
     return res.status(200).json({
       success: true,
       mensaje: 'Inicio de sesión exitoso',
-      user: req.session.user
+      user: sanitizeSessionUser(req.session.user)
     });
   } catch (err) {
     console.error("Error en login:", err);
@@ -212,29 +215,111 @@ async function login(req, res) {
   }
 }
 
-// ==================== VERIFICAR SESIÓN ====================
-function verificarSesion(req, res) {
-  if (req.session && req.session.user) {
+
+// ==================== CERRAR SESIÓN ====================
+async function verificarSesion(req, res) {
+  try {
+    const sessionUser = req.session.user;
+
+    if (!sessionUser) {
+      return res.status(401).json({ autenticado: false, user: null });
+    }
+
+    const needsRefresh = shouldRefresh(sessionUser.tokens?.expiresAt);
+
+    if (needsRefresh && sessionUser.tokens?.refreshToken) {
+      const refreshed = await refrescarSesionSupabase(sessionUser.tokens.refreshToken);
+
+      if (refreshed.success) {
+        sessionUser.tokens = {
+          accessToken: refreshed.session.access_token,
+          refreshToken: refreshed.session.refresh_token || sessionUser.tokens.refreshToken,
+          expiresAt: refreshed.session.expires_at ? refreshed.session.expires_at * 1000 : null,
+          expiresIn: refreshed.session.expires_in
+        };
+        req.session.user = sessionUser;
+        await saveSession(req);
+      } else {
+        await destroySession(req, res);
+        return res.status(401).json({ autenticado: false, error: 'Sesión expirada' });
+      }
+    }
+
     return res.status(200).json({
       autenticado: true,
-      user: req.session.user
+      user: sanitizeSessionUser(sessionUser)
     });
+  } catch (err) {
+    console.error('Error en verificarSesion:', err);
+    return res.status(500).json({ error: 'Error interno del servidor' });
   }
-  return res.status(200).json({
-    autenticado: false
+}
+
+async function cerrarSesion(req, res) {
+  try {
+    const supabaseUserId = req.session?.user?.supabaseUserId;
+
+    if (supabaseUserId) {
+      const revocado = await revocarSesionesSupabase(supabaseUserId);
+      if (!revocado.success) {
+        console.warn('No se pudo revocar la sesión en Supabase:', revocado.error);
+      }
+    }
+
+    await destroySession(req, res);
+
+    return res.status(200).json({ mensaje: 'Sesión cerrada correctamente' });
+  } catch (err) {
+    console.error('Error al cerrar sesión:', err);
+    return res.status(500).json({ error: 'No se pudo cerrar la sesión' });
+  }
+}
+
+function sanitizeSessionUser(sessionUser = {}) {
+  if (!sessionUser) return null;
+  const { tokens, ...publicData } = sessionUser;
+  return publicData;
+}
+
+function shouldRefresh(expiresAt) {
+  if (!expiresAt) return false;
+  return expiresAt - Date.now() <= SESSION_SAFETY_WINDOW_MS;
+}
+
+function regenerateSession(req) {
+  return new Promise((resolve, reject) => {
+    req.session.regenerate(err => err ? reject(err) : resolve());
   });
 }
 
-// ==================== CERRAR SESIÓN ====================
-function cerrarSesion(req, res) {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error('Error al cerrar sesión:', err);
-      return res.status(500).json({ error: 'Error al cerrar sesión' });
-    }
-    res.clearCookie('connect.sid');
-    return res.status(200).json({ success: true, mensaje: 'Sesión cerrada' });
+function saveSession(req) {
+  return new Promise((resolve, reject) => {
+    req.session.save(err => err ? reject(err) : resolve());
   });
+}
+
+function destroySession(req, res) {
+  return new Promise((resolve, reject) => {
+    if (!req.session) {
+      res.clearCookie('connect.sid', cookieOptions());
+      return resolve();
+    }
+
+    req.session.destroy(err => {
+      res.clearCookie('connect.sid', cookieOptions());
+      return err ? reject(err) : resolve();
+    });
+  });
+}
+
+function cookieOptions() {
+  const isProduction = (process.env.NODE_ENV || 'development') === 'production';
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+    path: '/'
+  };
 }
 
 module.exports = { registro, verificarCorreo, login, verificarSesion, cerrarSesion };
