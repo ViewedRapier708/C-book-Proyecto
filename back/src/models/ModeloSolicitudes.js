@@ -1,22 +1,56 @@
+const { getClient } = require('../config/db');
 
-//Se debe crear una funcion para que se haga el registro de las solicitudes en la base de datos los datos que se ingresan a la solicitud son los siguientes
-//semestre,grupo,id de registro, id del material solicitado
+const tipos = {
+    computadoras: {
+        tabla: "solicitudes_computadora",
+        query:[]/
+    
+    },
+};
 
-//en caso que no se nos permita pedir los datos de grupo y carrera del alumno se quitan estos campos de la solicitud y se quita los campos en la base de datos
-//El tipo de material puede ser restirador, computadora o libro, este se saca dependiendo de que pantalla se haga la solicitud
-async function solicitudes(ID_registro,ID_Material,tipo,carrera,grupo,semestre){
-    console.log('andamo en solicitudes si paso lo anterior');
-    console.log("Modelo Solicitudes:", ID_registro, ID_Material, tipo, carrera, grupo, semestre);
-    const { getClient } = require('../config/db');
+// ==================== CREAR SOLICITUD ====================
+async function CrearSolicitud(tipoSolicitud, boleta, idRecurso) {
     const supabase = getClient();
-    const { data, error } = await supabase
-    .from('solicitudes')
-    .insert([{registro_id:ID_registro,semestre:semestre,grupo:grupo,carrera:carrera,recurso_id:ID_Material,tipo:tipo}])
-    .select()
-    if(error){ return {error, messaje:"Error al crear la solicitud"}; }
-    return {error:null, data};
+
+
+    //Inicialmente tengo que revisar si no tengo alguna solicitud activa
+    if (!tipoSolicitud || !boleta || !idRecurso) {
+        return { success: false, error: 'Faltan datos obligatorios' };
+    }
+    if (!tipos.includes(tipoSolicitud)) {
+        return { success: false, error: 'Tipo de solicitud inválido' };
+    }
+
+    const tabla = tipos[tipoSolicitud];
+    console.log("Tabla seleccionada para la solicitud:", tabla); //debug
+
+    try {
+        const { data, error } = await supabase
+            .from(tabla)
+            .insert(``));
+
+        if (error) {
+            console.error("Error insertando solicitud de computadora:", error);
+            return { success: false, error: error.message || 'Error al crear solicitud' };
+        }
+    } catch (err) {
+        console.error("Error en solicitudes de computadora:", err);
+        return { success: false, error: 'Error interno del servidor' };
+    }
+
+
 }
+async function verificarSolicitudExistente(tipo, boleta) {
+    const supabase = getClient();
+    try {
+        const { data, error } = await supabase
+            .from('solicitudes_computadora')
+    } catch (error) {
+
+    }
+}
+// ==================== CANCELACION DE SOLICITUD ====================
 
 
 
-module.exports = { solicitudes};
+
