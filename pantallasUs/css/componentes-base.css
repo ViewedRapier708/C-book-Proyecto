@@ -85,12 +85,26 @@ tbody tr {
     background: #FFFFFF;
     transition: all 0.3s ease;
     border-bottom: 1px solid #E8E8E8;
+    cursor: pointer;
 }
 
 tbody tr:hover {
     background: linear-gradient(90deg, rgba(250, 230, 240, 0.6), rgba(248, 215, 232, 0.6));
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(123, 2, 51, 0.08);
+}
+
+/* Fila seleccionada */
+tbody tr.seleccionada {
+    background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%) !important;
+    color: #FFFFFF;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(123, 2, 51, 0.3);
+}
+
+tbody tr.seleccionada td {
+    color: #FFFFFF !important;
+    font-weight: 600;
 }
 
 tbody tr:last-child td:first-child {
@@ -122,6 +136,12 @@ tbody tr.selected td {
     justify-content: center;
     margin-top: 1.5rem;
     gap: 1rem;
+    min-height: 60px;
+    align-items: center;
+}
+
+.container-btn-apartar .btn-apartar {
+    display: none;
 }
 
 .btn-apartar,
@@ -141,6 +161,24 @@ tbody tr.selected td {
     text-transform: uppercase;
     position: relative;
     overflow: hidden;
+}
+
+.btn-aparecer {
+    animation: aparecer 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes aparecer {
+    0% {
+        opacity: 0;
+        transform: scale(0.5) translateY(30px) rotate(-5deg);
+    }
+    50% {
+        transform: scale(1.1) translateY(-5px) rotate(2deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0) rotate(0deg);
+    }
 }
 
 .btn-apartar:hover,
@@ -192,4 +230,120 @@ tbody tr.selected td {
 .component-enter-buttons {
     animation: fadeInUp 0.5s ease-out 0.2s forwards;
     opacity: 0;
+}
+
+/* ========================================
+   MODAL DE CONFIRMACIÓN
+   ======================================== */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+    backdrop-filter: blur(3px);
+}
+
+.modal-content {
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 2.5rem;
+    max-width: 550px;
+    width: 90%;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+    animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    border: 3px solid var(--primary-1);
+}
+
+.modal-content h3 {
+    color: var(--primary-1);
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.detalles-recurso {
+    background: linear-gradient(135deg, rgba(242, 217, 227, 0.3), rgba(248, 215, 232, 0.3));
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.detalles-recurso .lista-detalles {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.detalles-recurso .lista-detalles li {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(123, 2, 51, 0.1);
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.detalles-recurso .lista-detalles li:last-child {
+    border-bottom: none;
+}
+
+.detalles-recurso .lista-detalles li strong {
+    color: var(--primary-1);
+    font-weight: 600;
+    margin-right: 0.5rem;
+    text-transform: capitalize;
+}
+
+.modal-acciones {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.modal-acciones .btn-apartar,
+.modal-acciones .btn-cancelar {
+    flex: 1;
+    min-width: 150px;
+    padding: 0.9rem 1.5rem;
+    font-size: 0.95rem;
+}
+
+.modal-acciones .btn-cancelar {
+    background: linear-gradient(135deg, #666666 0%, #888888 100%);
+}
+
+.modal-acciones .btn-cancelar:hover {
+    background: linear-gradient(135deg, #555555 0%, #777777 100%);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(80px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
