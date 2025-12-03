@@ -1,37 +1,21 @@
 const { getClient } = require('../config/db');
-
+const supabase = getClient();
 const tipos = ['computadora', 'restirador', 'libro'];
 
 // ==================== CREAR SOLICITUD ====================
 async function CrearSolicitud(tipoSolicitud, boleta, idRecurso) {
-    const supabase = getClient();
-
-
-    //Inicialmente tengo que revisar si no tengo alguna solicitud activa
-    if (!tipoSolicitud || !boleta || !idRecurso) {
-        return { success: false, error: 'Faltan datos obligatorios' };
+    switch (tipoSolicitud) {
+        case 'computadora':
+            return await CrearSolicitudComputadora(boleta, idRecurso);
+        case 'restirador':
+            return await CrearSolicitudRestiradores(boleta, idRecurso);
+        case 'libro':
+            return await CrearSolicitudlibro(boleta, idRecurso);
+        default:
+            return { success: false, error: 'Tipo de solicitud inválido' };
     }
-    if (!tipos.includes(tipoSolicitud)) {
-        return { success: false, error: 'Tipo de solicitud inválido' };
-    }
 
-
-
-    try {
-
-        switch (tipoSolicitud) {
-            case 'computadora':
-
-                break;
-            default:
-                return { success: false, error: 'Tipo de solicitud no manejado' };
-        }
-
-
-    } catch (err) {
-        console.error("Error en solicitudes de computadora:", err);
-        return { success: false, error: 'Error interno del servidor' };
-    }
+ 
 
 
 }
@@ -39,7 +23,6 @@ async function CrearSolicitud(tipoSolicitud, boleta, idRecurso) {
 
 //==================Funciones de los materiales para agregar los registros==================
 async function CrearSolicitudComputadora(boleta, idRecurso) {
-    const supabase = getClient();
     try {
         const { error } = await supabase
             .from('solicitudes_computadora')
@@ -57,7 +40,6 @@ async function CrearSolicitudComputadora(boleta, idRecurso) {
 
 }
 async function CrearSolicitudRestiradores(boleta, idRecurso) {
-    const supabase = getClient();
     try {
         const { error } = await supabase
             .from('solicitudes_restirador')
@@ -77,7 +59,6 @@ async function CrearSolicitudRestiradores(boleta, idRecurso) {
 
 }
 async function CrearSolicitudlibro(boleta, idRecurso) {
-    const supabase = getClient();
     try {
         const { error } = await supabase
             .from('solicitudes_libros')
@@ -113,7 +94,6 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
 }
 
 async function VerificarDisponibilidadComputadora(n_recurso) {
-    const supabase = getClient();
     try {
         const { data, error } = await supabase.from('computadoras').select('Disponible').eq('no_computadora', n_recurso).single();
         console.log("Disponibilidad Computadora:", data, error); //debug
@@ -137,7 +117,6 @@ async function VerificarDisponibilidadComputadora(n_recurso) {
 
 }
 async function VerificarDisponibilidadRestirador(n_recurso) {
-    const supabase = getClient();
     try {
         const { data, error } = await supabase.from('restiradores').select('Disponible').eq('no_restirador', n_recurso).single();
         console.log("Disponibilidad Restirador:", data, error); //debug
@@ -161,7 +140,6 @@ async function VerificarDisponibilidadRestirador(n_recurso) {
 
 }
 async function VerificarDisponibilidadLibro(n_recurso) {
-    const supabase = getClient();
     try {
         const { data, error } = await supabase.from('ejemplares').select('Disponibilidad').eq('libro_id', n_recurso).single();
 
@@ -185,7 +163,6 @@ async function VerificarDisponibilidadLibro(n_recurso) {
 
 // ==================== OBTENER SOLICITUDES ACTIVAS ====================
 async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
-    const supabase = getClient();
     const numeroBoleta = Number(boleta);
     if (!tipo || !boleta) {
         return { success: false, error: 'Faltan datos obligatorios' };
@@ -214,11 +191,11 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
             const detalle = {
                 computadoras: computadoras.count,
                 restiradores: restiradores.count
-            };
+            };//Objeto con el detalle de solicitudes activas
 
             return {
                 success: true,
-                total: detalle.computadoras + detalle.restiradores,
+                total: detalle.computadoras + detalle.restiradores,//retorna el total de solicitudes activas
 
             };
         } catch (err) {
@@ -229,10 +206,11 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
         //Contar solicitudes activas en la tabla de libros
         const libros = await contarPendientesPorTabla(supabase, 'solicitudes_libros', numeroBoleta);
         if (!libros.success) {
-            return {message: "Error al verificar los libros con solicitud activa", success: false};
+            return libros;
         }
-        if(libros.count > 1){
-            return {message: "Tienes libros con solicitudes activas", success: false};
+        return {
+            success: true,
+            total: libros.count
         }
     }
 }
@@ -250,7 +228,7 @@ async function contarPendientesPorTabla(client, tabla, boleta) {
             return { success: false, error: error.message, count: 0 };
         }
 
-        return { success: true, count: count || 0 };
+        return { success: true, count: count };
     } catch (err) {
         console.error(`Error inesperado consultando ${tabla}:`, err);
         return { success: false, error: 'Error interno', count: 0 };
