@@ -102,28 +102,57 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {
 
 }
 
-async function VerificarDisponibilidadComputadora(idRecurso) {
+async function VerificarDisponibilidadComputadora(n_recurso) {
     const supabase = getClient();
     try {
-        const { data, error } = await supabase.from('computadoras').select('ocupado').eq('id', idRecurso).single();
+        const { data, error } = await supabase.from('computadoras').select('ocupado').eq('no_computadora', n_recurso).single();
         console.log("Disponibilidad Computadora:", data, error); //debug
         if (error) {
             console.error("Error verificando disponibilidad:", error);
             return { disponible: false, error: error.message };
         }
-
+        if (data.ocupado === true) {
+            return true;
+        }
+    } catch (error) {
+        return { disponible: false, error: 'Error interno del servidor' };
+    }
+}
+async function VerificarDisponibilidadRestirador(n_recurso) {
+    const supabase = getClient();
+    try {
+        const { data, error } = await supabase.from('restiradores').select('ocupado').eq('no_restirador', n_recurso).single();
+        console.log("Disponibilidad Restirador:", data, error); //debug
+        if (error) {
+            console.error("Error verificando disponibilidad:", error);
+            return { disponible: false, error: error.message };
+        }
         if (data) {
             return true;
         }
     } catch (error) {
-        
+        return { disponible: false, error: 'Error interno del servidor' };
     }
 }
-async function VerificarDisponibilidadRestirador(idRecurso) {
+async function VerificarDisponibilidadLibro(n_recurso) {
     const supabase = getClient();
-}
-async function VerificarDisponibilidadLibro(idRecurso) {
-    const supabase = getClient();
+    try {
+        const { data, error } = await supabase.from('ejemplares').select('Disponibilidad').eq('libro_id', n_recurso).single();
+
+         console.log("Disponibilidad Libro:", data, error);
+        if (error) {
+            console.error("Error verificando disponibilidad:", error);
+            return { disponible: false, error: error.message };
+        }
+        if (data.Disponibilidad === false) {
+            return {message: 'El libro no está disponible actualmente'};
+        }
+        return true;
+    } catch (error) {
+        return { disponible: false, error: 'Error interno del servidor' };
+    }
+       
+
 }
 
 
