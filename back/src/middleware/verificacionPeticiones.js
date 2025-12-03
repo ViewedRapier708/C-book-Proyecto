@@ -5,6 +5,7 @@ const { VerificarDisponibilidadRecurso } = require('../models/ModeloSolicitudes.
 // Middleware para verificar restirador
 
 const tipos = ['computadora', 'restirador', 'libro'];
+
 async function verificarDisponibilidad(req, res, next) {
     console.log("Middleware Verificacion de Recursos activado");
     console.log("Cuerpo de la solicitud:", req.body);
