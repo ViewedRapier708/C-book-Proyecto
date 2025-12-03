@@ -224,6 +224,44 @@ async function traerUsuarioInfo(boleta) {
     return { success: false, error: 'Error interno' };
   }
 }
+
+async function refrescarSesionSupabase(refreshToken) {
+  const supabase = getClient();
+  try {
+    const { data, error } = await supabase.auth.refreshSession({ refresh_token: refreshToken });
+
+    if (error) {
+      console.error('Error refrescando sesión Supabase:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, session: data.session, user: data.user };
+  } catch (err) {
+    console.error('Error en refrescarSesionSupabase:', err);
+    return { success: false, error: 'Error interno' };
+  }
+}
+
+async function revocarSesionesSupabase(userId) {
+  const supabase = getClient();
+  try {
+    if (!userId) {
+      return { success: false, error: 'ID de usuario inválido' };
+    }
+
+    const { error } = await supabase.auth.admin.signOut(userId);
+
+    if (error) {
+      console.error('Error revocando sesión Supabase:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error('Error en revocarSesionesSupabase:', err);
+    return { success: false, error: 'Error interno' };
+  }
+}
 module.exports = { 
   validarBoletaEnTabla, 
   validarCorreoEnTabla, 
@@ -232,5 +270,7 @@ module.exports = {
   verificarConfirmacionPorBoleta,
   buscarCorreoPorBoleta,
   loginConAuth,
-  traerUsuarioInfo
+  traerUsuarioInfo,
+  refrescarSesionSupabase,
+  revocarSesionesSupabase
 };

@@ -1,29 +1,37 @@
-// Función para cerrar sesión
+const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
 
 async function cerrarSesion() {
     try {
-        // Cerrar sesión en el backend
-        await fetch('http://localhost:3000/auth/logout', {
+        const res = await fetch(`${API_BASE}/auth/logout`, {
             method: 'POST',
-            credentials: 'include'
+            credentials: 'include' // ¡Correcto!
         });
-        
-        // Limpiar toda la información de sesión del localStorage
-        localStorage.removeItem('supabase_session');
+
+        // Intentamos leer el JSON, pero prevemos si la respuesta no es JSON
+        let data;
+        try {
+            data = await res.json();
+        } catch (e) {
+            data = { mensaje: 'Sesión finalizada' };
+        }
+
+        // Limpiar localStorage (limpieza visual)
         localStorage.removeItem('user_data');
-        localStorage.removeItem('sb-yondcnkwcekmkovdeaso-auth-token');
         
-        console.log('Sesión cerrada exitosamente');
-        
-        // Redirigir al login
-        window.location.href = '../index.html';
-        return true;
+        if (!res.ok) {
+            console.warn('Logout no confirmado:', data.error || data.mensaje);
+        } else {
+            console.log('Logout:', data.mensaje);
+        }
+
+        window.location.href = '/index.html'; 
+        return res.ok;
 
     } catch (err) {
         console.error('Error en cerrarSesion:', err);
-        // Aún así limpiar localStorage y redirigir
+        // Fallback de seguridad: limpiar y sacar al usuario de todas formas
         localStorage.removeItem('user_data');
-        window.location.href = '../index.html';
+        window.location.href = '/index.html';
         return false;
     }
 }

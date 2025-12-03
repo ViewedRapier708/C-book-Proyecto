@@ -2,6 +2,7 @@
 
 /** Carga la tabla #tabla con los recursos del tipo indicado */
 async function cargarTabla() {
+  const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
   const tabla = document.getElementById('tabla');
   
   if (!tabla) {
@@ -14,7 +15,7 @@ async function cargarTabla() {
  console.log('Cargando tabla de tipo:', tipo);
 
   // 2️⃣ Construir la URL con query‑string
-  const url = new URL('http://localhost:3000/auth/recursos');
+  const url = new URL(`${API_BASE}/auth/recursos`);
   url.searchParams.set('tipo', tipo);
 
   try {

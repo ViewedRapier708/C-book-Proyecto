@@ -1,5 +1,7 @@
 // Registro de usuario - Llama al backend
 
+const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
+
 async function registro(event) {
     event.preventDefault();
 
@@ -56,7 +58,7 @@ async function registro(event) {
         mensajeDiv.style.color = 'blue';
 
         // Llamar al backend
-        const res = await fetch('http://localhost:3000/auth/registro', {
+        const res = await fetch(`${API_BASE}/auth/registro`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
