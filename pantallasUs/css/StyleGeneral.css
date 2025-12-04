@@ -81,10 +81,12 @@ img {
     backdrop-filter: blur(8px) saturate(110%);
     border: 1px solid rgba(157, 48, 108, 0.08);
     transition: all 0.3s ease;
-    height: 70vh;
+    height: auto;
+    min-height: 50vh;
+    max-height: 85vh;
+    
     /* POSICIÓN */
     position: relative;
-   
 
     /* OPCIONAL:
        Si NO quieres centrar el texto, quita esta línea:

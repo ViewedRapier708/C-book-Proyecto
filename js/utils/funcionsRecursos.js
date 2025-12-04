@@ -147,12 +147,17 @@ function seleccionarFila(fila) {
 
 /** Abre el modal de confirmación */
 function abrirModal() {
+  console.log('=== ABRIENDO MODAL ===');
+  console.log('Recurso seleccionado:', recursoSeleccionado);
+  
   if (!recursoSeleccionado) {
     alert('Por favor selecciona un recurso primero');
     return;
   }
 
   const modal = document.getElementById('modal-confirmacion');
+  console.log('Modal encontrado:', modal ? 'SI' : 'NO');
+  
   if (!modal) {
     console.error('No se encontró el modal de confirmación');
     return;
@@ -160,26 +165,41 @@ function abrirModal() {
 
   // Llenar los datos del modal
   const detallesModal = document.getElementById('detalles-recurso');
+  console.log('Contenedor de detalles encontrado:', detallesModal ? 'SI' : 'NO');
+  
   if (detallesModal) {
     let htmlDetalles = '<ul class="lista-detalles">';
     for (const [key, value] of Object.entries(recursoSeleccionado)) {
       const valorFormateado = value === false ? 'Disponible' : value === true ? 'Ocupado' : value;
-      htmlDetalles += `<li><strong>${key}:</strong> ${valorFormateado}</li>`;
+      htmlDetalles += `<li><strong>${key}:</strong> <span>${valorFormateado}</span></li>`;
     }
     htmlDetalles += '</ul>';
     detallesModal.innerHTML = htmlDetalles;
+    console.log('Datos insertados en el modal');
   }
 
   // Mostrar el modal con animación
   modal.style.display = 'flex';
-  console.log('Modal abierto para recurso:', recursoSeleccionado);
+  document.body.style.overflow = 'hidden'; // Evitar scroll del body
+  
+  // Agregar clase para animación
+  setTimeout(() => {
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+      modalContent.style.opacity = '1';
+    }
+  }, 10);
+  
+  console.log('Modal visible, display:', modal.style.display);
 }
 
 /** Cierra el modal de confirmación */
 function cerrarModal() {
+  console.log('=== CERRANDO MODAL ===');
   const modal = document.getElementById('modal-confirmacion');
   if (modal) {
     modal.style.display = 'none';
+    document.body.style.overflow = 'auto'; // Restaurar scroll del body
   }
 }
 
@@ -211,46 +231,10 @@ async function confirmarSolicitud() {
 }
 
 // Inicializar cuando se carga el componente
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('Inicializando funcionsRecursos.js');
-  
-  // Usar datos estáticos del HTML directamente
-  inicializarEventosTabla();
-
-  // Event listener para el botón Solicitar
-  const btnApartar = document.querySelector('.btn-apartar');
-  if (btnApartar) {
-    btnApartar.style.display = 'none'; // Ocultar inicialmente
-    btnApartar.addEventListener('click', function(e) {
-      e.preventDefault();
-      abrirModal();
-    });
-  }
-
-  // Event listeners para los botones del modal
-  const btnConfirmar = document.getElementById('btn-confirmar-solicitud');
-  if (btnConfirmar) {
-    btnConfirmar.addEventListener('click', function(e) {
-      e.preventDefault();
-      confirmarSolicitud();
-    });
-  }
-
-  const btnCancelar = document.getElementById('btn-cancelar-solicitud');
-  if (btnCancelar) {
-    btnCancelar.addEventListener('click', function(e) {
-      e.preventDefault();
-      cerrarModal();
-    });
-  }
-
-  // Cerrar modal al hacer clic fuera de él
-  const modal = document.getElementById('modal-confirmacion');
-  if (modal) {
-    modal.addEventListener('click', function(e) {
-      if (e.target === modal) {
-        cerrarModal();
-      }
-    });
-  }
-});
+// NOTA: Los event listeners ahora se configuran desde userLoader.js
+// Esta función se mantiene para compatibilidad pero los eventos se manejan dinámicamente
+if (typeof document !== 'undefined' && document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('funcionsRecursos.js cargado y listo');
+  });
+}
