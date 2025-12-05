@@ -210,7 +210,8 @@ window.abrirModal = function() {
     
     // Mostrar modal
     modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+    // NO bloquear el scroll del body
+    // document.body.style.overflow = 'hidden';
     
     console.log('✅✅✅ MODAL VISIBLE');
 }
@@ -222,7 +223,7 @@ window.cerrarModal = function() {
     const modal = document.getElementById('modal-confirmacion');
     if (modal) {
         modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
+        // No necesitamos restaurar overflow ya que nunca lo bloqueamos
         console.log('✅ Modal cerrado');
     }
 }

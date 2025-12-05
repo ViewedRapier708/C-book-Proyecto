@@ -298,9 +298,11 @@ tbody tr.selected td {
 .modal-content {
     background: #FFFFFF;
     border-radius: 20px;
-    padding: 2.5rem;
-    max-width: 800px;
-    width: 95%;
+    padding: 3rem;
+    max-width: 1200px;
+    width: 90%;
+    height: auto;
+    max-height: none;
     box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
     animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     position: relative;
@@ -329,7 +331,7 @@ tbody tr.selected td {
 
 .modal-content h3 {
     color: var(--primary-1);
-    font-size: 1.6rem;
+    font-size: 2rem;
     font-weight: 700;
     margin-bottom: 2rem;
     text-align: center;
@@ -345,6 +347,8 @@ tbody tr.selected td {
     padding: 2rem;
     margin-bottom: 2rem;
     border: 2px solid rgba(123, 2, 51, 0.1);
+    height: auto;
+    overflow: visible;
 }
 
 /* Scroll personalizado para detalles del recurso */
@@ -430,10 +434,10 @@ tbody tr.selected td {
 .modal-acciones .btn-apartar,
 .modal-acciones .btn-cancelar {
     flex: 1 1 auto;
-    min-width: 200px;
-    max-width: 250px;
-    padding: 1rem 2.5rem;
-    font-size: 1rem;
+    min-width: 220px;
+    max-width: 300px;
+    padding: 1.2rem 3rem;
+    font-size: 1.1rem;
     white-space: nowrap;
 }
 
@@ -449,6 +453,7 @@ tbody tr.selected td {
 .tabla-detalles {
     width: 100%;
     border-collapse: collapse;
+    font-size: 1.1rem;
 }
 
 .tabla-detalles tbody tr {
@@ -458,6 +463,7 @@ tbody tr.selected td {
 
 .tabla-detalles tbody tr:hover {
     background: rgba(255, 255, 255, 0.9);
+    transform: translateX(5px);
 }
 
 .tabla-detalles tbody tr:last-child {
@@ -465,8 +471,8 @@ tbody tr.selected td {
 }
 
 .tabla-detalles td {
-    padding: 1.2rem 1.5rem;
-    font-size: 1.05rem;
+    padding: 1.5rem 2rem;
+    font-size: 1.15rem;
     color: #333;
 }
 
@@ -476,11 +482,13 @@ tbody tr.selected td {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     width: 40%;
+    font-size: 1.1rem;
 }
 
 .tabla-detalles td:last-child {
     font-weight: 600;
     text-align: right;
+    font-size: 1.2rem;
 }
 
 /* Botón cerrar modal (X) */
