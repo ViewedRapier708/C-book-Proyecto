@@ -1,31 +1,90 @@
 <div class="container-solicitud-libros">
+    <!-- Sección de Filtros -->
+    <div class="filtros-section">
+        <button id="toggleFiltrosBtn" class="btn-toggle-filtros">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="6" x2="20" y2="6"/>
+                <line x1="4" y1="12" x2="20" y2="12"/>
+                <line x1="4" y1="18" x2="20" y2="18"/>
+                <circle cx="8" cy="6" r="2" fill="currentColor"/>
+                <circle cx="16" cy="12" r="2" fill="currentColor"/>
+                <circle cx="12" cy="18" r="2" fill="currentColor"/>
+            </svg>
+            <span>Filtrar Libros</span>
+        </button>
+
+        <div id="panelFiltros" class="panel-filtros oculto">
+            <div class="filtros-grid">
+                <div class="filtro-grupo">
+                    <label for="filtroEditorial">Editorial:</label>
+                    <select id="filtroEditorial" class="input-filtro">
+                        <option value="todos">Todas</option>
+                    </select>
+                </div>
+
+                <div class="filtro-grupo">
+                    <label for="filtroDisponibilidad">Disponibilidad:</label>
+                    <select id="filtroDisponibilidad" class="input-filtro">
+                        <option value="todos">Todos</option>
+                        <option value="disponible">Disponibles</option>
+                        <option value="agotado">Agotados</option>
+                    </select>
+                </div>
+
+                <div class="filtro-grupo filtro-busqueda">
+                    <label for="filtroBusqueda">Buscar:</label>
+                    <input type="text" id="filtroBusqueda" class="input-filtro" placeholder="Título del libro...">
+                </div>
+            </div>
+
+            <div class="filtros-acciones">
+                <button id="btnAplicarFiltros" class="btn-filtro btn-aplicar">
+                    Aplicar Filtros
+                </button>
+                <button id="btnLimpiarFiltros" class="btn-filtro btn-limpiar">
+                    Limpiar Todo
+                </button>
+            </div>
+
+            <div id="contadorResultados" class="contador-resultados">
+                <span id="textoContador">Mostrando <strong>0</strong> libros</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Libros -->
     <div class="layout">
         <div class="container-tabla">
             <table id="tabla" data-tipo="libros">
                 <thead>
                     <tr>
                         <th>ID Libro</th>
-                        <th>Titulo</th>
-                        <th>Edicion</th>
+                        <th>Título</th>
+                        <th>Edición</th>
                         <th>Editorial</th>
                         <th>Tomo</th>
                         <th>Cant. Disponible</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
+                <tbody id="tablaLibrosBody">
+                    <!-- Los libros se cargarán aquí dinámicamente -->
                 </tbody>
             </table>
+            <div id="mensajeSinResultados" class="mensaje-sin-resultados oculto">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+                <p>No se encontraron libros con los filtros aplicados</p>
+                <button id="btnResetearBusqueda" class="btn-resetear">Ver todos los libros</button>
+            </div>
         </div>
     </div>
+
     <div class="container-btn-apartar">
         <button class="btn-apartar">Apartar Libros</button>
     </div>
 </div>
+
 <script src="./js/funcionsRecursos.js"></script>
+<script src="./js/filtrosLibros.js"></script>
