@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="api-base-url" content="http://127.0.0.1:3000">
     <title>Panel Administrador - C-Book</title>
     <link rel="stylesheet" href="css/EstiloAsideAdmin.css">
     <link rel="stylesheet" href="css/StyleGeneralAdmin.css">
@@ -13,8 +14,11 @@
     <link rel="stylesheet" href="css/componentes/altaGuardaropas.css">
     <link rel="stylesheet" href="css/componentes/solicitudesLibros.css">
     <link rel="shortcut icon" href="../img/logo_C_Book.jpg" type="image/x-icon">
+    <script src="../js/config/apiConfig.js"></script>
+    <script src="../js/auth/sessionGuard.js"></script>
 </head>
 <body>
+<<<<<<< HEAD
     <div class="container-main">
         <aside class="container-aside">
             <div class="container-logos">
@@ -39,12 +43,40 @@
                         <a href="#" class="link-secciones nav-link" data-component="solicitudesLibros" data-title="SOLICITUDES DE LIBROS">Libros</a>
                     </div>
                     <div class="btn-cerrar-sesion">
-                        <a href="../index.html" class="link-secciones">Cerrar Sesión</a>
+                        <a href="#" class="link-secciones" onclick="logout()">Cerrar Sesión</a>
                     </div>
+=======
+    <aside class="container-aside">
+        <div class="container-logos">
+            <a href="../pantallasUs/cuenta.html" id="linkCuenta">
+                <div class="logo-containerBTZ"><img src="../img/logo-BTZ.png" alt="Logo BTZ"></div>
+            </a>
+        </div>
+        <div class="container-entrada">
+            <hr class="linea-aside">
+            <h2>ADMINISTRADOR</h2>
+            <hr class="linea-aside">
+            <div class="menu-interactivo">
+                <div class="btn-secciones">
+                    
+                    <h3>Altas</h3>
+                    <a href="#" class="link-secciones nav-link" data-component="altaComputadoras" data-title="ALTA DE COMPUTADORAS">Computadoras</a>
+                    <a href="#" class="link-secciones nav-link" data-component="altaLibros" data-title="ALTA DE LIBROS">Libros</a>
+                    <a href="#" class="link-secciones nav-link" data-component="altaRestiradores" data-title="ALTA DE RESTIRADORES">Restiradores</a>
+                    <a href="#" class="link-secciones nav-link" data-component="altaGuardaropas" data-title="ALTA DE GUARDAROPAS">Guardaropas</a>
+                    
+                    <h3>Solicitudes</h3>
+                    <a href="#" class="link-secciones nav-link" data-component="solicitudesLibros" data-title="SOLICITUDES DE LIBROS">Libros</a>
+                </div>
+                <div class="btn-cerrar-sesion">
+                    <a href="../index.html" class="link-secciones">Cerrar Sesión</a>
+>>>>>>> bf7e8e10c8234f6d22344d84a088d033869e50b8
                 </div>
             </div>
-        </aside>
+        </div>
+    </aside>
 
+    <div class="container-main">
         <!-- Contenedor dinámico -->
         <div class="container-informacion">
             <div class="container-titulo">
@@ -52,7 +84,7 @@
             </div>
             
             <div class="container-contenido" id="content-loader">
-                <div class="container-inicio">
+                <div class="container-inicio-admin">
                     <h1>BIENVENIDO ADMINISTRADOR ¿QUÉ VAMOS A HACER HOY?</h1>
                 </div>
             </div>

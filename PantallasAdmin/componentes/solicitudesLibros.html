@@ -1,79 +1,85 @@
 <div class="container-solicitudes">
     <h2>Alumnos Solicitantes de Libros</h2>
     
-    <div class="layout">
-        <div class="container-tabla">
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Boleta</th>
-                            <th>Nombre Completo</th>
-                            <th>Grupo</th>
-                            <th>Libros Solicitados</th>
-                            <th>Fecha Solicitud</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>20221234</td>
-                            <td>Juan Pérez García</td>
-                            <td>6IM12</td>
-                            <td>3</td>
-                            <td>28/10/2025</td>
-                            <td>Pendiente</td>
-                            <td>
-                                <button class="btn-aprobar">Aprobar</button>
-                                <button class="btn-rechazar">Rechazar</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>20221567</td>
-                            <td>María López Hernández</td>
-                            <td>6IM11</td>
-                            <td>2</td>
-                            <td>28/10/2025</td>
-                            <td>Pendiente</td>
-                            <td>
-                                <button class="btn-aprobar">Aprobar</button>
-                                <button class="btn-rechazar">Rechazar</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+    <div class="layout-dos-columnas">
+        <!-- Columna Izquierda: Tabla -->
+        <div class="columna-tabla">
+            <div class="container-tabla">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Boleta</th>
+                                <th>Nombre Completo</th>
+                                <th>Grupo</th>
+                                <th>Libros</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>20221234</td>
+                                <td>Juan Pérez García</td>
+                                <td>6IM12</td>
+                                <td>3</td>
+                                <td>28/10/2025</td>
+                                <td>Pendiente</td>
+                                <td>
+                                    <button class="btn-aprobar">Aprobar</button>
+                                    <button class="btn-rechazar">Rechazar</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>20221567</td>
+                                <td>María López Hernández</td>
+                                <td>6IM11</td>
+                                <td>2</td>
+                                <td>28/10/2025</td>
+                                <td>Pendiente</td>
+                                <td>
+                                    <button class="btn-aprobar">Aprobar</button>
+                                    <button class="btn-rechazar">Rechazar</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="container-btn-acciones">
+                <button class="btn-aprobar" id="btn-aprobar-seleccionadas">Aprobar Seleccionadas</button>
+                <button class="btn-rechazar" id="btn-rechazar-seleccionadas">Rechazar Seleccionadas</button>
+                <button class="btn-exportar" id="btn-exportar">Exportar Reporte</button>
             </div>
         </div>
         
-        <div class="container-datos-estadisticas">
-            <h3>Estadísticas Solicitudes</h3>
-            <div class="dato-item">
-                <span class="dato-label">Solicitudes Totales:</span>
-                <span class="dato-value">45</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Pendientes:</span>
-                <span class="dato-value">23</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Aprobadas:</span>
-                <span class="dato-value">18</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Rechazadas:</span>
-                <span class="dato-value">4</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Última Actualización:</span>
-                <span class="dato-value">13/11/2025</span>
+        <!-- Columna Derecha: Estadísticas -->
+        <div class="columna-estadisticas">
+            <div class="container-datos-estadisticas">
+                <h3>Estadísticas Solicitudes</h3>
+                <div class="dato-item">
+                    <span class="dato-label">Solicitudes Totales:</span>
+                    <span class="dato-value">45</span>
+                </div>
+                <div class="dato-item">
+                    <span class="dato-label">Pendientes:</span>
+                    <span class="dato-value">23</span>
+                </div>
+                <div class="dato-item">
+                    <span class="dato-label">Aprobadas:</span>
+                    <span class="dato-value">18</span>
+                </div>
+                <div class="dato-item">
+                    <span class="dato-label">Rechazadas:</span>
+                    <span class="dato-value">4</span>
+                </div>
+                <div class="dato-item">
+                    <span class="dato-label">Última Actualización:</span>
+                    <span class="dato-value">13/11/2025</span>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <div class="container-btn-acciones">
-        <button class="btn-aprobar" id="btn-aprobar-seleccionadas">Aprobar Seleccionadas</button>
-        <button class="btn-rechazar" id="btn-rechazar-seleccionadas">Rechazar Seleccionadas</button>
-        <button class="btn-exportar" id="btn-exportar">Exportar Reporte</button>
     </div>
 </div>

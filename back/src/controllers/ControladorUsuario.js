@@ -1,34 +1,38 @@
-// archivo: controllers/registro.js
-const nodemailer = require('nodemailer');
-const { getClient } = require('../config/db.js');
-const { validarRegistro } = require('../models/ModeloUsuario.js');
+const { 
+  validarBoletaEnTabla, 
+  validarCorreoEnTabla, 
+  registrarEnAuth, 
+  crearUsuarioEnTabla,
+  verificarConfirmacionPorBoleta,
+  buscarCorreoPorBoleta,
+  loginConAuth,
+  traerUsuarioInfo,
+  refrescarSesionSupabase,
+  revocarSesionesSupabase
+} = require('../models/ModeloUsuario.js');
 
+const SESSION_SAFETY_WINDOW_MS = Number(process.env.SESSION_REFRESH_THRESHOLD_MS) || 60000; // 1 min por defecto
+
+// ==================== REGISTRO ====================
 async function registro(req, res) {
-  const supabase = getClient();
-
   if (!req.body) {
-    return res.status(400).json({ error: 'No se recibió información en el cuerpo de la petición' });
+    return res.status(400).json({ error: 'No se recibió información' });
   }
 
   try {
     const { boleta, correo, password, confPsw } = req.body;
-    console.log(boleta, correo, password, confPsw);
 
-    // VALIDACIONES
+    // Validaciones básicas
     if (!boleta || !correo || !password || !confPsw) {
-      return res.status(400).json({ error: "Faltan datos" });
+      return res.status(400).json({ error: "Faltan datos obligatorios" });
     }
 
-    if (boleta.length !== 10 || !/^\d{10}$/.test(boleta)) {
-      return res.status(400).json({ error: "Boleta con formato invalido (solo 10 números)" });
-    }
-
-    if ((await validarRegistro(boleta)).existe) {
-      return res.status(400).json({ error: "Boleta ya registrada" });
+    if (!/^\d{10}$/.test(boleta)) {
+      return res.status(400).json({ error: "Boleta debe tener 10 dígitos numéricos" });
     }
 
     if (!/^[\w.-]+@[\w.-]+\.\w+$/.test(correo)) {
-      return res.status(400).json({ error: "Correo con formato invalido" });
+      return res.status(400).json({ error: "Correo con formato inválido" });
     }
 
     if (password.length < 6 || password.length > 16) {
@@ -39,70 +43,283 @@ async function registro(req, res) {
       return res.status(400).json({ error: "Las contraseñas no coinciden" });
     }
 
-    // GENERAR LINK DE VERIFICACIÓN
-    const { data, error } = await supabase.auth.signUp({
-      email: correo,
-      password: password,
-      options: {
-       emailRedirectTo: "https://viewedrapier708.github.io/C-book-Proyecto/pantallasUs/confirmacionCorreo.html",
-        data: { boleta } // metadata
-      }
-    });
-    if (error) {
-      return res.status(400).json({ error: error.message });
+    // Verificar si la boleta ya existe
+    
+    const boletaExiste = await validarBoletaEnTabla(boleta);
+
+
+    if (boletaExiste) {
+      return res.status(400).json({ error: "Esta boleta ya tiene una cuenta registrada" });
     }
 
-    const actionLink = data?.properties?.action_link;
+    // Verificar si el correo ya existe
+     const correoExiste = await validarCorreoEnTabla(correo);
+    if (correoExiste) {
+      return res.status(400).json({ error: "Este correo ya tiene una cuenta registrada" });
+    }
 
+    // Registrar en Supabase Auth
+    const resultadoAuth = await registrarEnAuth(boleta, correo, password);
     
-/*
-Codigo para enviar el correos 
-    // CONFIGURAR SMTP (Gmail)
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-      auth: {
-        user: "cbook.uttab@gmail.com", // Tu correo Gmail
-        pass: "yotg vlas dkfp qqbh"    // Contraseña de aplicación
-      }
-    });
+    if (!resultadoAuth.success) {
+      console.error("Error en Auth:", resultadoAuth.error);
+      return res.status(400).json({ error: resultadoAuth.error || "Error al registrar usuario" });
+    }
 
-    // ENVIAR CORREO
-    await transporter.sendMail({
-      from: '"Cbook" <cbook.uttab@gmail.com>',
-      to: correo,
-      subject: "Confirma tu correo",
-      html: `
-        <p>Hola! Haz clic <a href="${actionLink}">aquí</a> para confirmar tu correo.</p>
-        <p>Si no solicitaste esta cuenta, ignora este correo.</p>
-      `
-    });
-*/
+    console.log("Usuario registrado en Auth:", resultadoAuth.user?.id); //debug
+
+    // Guardar datos en sesión para la verificación
+    req.session.registro = {
+      boleta,
+      correo
+    };
+
+    console.log("Datos guardados en sesión:", req.session.registro); //debug
+
     return res.status(200).json({
-      message: "Usuario creado. Revisa tu correo para verificar la cuenta."
+      success: true,
+      message: "Registro exitoso. Revisa tu correo para verificar la cuenta."
     });
 
   } catch (err) {
     console.error("Error en registro:", err);
-    res.status(500).json({ error: "Error interno del servidor" });
+    return res.status(500).json({ error: "Error interno del servidor" });
   }
 }
 
-//Se debe de crear una funcion la cual haga la validacion de la boleta y el codigo que se le envia al correo del alumno,y al momento de pasar la primera validacion se genera un token para que se pueda crear la cuenta
-async function LoginUser(req, res) {
-  const { loginUser } = require('../models/ModeloUsuario.js');
-  const { boleta, password } = req.body;
-  if (!boleta || !password) {
-    return res.status(400).json({ error: 'Faltan boleta o contraseña' });
+// ==================== VERIFICACIÓN DE CORREO ====================
+async function verificarCorreo(req, res) {
+  try {
+    // Obtener datos del body (enviados desde localStorage del frontend)
+    const { boleta, correo } = req.body;
+    
+    if (!boleta || !correo) {
+      return res.status(400).json({ 
+        confirmado: false, 
+        error: 'Faltan datos de registro (boleta o correo)' 
+      });
+    }
+
+    console.log("Verificando confirmación para boleta:", boleta); //debug
+
+    // Verificar si el correo fue confirmado
+    const resultado = await verificarConfirmacionPorBoleta(boleta);
+    
+    console.log("Resultado verificación:", resultado); //debug
+
+    if (!resultado.confirmado) {
+      return res.status(200).json({ 
+        confirmado: false, 
+        mensaje: 'Correo aún no confirmado' 
+      });
+    }
+
+    // Correo confirmado - Crear usuario en la tabla
+    const usuarioCreado = await crearUsuarioEnTabla(boleta, correo);
+    
+    if (!usuarioCreado.success) {
+      console.error("Error creando usuario en tabla:", usuarioCreado.error);
+      // Puede que ya exista, verificamos
+      const yaExiste = await validarBoletaEnTabla(boleta);
+      if (!yaExiste) {
+        return res.status(400).json({ 
+          confirmado: true,
+          error: 'Error al crear usuario en la base de datos' 
+        });
+      }
+    }
+
+    console.log("Usuario verificado y creado exitosamente"); //debug
+
+    return res.status(200).json({ 
+      confirmado: true,
+      mensaje: 'Correo verificado y cuenta activada exitosamente'
+    });
+
+  } catch (err) {
+    console.error("Error en verificarCorreo:", err);
+    return res.status(500).json({ error: 'Error interno del servidor' });
   }
-  const result = await loginUser(boleta, password);
-  console.log(result.error);
-  if (result.error) {
-    return res.status(400).json({ mensaje: 'Usuario o contraseña incorrectos' });
+}
+
+// ==================== LOGIN ====================
+async function login(req, res) {
+  try {
+    const { boleta, password } = req.body;
+    
+    if (!boleta || !password) {
+      return res.status(400).json({ error: 'Faltan boleta o contraseña' });
+    }
+
+    if (!/^\d{10}$/.test(boleta)) {
+      return res.status(400).json({ error: "Boleta debe tener 10 dígitos" });
+    }
+
+    console.log("Intento de login para boleta:", boleta); //debug
+
+    // Buscar correo por boleta
+    const busqueda = await buscarCorreoPorBoleta(boleta);
+    
+    if (!busqueda.success) {
+      return res.status(400).json({ error: busqueda.error || 'Usuario no encontrado' });
+    }
+
+    console.log("Correo encontrado:", busqueda.correo); //debug
+
+    // Iniciar sesión con Supabase Auth
+    const loginResult = await loginConAuth(busqueda.correo, password);
+    
+    if (!loginResult.success) {
+      return res.status(400).json({ error: loginResult.error });
+    }
+    const userData = await traerUsuarioInfo(boleta);
+    const nombre = (userData.data?.boletas?.nombre || '').trim();
+    const grupo = userData.data?.boletas?.Grupo || '';
+    console.log("Datos del usuario:", userData); //debug
+    console.log("Login exitoso, sesión creada"); //debug
+
+    const supabaseSession = loginResult.session;
+
+    if (!supabaseSession) {
+      return res.status(500).json({ error: 'No se pudo crear la sesión en Supabase' });
+    }
+
+    await regenerateSession(req);
+
+    req.session.user = {
+      supabaseUserId: loginResult.user.id,
+      nombre,
+      email: loginResult.user.email,
+      boleta,
+      grupo,
+      tokens: {
+        accessToken: supabaseSession.access_token,
+        refreshToken: supabaseSession.refresh_token,
+        expiresAt: supabaseSession.expires_at ? supabaseSession.expires_at * 1000 : null,
+        expiresIn: supabaseSession.expires_in
+      }
+    };
+
+    await saveSession(req);
+
+    console.log("Datos guardados en sesión:", req.session.user); //debug
+
+    return res.status(200).json({
+      success: true,
+      mensaje: 'Inicio de sesión exitoso',
+      user: sanitizeSessionUser(req.session.user)
+    });
+  } catch (err) {
+    console.error("Error en login:", err);
+    return res.status(500).json({ error: 'Error interno del servidor' });
   }
-  return res.status(200).json({ 
-    mensaje: `Inicio de sesión exitoso`
+}
+
+
+// ==================== CERRAR SESIÓN ====================
+async function verificarSesion(req, res) {
+  try {
+    const sessionUser = req.session.user;
+
+    if (!sessionUser) {
+      return res.status(401).json({ autenticado: false, user: null });
+    }
+
+    const needsRefresh = shouldRefresh(sessionUser.tokens?.expiresAt);
+
+    if (needsRefresh && sessionUser.tokens?.refreshToken) {
+      const refreshed = await refrescarSesionSupabase(sessionUser.tokens.refreshToken);
+
+      if (refreshed.success) {
+        sessionUser.tokens = {
+          accessToken: refreshed.session.access_token,
+          refreshToken: refreshed.session.refresh_token || sessionUser.tokens.refreshToken,
+          expiresAt: refreshed.session.expires_at ? refreshed.session.expires_at * 1000 : null,
+          expiresIn: refreshed.session.expires_in
+        };
+        req.session.user = sessionUser;
+        await saveSession(req);
+      } else {
+        await destroySession(req, res);
+        return res.status(401).json({ autenticado: false, error: 'Sesión expirada' });
+      }
+    }
+
+    return res.status(200).json({
+      autenticado: true,
+      user: sanitizeSessionUser(sessionUser)
+    });
+  } catch (err) {
+    console.error('Error en verificarSesion:', err);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+async function cerrarSesion(req, res) {
+  try {
+    const supabaseUserId = req.session?.user?.supabaseUserId;
+
+    if (supabaseUserId) {
+      const revocado = await revocarSesionesSupabase(supabaseUserId);
+      if (!revocado.success) {
+        console.warn('No se pudo revocar la sesión en Supabase:', revocado.error);
+      }
+    }
+
+    await destroySession(req, res);
+
+    return res.status(200).json({ mensaje: 'Sesión cerrada correctamente' });
+  } catch (err) {
+    console.error('Error al cerrar sesión:', err);
+    return res.status(500).json({ error: 'No se pudo cerrar la sesión' });
+  }
+}
+
+function sanitizeSessionUser(sessionUser = {}) {
+  if (!sessionUser) return null;
+  const { tokens, ...publicData } = sessionUser;
+  return publicData;
+}
+
+function shouldRefresh(expiresAt) {
+  if (!expiresAt) return false;
+  return expiresAt - Date.now() <= SESSION_SAFETY_WINDOW_MS;
+}
+
+function regenerateSession(req) {
+  return new Promise((resolve, reject) => {
+    req.session.regenerate(err => err ? reject(err) : resolve());
   });
 }
-module.exports = {  LoginUser,registro };
+
+function saveSession(req) {
+  return new Promise((resolve, reject) => {
+    req.session.save(err => err ? reject(err) : resolve());
+  });
+}
+
+function destroySession(req, res) {
+  return new Promise((resolve, reject) => {
+    if (!req.session) {
+      res.clearCookie('connect.sid', cookieOptions());
+      return resolve();
+    }
+
+    req.session.destroy(err => {
+      res.clearCookie('connect.sid', cookieOptions());
+      return err ? reject(err) : resolve();
+    });
+  });
+}
+
+function cookieOptions() {
+  const isProduction = (process.env.NODE_ENV || 'development') === 'production';
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+    path: '/'
+  };
+}
+
+module.exports = { registro, verificarCorreo, login, verificarSesion, cerrarSesion };
