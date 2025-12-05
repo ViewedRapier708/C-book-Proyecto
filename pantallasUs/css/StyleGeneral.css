@@ -81,10 +81,12 @@ img {
     backdrop-filter: blur(8px) saturate(110%);
     border: 1px solid rgba(157, 48, 108, 0.08);
     transition: all 0.3s ease;
-    height: 70vh;
+    height: auto;
+    min-height: 50vh;
+    max-height: 85vh;
+    
     /* POSICIÓN */
     position: relative;
-   
 
     /* OPCIONAL:
        Si NO quieres centrar el texto, quita esta línea:
@@ -121,7 +123,6 @@ img {
     right: 0;
     bottom: 0;
     background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
-    animation: shine 3s infinite;
 }
 
 @keyframes shine {

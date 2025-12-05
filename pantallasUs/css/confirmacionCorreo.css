@@ -60,13 +60,15 @@ body {
     margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-medium) 50%, var(--primary-light) 100%);
+    background-attachment: fixed;
     min-height: 100vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: var(--spacing-lg);
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -123,6 +125,7 @@ body::after {
     box-shadow: var(--shadow-lg);
     padding: var(--spacing-3xl) var(--spacing-2xl);
     text-align: center;
+    margin: auto;
     animation: slideUp 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
@@ -765,6 +768,135 @@ h1 {
     position: relative;
     overflow: hidden;
 }
+
+/* ==========================================
+   ADICIONES RESPONSIVE - MÓVIL / TABLET
+   Reglas adicionales para mejorar el layout
+   en pantallas pequeñas sin duplicar keyframes
+   ========================================== */
+
+/* Centrar contenido y asegurar texto legible */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        max-width: 420px;
+        width: 92%;
+        margin: 20px auto;
+        padding: 18px;
+        box-sizing: border-box;
+    }
+
+    .icon svg {
+        width: 64px;
+        height: 64px;
+    }
+
+    h1 {
+        font-size: 1.25rem;
+        margin-top: 10px;
+    }
+
+    p {
+        font-size: 1rem;
+        line-height: 1.4;
+        margin-top: 8px;
+    }
+
+    .esperando-confirmacion {
+        margin-top: 14px;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .container {
+        max-width: 360px;
+        padding: 14px;
+        margin: 16px auto;
+    }
+
+    .icon svg {
+        width: 52px;
+        height: 52px;
+    }
+
+    h1 {
+        font-size: 1.1rem;
+    }
+
+    p {
+        font-size: 0.95rem;
+    }
+
+    .esperando-confirmacion {
+        font-size: 0.9rem;
+    }
+}
+
+/* ==========================================
+   FORZAR CENTRADO GLOBAL
+   Asegura que el componente se muestre centrado
+   en cualquier tamaño / breakpoint.
+   ========================================== */
+
+/* Centrado principal para el contenedor y la tarjeta */
+.container,
+.card {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+}
+
+/* Asegurar que el icono y su SVG se mantengan centrados */
+.icon {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Centrar la rejilla de pasos y cartas internas */
+.next-steps-component {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.steps-grid {
+    justify-items: center;
+    align-items: start;
+    width: 100%;
+}
+
+.step-card {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Asegurar texto centrado dentro del bloque de espera */
+.esperando-confirmacion,
+.esperando-confirmacion::after {
+    text-align: center;
+    display: block;
+}
+
 
 .btn::before {
     content: '';

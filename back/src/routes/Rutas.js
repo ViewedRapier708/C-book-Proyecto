@@ -1,13 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const { LoginUser,registro } = require('../controllers/ControladorUsuario.js');
+const { registro, verificarCorreo, login, verificarSesion, cerrarSesion } = require('../controllers/ControladorUsuario.js');
 const { obtenerRecursosPorTipo } = require('../controllers/ControladorRecursos.js');
 const controladorSolicitudes = require('../controllers/ControladorSolicitudes.js');
 const {verificarDisponibilidad} = require('../middleware/verificacionRecursos.js');
-router.post('/login', LoginUser);
+const sessionGuard = require('../middleware/sessionGuard.js');
+
+
+// Rutas de autenticación
 router.post('/registro', registro);
+router.post('/verificar', verificarCorreo);
+router.post('/login', login);
+router.get('/session', verificarSesion);
+router.post('/logout', sessionGuard, cerrarSesion);
+
+
+//Rutas de recursos y solicitudes
 router.get('/recursos', obtenerRecursosPorTipo);
-router.post('/solicitud', verificarDisponibilidad, controladorSolicitudes.crearSolicitud);
+router.post('/solicitud', sessionGuard, verificarDisponibilidad, controladorSolicitudes.crearSolicitud);
 
 
 //Lo que hace esta ruta es primero verificar la disponibilidad del recurso y despues manda a llamar al controlador de solicitudes para que registre la solicitud en la base de datos

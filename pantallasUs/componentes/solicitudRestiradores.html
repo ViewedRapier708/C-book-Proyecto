@@ -9,23 +9,65 @@
                         <th>Ubicación</th>
                         <th>Capacidad</th>
                         <th>Disponibles</th>
-                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td><button class="btn-seleccionar">Seleccionar</button></td>
+                        <td>R-001</td>
+                        <td>Edificio A - Planta Baja</td>
+                        <td>20 cajones</td>
+                        <td>8</td>
+                    </tr>
+                    <tr>
+                        <td>R-002</td>
+                        <td>Edificio A - Primer Piso</td>
+                        <td>25 cajones</td>
+                        <td>15</td>
+                    </tr>
+                    <tr>
+                        <td>R-003</td>
+                        <td>Edificio B - Planta Baja</td>
+                        <td>30 cajones</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>R-004</td>
+                        <td>Edificio B - Segundo Piso</td>
+                        <td>20 cajones</td>
+                        <td>12</td>
+                    </tr>
+                    <tr>
+                        <td>R-005</td>
+                        <td>Biblioteca Central - Área de Estudio</td>
+                        <td>40 cajones</td>
+                        <td>25</td>
+                    </tr>
+                    <tr>
+                        <td>R-006</td>
+                        <td>Edificio C - Planta Baja</td>
+                        <td>15 cajones</td>
+                        <td>7</td>
                     </tr>
                 </tbody>
             </table>
+            <div class="container-btn-apartar">
+                <button class="btn-apartar">Solicitar</button>
+            </div>
+        </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div id="modal-confirmacion" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Confirmar Solicitud</h3>
+        <div id="detalles-recurso" class="detalles-recurso">
+            <!-- Se llenará dinámicamente -->
+        </div>
+        <div class="modal-acciones">
+            <button id="btn-confirmar-solicitud" class="btn-apartar">Apartar</button>
+            <button id="btn-cancelar-solicitud" class="btn-cancelar">Cancelar solicitud</button>
         </div>
     </div>
-    <div class="container-btn-apartar">
-        <button class="btn-apartar">Solicitar Restiradores</button>
-    </div>
 </div>
+
 <script src="./js/funcionsRecursos.js"></script>

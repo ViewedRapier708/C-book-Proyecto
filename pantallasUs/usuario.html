@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="api-base-url" content="http://127.0.0.1:3000">
     <title>Mis Solicitudes - C-Book</title>
+
     <link rel="stylesheet" href="css/EstiloAside.css">
     <link rel="stylesheet" href="css/StyleGeneral.css">
     <link rel="stylesheet" href="css/componentes-base.css">
@@ -14,6 +17,9 @@
     <link rel="stylesheet" href="css/componentes/areaConsulta.css">
     <link rel="stylesheet" href="css/componentes/cancelarSolicitudes.css">
     <link rel="shortcut icon" href="../img/logo_C_Book.jpg" type="image/x-icon">
+    <!-- <script src="../js/config/apiConfig.js"></script>
+    <script src="../js/auth/sessionGuard.js"></script>
+    <script src="../js/auth/funcionCerrarSesion.js"></script> -->
 </head>
 <body>
     
@@ -38,7 +44,7 @@
                     <a href="#" class="link-secciones nav-link" data-component="cancelarSolicitudes" data-title="VISUALIZAR MIS SOLICITUDES">Visualizar Solicitudes Hechas</a>
                 </div>
                 <div class="btn-cerrar-sesion">
-                    <a href="../index.html" class="link-secciones">Cerrar Sesión</a>
+                    <a href="#" class="link-secciones" onclick="cerrarSesion(); return false;">Cerrar Sesión</a>
                 </div>
             </div>
         </div>
@@ -59,7 +65,7 @@
         </div>
     </div>
 
-    <script src="js/funcionsRecursos.js"></script>
+    <script src="../js/utils/funcionsRecursos.js"></script>
     <script src="./funcionesHtml/userLoader.js"></script>
 </body>
 </html>
