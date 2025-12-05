@@ -287,11 +287,11 @@ tbody tr.selected td {
     height: 100%;
     background: rgba(0, 0, 0, 0.75);
     z-index: 9999;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     animation: fadeIn 0.3s ease;
     backdrop-filter: blur(3px);
-    overflow-y: auto;
+    overflow-y: scroll;
     padding: 40px 20px;
 }
 
@@ -303,11 +303,12 @@ tbody tr.selected td {
     width: 90%;
     height: auto;
     max-height: none;
+    overflow: visible;
     box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
     animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     position: relative;
     border: 3px solid var(--primary-1);
-    margin: auto;
+    margin: 0 auto 40px auto;
 }
 
 /* Scroll personalizado para el modal */
