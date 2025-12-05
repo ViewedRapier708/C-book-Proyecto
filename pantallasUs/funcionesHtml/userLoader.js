@@ -45,9 +45,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Cargar tabla si el componente contiene una
                 if (tables.length > 0) {
-                    cargarTabla().catch(err => {
+                    cargarTabla().then(() => {
+                        // Inicializar eventos después de cargar la tabla
+                        setTimeout(() => {
+                            if (typeof inicializarEventosTabla === 'function') {
+                                inicializarEventosTabla();
+                            }
+                        }, 100);
+                    }).catch(err => {
                         console.error('Error cargando tabla:', err);
                     });
+                } else {
+                    // Si no hay tabla, inicializar eventos de todas formas
+                    setTimeout(() => {
+                        if (typeof inicializarEventosTabla === 'function') {
+                            inicializarEventosTabla();
+                        }
+                    }, 100);
                 }
             })
             .catch(err => {
