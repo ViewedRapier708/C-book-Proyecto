@@ -46,6 +46,7 @@ if (!recurso_id || !boleta || !tipo) {
 //Verificar disponibilidad del recurso segun el tipo
     const disponibilidad = await VerificarDisponibilidadRecurso(tipo, recurso_id);
     if(disponibilidad.success === true && disponibilidad.message == null){
+        res.locals.idRecurso = disponibilidad.idRecurso ;
         next();
     }
     if (disponibilidad.success === false) {
