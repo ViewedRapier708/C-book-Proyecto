@@ -445,6 +445,71 @@ tbody tr.selected td {
     background: linear-gradient(135deg, #555555 0%, #777777 100%);
 }
 
+/* Estilos para la tabla de detalles en el modal */
+.tabla-detalles {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-detalles tbody tr {
+    border-bottom: 2px solid rgba(123, 2, 51, 0.15);
+    transition: all 0.2s ease;
+}
+
+.tabla-detalles tbody tr:hover {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.tabla-detalles tbody tr:last-child {
+    border-bottom: none;
+}
+
+.tabla-detalles td {
+    padding: 1.2rem 1.5rem;
+    font-size: 1.05rem;
+    color: #333;
+}
+
+.tabla-detalles td:first-child {
+    color: var(--primary-1);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: 40%;
+}
+
+.tabla-detalles td:last-child {
+    font-weight: 600;
+    text-align: right;
+}
+
+/* Botón cerrar modal (X) */
+.btn-cerrar-modal {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 2.5rem;
+    color: var(--primary-1);
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    line-height: 1;
+    padding: 0;
+}
+
+.btn-cerrar-modal:hover {
+    background: rgba(123, 2, 51, 0.1);
+    transform: rotate(90deg);
+    color: var(--primary-2);
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;

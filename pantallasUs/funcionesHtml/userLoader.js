@@ -44,84 +44,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 // Inicializar eventos de la tabla después de cargar el componente
-                if (tables.length > 0) {
-<<<<<<< HEAD
-                    cargarTabla().then(() => {
-                        // Inicializar eventos después de cargar la tabla
-                        setTimeout(() => {
-                            if (typeof inicializarEventosTabla === 'function') {
-                                inicializarEventosTabla();
-                            }
-                        }, 100);
-                    }).catch(err => {
-                        console.error('Error cargando tabla:', err);
-                    });
-                } else {
-                    // Si no hay tabla, inicializar eventos de todas formas
-                    setTimeout(() => {
-                        if (typeof inicializarEventosTabla === 'function') {
-                            inicializarEventosTabla();
-                        }
-=======
-                    // Dar tiempo para que el DOM se actualice
-                    setTimeout(() => {
-                        if (typeof inicializarEventosTabla === 'function') {
-                            console.log('Inicializando eventos de tabla...');
-                            inicializarEventosTabla();
-                        }
-                        
-                        // Configurar botón Solicitar
-                        const btnApartar = contentLoader.querySelector('.btn-apartar');
-                        if (btnApartar && !btnApartar.hasAttribute('data-listener-added')) {
-                            console.log('Configurando botón Solicitar...');
-                            btnApartar.style.display = 'none';
-                            btnApartar.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                console.log('CLICK EN BOTON SOLICITAR');
-                                if (typeof abrirModal === 'function') {
-                                    abrirModal();
-                                }
-                            });
-                            btnApartar.setAttribute('data-listener-added', 'true');
-                        }
-
-                        // Configurar botones del modal
-                        const btnConfirmar = contentLoader.querySelector('#btn-confirmar-solicitud');
-                        if (btnConfirmar && !btnConfirmar.hasAttribute('data-listener-added')) {
-                            btnConfirmar.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                if (typeof confirmarSolicitud === 'function') {
-                                    confirmarSolicitud();
-                                }
-                            });
-                            btnConfirmar.setAttribute('data-listener-added', 'true');
-                        }
-
-                        const btnCancelar = contentLoader.querySelector('#btn-cancelar-solicitud');
-                        if (btnCancelar && !btnCancelar.hasAttribute('data-listener-added')) {
-                            btnCancelar.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                if (typeof cerrarModal === 'function') {
-                                    cerrarModal();
-                                }
-                            });
-                            btnCancelar.setAttribute('data-listener-added', 'true');
-                        }
-
-                        // Configurar cierre del modal al hacer clic fuera
-                        const modal = contentLoader.querySelector('#modal-confirmacion');
-                        if (modal && !modal.hasAttribute('data-listener-added')) {
-                            modal.addEventListener('click', function(e) {
-                                if (e.target === modal && typeof cerrarModal === 'function') {
-                                    cerrarModal();
-                                }
-                            });
-                            modal.setAttribute('data-listener-added', 'true');
-                        }
->>>>>>> da3f07f4e598834280a6f73a29c36c95853db2f4
-                    }, 100);
-                }
+                setTimeout(() => {
+                    // Cargar datos de la tabla si existe
+                    if (tables.length > 0 && typeof cargarTabla === 'function') {
+                        cargarTabla().catch(err => {
+                            console.error('Error cargando tabla:', err);
+                        });
+                    }
+                    
+                    // Inicializar eventos
+                    if (typeof inicializarEventosTabla === 'function') {
+                        console.log('Inicializando eventos de tabla...');
+                        inicializarEventosTabla();
+                    }
+                }, 100);
             })
             .catch(err => {
                 console.error('Error cargando componente:', err);
