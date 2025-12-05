@@ -1,6 +1,6 @@
 const { getClient } = require('../config/db');
 const supabase = getClient();
-const tipos = ['computadora', 'restirador', 'libro'];
+
 
 // ==================== CREAR SOLICITUD ====================
 async function CrearSolicitud(tipoSolicitud, boleta, idRecurso) {
@@ -167,9 +167,7 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
     if (!tipo || !boleta) {
         return { success: false, error: 'Faltan datos obligatorios' };
     }
-    if (!tipos.includes(tipo)) {
-        return { success: false, error: 'Tipo de solicitud inválido' };
-    }
+ 
     if (tipo === 'computadora' || tipo === 'restirador') {
         if (!Number.isInteger(numeroBoleta)) {
             return { success: false, error: 'Boleta inválida' };
