@@ -1,95 +1,57 @@
-// Guardia de sesión sincronizada con el backend
+// Guardia de sesión - Verifica autenticación en páginas protegidas
 
-(async function() {
-    const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
-
+(function() {
+    // Obtener la página actual
     const paginaActual = window.location.pathname;
     const esIndex = paginaActual.includes('index.html') || paginaActual.endsWith('/') || paginaActual.endsWith('/C-book-Proyecto/');
     const esRegistro = paginaActual.includes('registro.html');
-    const esConfirmacion = paginaActual.includes('confirmacion.html') || paginaActual.includes('confirmacionCorreo.html');
+    const esConfirmacion = paginaActual.includes('confirmacionCorreo.html');
     const esPaginaPublica = esIndex || esRegistro || esConfirmacion;
 
-    function obtenerUsuarioLocal() {
-        const userData = localStorage.getItem('user_data');
-        if (!userData) {
-            return null;
-        }
+    // Verificar si hay sesión guardada
+    const sessionData = localStorage.getItem('supabase_session');
+    const userData = localStorage.getItem('user_data');
+
+    let sesionValida = false;
+
+    if (sessionData && userData) {
         try {
-            return JSON.parse(userData);
+            const session = JSON.parse(sessionData);
+            // Verificar si la sesión no ha expirado
+            if (session.expires_at) {
+                const expiresAt = new Date(session.expires_at * 1000);
+                sesionValida = expiresAt > new Date();
+            } else {
+                sesionValida = true; // Asumir válida si no hay fecha
+            }
         } catch (e) {
+            console.error('Error parseando sesión:', e);
+            sesionValida = false;
+        }
+    }
+
+    console.log('SessionGuard - Página:', paginaActual, 'Sesión válida:', sesionValida); //debug
+
+    // Si hay sesión activa
+    if (sesionValida) {
+        console.log('Usuario autenticado');
+        
+        // Si está en página pública (login/registro), redirigir a usuario.html
+        if (esIndex || esRegistro) {
+            window.location.href = './pantallasUs/usuario.html';
+            return;
+        }
+    } else {
+        // No hay sesión
+        console.log('Sin sesión activa');
+        
+        // Si está en página protegida, redirigir a login
+        if (!esPaginaPublica) {
+            // Limpiar datos de sesión
+            localStorage.removeItem('supabase_session');
             localStorage.removeItem('user_data');
-            return null;
+            window.location.href = '../index.html';
+            return;
         }
     }
-
-    function guardarUsuarioLocal(user) {
-        if (user) {
-            localStorage.setItem('user_data', JSON.stringify(user));
-        } else {
-            localStorage.removeItem('user_data');
-        }
-    }
-
-    async function obtenerUsuarioServidor() {
-        try {
-            const respuesta = await fetch(`${API_BASE}/auth/session`, {
-                credentials: 'include'
-            });
-
-            if (!respuesta.ok) {
-                guardarUsuarioLocal(null);
-                return null;
-            }
-
-            const payload = await respuesta.json();
-            if (payload.autenticado && payload.user) {
-                guardarUsuarioLocal(payload.user);
-                return payload.user;
-            }
-
-            guardarUsuarioLocal(null);
-            return null;
-        } catch (error) {
-            console.warn('No se pudo sincronizar la sesión con el servidor:', error);
-            return obtenerUsuarioLocal();
-        }
-    }
-
-    async function aplicarReglasDeSesion() {
-        const usuario = await obtenerUsuarioServidor();
-        const sesionValida = !!usuario;
-
-        console.log('SessionGuard - Página:', paginaActual, '- Sesión:', sesionValida);
-
-        if (sesionValida) {
-            if (esPaginaPublica) {
-                const destino = esIndex ? './pantallasUs/usuario.html' : '../pantallasUs/usuario.html';
-                window.location.replace(destino);
-                return;
-            }
-
-            try {
-                history.pushState(null, document.title, window.location.href);
-                window.addEventListener('popstate', function() {
-                    window.location.replace(window.location.href);
-                });
-            } catch (err) {
-                console.warn('No fue posible manipular el historial:', err);
-            }
-        } else if (!esPaginaPublica) {
-            guardarUsuarioLocal(null);
-            alert('Su sesión ha expirado. Por favor, inicie sesión de nuevo.');
-            const destinoLogin = paginaActual.includes('/pantallasUs/') || paginaActual.includes('/PantallasAdmin/') 
-                ? '../index.html' 
-                : './index.html';
-            window.location.replace(destinoLogin);
-        }
-    }
-
-    window.obtenerUsuarioActual = function() {
-        return obtenerUsuarioLocal();
-    };
-
-    await aplicarReglasDeSesion();
-    setInterval(aplicarReglasDeSesion, 30000);
 })();
