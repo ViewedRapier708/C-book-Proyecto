@@ -22,7 +22,7 @@ async function CrearSolicitudComputadora(boleta, idRecurso) {
     try {
         const { error } = await supabase
             .from('solicitudes_computadora')
-            .insert([{ usuario_boleta: boleta, recurso_id: idRecurso }]);
+            .insert([{ usuario_boleta: boleta, computadora_id: idRecurso }]);
         //El estado se pone automáticamente en 'pendiente'
         if (error) {
             console.error("Error creando solicitud de computadora:", error);
@@ -85,13 +85,9 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
             return { disponible: false, error: 'Tipo de recurso inválido' };
     }
 
-
-
-}
-
 async function VerificarDisponibilidadComputadora(n_recurso) {
     try {
-        const { data, error } = await supabase.from('computadoras').select('Disponible').eq('no_computadora', n_recurso).single();
+        const { data, error } = await supabase.from('computadoras').select('id,Disponible').eq('no_computadora', n_recurso).single();
         console.log("Disponibilidad Computadora:", data, error); //debug
 
         if (error) {
@@ -104,7 +100,7 @@ async function VerificarDisponibilidadComputadora(n_recurso) {
         if (data.Disponible === false) {
             return { message: 'La computadora no está disponible actualmente', success: false };
         }
-        return { success: true, message: null };//Indica que la computadora está disponible
+        return { success: true, message: null, idRecurso: data.id };//Indica que la computadora está disponible
 
 
     } catch (error) {
@@ -114,7 +110,7 @@ async function VerificarDisponibilidadComputadora(n_recurso) {
 }
 async function VerificarDisponibilidadRestirador(n_recurso) {
     try {
-        const { data, error } = await supabase.from('restiradores').select('Disponible').eq('no_restirador', n_recurso).single();
+        const { data, error } = await supabase.from('restiradores').select('id,Disponible').eq('no_restirador', n_recurso).single();
         console.log("Disponibilidad Restirador:", data, error); //debug
         if (error) {
             console.error("Error verificando disponibilidad:", error);
@@ -126,7 +122,7 @@ async function VerificarDisponibilidadRestirador(n_recurso) {
         if (data.Disponible === false) {
             return { message: 'El restirador no está disponible actualmente', success: false };
         }
-        return { success: true, message: null };   //Indica que el restirador está disponible
+        return { success: true, message: null, idRecurso: data.id };   //Indica que el restirador está disponible
 
     } catch (error) {
 
@@ -137,7 +133,7 @@ async function VerificarDisponibilidadRestirador(n_recurso) {
 }
 async function VerificarDisponibilidadLibro(n_recurso) {
     try {
-        const { data, error } = await supabase.from('ejemplares').select('Disponibilidad').eq('libro_id', n_recurso).single();
+        const { data, error } = await supabase.from('ejemplares').select('id,Disponibilidad').eq('libro_id', n_recurso).single();
 
         console.log("Disponibilidad Libro:", data, error);
         if (error) {
@@ -150,12 +146,16 @@ async function VerificarDisponibilidadLibro(n_recurso) {
         if (data.Disponibilidad === false) {
             return { message: 'El libro no está disponible actualmente', success: false };
         }
-        return { success: true, message: null };//Indica que el libro está disponible
+        return { success: true, message: null, idRecurso: data.id };//Indica que el libro está disponible
     } catch (error) {
         return { success: false, message: 'Error interno del servidor' };
     }
 
 }
+
+}
+
+
 
 // ==================== OBTENER SOLICITUDES ACTIVAS ====================
 async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
@@ -209,15 +209,13 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
             total: libros.count
         }
     }
-}
-
-async function contarPendientesPorTabla(client, tabla, boleta) {
+    async function contarPendientesPorTabla(client, tabla, boleta) {
     try {
         const { error, count } = await client
             .from(tabla)
             .select('id', { count: 'exact', head: true })
             .eq('usuario_boleta', boleta)
-            .eq('estado', 'pendiente' || '');
+            .eq('estado_solicitud_id', 1 );
         console.log(`Conteo en ${tabla} para boleta ${boleta}:`, count, error); //debug
         if (error) {
             console.error(`Error consultando ${tabla}:`, error);
@@ -230,6 +228,9 @@ async function contarPendientesPorTabla(client, tabla, boleta) {
         return { success: false, error: 'Error interno', count: 0 };
     }
 }
+
+}
+
 
 
 // ==================== CANCELACION DE SOLICITUD ====================
