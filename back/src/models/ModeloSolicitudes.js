@@ -14,10 +14,6 @@ async function CrearSolicitud(tipoSolicitud, boleta, idRecurso) {
         default:
             return { success: false, error: 'Tipo de solicitud inválido' };
     }
-
- 
-
-
 }
 
 

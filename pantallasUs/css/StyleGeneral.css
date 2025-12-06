@@ -56,14 +56,14 @@ img {
     box-sizing: border-box;
     width: calc(100% - var(--aside-width, 280px));
     transition: margin-left 0.28s ease, width 0.28s ease;
-    padding: 7rem;
+    padding: 3rem;
 }
 
 
 .container-informacion {
     /* CENTRADO UNIVERSAL SIN FLEX */
-    width: 100%;
-    max-width: 1400px;
+    width: 150em;
+    height: auto;
     margin: 0 auto;
 
     /* ESPACIADO RESPONSIVE */
@@ -124,7 +124,11 @@ img {
     bottom: 0;
     background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
 }
-
+.container-contenido {
+    padding: clamp(1rem, 2.5vw, 3rem);
+    max-width: 1400px;
+    margin: 0 auto;
+}
 @keyframes shine {
 
     0%,
