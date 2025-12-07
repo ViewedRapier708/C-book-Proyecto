@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(html => {
                 // Quitar la clase de entrada para resetear cualquier animación previa
                 contentLoader.classList.remove('component-enter');
+
                 // Insertar el HTML del componente cargado en el contenedor
                 contentLoader.innerHTML = html;
                 
@@ -27,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // y permita reiniciar la animación al volver a añadir la clase
                 void contentLoader.offsetWidth;
                 // Añadir la clase que activa la animación de entrada del contenedor
-                contentLoader.classList.add('component-enter');
+                contentLoader.classList.add('component-enter');// Animación de entrada del contenedor principal
                 
                 // Seleccionar elementos que tendrán animaciones internas específicas
                 const tables = contentLoader.querySelectorAll('.container-tabla');
@@ -51,7 +52,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             console.log('Inicializando eventos de tabla...');
                             inicializarEventosTabla();
                         }
-                        
                         // Configurar botón Solicitar
                         const btnApartar = contentLoader.querySelector('.btn-apartar');
                         if (btnApartar && !btnApartar.hasAttribute('data-listener-added')) {
@@ -60,9 +60,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             btnApartar.addEventListener('click', function(e) {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                console.log('CLICK EN BOTON SOLICITAR');
+                            
                                 if (typeof abrirModal === 'function') {
                                     abrirModal();
+
                                 }
                             });
                             btnApartar.setAttribute('data-listener-added', 'true');
@@ -119,7 +120,6 @@ document.addEventListener('DOMContentLoaded', function() {
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-
             const component = link.getAttribute('data-component');
             const title = link.getAttribute('data-title');
 
