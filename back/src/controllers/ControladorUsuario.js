@@ -292,7 +292,7 @@ function regenerateSession(req) {
   });
 }
 
-function saveSession(req) {
+function saveSession(req) {//Garantiza el envio de la sesion actualizada y la cookie
   return new Promise((resolve, reject) => {
     req.session.save(err => err ? reject(err) : resolve());
   });

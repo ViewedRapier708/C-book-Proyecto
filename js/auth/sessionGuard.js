@@ -1,9 +1,10 @@
 // Guardia de sesión sincronizada con el backend
 
 (async function() {
-    const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
-
+    const API_BASE = 'http://localhost:3000/';
+    alert('C-book está en modo de desarrollo. La sesión puede no persistir correctamente si el servidor no está activo.');
     const paginaActual = window.location.pathname;
+    console.log('SessionGuard - Página actual:', paginaActual);
     const esIndex = paginaActual.includes('index.html') || paginaActual.endsWith('/') || paginaActual.endsWith('/C-book-Proyecto/');
     const esRegistro = paginaActual.includes('registro.html');
     const esConfirmacion = paginaActual.includes('confirmacion.html') || paginaActual.includes('confirmacionCorreo.html');

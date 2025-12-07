@@ -20,7 +20,8 @@
 
     const protocol = window.location?.protocol?.startsWith('http') ? window.location.protocol : 'http:';
     const hostname = window.location?.hostname || 'localhost';
-    const portSegment = window.location?.port ? '' : `:${DEFAULT_PORT}`;
+    // Si ya estamos en un puerto, usarlo; de lo contrario, usar el DEFAULT_PORT
+    const portSegment = window.location?.port ? `:${window.location.port}` : `:${DEFAULT_PORT}`;
 
     return `${protocol}//${hostname}${portSegment}`.replace(/\/$/, '');
   }

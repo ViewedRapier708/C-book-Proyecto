@@ -2,6 +2,7 @@ const cors = require('cors');
 const express = require('express');
 const session = require('express-session');
 const { render } = require('ejs');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -60,9 +61,15 @@ app.use(session({
 }));
 
 // ===============================
+//   ARCHIVOS ESTÁTICOS
+// ===============================
+// Servir archivos estáticos desde la raíz del proyecto
+app.use(express.static(path.join(__dirname, '..')));
+
+// ===============================
 //   RUTA PARA VER SESIONES ACTIVAS
 // ===============================
-app.get('/debug/sesiones', (req, res) => {
+app.get('/debug/sesiones', (req, res) => {//Quitar en produccion
   sessionStore.all((err, sesiones) => {
     if (err) {
       return res.status(500).json({ error: 'Error al obtener sesiones' });
@@ -71,9 +78,10 @@ app.get('/debug/sesiones', (req, res) => {
   });
 });
 
-// Ruta raíz
+// Ruta raíz - servir index.html
+console.log(path.join(__dirname,'..', 'index.html'));
 app.get('/', (req, res) => {
-  res.send('Servidor funcionando');
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
 // Rutas de autenticación

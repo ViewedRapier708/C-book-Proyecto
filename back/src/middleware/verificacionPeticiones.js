@@ -63,7 +63,8 @@ async function verificarDisponibilidad(req, res, next) {
     const disponibilidad = await VerificarDisponibilidadRecurso(tipo, recurso_id); //Verificar si el recurso esta disponible
     console.log("Resultado de disponibilidad:", disponibilidad);
     if (disponibilidad.success === true && disponibilidad.message == null) {
-        next();
+
+        next(disponibilidad);
     }
     if (disponibilidad.success === false) {
         return res.status(400).json({
