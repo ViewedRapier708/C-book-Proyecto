@@ -61,4 +61,4 @@ const computadoras = async () => {
 }
 
 
-module.exports = modelosRecursos;
+module.exports = ObtenerRecurzos;
