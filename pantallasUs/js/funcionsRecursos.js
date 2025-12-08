@@ -262,4 +262,3 @@ window.confirmarSolicitud = function() {
     recursoSeleccionado = null;
     console.log('✅ Solicitud procesada');
 }
-}
