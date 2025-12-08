@@ -14,13 +14,11 @@ async function iniciarSupabaseRealTime(tabla, callback) {
             return null;
         }
 
-        console.log('🚀 [RealTime] Inicializando cliente Supabase...');
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Crear canal para la tabla SIN filtro de usuario (para pruebas)
         const channelName = `realtime-${tabla}-${Date.now()}`;
-        console.log('📡 [RealTime] Creando canal:', channelName);
-        console.log('📋 [RealTime] Tabla a monitorear:', tabla);
+     
 
         realtimeChannel = supabase
             .channel(channelName)
@@ -33,12 +31,7 @@ async function iniciarSupabaseRealTime(tabla, callback) {
                     // SIN filtro para detectar TODOS los cambios
                 },
                 (payload) => {
-                    console.log('🔔🔔🔔 [RealTime] ¡CAMBIO DETECTADO!');
-                    console.log('📋 Tabla:', tabla);
-                    console.log('🔧 Evento:', payload.eventType);
-                    console.log('📦 Payload completo:', payload);
-                    
-                    // Procesar según el tipo de evento
+
                     switch (payload.eventType) {
                         case 'INSERT':
                             console.log('➕ [RealTime] Nuevo registro:', payload.new);
@@ -78,132 +71,26 @@ async function iniciarSupabaseRealTime(tabla, callback) {
     }
 }
 
-// Función para detectar cambios entre dos conjuntos de datos
-function detectarCambios(anterior, actual) {
-    const cambios = {
-        hayaCambios: false,
-        nuevos: [],
-        modificados: [],
-        eliminados: []
-    };
-    
-    // Convertir arrays a maps para búsqueda más eficiente
-    const mapAnterior = new Map(anterior.map(item => [item.id, item]));
-    const mapActual = new Map(actual.map(item => [item.id, item]));
-    
-    // Detectar nuevos y modificados
-    actual.forEach(itemActual => {
-        const itemAnterior = mapAnterior.get(itemActual.id);
-        
-        if (!itemAnterior) {
-            // Nuevo registro
-            cambios.nuevos.push(itemActual);
-            cambios.hayaCambios = true;
-            console.log('➕ [RealTime] Nuevo registro detectado:', itemActual);
-        } else {
-            // Verificar si hay modificaciones
-            const huboModificacion = JSON.stringify(itemAnterior) !== JSON.stringify(itemActual);
-            if (huboModificacion) {
-                cambios.modificados.push({
-                    anterior: itemAnterior,
-                    actual: itemActual,
-                    diferencias: encontrarDiferencias(itemAnterior, itemActual)
-                });
-                cambios.hayaCambios = true;
-                console.log('✏️ [RealTime] Registro modificado:', {
-                    id: itemActual.id,
-                    cambios: encontrarDiferencias(itemAnterior, itemActual)
-                });
-            }
-        }
-    });
-    
-    // Detectar eliminados
-    anterior.forEach(itemAnterior => {
-        if (!mapActual.has(itemAnterior.id)) {
-            cambios.eliminados.push(itemAnterior);
-            cambios.hayaCambios = true;
-            console.log('🗑️ [RealTime] Registro eliminado:', itemAnterior);
-        }
-    });
-    
-    return cambios;
-}
+const cargarDatosTabla = async (tipo,informacion={}) => {
+    const tbody= document.getElementById('Tbody')
+    const tipo=document.getElementById('tabla').getAttribute('data-tipo');
+    console.log('Cargando datos para tipo:', tipo);
+    console.log('Información adicional:', informacion);
+    switch (tipo) {
+        case 'computadora':
+            Object.values(informacion).forEach(valor => {
+                console.log('Procesando registro de computadora:', valor);
 
-// Función auxiliar para encontrar diferencias específicas entre dos objetos
-function encontrarDiferencias(obj1, obj2) {
-    const diferencias = {};
-    
-    Object.keys(obj2).forEach(key => {
-        if (JSON.stringify(obj1[key]) !== JSON.stringify(obj2[key])) {
-            diferencias[key] = {
-                anterior: obj1[key],
-                actual: obj2[key]
-            };
-        }
-    });
-    
-    return diferencias;
-}
+            });
+            break;
+        case 'restirador':
+  
+            break;
+        case 'libro':
 
-// Función para detener la suscripción de Supabase Realtime
-function detenerRealTime() {
-    if (realtimeChannel) {
-        realtimeChannel.unsubscribe();
-        realtimeChannel = null;
-        console.log('⏹️ [RealTime] Suscripción detenida');
+            break;
+        default:
+            console.error('Tipo de recurso desconocido:', tipo);
+            return;
     }
 }
-
-// Array para almacenar todas las suscripciones activas
-let suscripcionesActivas = [];
-
-// Función para suscribirse a múltiples tablas
-function iniciarRealTimeMultiTablas(tablas, callback) {
-    console.log(`🚀 [RealTime] Suscribiendo a ${tablas.length} tablas:`, tablas);
-    
-    tablas.forEach(tabla => {
-        const canal = iniciarSupabaseRealTime(tabla, (change) => {
-            // Agregar nombre de tabla al cambio
-            callback({ ...change, tabla });
-        });
-        
-        if (canal) {
-            suscripcionesActivas.push({ tabla, canal });
-        }
-    });
-    
-    console.log(`✅ [RealTime] Total de suscripciones activas: ${suscripcionesActivas.length}`);
-}
-
-// Función simplificada para iniciar RealTime en tablas de recursos
-function iniciarRealTime(callback) {
-    // Tablas de recursos a monitorear
-    const tablasRecursos = [
-        'restiradores',
-        'ejemplares', 
-        'computadoras',
-        'guardarropas'
-    ];
-    
-    // Callback por defecto si no se proporciona
-    const defaultCallback = (change) => {
-        console.log(`📬 [RealTime] Cambio en ${change.tabla}:`, change);
-    };
-    
-    iniciarRealTimeMultiTablas(tablasRecursos, callback || defaultCallback);
-}
-
-// Función mejorada para detener todas las suscripciones
-function detenerTodasSuscripciones() {
-    console.log(`⏹️ [RealTime] Deteniendo ${suscripcionesActivas.length} suscripciones...`);
-    
-    suscripcionesActivas.forEach(({ tabla, canal }) => {
-        canal.unsubscribe();
-        console.log(`⏹️ [RealTime] Suscripción detenida: ${tabla}`);
-    });
-    
-    suscripcionesActivas = [];
-    console.log('✅ [RealTime] Todas las suscripciones detenidas');
-}
-

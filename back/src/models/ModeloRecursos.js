@@ -31,9 +31,23 @@ const restiradores = async () => {
 }
 const libros = async () => {
   try {
-    const { data, error } = await supabase
-      .from('ejemplares_libros')
-      .select('libros(titulo, autores(nombre),tipo_material),numero_ejemplar,anio,Disponibilidad,estatus_item')
+ const { data, error } = await supabase
+  .from('ejemplares')
+  .select(`
+    numero_ejemplar,
+    anio,
+    estatus_item,
+    "Disponibilidad",
+    coleccion,
+    libros (
+      titulo,
+      autor,
+      clasificacion,
+      isbn,
+      tipo_material
+    )
+  `);
+
 
     if (error) {
       console.error("Error obteniendo libros:", error);
@@ -61,4 +75,4 @@ const computadoras = async () => {
 }
 
 
-module.exports = ObtenerRecurzos;
+module.exports = {ObtenerRecurzos};
