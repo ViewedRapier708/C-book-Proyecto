@@ -9,6 +9,11 @@ async function obtenerRecursosPorTipo(req, res) {
   }
   try {
     const recursos = await modelosRecursos.obtenerRecursosPorTipo(tipo);
+
+    console.log("Recursos obtenidos:", recursos); //debug
+
+
+    
     return res.status(200).json({ success: true, data: recursos });
   } catch (err) {
     return res.status(500).json({ success: false, message: 'Error interno del servidor' });

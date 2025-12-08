@@ -116,6 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     };
 
+
     // Configurar eventos de los enlaces de navegación
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
