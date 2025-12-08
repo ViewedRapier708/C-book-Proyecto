@@ -287,25 +287,28 @@ tbody tr.selected td {
     height: 100%;
     background: rgba(0, 0, 0, 0.75);
     z-index: 9999;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     animation: fadeIn 0.3s ease;
     backdrop-filter: blur(3px);
-    overflow-y: auto;
+    overflow-y: scroll;
     padding: 40px 20px;
 }
 
 .modal-content {
     background: #FFFFFF;
     border-radius: 20px;
-    padding: 2.5rem;
-    max-width: 800px;
-    width: 95%;
+    padding: 3rem;
+    max-width: 1200px;
+    width: 90%;
+    height: auto;
+    max-height: none;
+    overflow: visible;
     box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
     animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     position: relative;
     border: 3px solid var(--primary-1);
-    margin: auto;
+    margin: 0 auto 40px auto;
 }
 
 /* Scroll personalizado para el modal */
@@ -329,7 +332,7 @@ tbody tr.selected td {
 
 .modal-content h3 {
     color: var(--primary-1);
-    font-size: 1.6rem;
+    font-size: 2rem;
     font-weight: 700;
     margin-bottom: 2rem;
     text-align: center;
@@ -345,6 +348,8 @@ tbody tr.selected td {
     padding: 2rem;
     margin-bottom: 2rem;
     border: 2px solid rgba(123, 2, 51, 0.1);
+    height: auto;
+    overflow: visible;
 }
 
 /* Scroll personalizado para detalles del recurso */
@@ -430,10 +435,10 @@ tbody tr.selected td {
 .modal-acciones .btn-apartar,
 .modal-acciones .btn-cancelar {
     flex: 1 1 auto;
-    min-width: 200px;
-    max-width: 250px;
-    padding: 1rem 2.5rem;
-    font-size: 1rem;
+    min-width: 220px;
+    max-width: 300px;
+    padding: 1.2rem 3rem;
+    font-size: 1.1rem;
     white-space: nowrap;
 }
 
@@ -443,6 +448,75 @@ tbody tr.selected td {
 
 .modal-acciones .btn-cancelar:hover {
     background: linear-gradient(135deg, #555555 0%, #777777 100%);
+}
+
+/* Estilos para la tabla de detalles en el modal */
+.tabla-detalles {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1.1rem;
+}
+
+.tabla-detalles tbody tr {
+    border-bottom: 2px solid rgba(123, 2, 51, 0.15);
+    transition: all 0.2s ease;
+}
+
+.tabla-detalles tbody tr:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateX(5px);
+}
+
+.tabla-detalles tbody tr:last-child {
+    border-bottom: none;
+}
+
+.tabla-detalles td {
+    padding: 1.5rem 2rem;
+    font-size: 1.15rem;
+    color: #333;
+}
+
+.tabla-detalles td:first-child {
+    color: var(--primary-1);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: 40%;
+    font-size: 1.1rem;
+}
+
+.tabla-detalles td:last-child {
+    font-weight: 600;
+    text-align: right;
+    font-size: 1.2rem;
+}
+
+/* Botón cerrar modal (X) */
+.btn-cerrar-modal {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 2.5rem;
+    color: var(--primary-1);
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    line-height: 1;
+    padding: 0;
+}
+
+.btn-cerrar-modal:hover {
+    background: rgba(123, 2, 51, 0.1);
+    transform: rotate(90deg);
+    color: var(--primary-2);
 }
 
 @keyframes fadeIn {

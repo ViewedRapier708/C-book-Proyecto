@@ -83,7 +83,10 @@ img {
     transition: all 0.3s ease;
     height: auto;
     min-height: 50vh;
+<<<<<<< HEAD
+=======
     max-height: 85vh;
+>>>>>>> da3f07f4e598834280a6f73a29c36c95853db2f4
     
     /* POSICIÓN */
     position: relative;
