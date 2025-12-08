@@ -1,6 +1,4 @@
-// Iniciar sesión - Llama al backend
-
-const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
+// Iniciar sesión - Llama al backend en el mismo origen (localhost:3000)
 
 async function iniciarSesion(event) {
     event.preventDefault();
@@ -28,8 +26,9 @@ async function iniciarSesion(event) {
 
         console.log('Intentando login para boleta:', boleta); //debug
 
-        // Llamar al backend
-        const res = await fetch(`${API_BASE}/auth/login`, {
+        // Llamar al backend usando ruta relativa (mismo origen)
+        const apiBase = window.API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${apiBase}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',

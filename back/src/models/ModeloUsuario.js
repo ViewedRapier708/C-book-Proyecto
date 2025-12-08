@@ -63,8 +63,13 @@ async function registrarEnAuth(boleta, correo, password) {
     console.log("Registro Auth:", data?.user?.id, error?.message); //debug
 
     if (error) {
+      let mensaje = error.message;
+      // Supabase suele devolver "Database error saving new user" cuando el correo ya existe en Auth
+      if (error.message && error.message.toLowerCase().includes('database error saving new user')) {
+        mensaje = 'Este correo ya está registrado. Intenta iniciar sesión o usa otro correo.';
+      }
       console.error("Error registrando en Auth:", error);
-      return { success: false, error: error.message };
+      return { success: false, error: mensaje };
     }
 
     return { success: true, user: data.user };
@@ -242,14 +247,14 @@ async function refrescarSesionSupabase(refreshToken) {
   }
 }
 
-async function revocarSesionesSupabase(userId) {
+async function revocarSesionesSupabase(accessToken) {
   const supabase = getClient();
   try {
-    if (!userId) {
-      return { success: false, error: 'ID de usuario inválido' };
+    if (!accessToken) {
+      return { success: false, error: 'Access token inválido' };
     }
 
-    const { error } = await supabase.auth.admin.signOut(userId);
+    const { error } = await supabase.auth.admin.signOut(accessToken);
 
     if (error) {
       console.error('Error revocando sesión Supabase:', error);

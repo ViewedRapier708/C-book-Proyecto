@@ -64,7 +64,10 @@ app.use(session({
 //   ARCHIVOS ESTÁTICOS
 // ===============================
 // Servir archivos estáticos desde la raíz del proyecto
-app.use(express.static(path.join(__dirname, '..')));
+app.get('/', (req, res) => {
+  res.status(200).json({ mensaje: 'API de C-Book funcionando' });
+}
+);
 
 // ===============================
 //   RUTA PARA VER SESIONES ACTIVAS
@@ -76,12 +79,6 @@ app.get('/debug/sesiones', (req, res) => {//Quitar en produccion
     }
     res.json(sesiones);
   });
-});
-
-// Ruta raíz - servir index.html
-console.log(path.join(__dirname,'..', 'index.html'));
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
 // Rutas de autenticación
