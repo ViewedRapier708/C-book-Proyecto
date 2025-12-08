@@ -3,6 +3,35 @@
 
 const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
 
+// Intenta obtener datos de registro desde localStorage o, si no existen, desde query params y los guarda.
+function obtenerDatosRegistro() {
+    const almacenados = localStorage.getItem('datosRegistro');
+    if (almacenados) {
+        try {
+            return JSON.parse(almacenados);
+        } catch (e) {
+            console.warn('datosRegistro en localStorage no es válido, se limpiará', e);
+            localStorage.removeItem('datosRegistro');
+        }
+    }
+
+    // Fallback: intentar leer boleta y correo de la URL (?boleta=...&correo=...)
+    const params = new URLSearchParams(window.location.search);
+    const boleta = params.get('boleta');
+    const correo = params.get('correo');
+    if (boleta && correo) {
+        const datos = { boleta, correo };
+        try {
+            localStorage.setItem('datosRegistro', JSON.stringify(datos));
+        } catch (e) {
+            console.warn('No se pudo guardar datosRegistro desde query params', e);
+        }
+        return datos;
+    }
+
+    return null;
+}
+
 // Variables de control
 let intervalId = null;
 const INTERVALO_VERIFICACION = 3000; // 3 segundos
@@ -42,15 +71,15 @@ async function verificarUsuario() {
 
         console.log('Verificando... intento', intentos); //debug
 
-        // Obtener datos del localStorage
-        const datosRegistro = localStorage.getItem('datosRegistro');
+        // Obtener datos del localStorage o de query params
+        const datosRegistro = obtenerDatosRegistro();
         if (!datosRegistro) {
             mostrarEstadoError('No hay datos de registro. Por favor, regístrate primero.');
             detenerVerificacion();
             return;
         }
 
-        const { boleta, correo, grupo } = JSON.parse(datosRegistro);
+        const { boleta, correo, grupo } = datosRegistro;
 
         // Llamar al backend con los datos
         const res = await fetch(`${API_BASE}/auth/verificar`, {
