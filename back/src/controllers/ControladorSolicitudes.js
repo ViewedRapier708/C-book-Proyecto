@@ -1,69 +1,55 @@
-const { CrearSolicitud } = require('../models/ModeloSolicitudes');
-const nodemailer = require('nodemailer');
+const { CrearSolicitud,CancelarSolicitud } = require("../models/ModeloSolicitudes");
 
 const tipos = ['computadora', 'restirador', 'libro'];
-const subject = 'C-Book | Confirmación de solicitud';
-const ubicaciones = {
-    computadora: 'Área de Cómputo (Nivel 1, módulo B)',
-    restirador: 'Sala de Restiradores (Nivel 2)',
-    libro: 'Mostrador de Préstamo de Libros'
-};
+async function crearSolicitud(req,res) {
+    const { tipo ,boleta,idRecurso } = req.body;
+    const regularExpression = /^[0-9 ]{10}$/;
+    const regularExpressiontipo = /^[a-zA-Z]+$/;
 
-async function crearSolicitud(req, res) {
-    const regularExpresionBoleta = /^\d{10}$/;
-    const regularExpresionIDRecurso = /^\d+$/;
-    const { tipoSolicitud, boleta, idRecurso } = req.body;
-
-    // Validación básica de entradas
-    if (!tipoSolicitud || !boleta || !idRecurso) {
-        return res.status(400).json({ success: false, error: 'Faltan parámetros' });
+    
+    if (!tipo || !boleta || !idRecurso) {
+        return res.status(400).json({ success: false, message: 'Faltan datos obligatorios' });
     }
-    if (!tipos.includes(tipoSolicitud)) {
-        return res.status(400).json({ success: false, error: 'Tipo de solicitud inválido' });
+    if (!regularExpression.test(boleta)) {
+        return res.status(400).json({ success: false, message: 'La boleta debe ser un número válido de longitud 10' });
+    }else if (!regularExpressiontipo.test(tipo).toLowerCase()) {
+        return res.status(400).json({ success: false, message: 'El tipo de solicitud debe contener solo letras' });
+    }else if (!Number.isInteger(idRecurso) || idRecurso <= 0) {
+        return res.status(400).json({ success: false, message: 'El ID del recurso debe ser un número entero positivo' });
     }
-    if (!regularExpresionBoleta.test(boleta)) {
-        return res.status(400).json({ success: false, error: 'Boleta inválida' });
+    if (!tipos.includes(tipo)) {
+        return res.status(400).json({ success: false, message: 'Tipo de solicitud inválido' });
     }
-    if (!regularExpresionIDRecurso.test(idRecurso)) {
-        return res.status(400).json({ success: false, error: 'ID de recurso inválido' });
-    }
-
-    try {
-        // Registro de la solicitud en la base
-        const resultado = await CrearSolicitud(tipoSolicitud, boleta, parseInt(idRecurso, 10));
-        if (!resultado.success) {
-            return res
-                .status(500)
-                .json({ success: false, error: 'Error al crear la solicitud, favor de intentarlo más tarde' });
-        }
-
-        // Datos del usuario autenticado provenientes de la sesión
-        const sessionUser = req.session?.user || {};
-        const correoDestino = sessionUser.email;
-
-        // Intentar enviar correo sólo si contamos con email en sesión
-        let resultadoCorreo = { success: false, error: 'No se encontró un correo en la sesión' };
-        if (correoDestino) {
-            resultadoCorreo = await enviarCorreo({
-                destinatario: correoDestino,
-                nombre: sessionUser.nombre || 'Usuario C-Book',
-                tipoSolicitud,
-                boleta,
-                idRecurso,
-                grupo: sessionUser.grupo || 'Sin grupo',
-                ubicacion: ubicaciones[tipoSolicitud] || 'Mostrador general'
-            });
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: 'Solicitud creada exitosamente',
-            correoEnviado: resultadoCorreo.success,
-            detalleCorreo: resultadoCorreo.success ? undefined : resultadoCorreo.error
+    await CrearSolicitud(tipo, boleta, idRecurso)
+        .then((resultado) => {
+            if (resultado.success) {
+                return res.status(201).json({ success: true, message: 'Solicitud creada exitosamente' });
+            } else {
+                return res.status(500).json({ success: false, message: resultado.message || 'Error al crear la solicitud' });
+            }
+        })
+        .catch((error) => {
+            console.error('Error al crear la solicitud:', error);
+            return res.status(500).json({ success: false, message: 'Error interno del servidor' });
         });
-    } catch (error) {
-        console.error('Error en crearSolicitud:', error);
-        return res.status(500).json({ success: false, error: 'Error interno del servidor' });
+
+}
+async function cancelarSolicitud(req,res) {
+    const { tipo, ID } = req.body;
+    if (!ID || !Number.isInteger(ID) || ID <= 0) {
+        return res.status(400).json({ success: false, message: 'El ID de la solicitud debe ser un número entero positivo' });
+    }
+    const tipos = ['computadora', 'restirador', 'libro'];
+    if (!tipo || !tipos.includes(tipo)) {
+        return res.status(400).json({ success: false, message: 'Tipo de solicitud inválido' });
+    }
+
+
+    const resultado = await CancelarSolicitud(tipo, ID);
+    if (resultado.success) {
+        return res.status(200).json({ success: true, message: 'Solicitud cancelada exitosamente' });
+    } else {
+        return res.status(500).json({ success: false, message: resultado.message || 'Error al cancelar la solicitud' });
     }
 }
 
@@ -171,4 +157,4 @@ function construirTextoPlano({ nombre, tipoSolicitud, boleta, idRecurso, grupo, 
         'C-Book | Biblioteca Digital';
 }
 
-module.exports = { crearSolicitud };
+module.exports = { crearSolicitud, cancelarSolicitud };

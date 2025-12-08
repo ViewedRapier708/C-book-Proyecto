@@ -1,43 +1,64 @@
 
-const modelosRecursos = { 
-  obtenerComputadoras: async () => { // Obtener cliente de Supabase
-  const { getClient } = require('../config/db.js');
-  const supabase = getClient();
-
-  const { data: recursos, error } = await supabase
-    .from('computadoras')
-    .select('id,procesador,programas,carrera,ocupado');
-
-  if (error) {
-    return { error, data: null };
+const {getClient} = require('../config/db.js');
+const supabase = getClient();
+async function ObtenerRecurzos(tipo) {
+  switch (tipo) {
+    case 'computadora':
+      return await computadoras();
+    case 'restirador':
+      return await restiradores();
+    case 'libro':
+      return await libros();
+    default:
+      return { error: 'Tipo de recurso inválido' };
   }
-  return { error: null, data: recursos };
-}, obtenerRestiradores: async () => { // Obtener cliente de Supabase
-  const { getClient } = require('../config/db.js');
-  const supabase = getClient();
-
-  const { data: recursos, error } = await supabase
-    .from('restiradores')
-    .select('id,ocupado');
-
-  if (error) {
-    return { error, data: null };
-  }
-  return { error: null, data: recursos };
-}, obtenerLibros: async () => { 
-    const { getClient } = require('../config/db.js');// Obtener cliente de Supabase
- const supabase = getClient();
-  const { data: recursos, error } = await supabase
-    .from('libros')
-    .select('*');
-  if (error) {
-    return { error, data: null };
-  }
-  return { error: null, data: recursos };
 }
 
+const restiradores = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('restiradores')
+        .select('no_restirador,Observacion,Disponible,estado_de_material,estado_de_material')
 
-};
+      if (error) {
+        console.error("Error obteniendo restiradores:", error);
+        return { error: 'Error al obtener los restiradores' };
+      }
+      return data;
+    } catch (error) {
+      return { error: 'Error al obtener los restiradores' };
+    }
+}
+const libros = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('ejemplares_libros')
+      .select('libros(titulo, autores(nombre),tipo_material),numero_ejemplar,anio,Disponibilidad,estatus_item')
+
+    if (error) {
+      console.error("Error obteniendo libros:", error);
+      return { error: 'Error al obtener los libros' };
+    }
+    return data;
+  } catch (error) {
+    
+  }
+
+}
+const computadoras = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('computadoras')
+      .select('no_computadora,Observacion,procesador,programas,carrera,Disponible,En_funcionamiento')
+    if (error) {
+      console.error("Error obteniendo computadoras:", error);
+      return { error: 'Error al obtener las computadoras' };
+    }
+    return data;
+  } catch (error) {
+    return { error: 'Error al obtener las computadoras' };
+  }
+}
 
 
 module.exports = modelosRecursos;

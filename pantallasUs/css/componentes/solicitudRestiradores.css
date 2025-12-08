@@ -14,14 +14,7 @@
     margin-bottom: 1rem;
 }
 
-.container-solicitud-restiradores table th:nth-child(1) { width: 12%; }
-.container-solicitud-restiradores table th:nth-child(2) { width: 25%; }
-.container-solicitud-restiradores table th:nth-child(3) { width: 18%; }
-.container-solicitud-restiradores table th:nth-child(4) { width: 18%; }
-.container-solicitud-restiradores table th:nth-child(5) { width: 27%; }
-
-.btn-seleccionar {
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
-    white-space: nowrap;
-}
+.container-solicitud-restiradores table th:nth-child(1) { width: 15%; }
+.container-solicitud-restiradores table th:nth-child(2) { width: 35%; }
+.container-solicitud-restiradores table th:nth-child(3) { width: 25%; }
+.container-solicitud-restiradores table th:nth-child(4) { width: 25%; }

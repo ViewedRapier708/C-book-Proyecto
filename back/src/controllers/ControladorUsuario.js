@@ -24,23 +24,23 @@ async function registro(req, res) {
 
     // Validaciones básicas
     if (!boleta || !correo || !password || !confPsw) {
-      return res.status(400).json({ error: "Faltan datos obligatorios" });
+      return res.status(400).json({ error: 'Faltan datos obligatorios' });
     }
 
     if (!/^\d{10}$/.test(boleta)) {
-      return res.status(400).json({ error: "Boleta debe tener 10 dígitos numéricos" });
+      return res.status(400).json({ error: 'Boleta debe tener 10 dígitos numéricos' });
     }
 
     if (!/^[\w.-]+@[\w.-]+\.\w+$/.test(correo)) {
-      return res.status(400).json({ error: "Correo con formato inválido" });
+      return res.status(400).json({ error: 'Correo con formato inválido' });
     }
 
     if (password.length < 6 || password.length > 16) {
-      return res.status(400).json({ error: "Contraseña debe tener entre 6 y 16 caracteres" });
+      return res.status(400).json({ error: 'Contraseña debe tener entre 6 y 16 caracteres' });
     }
 
     if (password !== confPsw) {
-      return res.status(400).json({ error: "Las contraseñas no coinciden" });
+      return res.status(400).json({ error: 'Las contraseñas no coinciden' });
     }
 
     // Verificar si la boleta ya existe
@@ -49,13 +49,13 @@ async function registro(req, res) {
 
 
     if (boletaExiste) {
-      return res.status(400).json({ error: "Esta boleta ya tiene una cuenta registrada" });
+      return res.status(400).json({ error: 'Esta boleta ya tiene una cuenta registrada' });
     }
 
     // Verificar si el correo ya existe
      const correoExiste = await validarCorreoEnTabla(correo);
     if (correoExiste) {
-      return res.status(400).json({ error: "Este correo ya tiene una cuenta registrada" });
+      return res.status(400).json({ error: 'Este correo ya tiene una cuenta registrada' });
     }
 
     // Registrar en Supabase Auth
@@ -63,7 +63,7 @@ async function registro(req, res) {
     
     if (!resultadoAuth.success) {
       console.error("Error en Auth:", resultadoAuth.error);
-      return res.status(400).json({ error: resultadoAuth.error || "Error al registrar usuario" });
+      return res.status(400).json({ error: resultadoAuth.error || 'Error al registrar usuario' });
     }
 
     console.log("Usuario registrado en Auth:", resultadoAuth.user?.id); //debug
@@ -78,12 +78,12 @@ async function registro(req, res) {
 
     return res.status(200).json({
       success: true,
-      message: "Registro exitoso. Revisa tu correo para verificar la cuenta."
+      message: 'Registro exitoso. Revisa tu correo para verificar la cuenta.'
     });
 
   } catch (err) {
     console.error("Error en registro:", err);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
 
@@ -170,7 +170,7 @@ async function login(req, res) {
     const loginResult = await loginConAuth(busqueda.correo, password);
     
     if (!loginResult.success) {
-      return res.status(400).json({ error: loginResult.error });
+      return res.status(400).json({ error: loginResult.error || 'Error al iniciar sesión' });
     }
     const userData = await traerUsuarioInfo(boleta);
     const nombre = (userData.data?.boletas?.nombre || '').trim();
@@ -222,27 +222,8 @@ async function verificarSesion(req, res) {
     const sessionUser = req.session.user;
 
     if (!sessionUser) {
-      return res.status(401).json({ autenticado: false, user: null });
-    }
-
-    const needsRefresh = shouldRefresh(sessionUser.tokens?.expiresAt);
-
-    if (needsRefresh && sessionUser.tokens?.refreshToken) {
-      const refreshed = await refrescarSesionSupabase(sessionUser.tokens.refreshToken);
-
-      if (refreshed.success) {
-        sessionUser.tokens = {
-          accessToken: refreshed.session.access_token,
-          refreshToken: refreshed.session.refresh_token || sessionUser.tokens.refreshToken,
-          expiresAt: refreshed.session.expires_at ? refreshed.session.expires_at * 1000 : null,
-          expiresIn: refreshed.session.expires_in
-        };
-        req.session.user = sessionUser;
-        await saveSession(req);
-      } else {
-        await destroySession(req, res);
-        return res.status(401).json({ autenticado: false, error: 'Sesión expirada' });
-      }
+      // Siempre 200 para que el frontend maneje el estado con simplicidad
+      return res.status(200).json({ autenticado: false, user: null });
     }
 
     return res.status(200).json({
@@ -257,10 +238,10 @@ async function verificarSesion(req, res) {
 
 async function cerrarSesion(req, res) {
   try {
-    const supabaseUserId = req.session?.user?.supabaseUserId;
-
-    if (supabaseUserId) {
-      const revocado = await revocarSesionesSupabase(supabaseUserId);
+    const accessToken = req.session?.user?.tokens?.accessToken;
+console.log('Cerrando sesión para accessToken:', accessToken); //debug
+    if (accessToken) {
+      const revocado = await revocarSesionesSupabase(accessToken);
       if (!revocado.success) {
         console.warn('No se pudo revocar la sesión en Supabase:', revocado.error);
       }
@@ -292,7 +273,7 @@ function regenerateSession(req) {
   });
 }
 
-function saveSession(req) {
+function saveSession(req) {//Garantiza el envio de la sesion actualizada y la cookie
   return new Promise((resolve, reject) => {
     req.session.save(err => err ? reject(err) : resolve());
   });

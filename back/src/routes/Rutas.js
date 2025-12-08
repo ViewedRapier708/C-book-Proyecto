@@ -3,7 +3,6 @@ const router = express.Router();
 const { registro, verificarCorreo, login, verificarSesion, cerrarSesion } = require('../controllers/ControladorUsuario.js');
 const { obtenerRecursosPorTipo } = require('../controllers/ControladorRecursos.js');
 const controladorSolicitudes = require('../controllers/ControladorSolicitudes.js');
-const {verificarDisponibilidad} = require('../middleware/verificacionRecursos.js');
 const sessionGuard = require('../middleware/sessionGuard.js');
 
 
@@ -17,8 +16,9 @@ router.post('/logout', sessionGuard, cerrarSesion);
 
 //Rutas de recursos y solicitudes
 router.get('/recursos', obtenerRecursosPorTipo);
-router.post('/solicitud', sessionGuard, verificarDisponibilidad, controladorSolicitudes.crearSolicitud);
-
+// router.get('/solicitudes', sessionGuard, controladorSolicitudes.obtenerSolicitudesUsuario); // TODO: Implementar esta función en el controlador
+router.post('/solicitud', sessionGuard, controladorSolicitudes.crearSolicitud);
+router.delete('/solicitud/:tipo/:id', sessionGuard, controladorSolicitudes.cancelarSolicitud);
 
 //Lo que hace esta ruta es primero verificar la disponibilidad del recurso y despues manda a llamar al controlador de solicitudes para que registre la solicitud en la base de datos
 //cuando se ingresa el dato a la base de datos se activa un trigger que cambia el estado del recurso a ocupado ,

@@ -2,6 +2,7 @@ const cors = require('cors');
 const express = require('express');
 const session = require('express-session');
 const { render } = require('ejs');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -60,20 +61,24 @@ app.use(session({
 }));
 
 // ===============================
+//   ARCHIVOS ESTÁTICOS
+// ===============================
+// Servir archivos estáticos desde la raíz del proyecto
+app.get('/', (req, res) => {
+  res.status(200).json({ mensaje: 'API de C-Book funcionando' });
+}
+);
+
+// ===============================
 //   RUTA PARA VER SESIONES ACTIVAS
 // ===============================
-app.get('/debug/sesiones', (req, res) => {
+app.get('/debug/sesiones', (req, res) => {//Quitar en produccion
   sessionStore.all((err, sesiones) => {
     if (err) {
       return res.status(500).json({ error: 'Error al obtener sesiones' });
     }
     res.json(sesiones);
   });
-});
-
-// Ruta raíz
-app.get('/', (req, res) => {
-  res.send('Servidor funcionando');
 });
 
 // Rutas de autenticación
