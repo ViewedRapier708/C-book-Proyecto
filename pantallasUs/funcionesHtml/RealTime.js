@@ -1,3 +1,5 @@
+
+
 // Configuración de Supabase
 const SUPABASE_URL = 'https://yondcnkwcekmkovdeaso.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvbmRjbmt3Y2VrbWtvdmRlYXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA2ODYyMDQsImV4cCI6MjA3NjI2MjIwNH0.4NqF_hCv7RiXrOjO9fxfRHPzikpZ61siqMZV_rlUQew';
@@ -18,7 +20,7 @@ async function iniciarSupabaseRealTime(tabla, callback) {
 
         // Crear canal para la tabla SIN filtro de usuario (para pruebas)
         const channelName = `realtime-${tabla}-${Date.now()}`;
-     
+
 
         realtimeChannel = supabase
             .channel(channelName)
@@ -31,24 +33,12 @@ async function iniciarSupabaseRealTime(tabla, callback) {
                     // SIN filtro para detectar TODOS los cambios
                 },
                 (payload) => {
+                    const nuevoRegistro = payload?.new;
+                    const AntiguoRegistro = payload?.old;
+                    console.log('Nuevo' + nuevoRegistro);
+                    console.log('Antiguo' + AntiguoRegistro);
 
-                    switch (payload.eventType) {
-                        case 'INSERT':
-                            console.log('➕ [RealTime] Nuevo registro:', payload.new);
-                            callback({ type: 'INSERT', data: payload.new });
-                            break;
-                        case 'UPDATE':
-                            console.log('✏️ [RealTime] Registro actualizado:', {
-                                antes: payload.old,
-                                después: payload.new
-                            });
-                            callback({ type: 'UPDATE', data: payload.new, old: payload.old });
-                            break;
-                        case 'DELETE':
-                            console.log('🗑️ [RealTime] Registro eliminado:', payload.old);
-                            callback({ type: 'DELETE', data: payload.old });
-                            break;
-                    }
+
                 }
             )
             .subscribe((status) => {
@@ -71,26 +61,91 @@ async function iniciarSupabaseRealTime(tabla, callback) {
     }
 }
 
-const cargarDatosTabla = async (tipo,informacion={}) => {
-    const tbody= document.getElementById('Tbody')
-    const tipo=document.getElementById('tabla').getAttribute('data-tipo');
-    console.log('Cargando datos para tipo:', tipo);
-    console.log('Información adicional:', informacion);
+async function cargarDatosTabla() {
+    const tbody = document.getElementById('Tbody');
+    const tipo = document.getElementById('tabla')?.getAttribute('data-tipo');
+    if (!tbody || !tipo) {
+        console.error('No se encontró tbody o data-tipo en la tabla');
+        return;
+    }
+
+    const renderLista = (lista) => {
+        tbody.innerHTML = '';
+        lista.forEach(obj => {
+            const tr = document.createElement('tr');
+            Object.values(obj).forEach(valor => {
+                const td = document.createElement('td');
+                td.textContent = valor;
+                tr.appendChild(td);
+            });
+            tr.dataset.recurso = JSON.stringify(obj);
+            tbody.appendChild(tr);
+        });
+    };
+
+    const peticion = await fetch(`http://localhost:3000/auth/recursos?tipo=${tipo}`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+    });
+
+    const respuesta = await peticion.json();
+    const lista = Array.isArray(respuesta?.data) ? respuesta.data : (Array.isArray(respuesta) ? respuesta : []);
+
+    if (!Array.isArray(lista)) {
+        console.error('Respuesta de recursos no es lista', respuesta);
+        return;
+    }
+
+    renderLista(lista);
+}
+
+const ActualizarFilaTabla = (antiguo, nuevo) => {
+    const tbody = document.getElementById('Tbody')
+    const tipo = document.getElementById('tabla').getAttribute('data-tipo');
+    const filas = tbody.querySelectorAll('tr');
+   
+    const recorrido = (filas, antiguo, nuevo) => {
+    filas.forEach(fila => {
+        const celdas = fila.querySelectorAll('td');
+        celdas.forEach((celda,i) => {
+            console.log('Antiguo' + antiguo[i]);
+            console.log('Nuevo' + nuevo[i]);
+            if (celda.textContent == antiguo[i]) {
+                return; // Continuar con la siguiente fila si no coincide
+            } else if (celda.textContent !== antiguo[i]) {
+                celda.textContent = nuevo[i];
+            }
+        })
+    });
+}
     switch (tipo) {
         case 'computadora':
-            Object.values(informacion).forEach(valor => {
-                console.log('Procesando registro de computadora:', valor);
-
-            });
+            recorrido(filas, antiguo, nuevo);
             break;
         case 'restirador':
-  
+            recorrido(filas, antiguo, nuevo);
             break;
         case 'libro':
-
+            recorrido(filas, antiguo, nuevo);
             break;
         default:
             console.error('Tipo de recurso desconocido:', tipo);
             return;
     }
+}
+const eliminarFilaTabla = ( antiguo) => {
+    const tbody = document.getElementById('Tbody')
+    const tipo = document.getElementById('tabla').getAttribute('data-tipo');
+    const filas = tbody.querySelectorAll('tr');
+   
+    const recorrido = (filas, antiguo) => {
+    filas.forEach(fila => {
+        const celdas = fila.querySelectorAll('td');
+        celdas.forEach((celda,i) => {
+            if (celda.textContent == antiguo[i]) {
+                fila.remove();
+            }
+        })
+    });
+}
 }

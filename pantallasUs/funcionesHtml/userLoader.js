@@ -52,6 +52,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             console.log('Inicializando eventos de tabla...');
                             inicializarEventosTabla();
                         }
+
+                        // Cargar datos de la tabla del componente recién inyectado
+                        if (typeof cargarDatosTabla === 'function') {
+                            console.log('Solicitando datos para la tabla...');
+                            cargarDatosTabla().catch(err => {
+                                console.error('Error al cargar datos de tabla:', err);
+                            });
+                        }
                         // Configurar botón Solicitar
                         const btnApartar = contentLoader.querySelector('.btn-apartar');
                         if (btnApartar && !btnApartar.hasAttribute('data-listener-added')) {
