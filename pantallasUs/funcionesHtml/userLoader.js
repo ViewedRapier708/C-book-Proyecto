@@ -48,17 +48,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (tables.length > 0) {
                     // Dar tiempo para que el DOM se actualice
                     setTimeout(() => {
-                        if (typeof inicializarEventosTabla === 'function') {
-                            console.log('Inicializando eventos de tabla...');
-                            inicializarEventosTabla();
-                        }
-
                         // Cargar datos de la tabla del componente recién inyectado
                         if (typeof cargarDatosTabla === 'function') {
                             console.log('Solicitando datos para la tabla...');
-                            cargarDatosTabla().catch(err => {
-                                console.error('Error al cargar datos de tabla:', err);
-                            });
+                            cargarDatosTabla()
+                                .then(() => {
+                                    console.log('✅ Datos cargados en la tabla');
+                                    
+                                    // Inicializar filtros de la tabla
+                                    if (typeof inicializarFiltrosTabla === 'function') {
+                                        console.log('Inicializando filtros de tabla...');
+                                        inicializarFiltrosTabla();
+                                    }
+                                    // Iniciar realtime después de cargar los datos
+                                    if (typeof iniciarRealtimeEnTablaActual === 'function') {
+                                        console.log('Iniciando Supabase Realtime...');
+                                        iniciarRealtimeEnTablaActual();
+                                    }
+                                })
+                                .catch(err => {
+                                    console.error('Error al cargar datos de tabla:', err);
+                                });
                         }
                         // Configurar botón Solicitar
                         const btnApartar = contentLoader.querySelector('.btn-apartar');

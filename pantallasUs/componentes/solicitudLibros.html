@@ -1,24 +1,30 @@
 <div class="container-solicitud-libros">
-    <h2>SOLICITUD DE LIBROS</h2>
+
     <div class="layout">
+        <!-- Filtros se insertan aquí dinámicamente -->
+        
         <div class="container-tabla">
-             <table id="tabla" data-tipo="libros">
-                <thead >
-                    <tr >
+            <table id="tabla" data-tipo="libro">
+                <thead>
+                    <tr>
                         <th>Titulo</th>
                         <th>Autor</th>
-                        <th>Año</th>
+                        <th>Clasificacion</th>
                         <th>Tipo de material</th>
-                        <th>Cant. Disponible</th>
+                        <th>Año</th>
+                        <th>No. de ejemplar</th>
+                        <th>Disponible</th>
                     </tr>
                 </thead>
                 <tbody id="Tbody">
-                    
+
                 </tbody>
             </table>
-            <div class="container-btn-apartar">
-                <button class="btn-apartar" onclick="window.abrirModal()">Solicitar</button>
-            </div>
+        </div>
+
+        <!-- Botón de solicitud (aparece al seleccionar) -->
+        <div class="container-btn-apartar">
+            <button class="btn-apartar" onclick="window.abrirModal()">Solicitar recurso</button>
         </div>
     </div>
 </div>
@@ -36,7 +42,8 @@
             </table>
         </div>
         <div class="modal-acciones">
-            <button id="btn-confirmar-solicitud" class="btn-apartar" onclick="confirmarSolicitud()">Apartar Recurso</button>
+            <button id="btn-confirmar-solicitud" class="btn-apartar" onclick="confirmarSolicitud()">Apartar
+                Recurso</button>
             <button id="btn-cancelar-solicitud" class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
         </div>
     </div>

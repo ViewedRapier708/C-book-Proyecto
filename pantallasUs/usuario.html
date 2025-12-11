@@ -70,6 +70,45 @@
        <script src="../js/utils/funcionsRecursos.js"></script>
     <script src="./funcionesHtml/userLoader.js"></script>
     <script src="./funcionesHtml/RealTime.js"></script>
+    <script src="./funcionesHtml/filtrosTabla.js"></script>
+    <script>
+        (function () {
+            const applyCellTooltips = (root) => {
+                const scope = root || document;
+                const tables = scope.querySelectorAll('.container-tabla table');
+
+                tables.forEach((table) => {
+                    const cells = table.querySelectorAll('th, td');
+
+                    cells.forEach((cell) => {
+                        const text = cell.textContent.trim();
+                        if (!cell.dataset.fullText && text) {
+                            cell.dataset.fullText = text;
+                        }
+
+                        const isTruncated = cell.scrollWidth > cell.clientWidth;
+                        cell.dataset.truncated = isTruncated ? 'true' : 'false';
+
+                        if (isTruncated) {
+                            cell.title = cell.dataset.fullText || text;
+                        } else {
+                            cell.removeAttribute('title');
+                        }
+                    });
+                });
+            };
+
+            document.addEventListener('DOMContentLoaded', () => {
+                applyCellTooltips(document);
+
+                const content = document.getElementById('content-loader');
+                if (content) {
+                    const observer = new MutationObserver(() => applyCellTooltips(content));
+                    observer.observe(content, { childList: true, subtree: true });
+                }
+            });
+        })();
+    </script>
     <!-- esta parte esta comentada xq no vaiga siendo q haya algun error o si se pueda incluir en algun 
         -> otro archivo para mantener limpio el codigo de html
         <script>    
