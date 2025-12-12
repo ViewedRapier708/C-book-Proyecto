@@ -56,6 +56,7 @@ const libros = async () => {
       console.error("Error obteniendo libros:", error);
       return { error: 'Error al obtener los libros' };
     }
+    console.log("Libros obtenidos:", data); //debug
     return data;
   } catch (error) {
     

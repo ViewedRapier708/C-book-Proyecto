@@ -1,8 +1,10 @@
 <div class="container-solicitud-restiradores">
-    <h2>SOLICITUD DE RESTIRADORES</h2>
+
     <div class="layout">
+        <!-- Filtros se insertan aquí dinámicamente -->
+        
         <div class="container-tabla">
-            <table id="tabla" data-tipo="restiradores">
+            <table id="tabla" data-tipo="restirador">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -15,9 +17,11 @@
                 
                 </tbody>
             </table>
-            <div class="container-btn-apartar">
-                <button class="btn-apartar" onclick="window.abrirModal()">Solicitar</button>
-            </div>
+        </div>
+
+        <!-- Botón de solicitud (aparece al seleccionar) -->
+        <div class="container-btn-apartar">
+            <button class="btn-apartar" onclick="window.abrirModal()">Solicitar recurso</button>
         </div>
     </div>
 </div>
