@@ -64,6 +64,7 @@ async function iniciarSupabaseRealTime(tabla, callback) {
 async function cargarDatosTabla() {
     const tbody = document.getElementById('Tbody');
     const tipo = document.getElementById('tabla')?.getAttribute('data-tipo');
+    console.log('Cargando datos de tipo: ' + tipo);
     if (!tbody || !tipo) {
         console.error('No se encontró tbody o data-tipo en la tabla');
         return;
@@ -89,6 +90,14 @@ async function cargarDatosTabla() {
     });
 
     const respuesta = await peticion.json();
+
+    console.log(respuesta);
+
+    if (respuesta.error) {
+        const errorMsj = `<div class="alert alert-danger animate__animated animate__slideInRight" style="margin: 10px;">${respuesta.error}</div>`;
+        document.getElementById('alerta').innerHTML = errorMsj;
+        return;
+    }
     const lista = Array.isArray(respuesta?.data) ? respuesta.data : (Array.isArray(respuesta) ? respuesta : []);
 
     if (!Array.isArray(lista)) {

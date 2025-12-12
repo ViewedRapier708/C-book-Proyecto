@@ -4,13 +4,16 @@ const supabase = getClient();
 async function ObtenerRecurzos(tipo) {
   switch (tipo) {
     case 'computadora':
+      console.log("Obteniendo recursos de tipo: computadora");
       return await computadoras();
     case 'restirador':
+      console.log("Obteniendo recursos de tipo: restirador");
       return await restiradores();
     case 'libro':
+      console.log("Obteniendo recursos de tipo: libro");
       return await libros();
     default:
-      return { error: 'Tipo de recurso inválido' };
+      return '<div class="alert alert-danger animate__animated animate__slideInRight" style="margin: 10px;">Tipo de recurso inválido</div>' ;
   }
 }
 
