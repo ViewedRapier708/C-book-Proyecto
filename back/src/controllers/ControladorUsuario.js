@@ -62,7 +62,7 @@ async function registro(req, res) {
     const resultadoAuth = await registrarEnAuth(boleta, correo, password);
     
     if (!resultadoAuth.success) {
-      console.error("Error en Auth:", resultadoAuth.error);
+     // console.error("Error en Auth:", resultadoAuth.error);
       return res.status(400).json({ error: resultadoAuth.error || 'Error al registrar usuario' });
     }
 
@@ -155,7 +155,7 @@ async function login(req, res) {
       return res.status(400).json({ error: "Boleta debe tener 10 dígitos" });
     }
 
-    console.log("Intento de login para boleta:", boleta); //debug
+    //console.log("Intento de login para boleta:", boleta); //debug
 
     // Buscar correo por boleta
     const busqueda = await buscarCorreoPorBoleta(boleta);
@@ -164,7 +164,7 @@ async function login(req, res) {
       return res.status(400).json({ error: busqueda.error || 'Usuario no encontrado' });
     }
 
-    console.log("Correo encontrado:", busqueda.correo); //debug
+   // console.log("Correo encontrado:", busqueda.correo); //debug
 
     // Iniciar sesión con Supabase Auth
     const loginResult = await loginConAuth(busqueda.correo, password);
@@ -175,8 +175,8 @@ async function login(req, res) {
     const userData = await traerUsuarioInfo(boleta);
     const nombre = (userData.data?.boletas?.nombre || '').trim();
     const grupo = userData.data?.boletas?.Grupo || '';
-    console.log("Datos del usuario:", userData); //debug
-    console.log("Login exitoso, sesión creada"); //debug
+  //  console.log("Datos del usuario:", userData); //debug
+   // console.log("Login exitoso, sesión creada"); //debug
 
     const supabaseSession = loginResult.session;
 
@@ -202,7 +202,7 @@ async function login(req, res) {
 
     await saveSession(req);
 
-    console.log("Datos guardados en sesión:", req.session.user); //debug
+  //  console.log("Datos guardados en sesión:", req.session.user); //debug
 
     return res.status(200).json({
       success: true,
@@ -210,7 +210,7 @@ async function login(req, res) {
       user: sanitizeSessionUser(req.session.user)
     });
   } catch (err) {
-    console.error("Error en login:", err);
+  //  console.error("Error en login:", err);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
@@ -231,7 +231,7 @@ async function verificarSesion(req, res) {
       user: sanitizeSessionUser(sessionUser)
     });
   } catch (err) {
-    console.error('Error en verificarSesion:', err);
+   // console.error('Error en verificarSesion:', err);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
@@ -239,11 +239,11 @@ async function verificarSesion(req, res) {
 async function cerrarSesion(req, res) {
   try {
     const accessToken = req.session?.user?.tokens?.accessToken;
-console.log('Cerrando sesión para accessToken:', accessToken); //debug
+//console.log('Cerrando sesión para accessToken:', accessToken); //debug
     if (accessToken) {
       const revocado = await revocarSesionesSupabase(accessToken);
       if (!revocado.success) {
-        console.warn('No se pudo revocar la sesión en Supabase:', revocado.error);
+       // console.warn('No se pudo revocar la sesión en Supabase:', revocado.error);
       }
     }
 
@@ -251,7 +251,7 @@ console.log('Cerrando sesión para accessToken:', accessToken); //debug
 
     return res.status(200).json({ mensaje: 'Sesión cerrada correctamente' });
   } catch (err) {
-    console.error('Error al cerrar sesión:', err);
+    //console.error('Error al cerrar sesión:', err);
     return res.status(500).json({ error: 'No se pudo cerrar la sesión' });
   }
 }

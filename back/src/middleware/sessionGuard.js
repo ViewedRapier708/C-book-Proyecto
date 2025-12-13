@@ -1,11 +1,13 @@
 const { refrescarSesionSupabase } = require('../models/ModeloUsuario');
 
-const SESSION_REFRESH_THRESHOLD_MS = Number(process.env.SESSION_REFRESH_THRESHOLD_MS) || 60000;
+const SESSION_REFRESH_THRESHOLD_MS = 60000;
 
 module.exports = async function sessionGuard(req, res, next) {
+  console.log("sessionGuard - Inicio de verificación de sesión");
   try {
-    const sessionUser = req.session?.user;
-
+    console.log("sessionGuard - Verificando sesión");
+    const sessionUser = req.session.user;
+    console.log("Session User:", sessionUser); //debug
     if (!sessionUser) {
       return res.status(401).json({ error: 'No hay sesión activa' });
     }

@@ -15,7 +15,7 @@ router.post('/logout', sessionGuard, cerrarSesion);
 
 
 //Rutas de recursos y solicitudes
-router.get('/recursos', obtenerRecursosPorTipo);
+router.get('/recursos', sessionGuard,obtenerRecursosPorTipo);
 // router.get('/solicitudes', sessionGuard, controladorSolicitudes.obtenerSolicitudesUsuario); // TODO: Implementar esta función en el controlador
 router.post('/solicitud', sessionGuard, controladorSolicitudes.crearSolicitud);
 router.delete('/solicitud/:tipo/:id', sessionGuard, controladorSolicitudes.cancelarSolicitud);

@@ -42,9 +42,7 @@ app.use(cors({
 const MemoryStore = session.MemoryStore;
 const sessionStore = new MemoryStore();
 
-if (isProduction) {
-  app.set('trust proxy', 1); // Necesario si se usa proxy/Heroku para secure cookies
-}
+
 
 // Configuración de sesión
 app.use(session({
@@ -54,8 +52,8 @@ app.use(session({
   store: sessionStore,
   cookie: {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
+    secure: false,
+    sameSite:'lax',
     maxAge: Number(process.env.SESSION_MAX_AGE_MS) || 1000 * 60 * 60 * 2 // 2h por defecto
   }
 }));

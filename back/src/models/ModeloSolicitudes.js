@@ -228,11 +228,34 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
 }
 
 }
-
+async function ObtenerSolicitudesUsuario(boleta) {
+    
+}
 
 
 // ==================== CANCELACION DE SOLICITUD ====================
-async function CancelarSolicitud(solicitudId) { }
+async function CancelarSolicitud(solicitudId) { 
+    const id = Number(solicitudId); 
+    if (!Number.isInteger(id)) {
+        return { success: false, error: 'ID de solicitud inválido' };
+    }
+    try {
+        const { error } = await supabase
+            .from('solicitudes_computadora')
+            .update({ estado_solicitud_id: 3 }) //3 representa 'cancelada'
+            .eq('id', id)
+            .eq('estado_solicitud_id', 1); //Solo cancelar si está en 'pendiente'
+        if (error) {
+            console.error("Error cancelando solicitud:", error);
+            return { success: false, error: error.message };
+        }
+        return { success: true , error: null};
+    } catch (err) {
+        console.error("Error en CancelarSolicitud:", err);
+        return { success: false, error: 'Error interno del servidor' };
+    }
+
+}
 
 
 // ==================== EXPORTAR FUNCIONES ====================

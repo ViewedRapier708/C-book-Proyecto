@@ -10,6 +10,12 @@ async function obtenerRecursosPorTipo(req, res) {
     console.log("Obteniendo recursos de tipo:", tipo); //debug
 const recursos = await modelosRecursos.ObtenerRecurzos(tipo);
 
+
+
+console.log("Recursos obtenidos:", recursos); //debug
+
+
+
     
     return res.status(200).json({ success: true, data: recursos });
   } catch (err) {

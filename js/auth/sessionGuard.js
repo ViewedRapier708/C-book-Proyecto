@@ -5,7 +5,7 @@
     // Usamos rutas relativas, no necesitamos API_BASE.
 
     const paginaActual = window.location.pathname;
-    console.log('SessionGuard - Página actual:', paginaActual);
+   
 
     // Páginas públicas: se puede entrar sin iniciar sesión
     const esIndex = paginaActual.includes('index.html') || paginaActual.endsWith('/') || paginaActual.endsWith('/C-book-Proyecto/');
@@ -35,6 +35,7 @@
                     method: 'GET',
                     credentials: 'include' // IMPORTANTE: manda la cookie de sesión
                 });
+                console.log('SessionGuard - /auth/session intento', intento, 'status:', respuesta);
 
                 if (!respuesta.ok) {
                     console.warn('SessionGuard - /auth/session no OK, intento', intento, 'status:', respuesta.status);
