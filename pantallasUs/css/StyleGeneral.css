@@ -19,6 +19,12 @@
     --card-shadow: 0 6px 16px rgba(123, 2, 51, 0.09);
     --soft-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
+.disabled {
+    pointer-events: none;
+    opacity: 0.6;
+    background-color: var(--primary-1);
+    color: #a0a0a0;
+}
 
 /* Base responsive typography */
 html {
@@ -113,15 +119,7 @@ img {
     backdrop-filter: saturate(120%) blur(6px);
 }
 
-.container-titulo::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
-}
+
 
 .container-contenido {
     padding: clamp(1rem, 2.5vw, 3rem);

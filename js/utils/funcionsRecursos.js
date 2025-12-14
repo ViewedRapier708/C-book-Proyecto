@@ -3,119 +3,7 @@
 // Variable global para almacenar el recurso seleccionado
 let recursoSeleccionado = null;
 
-/** Inicializa los event listeners para las filas de la tabla */
-function inicializarEventosTabla() {
-  const tabla = document.getElementById('tabla');
-  if (!tabla) return;
 
-  const filas = tabla.querySelectorAll('tbody tr');
-  filas.forEach(fila => {
-    // Extraer datos de la fila
-    const celdas = fila.querySelectorAll('td');
-    if (celdas.length > 0) {
-      const datos = {};
-      const headers = tabla.querySelectorAll('thead th');
-      
-      celdas.forEach((celda, index) => {
-        if (headers[index]) {
-          const nombreColumna = headers[index].textContent.trim();
-          datos[nombreColumna] = celda.textContent.trim();
-        }
-      });
-      
-      // Guardar datos en el dataset de la fila
-      fila.dataset.recurso = JSON.stringify(datos);
-      fila.classList.add('fila-recurso');
-      
-      // Agregar evento de clic
-      fila.addEventListener('click', function() {
-        seleccionarFila(this);
-      });
-    }
-  });
-
-  console.log('Event listeners inicializados para', filas.length, 'filas');
-}
-
-/** Carga la tabla #tabla con los recursos del tipo indicado */
-async function cargarTabla() {
-  const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
-  const tabla = document.getElementById('tabla');
-  
-  if (!tabla) {
-    console.error('No se encontró la tabla #tabla');
-    return;
-  }
-
-  const tipo = tabla.dataset.tipo;
-  console.log('Cargando tabla de tipo:', tipo);
-
-  // Construir la URL con query‑string
-  const url = new URL(`${API_BASE}/auth/recursos`);
-  url.searchParams.set('tipo', tipo);
-
-  try {
-    // Petición GET (con credenciales)
-    const resp = await fetch(url, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' },
-      credentials: 'include'
-    });
-
-    if (resp.status === 401 || resp.status === 403) {
-      mostrarNotificacion('⚠️ Debes iniciar sesión para ver los recursos.', 'error');
-      // Opcional: window.location.href = '/pantallasUs/registro.html';
-      return;
-    }
-
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const json = await resp.json();
-    console.log('Datos recibidos para tipo', tipo, ':', json);
-
-    // Rellenar la tabla
-    const filas = Array.isArray(json.data) ? json.data : [];
-
-    console.log('Filas a insertar en la tabla:', filas);
-    const tbody = tabla.querySelector('tbody');
-   
-    // Insertar filas
-    tbody.innerHTML = '';
-    
-    if (filas.length === 0) {
-      const tr = tbody.insertRow();
-      const td = tr.insertCell();
-      td.colSpan = tabla.querySelectorAll('th').length;
-      td.textContent = 'No hay recursos disponibles';
-      td.style.textAlign = 'center';
-      return;
-    }
-    
-    filas.forEach(reg => {
-      const tr = tbody.insertRow();
-      tr.classList.add('fila-recurso');
-      tr.dataset.recurso = JSON.stringify(reg);
-
-      const columnas = Object.keys(reg);
-      console.log('Insertando fila para registro:', reg);
-      
-      columnas.forEach(col => {
-        const td = tr.insertCell();
-        td.textContent = reg[col] != null ? reg[col] === false ? 'Disponible' : reg[col] === true ? 'Ocupado' : reg[col] !== true ? reg[col] : '' : '';
-      });
-
-      // Agregar evento de clic a la fila
-      tr.addEventListener('click', function() {
-        seleccionarFila(this);
-      });
-    });
-
-  } catch (err) {
-    console.error('Error al cargar la tabla:', err);
-    // Si falla la carga del API, usar los datos estáticos que ya están en el HTML
-    console.log('Usando datos estáticos de la tabla HTML');
-    inicializarEventosTabla();
-  }
-}
 
 /** Selecciona una fila y muestra el botón Solicitar */
 function seleccionarFila(fila) {
@@ -279,37 +167,72 @@ async function confirmarSolicitud() {
     return;
   }
 
-  // Mostrar loading
-  const btnConfirmar = document.getElementById('btn-confirmar-solicitud');
-  const textoOriginal = btnConfirmar?.textContent;
-  if (btnConfirmar) {
-    btnConfirmar.textContent = 'Procesando...';
-    btnConfirmar.disabled = true;
-  }
+  // Preparar datos de la solicitud según lo que espera el backend
+  const solicitud = {
+    tipo: tipoRecurso,
+    boleta: usuario.boleta,
+    idRecurso: idRecurso
+  };
 
-  // Usar helper global para enviar la solicitud
+  console.log('Enviando solicitud:', solicitud);
+
   try {
-    const resultado = await window.SolicitudRecursos(tipoRecurso, usuario.boleta, idRecurso);
+    const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
+    
+    // Mostrar loading
+    const btnConfirmar = document.getElementById('btn-confirmar-solicitud');
+    const textoOriginal = btnConfirmar?.textContent;
+    if (btnConfirmar) {
+      btnConfirmar.textContent = 'Procesando...';
+      btnConfirmar.disabled = true;
+    }
+
+    const response = await fetch(`${API_BASE}/auth/solicitud`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      credentials: 'include', // Importante para enviar las cookies de sesión
+      body: JSON.stringify(solicitud)
+    });
+
+    const resultado = await response.json();
     console.log('Respuesta del servidor:', resultado);
 
-    if (resultado.success) {
+    if (response.ok && resultado.success) {
+      // Éxito
       mostrarNotificacion('✅ ¡Solicitud confirmada exitosamente!', 'success');
       cerrarModal();
+      
+      // Limpiar selección
       limpiarSeleccion();
+      
+      // Recargar tabla para reflejar cambios
       if (typeof cargarDatosTabla === 'function') {
         cargarDatosTabla();
       }
     } else {
+      // Error del servidor
       mostrarNotificacion(`❌ ${resultado.message || 'No se pudo procesar la solicitud'}`, 'error');
     }
+
+    // Restaurar botón
+    if (btnConfirmar) {
+      btnConfirmar.textContent = textoOriginal;
+      btnConfirmar.disabled = false;
+    }
+
   } catch (error) {
     console.error('Error al enviar solicitud:', error);
     mostrarNotificacion('❌ Error de conexión. Intenta de nuevo.', 'error');
-  }
-  // Restaurar botón
-  if (btnConfirmar) {
-    btnConfirmar.textContent = textoOriginal || 'Apartar Recurso';
-    btnConfirmar.disabled = false;
+    
+    // Restaurar botón
+    const btnConfirmar = document.getElementById('btn-confirmar-solicitud');
+    if (btnConfirmar) {
+      btnConfirmar.textContent = 'Apartar Recurso';
+      btnConfirmar.disabled = false;
+    }
   }
 }
 

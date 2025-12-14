@@ -54,11 +54,12 @@ async function cancelarSolicitud(req,res) {
 }
 
 async function obtenerSolicitudesUsuario(req, res) {
-    const { boleta } = req.params;
+    const { boleta } = req.body;
     if (!boleta) {
         return res.status(400).json({ success: false, message: 'Falta la boleta del usuario' });
     }
     const resultado = await ObtenerSolicitudesUsuario(boleta);
+    console.log("Resultado de obtenerSolicitudesUsuario:", resultado); //debug
     if (resultado.success) {
         return res.status(200).json({ success: true, solicitudes: resultado.solicitudes });
     } else {

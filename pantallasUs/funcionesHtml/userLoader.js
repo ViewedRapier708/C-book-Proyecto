@@ -136,23 +136,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     // Configurar eventos de los enlaces de navegación
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const component = link.getAttribute('data-component');
-            const title = link.getAttribute('data-title');
+   let linkActivo = null;
 
-            if (component && title) {
-                // Actualizar estado activo
-                navLinks.forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
+navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
 
-                // Cargar componente
-                loadComponent(component, title);
+        // Si se vuelve a hacer clic en el mismo link, no hace nada
+        if (link === linkActivo) return;
+
+        const component = link.getAttribute('data-component');
+        const title = link.getAttribute('data-title');
+
+        if (component && title) {
+
+            // Liberar el link anterior
+            if (linkActivo) {
+                linkActivo.classList.remove('active');
+                linkActivo.classList.remove('disabled');
             }
-        });
-    });
 
+            // Bloquear el link actual
+            link.classList.add('active');
+            link.classList.add('disabled');
+
+            linkActivo = link;
+
+            // Cargar componente
+            loadComponent(component, title);
+        }
+    });
+});
     // Cargar componente inicial (inicio)
     const inicioLink = Array.from(navLinks).find(link => 
         link.getAttribute('data-component') === 'inicio'

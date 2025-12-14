@@ -19,7 +19,7 @@ router.get('/recursos', obtenerRecursosPorTipo);
 // router.get('/solicitudes', sessionGuard, controladorSolicitudes.obtenerSolicitudesUsuario); // TODO: Implementar esta función en el controlador
 router.post('/solicitud', sessionGuard, controladorSolicitudes.crearSolicitud);
 router.delete('/solicitud/:tipo/:id', sessionGuard, controladorSolicitudes.cancelarSolicitud);
-
+router.get('/solicitudes', sessionGuard, controladorSolicitudes.obtenerSolicitudesUsuario);
 //Lo que hace esta ruta es primero verificar la disponibilidad del recurso y despues manda a llamar al controlador de solicitudes para que registre la solicitud en la base de datos
 //cuando se ingresa el dato a la base de datos se activa un trigger que cambia el estado del recurso a ocupado ,
 //datos necesarios para la solicitud: ID_registro,ID_Material,tipo,carrera,grupo,semestre
