@@ -88,27 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
 
                         // Configurar botones del modal
-                        const btnConfirmar = contentLoader.querySelector('#btn-confirmar-solicitud');
-                        if (btnConfirmar && !btnConfirmar.hasAttribute('data-listener-added')) {
-                            btnConfirmar.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                if (typeof confirmarSolicitud === 'function') {
-                                    confirmarSolicitud();
-                                }
-                            });
-                            btnConfirmar.setAttribute('data-listener-added', 'true');
-                        }
-
-                        const btnCancelar = contentLoader.querySelector('#btn-cancelar-solicitud');
-                        if (btnCancelar && !btnCancelar.hasAttribute('data-listener-added')) {
-                            btnCancelar.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                if (typeof cerrarModal === 'function') {
-                                    cerrarModal();
-                                }
-                            });
-                            btnCancelar.setAttribute('data-listener-added', 'true');
-                        }
+                
 
                         // Configurar cierre del modal al hacer clic fuera
                         const modal = contentLoader.querySelector('#modal-confirmacion');

@@ -209,12 +209,12 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
     }
     async function contarPendientesPorTabla(client, tabla, boleta) {
     try {
-        const { error, count } = await client
-            .from(tabla)
-            .select('id', { count: 'exact', head: true })
-            .eq('usuario_boleta', boleta)
-            .eq('estado_solicitud_id', 1 );
-        console.log(`Conteo en ${tabla} para boleta ${boleta}:`, count, error); //debug
+        console.log(`Contando solicitudes activas en ${tabla} para boleta ${boleta}`); //debug
+        const { data, count, error } = await client
+  .from(tabla)
+  .select('id', { count: 'exact' })
+  .eq('usuario_boleta', String(boleta))
+  .eq('estado_solicitud_id', 1);
         if (error) {
             console.error(`Error consultando ${tabla}:`, error);
             return { success: false, error: error.message, count: 0 };

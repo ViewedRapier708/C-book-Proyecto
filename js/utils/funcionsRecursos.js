@@ -33,8 +33,7 @@ function seleccionarFila(fila) {
 
 /** Abre el modal de confirmación */
 function abrirModal() {
-  console.log('=== ABRIENDO MODAL ===');
-  console.log('Recurso seleccionado:', recursoSeleccionado);
+
   
   if (!recursoSeleccionado) {
     alert('Por favor selecciona un recurso primero');
@@ -42,7 +41,7 @@ function abrirModal() {
   }
 
   const modal = document.getElementById('modal-confirmacion');
-  console.log('Modal encontrado:', modal ? 'SI' : 'NO');
+
   
   if (!modal) {
     console.error('No se encontró el modal de confirmación');
@@ -131,24 +130,16 @@ async function confirmarSolicitud() {
     alert('No hay recurso seleccionado');
     return;
   }
-
-  console.log('Confirmando solicitud para:', recursoSeleccionado);
-  
   // Obtener el tipo de recurso de la tabla
   const tabla = document.getElementById('tabla');
-  const tipoRecurso = tabla?.getAttribute('data-tipo') || 'desconocido';
-  
+  const tipoRecurso = tabla?.getAttribute('data-tipo') ;
   // Obtener datos del usuario de localStorage (donde se guarda en el login)
   const usuarioData = localStorage.getItem('user_data');
   const usuario = usuarioData ? JSON.parse(usuarioData) : null;
-  
-  console.log('Usuario encontrado:', usuario);
-  
   if (!usuario || !usuario.boleta) {
     mostrarNotificacion('❌ Debes iniciar sesión para hacer una solicitud', 'error');
     return;
   }
-
   // Obtener el ID del recurso según el tipo
   let idRecurso = null;
   if (tipoRecurso === 'computadora') {
@@ -159,14 +150,11 @@ async function confirmarSolicitud() {
   } else if (tipoRecurso === 'restirador') {
     idRecurso = parseInt(recursoSeleccionado['ID'] || recursoSeleccionado.no_restirador || recursoSeleccionado.id);
   }
-
   console.log('ID del recurso:', idRecurso, 'Tipo:', tipoRecurso);
-
   if (!idRecurso || isNaN(idRecurso)) {
     mostrarNotificacion('❌ No se pudo identificar el recurso seleccionado', 'error');
     return;
   }
-
   // Preparar datos de la solicitud según lo que espera el backend
   const solicitud = {
     tipo: tipoRecurso,
@@ -177,16 +165,16 @@ async function confirmarSolicitud() {
   console.log('Enviando solicitud:', solicitud);
 
   try {
-    const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
-    
-    // Mostrar loading
+    // Actualizar botón para indicar que se está procesando
     const btnConfirmar = document.getElementById('btn-confirmar-solicitud');
-    const textoOriginal = btnConfirmar?.textContent;
+    const textoOriginal = btnConfirmar ? btnConfirmar.textContent : 'Apartar Recurso';
+
     if (btnConfirmar) {
       btnConfirmar.textContent = 'Procesando...';
       btnConfirmar.disabled = true;
     }
-
+    const API_BASE = window.API_BASE_URL 
+    
     const response = await fetch(`${API_BASE}/auth/solicitud`, {
       method: 'POST',
       headers: {
@@ -199,7 +187,7 @@ async function confirmarSolicitud() {
 
     const resultado = await response.json();
     console.log('Respuesta del servidor:', resultado);
-
+console.log('aqui me rompo despues')
     if (response.ok && resultado.success) {
       // Éxito
       mostrarNotificacion('✅ ¡Solicitud confirmada exitosamente!', 'success');
