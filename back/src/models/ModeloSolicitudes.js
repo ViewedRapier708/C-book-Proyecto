@@ -229,7 +229,20 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
 
 }
 async function ObtenerSolicitudesUsuario(boleta) {
-    
+    try {
+        const { data, error } = await supabase
+            .from('v_solicitudes_alumno')
+            .select('*')
+            .eq('registro_id', boleta)
+        
+            if (error) {
+            console.error("Error obteniendo solicitudes del usuario:", error);
+            return { success: false, error: error.message };
+        }
+        return { success: true, data: data };
+    } catch (error) {
+        
+    }
 }
 
 
@@ -266,7 +279,8 @@ module.exports = {
     CrearSolicitudlibro,
     VerificarDisponibilidadRecurso,
     ObtenerSolicitudesActivasPorBoleta,
-    CancelarSolicitud
+    CancelarSolicitud,
+    ObtenerSolicitudesUsuario
 };
 
 

@@ -55,11 +55,18 @@ async function cargarTabla() {
   url.searchParams.set('tipo', tipo);
 
   try {
-    // Petición GET (sin cuerpo)
+    // Petición GET (con credenciales)
     const resp = await fetch(url, {
       method: 'GET',
-      headers: { 'Accept': 'application/json' }
+      headers: { 'Accept': 'application/json' },
+      credentials: 'include'
     });
+
+    if (resp.status === 401 || resp.status === 403) {
+      mostrarNotificacion('⚠️ Debes iniciar sesión para ver los recursos.', 'error');
+      // Opcional: window.location.href = '/pantallasUs/registro.html';
+      return;
+    }
 
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const json = await resp.json();
@@ -272,72 +279,37 @@ async function confirmarSolicitud() {
     return;
   }
 
-  // Preparar datos de la solicitud según lo que espera el backend
-  const solicitud = {
-    tipo: tipoRecurso,
-    boleta: usuario.boleta,
-    idRecurso: idRecurso
-  };
+  // Mostrar loading
+  const btnConfirmar = document.getElementById('btn-confirmar-solicitud');
+  const textoOriginal = btnConfirmar?.textContent;
+  if (btnConfirmar) {
+    btnConfirmar.textContent = 'Procesando...';
+    btnConfirmar.disabled = true;
+  }
 
-  console.log('Enviando solicitud:', solicitud);
-
+  // Usar helper global para enviar la solicitud
   try {
-    const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
-    
-    // Mostrar loading
-    const btnConfirmar = document.getElementById('btn-confirmar-solicitud');
-    const textoOriginal = btnConfirmar?.textContent;
-    if (btnConfirmar) {
-      btnConfirmar.textContent = 'Procesando...';
-      btnConfirmar.disabled = true;
-    }
-
-    const response = await fetch(`${API_BASE}/auth/solicitud`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      credentials: 'include', // Importante para enviar las cookies de sesión
-      body: JSON.stringify(solicitud)
-    });
-
-    const resultado = await response.json();
+    const resultado = await window.SolicitudRecursos(tipoRecurso, usuario.boleta, idRecurso);
     console.log('Respuesta del servidor:', resultado);
 
-    if (response.ok && resultado.success) {
-      // Éxito
+    if (resultado.success) {
       mostrarNotificacion('✅ ¡Solicitud confirmada exitosamente!', 'success');
       cerrarModal();
-      
-      // Limpiar selección
       limpiarSeleccion();
-      
-      // Recargar tabla para reflejar cambios
       if (typeof cargarDatosTabla === 'function') {
         cargarDatosTabla();
       }
     } else {
-      // Error del servidor
       mostrarNotificacion(`❌ ${resultado.message || 'No se pudo procesar la solicitud'}`, 'error');
     }
-
-    // Restaurar botón
-    if (btnConfirmar) {
-      btnConfirmar.textContent = textoOriginal;
-      btnConfirmar.disabled = false;
-    }
-
   } catch (error) {
     console.error('Error al enviar solicitud:', error);
     mostrarNotificacion('❌ Error de conexión. Intenta de nuevo.', 'error');
-    
-    // Restaurar botón
-    const btnConfirmar = document.getElementById('btn-confirmar-solicitud');
-    if (btnConfirmar) {
-      btnConfirmar.textContent = 'Apartar Recurso';
-      btnConfirmar.disabled = false;
-    }
+  }
+  // Restaurar botón
+  if (btnConfirmar) {
+    btnConfirmar.textContent = textoOriginal || 'Apartar Recurso';
+    btnConfirmar.disabled = false;
   }
 }
 

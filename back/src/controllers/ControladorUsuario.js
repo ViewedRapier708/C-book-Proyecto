@@ -220,7 +220,7 @@ async function login(req, res) {
 async function verificarSesion(req, res) {
   try {
     const sessionUser = req.session.user;
-
+    console.log('Verificando sesión para usuario:', sessionUser?.boleta); //debug
     if (!sessionUser) {
       // Siempre 200 para que el frontend maneje el estado con simplicidad
       return res.status(200).json({ autenticado: false, user: null });
@@ -282,25 +282,17 @@ function saveSession(req) {//Garantiza el envio de la sesion actualizada y la co
 function destroySession(req, res) {
   return new Promise((resolve, reject) => {
     if (!req.session) {
-      res.clearCookie('connect.sid', cookieOptions());
+      res.clearCookie('connect.sid');
       return resolve();
     }
 
     req.session.destroy(err => {
-      res.clearCookie('connect.sid', cookieOptions());
+      res.clearCookie('connect.sid');
       return err ? reject(err) : resolve();
     });
   });
 }
 
-function cookieOptions() {
-  const isProduction = (process.env.NODE_ENV || 'development') === 'production';
-  return {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
-    path: '/'
-  };
-}
+
 
 module.exports = { registro, verificarCorreo, login, verificarSesion, cerrarSesion };

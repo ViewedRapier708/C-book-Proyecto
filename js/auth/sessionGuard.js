@@ -31,6 +31,7 @@
         while (intento <= REINTENTOS_MAX) {
             try {
                 const apiBase = window.API_BASE_URL || 'http://localhost:3000';
+              
                 const respuesta = await fetch(`${apiBase}/auth/session`, {
                     method: 'GET',
                     credentials: 'include' // IMPORTANTE: manda la cookie de sesión

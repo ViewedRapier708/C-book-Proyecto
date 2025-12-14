@@ -54,7 +54,7 @@ app.use(session({
     httpOnly: true,
     secure: false,
     sameSite:'lax',
-    maxAge: Number(process.env.SESSION_MAX_AGE_MS) || 1000 * 60 * 60 * 2 // 2h por defecto
+    maxAge: 1000 * 60 * 60 * 2 // 2h por defecto
   }
 }));
 
@@ -83,7 +83,7 @@ app.get('/debug/sesiones', (req, res) => {//Quitar en produccion
 app.use('/auth', authRoutes);
 
 // Puerto
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

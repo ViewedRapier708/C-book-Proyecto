@@ -228,7 +228,7 @@ tbody td {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    
+
 }
 
 thead {
@@ -295,8 +295,7 @@ tbody td:nth-child(2) {
     font-weight: 600;
 }
 
-t
-tbody tr.selected {
+t tbody tr.selected {
     background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
     color: #FFFFFF;
 }
@@ -512,7 +511,7 @@ tbody tr.selected:hover {
         font-size: 0.84rem;
     }
 
-   
+
     .btn-apartar {
         font-size: 0.92rem;
         padding: 0.8rem 1.6rem;
@@ -539,7 +538,7 @@ tbody tr.selected:hover {
         min-width: 300px;
     }
 
-    
+
     .container-datos-usuario {
         padding: 1rem;
     }
