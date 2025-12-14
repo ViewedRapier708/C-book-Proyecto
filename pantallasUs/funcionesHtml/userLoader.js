@@ -48,9 +48,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (tables.length > 0) {
                     // Dar tiempo para que el DOM se actualice
                     setTimeout(() => {
-                        if (typeof inicializarEventosTabla === 'function') {
-                            console.log('Inicializando eventos de tabla...');
-                            inicializarEventosTabla();
+                        // Cargar datos de la tabla del componente recién inyectado
+                        if (typeof cargarDatosTabla === 'function') {
+                            console.log('Solicitando datos para la tabla...');
+                            cargarDatosTabla()
+                                .then(() => {
+                                    console.log('✅ Datos cargados en la tabla');
+                                    
+                                    // Inicializar filtros de la tabla
+                                    if (typeof inicializarFiltrosTabla === 'function') {
+                                        console.log('Inicializando filtros de tabla...');
+                                        inicializarFiltrosTabla();
+                                    }
+                                    // Iniciar realtime después de cargar los datos
+                                    if (typeof iniciarRealtimeEnTablaActual === 'function') {
+                                        console.log('Iniciando Supabase Realtime...');
+                                        iniciarRealtimeEnTablaActual();
+                                    }
+                                })
+                                .catch(err => {
+                                    console.error('Error al cargar datos de tabla:', err);
+                                });
                         }
                         // Configurar botón Solicitar
                         const btnApartar = contentLoader.querySelector('.btn-apartar');
@@ -70,27 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
 
                         // Configurar botones del modal
-                        const btnConfirmar = contentLoader.querySelector('#btn-confirmar-solicitud');
-                        if (btnConfirmar && !btnConfirmar.hasAttribute('data-listener-added')) {
-                            btnConfirmar.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                if (typeof confirmarSolicitud === 'function') {
-                                    confirmarSolicitud();
-                                }
-                            });
-                            btnConfirmar.setAttribute('data-listener-added', 'true');
-                        }
-
-                        const btnCancelar = contentLoader.querySelector('#btn-cancelar-solicitud');
-                        if (btnCancelar && !btnCancelar.hasAttribute('data-listener-added')) {
-                            btnCancelar.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                if (typeof cerrarModal === 'function') {
-                                    cerrarModal();
-                                }
-                            });
-                            btnCancelar.setAttribute('data-listener-added', 'true');
-                        }
+                
 
                         // Configurar cierre del modal al hacer clic fuera
                         const modal = contentLoader.querySelector('#modal-confirmacion');
@@ -116,24 +114,39 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     };
 
+
     // Configurar eventos de los enlaces de navegación
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const component = link.getAttribute('data-component');
-            const title = link.getAttribute('data-title');
+   let linkActivo = null;
 
-            if (component && title) {
-                // Actualizar estado activo
-                navLinks.forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
+navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
 
-                // Cargar componente
-                loadComponent(component, title);
+        // Si se vuelve a hacer clic en el mismo link, no hace nada
+        if (link === linkActivo) return;
+
+        const component = link.getAttribute('data-component');
+        const title = link.getAttribute('data-title');
+
+        if (component && title) {
+
+            // Liberar el link anterior
+            if (linkActivo) {
+                linkActivo.classList.remove('active');
+                linkActivo.classList.remove('disabled');
             }
-        });
-    });
 
+            // Bloquear el link actual
+            link.classList.add('active');
+            link.classList.add('disabled');
+
+            linkActivo = link;
+
+            // Cargar componente
+            loadComponent(component, title);
+        }
+    });
+});
     // Cargar componente inicial (inicio)
     const inicioLink = Array.from(navLinks).find(link => 
         link.getAttribute('data-component') === 'inicio'

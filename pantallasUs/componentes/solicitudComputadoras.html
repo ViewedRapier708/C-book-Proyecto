@@ -1,71 +1,52 @@
 <div class="container-solicitud-computadoras">
-    <h2>SOLICITUD DE COMPUTADORAS</h2>
+ 
     <div class="layout">
+        <!-- Filtros se insertan aquí dinámicamente -->
+        
         <div class="container-tabla">
-            <table id="tabla" data-tipo="computadoras">
+            <table id="tabla" data-tipo="computadora">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Modelo</th>
+                        <th>No. Computadora</th>
+                        <th>Carrera recomendada</th>
                         <th>Procesador</th>
-                        <th>RAM</th>
+                        <th>Lista de programas instalados</th>
+                        <th>Observaciones</th>
+                        <th>En funcionamiento</th>
                         <th>Disponible</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>HP Pavilion 15</td>
-                        <td>Intel Core i5-11300H</td>
-                        <td>8GB DDR4</td>
-                        <td>Disponible</td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>Dell Inspiron 14</td>
-                        <td>AMD Ryzen 5 5500U</td>
-                        <td>16GB DDR4</td>
-                        <td>Disponible</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>Lenovo ThinkPad E15</td>
-                        <td>Intel Core i7-1165G7</td>
-                        <td>16GB DDR4</td>
-                        <td>Ocupado</td>
-                    </tr>
-                    <tr>
-                        <td>4</td>
-                        <td>ASUS VivoBook 15</td>
-                        <td>Intel Core i3-1115G4</td>
-                        <td>8GB DDR4</td>
-                        <td>Disponible</td>
-                    </tr>
-                    <tr>
-                        <td>5</td>
-                        <td>Acer Aspire 5</td>
-                        <td>AMD Ryzen 7 5700U</td>
-                        <td>12GB DDR4</td>
-                        <td>Disponible</td>
-                    </tr>
+                <tbody id="Tbody">
+
                 </tbody>
             </table>
-            <div class="container-btn-apartar">
-                <button class="btn-apartar">Solicitar</button>
-            </div>
         </div>
+
+        <!-- Botón de solicitud (aparece al seleccionar) -->
+        <div class="container-btn-apartar">
+            <button class="btn-apartar" onclick="window.abrirModal()">Solicitar recurso</button>
+        </div>
+    </div>
 </div>
 
 <!-- Modal de confirmación -->
-<div id="modal-confirmacion" class="modal-overlay">
+<div id="modal-confirmacion" class="modal-overlay" style="display: none;">
     <div class="modal-content">
-        <h3>Confirmar Solicitud</h3>
+        <button class="btn-cerrar-modal" onclick="cerrarModal()">&times;</button>
+        <h3>Detalles del Recurso</h3>
         <div id="detalles-recurso" class="detalles-recurso">
-            <!-- Se llenará dinámicamente -->
+            <table class="tabla-detalles">
+                <tbody id="tabla-detalles-body">
+                    <!-- Los detalles se llenarán dinámicamente -->
+                </tbody>
+            </table>
         </div>
         <div class="modal-acciones">
-            <button id="btn-confirmar-solicitud" class="btn-apartar">Apartar</button>
-            <button id="btn-cancelar-solicitud" class="btn-cancelar">Cancelar solicitud</button>
+            
+            <button id="btn-confirmar-solicitud" class="btn-apartar" onclick="confirmarSolicitud()">Apartar
+                Recurso</button>
+            
+                <button id="btn-cancelar-solicitud" class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
         </div>
     </div>
 </div>

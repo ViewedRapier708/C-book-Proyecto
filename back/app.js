@@ -42,9 +42,7 @@ app.use(cors({
 const MemoryStore = session.MemoryStore;
 const sessionStore = new MemoryStore();
 
-if (isProduction) {
-  app.set('trust proxy', 1); // Necesario si se usa proxy/Heroku para secure cookies
-}
+
 
 // Configuración de sesión
 app.use(session({
@@ -54,9 +52,9 @@ app.use(session({
   store: sessionStore,
   cookie: {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
-    maxAge: Number(process.env.SESSION_MAX_AGE_MS) || 1000 * 60 * 60 * 2 // 2h por defecto
+    secure: false,
+    sameSite:'lax',
+    maxAge: 1000 * 60 * 60 * 2 // 2h por defecto
   }
 }));
 
@@ -64,7 +62,10 @@ app.use(session({
 //   ARCHIVOS ESTÁTICOS
 // ===============================
 // Servir archivos estáticos desde la raíz del proyecto
-app.use(express.static(path.join(__dirname, '..')));
+app.get('/', (req, res) => {
+  res.status(200).json({ mensaje: 'API de C-Book funcionando' });
+}
+);
 
 // ===============================
 //   RUTA PARA VER SESIONES ACTIVAS
@@ -78,17 +79,11 @@ app.get('/debug/sesiones', (req, res) => {//Quitar en produccion
   });
 });
 
-// Ruta raíz - servir index.html
-console.log(path.join(__dirname,'..', 'index.html'));
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'index.html'));
-});
-
 // Rutas de autenticación
 app.use('/auth', authRoutes);
 
 // Puerto
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

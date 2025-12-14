@@ -17,9 +17,9 @@
     <link rel="stylesheet" href="css/componentes/areaConsulta.css">
     <link rel="stylesheet" href="css/componentes/cancelarSolicitudes.css">
     <link rel="shortcut icon" href="../img/logo_C_Book.jpg" type="image/x-icon">
-    <!-- <script src="../js/config/apiConfig.js"></script>
+   <script src="../js/config/apiConfig.js"></script>
     <script src="../js/auth/sessionGuard.js"></script>
-    <script src="../js/auth/funcionCerrarSesion.js"></script> -->
+    <script src="../js/auth/funcionCerrarSesion.js"></script> 
 </head>
 <body>
     
@@ -54,7 +54,6 @@
         <div class="container-informacion">
 
             <div class="container-titulo">
-                <h1 id="page-title" >BIENVENIDO USUARIO</h1>
             </div>
             
             <div class="container-contenido" id="content-loader">
@@ -65,12 +64,50 @@
         </div>
     </div>
 
-    <!-- CDN de Supabase para RealTime 
+     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    -->
-    <script src="../js/utils/funcionsRecursos.js"></script>
+       <script src="../js/utils/funcionsRecursos.js"></script>
     <script src="./funcionesHtml/userLoader.js"></script>
     <script src="./funcionesHtml/RealTime.js"></script>
+    <script src="./funcionesHtml/filtrosTabla.js"></script>
+    <script>
+        (function () {
+            const applyCellTooltips = (root) => {
+                const scope = root || document;
+                const tables = scope.querySelectorAll('.container-tabla table');
+
+                tables.forEach((table) => {
+                    const cells = table.querySelectorAll('th, td');
+
+                    cells.forEach((cell) => {
+                        const text = cell.textContent.trim();
+                        if (!cell.dataset.fullText && text) {
+                            cell.dataset.fullText = text;
+                        }
+
+                        const isTruncated = cell.scrollWidth > cell.clientWidth;
+                        cell.dataset.truncated = isTruncated ? 'true' : 'false';
+
+                        if (isTruncated) {
+                            cell.title = cell.dataset.fullText || text;
+                        } else {
+                            cell.removeAttribute('title');
+                        }
+                    });
+                });
+            };
+
+            document.addEventListener('DOMContentLoaded', () => {
+                applyCellTooltips(document);
+
+                const content = document.getElementById('content-loader');
+                if (content) {
+                    const observer = new MutationObserver(() => applyCellTooltips(content));
+                    observer.observe(content, { childList: true, subtree: true });
+                }
+            });
+        })();
+    </script>
     <!-- esta parte esta comentada xq no vaiga siendo q haya algun error o si se pueda incluir en algun 
         -> otro archivo para mantener limpio el codigo de html
         <script>    

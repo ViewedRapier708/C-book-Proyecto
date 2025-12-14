@@ -1,86 +1,65 @@
 <div class="container-solicitud-libros">
+
     <div class="layout">
+        <!-- Filtros se insertan aquí dinámicamente -->
+        
         <div class="container-tabla">
-            <table id="tabla" data-tipo="libros">
+            <table id="tabla" data-tipo="libro">
                 <thead>
                     <tr>
-                        <th>ID Libro</th>
                         <th>Titulo</th>
-                        <th>Edicion</th>
-                        <th>Editorial</th>
-                        <th>Tomo</th>
-                        <th>Cant. Disponible</th>
+                        <th>Autor</th>
+                        <th>Clasificacion</th>
+                        <th>Tipo de material</th>
+                        <th>Año</th>
+                        <th>No. de ejemplar</th>
+                        <th>Disponible</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>101</td>
-                        <td>Cálculo Diferencial e Integral</td>
-                        <td>9na Edición</td>
-                        <td>McGraw-Hill</td>
-                        <td>Tomo I</td>
-                        <td>5</td>
-                    </tr>
-                    <tr>
-                        <td>102</td>
-                        <td>Física para Ciencias e Ingeniería</td>
-                        <td>10ma Edición</td>
-                        <td>Cengage Learning</td>
-                        <td>Tomo II</td>
-                        <td>3</td>
-                    </tr>
-                    <tr>
-                        <td>103</td>
-                        <td>Química General</td>
-                        <td>11va Edición</td>
-                        <td>Pearson</td>
-                        <td>Único</td>
-                        <td>8</td>
-                    </tr>
-                    <tr>
-                        <td>104</td>
-                        <td>Álgebra Lineal y sus Aplicaciones</td>
-                        <td>5ta Edición</td>
-                        <td>Pearson</td>
-                        <td>Único</td>
-                        <td>0</td>
-                    </tr>
-                    <tr>
-                        <td>105</td>
-                        <td>Programación en C++</td>
-                        <td>8va Edición</td>
-                        <td>Deitel</td>
-                        <td>Único</td>
-                        <td>12</td>
-                    </tr>
-                    <tr>
-                        <td>106</td>
-                        <td>Estadística para Administración</td>
-                        <td>7ma Edición</td>
-                        <td>Alfaomega</td>
-                        <td>Tomo I</td>
-                        <td>6</td>
-                    </tr>
+                <tbody id="Tbody">
+
                 </tbody>
             </table>
-            <div class="container-btn-apartar">
-                <button class="btn-apartar">Solicitar</button>
-            </div>
         </div>
-</div>
 
-<!-- Modal de confirmación -->
-<div id="modal-confirmacion" class="modal-overlay">
-    <div class="modal-content">
-        <h3>Confirmar Solicitud</h3>
-        <div id="detalles-recurso" class="detalles-recurso">
-            <!-- Se llenará dinámicamente -->
-        </div>
-        <div class="modal-acciones">
-            <button id="btn-confirmar-solicitud" class="btn-apartar">Apartar</button>
-            <button id="btn-cancelar-solicitud" class="btn-cancelar">Cancelar solicitud</button>
+        <!-- Botón de solicitud (aparece al seleccionar) -->
+        <div class="container-btn-apartar">
+            <button class="btn-apartar" onclick="window.abrirModal()">Solicitar recurso</button>
         </div>
     </div>
 </div>
 
-<script src="./js/funcionsRecursos.js"></script>
+<!-- Modal de confirmación -->
+<div id="modal-confirmacion" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <button class="btn-cerrar-modal" onclick="cerrarModal()">&times;</button>
+        <h3>Detalles del Recurso</h3>
+        <div id="detalles-recurso" class="detalles-recurso">
+            <table class="tabla-detalles">
+                <tbody id="tabla-detalles-body">
+                    <!-- Los detalles se llenarán dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+        <div class="modal-acciones">
+            <button id="btn-confirmar-solicitud" class="btn-apartar" onclick="confirmarSolicitud()">Apartar
+                Recurso</button>
+            <button id="btn-cancelar-solicitud" class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div id="modal-confirmacion" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Confirmar Solicitud</h3>
+            <div id="detalles-recurso" class="detalles-recurso">
+                <!-- Se llenará dinámicamente -->
+            </div>
+            <div class="modal-acciones">
+                <button id="btn-confirmar-solicitud" class="btn-apartar">Apartar</button>
+                <button id="btn-cancelar-solicitud" class="btn-cancelar">Cancelar solicitud</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/funcionsRecursos.js"></script>

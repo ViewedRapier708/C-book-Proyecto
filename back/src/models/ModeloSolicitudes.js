@@ -1,6 +1,6 @@
 const { getClient } = require('../config/db');
 const supabase = getClient();
-const tipos = ['computadora', 'restirador', 'libro'];
+
 
 // ==================== CREAR SOLICITUD ====================
 async function CrearSolicitud(tipoSolicitud, boleta, idRecurso) {
@@ -163,9 +163,7 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
     if (!tipo || !boleta) {
         return { success: false, error: 'Faltan datos obligatorios' };
     }
-    if (!tipos.includes(tipo)) {
-        return { success: false, error: 'Tipo de solicitud inválido' };
-    }
+ 
     if (tipo === 'computadora' || tipo === 'restirador') {
         if (!Number.isInteger(numeroBoleta)) {
             return { success: false, error: 'Boleta inválida' };
@@ -211,12 +209,12 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
     }
     async function contarPendientesPorTabla(client, tabla, boleta) {
     try {
-        const { error, count } = await client
-            .from(tabla)
-            .select('id', { count: 'exact', head: true })
-            .eq('usuario_boleta', boleta)
-            .eq('estado_solicitud_id', 1 );
-        console.log(`Conteo en ${tabla} para boleta ${boleta}:`, count, error); //debug
+        console.log(`Contando solicitudes activas en ${tabla} para boleta ${boleta}`); //debug
+        const { data, count, error } = await client
+  .from(tabla)
+  .select('id', { count: 'exact' })
+  .eq('usuario_boleta', String(boleta))
+  .eq('estado_solicitud_id', 1);
         if (error) {
             console.error(`Error consultando ${tabla}:`, error);
             return { success: false, error: error.message, count: 0 };
@@ -230,11 +228,47 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
 }
 
 }
-
+async function ObtenerSolicitudesUsuario(boleta) {
+    try {
+        const { data, error } = await supabase
+            .from('v_solicitudes_alumno')
+            .select('*')
+            .eq('registro_id', boleta)
+        
+            if (error) {
+            console.error("Error obteniendo solicitudes del usuario:", error);
+            return { success: false, error: error.message };
+        }
+        return { success: true, data: data };
+    } catch (error) {
+        
+    }
+}
 
 
 // ==================== CANCELACION DE SOLICITUD ====================
-async function CancelarSolicitud(solicitudId) { }
+async function CancelarSolicitud(solicitudId) { 
+    const id = Number(solicitudId); 
+    if (!Number.isInteger(id)) {
+        return { success: false, error: 'ID de solicitud inválido' };
+    }
+    try {
+        const { error } = await supabase
+            .from('solicitudes_computadora')
+            .update({ estado_solicitud_id: 3 }) //3 representa 'cancelada'
+            .eq('id', id)
+            .eq('estado_solicitud_id', 1); //Solo cancelar si está en 'pendiente'
+        if (error) {
+            console.error("Error cancelando solicitud:", error);
+            return { success: false, error: error.message };
+        }
+        return { success: true , error: null};
+    } catch (err) {
+        console.error("Error en CancelarSolicitud:", err);
+        return { success: false, error: 'Error interno del servidor' };
+    }
+
+}
 
 
 // ==================== EXPORTAR FUNCIONES ====================
@@ -245,7 +279,8 @@ module.exports = {
     CrearSolicitudlibro,
     VerificarDisponibilidadRecurso,
     ObtenerSolicitudesActivasPorBoleta,
-    CancelarSolicitud
+    CancelarSolicitud,
+    ObtenerSolicitudesUsuario
 };
 
 
