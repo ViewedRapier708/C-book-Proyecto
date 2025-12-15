@@ -22,12 +22,33 @@
 .container-area-consulta > h2,
 .container-cancelar-solicitudes > h2 {
     color: var(--primary-1);
-    font-size: clamp(0.95rem, 1.8vw, 1.3rem);
-    font-weight: 700;
-    margin-bottom: 1rem;
-    padding-bottom: 0.6rem;
-    border-bottom: 3px solid var(--accent);
+    font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+    font-weight: 800;
+    margin-bottom: 1.8rem;
+    padding-bottom: 1rem;
+    padding-left: 0;
+    border-bottom: none;
     position: relative;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 50%, #B0387A 100%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: titleGradient 4s ease infinite;
+}
+
+@keyframes titleGradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+
+
+@keyframes expandLine {
+    from { width: 0; opacity: 0; }
+    to { width: 100px; opacity: 1; }
 }
 
 /* Layouts con tabla y botones */
@@ -44,12 +65,91 @@
 
 /* Contenedor de tablas */
 .container-tabla {
-    background: linear-gradient(180deg, #fff, #fbfbfb);
-    padding: clamp(0.4rem, 1.2vw, 0.8rem);
-    border-radius: 8px;
-    border: 1px solid var(--muted);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 248, 249, 0.9) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: clamp(1rem, 1.8vw, 1.5rem);
+    border-radius: 20px;
+    border: 1px solid rgba(123, 2, 51, 0.08);
     overflow-x: auto;
-    box-shadow: var(--soft-shadow);
+    overflow-y: auto;
+    max-height: 520px;
+    box-shadow: 
+        0 4px 6px rgba(123, 2, 51, 0.04),
+        0 10px 40px rgba(123, 2, 51, 0.08),
+        0 0 0 1px rgba(255, 255, 255, 0.5) inset,
+        0 2px 4px rgba(255, 255, 255, 0.8) inset;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.container-tabla::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-1), var(--primary-2), var(--accent), var(--primary-2), var(--primary-1));
+    background-size: 200% 100%;
+    border-radius: 20px 20px 0 0;
+    animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.container-tabla:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 12px 20px rgba(123, 2, 51, 0.1),
+        0 25px 60px rgba(123, 2, 51, 0.12),
+        0 0 0 1px rgba(255, 255, 255, 0.6) inset,
+        0 2px 4px rgba(255, 255, 255, 0.9) inset;
+}
+
+/* Scroll personalizado para tablas */
+.container-tabla::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.container-tabla::-webkit-scrollbar-track {
+    background: rgba(242, 217, 227, 0.3);
+    border-radius: 10px;
+}
+
+.container-tabla::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+    border-radius: 10px;
+}
+
+.container-tabla::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--primary-2) 0%, #B0387A 100%);
+}
+
+.container-tabla::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* Botones de acción dentro del contenedor de tabla */
+.container-tabla .container-btn-apartar {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.5rem;
+    padding: 1.2rem;
+    border-top: 1px solid rgba(123, 2, 51, 0.1);
+    gap: 1rem;
+    min-height: 70px;
+    align-items: center;
+    background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(250,248,249,0.95) 100%);
+    border-radius: 0 0 18px 18px;
+}
+
+.container-tabla .container-btn-apartar .btn-apartar {
+    display: none;
 }
 
 /* Tablas */
@@ -57,54 +157,184 @@ table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
+    table-layout: auto;
+    min-width: 700px;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 thead {
-    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+    background: var(--primary-1);
 }
 
 thead th {
     color: #FFFFFF;
-    font-weight: 600;
-    text-align: left;
-    padding: 0.45rem 0.6rem;
-    font-size: 0.8rem;
-    letter-spacing: 0.4px;
+    font-weight: 700;
+    text-align: center;
+    padding: 1.1rem 1.4rem;
+    font-size: 0.82rem;
+    letter-spacing: 1.2px;
     text-transform: uppercase;
+  
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--primary-1);
+
+    box-shadow: 0 4px 15px rgba(123, 2, 51, 0.25);
+    white-space: nowrap;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.25);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+@keyframes headerGlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+thead th:hover {
+    background-position: 100% 50%;
 }
 
 thead th:first-child {
-    border-radius: 10px 0 0 0;
+    border-top-left-radius: 14px;
 }
 
 thead th:last-child {
-    border-radius: 0 10px 0 0;
+    border-top-right-radius: 14px;
 }
+
+
 
 tbody tr {
     background: #FFFFFF;
-    transition: all 0.3s ease;
-    border-bottom: 1px solid #E8E8E8;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    border-bottom: 1px solid rgba(123, 2, 51, 0.06);
+    cursor: pointer;
+    position: relative;
+}
+
+tbody tr::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: linear-gradient(180deg, var(--primary-1), var(--primary-2));
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+    border-radius: 0 4px 4px 0;
+}
+
+tbody tr:hover::after {
+    transform: scaleY(1);
+}
+
+tbody tr:nth-child(even) {
+    background: linear-gradient(90deg, rgba(250, 248, 252, 0.8) 0%, rgba(248, 245, 250, 0.6) 100%);
 }
 
 tbody tr:hover {
-    background: linear-gradient(90deg, rgba(250, 230, 240, 0.6), rgba(248, 215, 232, 0.6));
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(123, 2, 51, 0.08);
+    background: linear-gradient(90deg, 
+        rgba(123, 2, 51, 0.06) 0%, 
+        rgba(157, 48, 108, 0.1) 30%,
+        rgba(176, 56, 122, 0.08) 70%,
+        rgba(123, 2, 51, 0.06) 100%);
+    transform: translateX(6px);
+    box-shadow: 
+        -4px 0 20px rgba(123, 2, 51, 0.1),
+        0 4px 15px rgba(123, 2, 51, 0.08);
+    border-radius: 0 10px 10px 0;
+}
+
+/* Fila seleccionada */
+tbody tr.seleccionada {
+    background: linear-gradient(135deg, #7B0233 0%, #9D306C 40%, #B0387A 70%, #C94B8C 100%) !important;
+    background-size: 300% 300%;
+    color: #FFFFFF;
+    transform: translateX(8px) scale(1.02);
+    box-shadow: 
+        0 15px 40px rgba(123, 2, 51, 0.35),
+        0 5px 20px rgba(123, 2, 51, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    animation: selectGlow 0.5s ease, gradientFlow 3s ease infinite;
+    z-index: 5;
+}
+
+tbody tr.seleccionada::after {
+    transform: scaleY(1);
+    width: 6px;
+    background: linear-gradient(180deg, #fff, rgba(255,255,255,0.6));
+}
+
+@keyframes selectGlow {
+    0% { transform: translateX(0) scale(1); box-shadow: 0 0 0 rgba(123, 2, 51, 0); }
+    50% { transform: translateX(10px) scale(1.03); }
+    100% { transform: translateX(8px) scale(1.02); }
+}
+
+@keyframes gradientFlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+tbody tr.seleccionada td {
+    color: #FFFFFF !important;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.3px;
 }
 
 tbody tr:last-child td:first-child {
-    border-radius: 0 0 0 10px;
+    border-radius: 0;
 }
 
 tbody tr:last-child td:last-child {
-    border-radius: 0 0 10px 0;
+    border-radius: 0;
 }
 
 tbody td {
-    padding: 0.65rem;
-    color: #333;
-    font-size: 0.9rem;
+    padding: 1rem 1.1rem;
+    color: #3a3a3a;
+    font-size: 0.88rem;
+    text-align: center;
+    white-space: nowrap;
+    transition: all 0.35s ease;
+    position: relative;
+    font-weight: 450;
+}
+
+tbody td:first-child {
+    font-weight: 600;
+    color: #2d2d2d;
+}
+
+tbody tr:hover td {
+    color: var(--primary-1);
+}
+
+tbody tr.seleccionada:hover td {
+    color: #fff !important;
+}
+
+tbody td::before {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-1), var(--primary-2));
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+tbody tr:hover td::before {
+    width: 80%;
 }
 
 tbody tr.selected {
@@ -122,39 +352,95 @@ tbody tr.selected td {
     justify-content: center;
     margin-top: 1.5rem;
     gap: 1rem;
+    min-height: 60px;
+    align-items: center;
+}
+
+.container-btn-apartar .btn-apartar {
+    display: none;
 }
 
 .btn-apartar,
 .btn-seleccionar,
 .btn-cancelar {
-    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 50%, #B0387A 100%);
+    background-size: 200% 200%;
     color: #FFFFFF;
     font-size: clamp(0.85rem, 1vw, 1rem);
     font-weight: 700;
-    letter-spacing: 1px;
-    padding: clamp(0.7rem, 1.2vw, 1rem) clamp(1.5rem, 2vw, 2.5rem);
+    letter-spacing: 1.5px;
+    padding: clamp(0.8rem, 1.2vw, 1.1rem) clamp(1.8rem, 2.2vw, 3rem);
     border: none;
     border-radius: 50px;
     cursor: pointer;
-    box-shadow: 0 6px 20px rgba(123, 2, 51, 0.4);
-    transition: all 0.3s ease;
+    box-shadow: 
+        0 6px 20px rgba(123, 2, 51, 0.35),
+        0 3px 10px rgba(123, 2, 51, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     text-transform: uppercase;
     position: relative;
     overflow: hidden;
+    animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.btn-apartar::before,
+.btn-seleccionar::before,
+.btn-cancelar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-apartar:hover::before,
+.btn-seleccionar:hover::before,
+.btn-cancelar:hover::before {
+    left: 100%;
+}
+
+.btn-aparecer {
+    animation: aparecer 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes aparecer {
+    0% {
+        opacity: 0;
+        transform: scale(0.5) translateY(30px) rotate(-5deg);
+    }
+    50% {
+        transform: scale(1.1) translateY(-5px) rotate(2deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0) rotate(0deg);
+    }
 }
 
 .btn-apartar:hover,
 .btn-seleccionar:hover,
 .btn-cancelar:hover {
-    background: linear-gradient(135deg, var(--primary-2) 0%, #B0387A 100%);
-    box-shadow: 0 8px 25px rgba(123, 2, 51, 0.5);
-    transform: translateY(-3px);
+    background: linear-gradient(135deg, #9D306C 0%, #B0387A 50%, #C94B8C 100%);
+    background-size: 200% 200%;
+    box-shadow: 
+        0 10px 35px rgba(123, 2, 51, 0.5),
+        0 5px 15px rgba(123, 2, 51, 0.3);
+    transform: translateY(-4px) scale(1.02);
 }
 
 .btn-apartar:active,
 .btn-seleccionar:active,
 .btn-cancelar:active {
-    transform: translateY(-1px);
+    transform: translateY(-1px) scale(0.98);
     box-shadow: 0 4px 15px rgba(123, 2, 51, 0.4);
 }
 
@@ -192,4 +478,268 @@ tbody tr.selected td {
 .component-enter-buttons {
     animation: fadeInUp 0.5s ease-out 0.2s forwards;
     opacity: 0;
+}
+
+/* ========================================
+   MODAL DE CONFIRMACIÓN
+   ======================================== */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 9999;
+    align-items: flex-start;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+    backdrop-filter: blur(3px);
+    overflow-y: scroll;
+    padding: 40px 20px;
+}
+
+.modal-content {
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 3rem;
+    max-width: 1200px;
+    width: 90%;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+    animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    border: 3px solid var(--primary-1);
+    margin: 0 auto 40px auto;
+}
+
+/* Scroll personalizado para el modal */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: rgba(242, 217, 227, 0.3);
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--primary-2) 0%, #B0387A 100%);
+}
+
+.modal-content h3 {
+    color: var(--primary-1);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    text-align: center;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.detalles-recurso {
+    background: linear-gradient(135deg, rgba(242, 217, 227, 0.3), rgba(248, 215, 232, 0.3));
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 2px solid rgba(123, 2, 51, 0.1);
+    height: auto;
+    overflow: visible;
+}
+
+/* Scroll personalizado para detalles del recurso */
+.detalles-recurso::-webkit-scrollbar {
+    width: 6px;
+}
+
+.detalles-recurso::-webkit-scrollbar-track {
+    background: rgba(242, 217, 227, 0.3);
+    border-radius: 10px;
+}
+
+.detalles-recurso::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+    border-radius: 10px;
+}
+
+.detalles-recurso::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--primary-2) 0%, #B0387A 100%);
+}
+
+.detalles-recurso .lista-detalles {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.detalles-recurso .lista-detalles li {
+    padding: 1.2rem 1.5rem;
+    border-bottom: 2px solid rgba(123, 2, 51, 0.15);
+    font-size: 1.05rem;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.8rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    min-height: 60px;
+}
+
+.detalles-recurso .lista-detalles li:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateX(5px);
+}
+
+.detalles-recurso .lista-detalles li:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.detalles-recurso .lista-detalles li strong {
+    color: var(--primary-1);
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 160px;
+    flex-shrink: 0;
+}
+
+.detalles-recurso .lista-detalles li span {
+    color: #333;
+    font-weight: 600;
+    font-size: 1.05rem;
+    flex: 1;
+    text-align: right;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.modal-acciones {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid rgba(123, 2, 51, 0.1);
+}
+
+.modal-acciones .btn-apartar,
+.modal-acciones .btn-cancelar {
+    flex: 1 1 auto;
+    min-width: 220px;
+    max-width: 300px;
+    padding: 1.2rem 3rem;
+    font-size: 1.1rem;
+    white-space: nowrap;
+}
+
+.modal-acciones .btn-cancelar {
+    background: linear-gradient(135deg, #666666 0%, #888888 100%);
+}
+
+.modal-acciones .btn-cancelar:hover {
+    background: linear-gradient(135deg, #555555 0%, #777777 100%);
+}
+
+/* Estilos para la tabla de detalles en el modal */
+.tabla-detalles {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1.1rem;
+}
+
+.tabla-detalles tbody tr {
+    border-bottom: 2px solid rgba(123, 2, 51, 0.15);
+    transition: all 0.2s ease;
+}
+
+.tabla-detalles tbody tr:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateX(5px);
+}
+
+.tabla-detalles tbody tr:last-child {
+    border-bottom: none;
+}
+
+.tabla-detalles td {
+    padding: 1.5rem 2rem;
+    font-size: 1.15rem;
+    color: #333;
+}
+
+.tabla-detalles td:first-child {
+    color: var(--primary-1);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: 40%;
+    font-size: 1.1rem;
+}
+
+.tabla-detalles td:last-child {
+    font-weight: 600;
+    text-align: right;
+    font-size: 1.2rem;
+}
+
+/* Botón cerrar modal (X) */
+.btn-cerrar-modal {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 2.5rem;
+    color: var(--primary-1);
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    line-height: 1;
+    padding: 0;
+}
+
+.btn-cerrar-modal:hover {
+    background: rgba(123, 2, 51, 0.1);
+    transform: rotate(90deg);
+    color: var(--primary-2);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(80px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }

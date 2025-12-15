@@ -1,19 +1,71 @@
-//restirador:IDreg,semestre,grupo,hora_solicitud,,estado,IDrestirador
-//computadora:IDreg,semestre,grupo,hora_solicitud,estado,computadoraID
-//libro:IDreg,semestre,grupo,hora_solicitud,estado,libroID
-//Esta funcion hace que cambie los estados de los materiales al momento de hacer una solicitud ejemplo si un restirador esta disponible pasa a ocupado
+const { CrearSolicitud,CancelarSolicitud } = require("../models/ModeloSolicitudes");
+
+const tipos = ['computadora', 'restirador', 'libro'];
 async function crearSolicitud(req,res) {
-    const modeloSolicitudes = require('../models/ModeloSolicitudes');
-    const {ID_registro,ID_Material,tipo,carrera,grupo,semestre} = req.body;
-    const result = await modeloSolicitudes.solicitudes(ID_registro,ID_Material,tipo,carrera,grupo,semestre);
-    //Mensaje en base al error que arroje la base de datos
-    if (result.error) {
-        return res.status(400).json({ error: result.error});
-    }
-    //esto me retorna un mensaje de que la solicitud se creo exitosamente y solicitud es el objeto da respuesta de la base de datos
-    return res.status(201).json({ messaje: 'Solicitud creada exitosamente', solicitud: result.data });
+    const { tipo ,boleta,idRecurso } = req.body;
+    console.log("Datos recibidos para crear solicitud:", { tipo, boleta, idRecurso }); //debug
+    const regularExpression = /^[0-9 ]{10}$/;
+    const regularExpressiontipo = /^[a-zA-Z]+$/;
+
     
+    if (!tipo || !boleta || !idRecurso) {
+        return res.status(400).json({ success: false, message: 'Faltan datos obligatorios' });
+    }
+    if (!regularExpression.test(boleta)) {
+        return res.status(400).json({ success: false, message: 'La boleta debe ser un número válido de longitud 10' });
+    }else if (!regularExpressiontipo.test(tipo)) {
+        return res.status(400).json({ success: false, message: 'El tipo de solicitud debe contener solo letras' });
+    }else if (!Number.isInteger(idRecurso) || idRecurso <= 0) {
+        return res.status(400).json({ success: false, message: 'El ID del recurso debe ser un número entero positivo' });
+    }
+    if (!tipos.includes(tipo)) {
+        return res.status(400).json({ success: false, message: 'Tipo de solicitud inválido' });
+    }
+    await CrearSolicitud(tipo, boleta, idRecurso)
+        .then((resultado) => {
+            if (resultado.success) {
+                return res.status(201).json({ success: true, message: 'Solicitud creada exitosamente' });
+            } else {
+                return res.status(500).json({ success: false, message: resultado.message || 'Error al crear la solicitud' });
+            }
+        })
+        .catch((error) => {
+            console.error('Error al crear la solicitud:', error);
+            return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+        });
+
+}
+async function cancelarSolicitud(req,res) {
+    const { tipo, ID } = req.body;
+    if (!ID || !Number.isInteger(ID) || ID <= 0) {
+        return res.status(400).json({ success: false, message: 'El ID de la solicitud debe ser un número entero positivo' });
+    }
+    const tipos = ['computadora', 'restirador', 'libro'];
+    if (!tipo || !tipos.includes(tipo)) {
+        return res.status(400).json({ success: false, message: 'Tipo de solicitud inválido' });
+    }
+
+
+    const resultado = await CancelarSolicitud(tipo, ID);
+    if (resultado.success) {
+        return res.status(200).json({ success: true, message: 'Solicitud cancelada exitosamente' });
+    } else {
+        return res.status(500).json({ success: false, message: resultado.message || 'Error al cancelar la solicitud' });
+    }
 }
 
+async function obtenerSolicitudesUsuario(req, res) {
+    const { boleta } = req.body;
+    if (!boleta) {
+        return res.status(400).json({ success: false, message: 'Falta la boleta del usuario' });
+    }
+    const resultado = await ObtenerSolicitudesUsuario(boleta);
+    console.log("Resultado de obtenerSolicitudesUsuario:", resultado); //debug
+    if (resultado.success) {
+        return res.status(200).json({ success: true, solicitudes: resultado.solicitudes });
+    } else {
+        return res.status(500).json({ success: false, message: resultado.message || 'Error al obtener las solicitudes' });
+    }
+}   
 
-module.exports = { crearSolicitud };
+module.exports = { crearSolicitud, cancelarSolicitud, obtenerSolicitudesUsuario };

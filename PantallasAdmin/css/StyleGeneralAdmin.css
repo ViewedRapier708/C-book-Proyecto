@@ -118,6 +118,8 @@ body {
     justify-content: center;
     align-items: flex-start;
     width: 100%;
+    min-height: 50vh;
+    height: auto;
 }
 
 .container-servicios h2 {

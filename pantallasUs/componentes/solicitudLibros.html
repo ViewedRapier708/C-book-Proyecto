@@ -1,73 +1,22 @@
 <div class="container-solicitud-libros">
-    <!-- Sección de Filtros -->
-    <div class="filtros-section">
-        <button id="toggleFiltrosBtn" class="btn-toggle-filtros">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="4" y1="6" x2="20" y2="6"/>
-                <line x1="4" y1="12" x2="20" y2="12"/>
-                <line x1="4" y1="18" x2="20" y2="18"/>
-                <circle cx="8" cy="6" r="2" fill="currentColor"/>
-                <circle cx="16" cy="12" r="2" fill="currentColor"/>
-                <circle cx="12" cy="18" r="2" fill="currentColor"/>
-            </svg>
-            <span>Filtrar Libros</span>
-        </button>
-
-        <div id="panelFiltros" class="panel-filtros oculto">
-            <div class="filtros-grid">
-                <div class="filtro-grupo">
-                    <label for="filtroEditorial">Editorial:</label>
-                    <select id="filtroEditorial" class="input-filtro">
-                        <option value="todos">Todas</option>
-                    </select>
-                </div>
-
-                <div class="filtro-grupo">
-                    <label for="filtroDisponibilidad">Disponibilidad:</label>
-                    <select id="filtroDisponibilidad" class="input-filtro">
-                        <option value="todos">Todos</option>
-                        <option value="disponible">Disponibles</option>
-                        <option value="agotado">Agotados</option>
-                    </select>
-                </div>
-
-                <div class="filtro-grupo filtro-busqueda">
-                    <label for="filtroBusqueda">Buscar:</label>
-                    <input type="text" id="filtroBusqueda" class="input-filtro" placeholder="Título del libro...">
-                </div>
-            </div>
-
-            <div class="filtros-acciones">
-                <button id="btnAplicarFiltros" class="btn-filtro btn-aplicar">
-                    Aplicar Filtros
-                </button>
-                <button id="btnLimpiarFiltros" class="btn-filtro btn-limpiar">
-                    Limpiar Todo
-                </button>
-            </div>
-
-            <div id="contadorResultados" class="contador-resultados">
-                <span id="textoContador">Mostrando <strong>0</strong> libros</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tabla de Libros -->
     <div class="layout">
+        <!-- Filtros se insertan aquí dinámicamente -->
+        
         <div class="container-tabla">
-            <table id="tabla" data-tipo="libros">
+            <table id="tabla" data-tipo="libro">
                 <thead>
                     <tr>
-                        <th>ID Libro</th>
-                        <th>Título</th>
-                        <th>Edición</th>
-                        <th>Editorial</th>
-                        <th>Tomo</th>
-                        <th>Cant. Disponible</th>
+                        <th>Titulo</th>
+                        <th>Autor</th>
+                        <th>Clasificacion</th>
+                        <th>Tipo de material</th>
+                        <th>Año</th>
+                        <th>No. de ejemplar</th>
+                        <th>Disponible</th>
                     </tr>
                 </thead>
-                <tbody id="tablaLibrosBody">
-                    <!-- Los libros se cargarán aquí dinámicamente -->
+                <tbody id="Tbody">
+
                 </tbody>
             </table>
             <div id="mensajeSinResultados" class="mensaje-sin-resultados oculto">
@@ -79,12 +28,45 @@
                 <button id="btnResetearBusqueda" class="btn-resetear">Ver todos los libros</button>
             </div>
         </div>
-    </div>
 
-    <div class="container-btn-apartar">
-        <button class="btn-apartar">Apartar Libros</button>
+        <!-- Botón de solicitud (aparece al seleccionar) -->
+        <div class="container-btn-apartar">
+            <button class="btn-apartar" onclick="window.abrirModal()">Solicitar recurso</button>
+        </div>
     </div>
 </div>
 
-<script src="./js/funcionsRecursos.js"></script>
-<script src="./js/filtrosLibros.js"></script>
+<!-- Modal de confirmación -->
+<div id="modal-confirmacion" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <button class="btn-cerrar-modal" onclick="cerrarModal()">&times;</button>
+        <h3>Detalles del Recurso</h3>
+        <div id="detalles-recurso" class="detalles-recurso">
+            <table class="tabla-detalles">
+                <tbody id="tabla-detalles-body">
+                    <!-- Los detalles se llenarán dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+        <div class="modal-acciones">
+            <button id="btn-confirmar-solicitud" class="btn-apartar" onclick="confirmarSolicitud()">Apartar
+                Recurso</button>
+            <button id="btn-cancelar-solicitud" class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div id="modal-confirmacion" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Confirmar Solicitud</h3>
+            <div id="detalles-recurso" class="detalles-recurso">
+                <!-- Se llenará dinámicamente -->
+            </div>
+            <div class="modal-acciones">
+                <button id="btn-confirmar-solicitud" class="btn-apartar">Apartar</button>
+                <button id="btn-cancelar-solicitud" class="btn-cancelar">Cancelar solicitud</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/funcionsRecursos.js"></script>

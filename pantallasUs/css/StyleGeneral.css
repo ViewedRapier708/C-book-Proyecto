@@ -19,6 +19,12 @@
     --card-shadow: 0 6px 16px rgba(123, 2, 51, 0.09);
     --soft-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
+.disabled {
+    pointer-events: none;
+    opacity: 0.6;
+    background-color: var(--primary-1);
+    color: #a0a0a0;
+}
 
 /* Base responsive typography */
 html {
@@ -56,14 +62,41 @@ img {
     box-sizing: border-box;
     width: calc(100% - var(--aside-width, 280px));
     transition: margin-left 0.28s ease, width 0.28s ease;
-    padding: 7rem;
+    padding: 3rem;
 }
 
 
+
+.toast {
+    background-color: #333;
+    color: #fff;
+    padding: 12px 18px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    min-width: 250px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    opacity: 0;
+    transform: translateX(100%);
+    animation: slideIn 0.5s forwards, fadeOut 0.5s forwards 3s;
+}
+
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
 .container-informacion {
     /* CENTRADO UNIVERSAL SIN FLEX */
-    width: 100%;
-    max-width: 1400px;
+    width: 150em;
+    height: auto;
     margin: 0 auto;
 
     /* ESPACIADO RESPONSIVE */
@@ -71,20 +104,20 @@ img {
     box-sizing: border-box;
 
     /* DISEÑO */
-    background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.95) 0%,
-        rgba(249, 249, 249, 0.98) 100%
-    );
+    background: linear-gradient(180deg,
+            rgba(255, 255, 255, 0.95) 0%,
+            rgba(249, 249, 249, 0.98) 100%);
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(123, 2, 51, 0.08);
     backdrop-filter: blur(8px) saturate(110%);
     border: 1px solid rgba(157, 48, 108, 0.08);
     transition: all 0.3s ease;
-    height: 70vh;
+    height: auto;
+    min-height: 50vh;
+    max-height: 85vh;
+
     /* POSICIÓN */
     position: relative;
-   
 
     /* OPCIONAL:
        Si NO quieres centrar el texto, quita esta línea:
@@ -108,19 +141,17 @@ img {
     box-shadow: var(--card-shadow);
     margin-bottom: 0.9rem;
     position: relative;
-    
+
     border: 1px solid rgba(255, 255, 255, 0.06);
     backdrop-filter: saturate(120%) blur(6px);
 }
 
-.container-titulo::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+
+
+.container-contenido {
+    padding: clamp(1rem, 2.5vw, 3rem);
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 @keyframes shine {
@@ -209,6 +240,20 @@ table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
+    table-layout: fixed;
+}
+
+/* =============================================
+   MEDIDAS ESTÁNDAR PARA TABLAS - ANCHOS FIJOS
+   ============================================= */
+
+/* Celdas con texto largo: ocultar overflow y mostrar puntos suspensivos */
+thead th,
+tbody td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
 }
 
 thead {
@@ -218,45 +263,49 @@ thead {
 thead th {
     color: #FFFFFF;
     font-weight: 600;
-    text-align: left;
+    text-align: center;
     padding: 0.45rem 0.6rem;
     font-size: 0.8rem;
     letter-spacing: 0.4px;
     text-transform: uppercase;
 }
 
-thead th:first-child {
-    border-radius: 10px 0 0 0;
-}
-
-thead th:last-child {
-    border-radius: 0 10px 0 0;
-}
-
-tbody tr {
-    background: #FFFFFF;
-    transition: all 0.3s ease;
-    border-bottom: 1px solid #E8E8E8;
-}
-
-tbody tr:hover {
-    background: linear-gradient(90deg, rgba(250, 230, 240, 0.6), rgba(248, 215, 232, 0.6));
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(123, 2, 51, 0.08);
-}
-
-tbody tr:last-child td:first-child {
-    border-radius: 0 0 0 10px;
-}
-
-tbody tr:last-child td:last-child {
-    border-radius: 0 0 10px 0;
-}
 
 tbody td {
     padding: 0.65rem;
     color: #333;
     font-size: 0.9rem;
+    text-align: center;
+    position: relative;
+    cursor: default;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Tooltip al pasar el cursor solo cuando hay texto truncado */
+tbody td::after {
+    content: attr(data-full-text);
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    white-space: normal;
+    max-width: 320px;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+}
+
+tbody td[data-full-text][data-truncated="true"]:hover::after {
+    opacity: 1;
 }
 
 /* For extremely narrow screens, allow rows to wrap visually by reducing padding */
@@ -271,25 +320,7 @@ tbody td:nth-child(2) {
     font-weight: 600;
 }
 
-tbody tr[data-disponible="true"] td:nth-child(2) {
-    color: #28a745;
-}
-
-tbody tr[data-disponible="true"] td:nth-child(2)::before {
-    content: '';
-    font-size: 1.2rem;
-}
-
-tbody tr[data-disponible="false"] td:nth-child(2) {
-    color: #dc3545;
-}
-
-tbody tr[data-disponible="false"] td:nth-child(2)::before {
-    content: '';
-    font-size: 1.2rem;
-}
-
-tbody tr.selected {
+t tbody tr.selected {
     background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
     color: #FFFFFF;
 }
@@ -359,7 +390,7 @@ tbody tr.selected:hover {
     transition: transform 0.22s ease, box-shadow 0.22s ease;
     text-transform: uppercase;
     position: relative;
- 
+
 }
 
 .btn-apartar::before {
@@ -407,7 +438,7 @@ tbody tr.selected:hover {
 }
 
 @media (max-width: 1024px) {
-  
+
 
     .layout {
         grid-template-columns: 1fr;
@@ -446,7 +477,7 @@ tbody tr.selected:hover {
         padding: 0.75rem 0.6rem;
     }
 
-   
+
     .layout {
         gap: 0.6rem;
     }
@@ -505,10 +536,6 @@ tbody tr.selected:hover {
         font-size: 0.84rem;
     }
 
-    thead th,
-    tbody td {
-        padding: 0.6rem 0.45rem;
-    }
 
     .btn-apartar {
         font-size: 0.92rem;
@@ -536,10 +563,6 @@ tbody tr.selected:hover {
         min-width: 300px;
     }
 
-    thead th,
-    tbody td {
-        padding: 0.6rem 0.4rem;
-    }
 
     .container-datos-usuario {
         padding: 1rem;
@@ -663,6 +686,7 @@ select:focus {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -673,6 +697,7 @@ select:focus {
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -683,6 +708,7 @@ select:focus {
         opacity: 0;
         transform: translateX(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
