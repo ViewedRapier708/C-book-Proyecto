@@ -36,8 +36,8 @@ const appendRow = (tipoTabla, obj) => {
         td.textContent = formatDisponible(valor);
         tr.appendChild(td);
     });
-    tr.dataset.recurso = JSON.stringify(obj || {});
-    tr.dataset.rowKey = getRowKey(tipoTabla, obj) || '';
+    tr.dataset.recurso = JSON.stringify(obj );
+    tr.dataset.rowKey = getRowKey(tipoTabla, obj) ;
     tbody.appendChild(tr);
 };
 
@@ -88,7 +88,7 @@ const mapRowValues = (tipo, obj) => {
 
 // Obtiene una clave única por fila para facilitar updates/deletes
 const getRowKey = (tipo, obj) => {
-    const recurso = obj || {};
+    const recurso = obj ;
     if (tipo === 'libro') return recurso.numero_ejemplar || recurso.id || recurso.libros?.isbn || null;
     if (tipo === 'computadora') return recurso.no_computadora || recurso.id || null;
     if (tipo === 'restirador') return recurso.no_restirador || recurso.id || null;
@@ -100,13 +100,16 @@ async function iniciarSupabaseRealTime(tipoFrontend, callback) {
     try {
         // Verificar que Supabase esté disponible
         if (typeof window.supabase === 'undefined') {
-            console.error('❌ [RealTime] Supabase no está cargado. Agrega el CDN en el HTML.');
             return null;
         }
 
         // Obtener las tablas a escuchar (puede ser un array)
+<<<<<<< HEAD
         const tablasSupabase = TABLA_SUPABASE[tipoFrontend] ;
         console.log(`🔄 [RealTime] Mapeando "${tipoFrontend}" -> [${tablasSupabase.join(', ')}]`);
+=======
+        const tablasSupabase = TABLA_SUPABASE[tipoFrontend] || [tipoFrontend];
+>>>>>>> a6a41cdd06e4496bec485c8e27a5ce890996c623
 
         if (!supabaseClient) {
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -124,9 +127,9 @@ async function iniciarSupabaseRealTime(tipoFrontend, callback) {
         const handleChange = (payload) => {
             const nuevoRegistro = payload?.new;
             const antiguoRegistro = payload?.old;
-            console.log(`📥 [RealTime] Evento en ${payload.table}:`, payload.eventType);
-            console.log('Nuevo', nuevoRegistro);
-            console.log('Antiguo', antiguoRegistro);
+            //console.log(`📥 [RealTime] Evento en ${payload.table}:`, payload.eventType);
+           // console.log('Nuevo', nuevoRegistro);
+         //   console.log('Antiguo', antiguoRegistro);
 
             if (typeof callback === 'function') {
                 callback(payload);
@@ -134,10 +137,10 @@ async function iniciarSupabaseRealTime(tipoFrontend, callback) {
             }
 
             // Para cualquier cambio, recargar la tabla completa
-            console.log('🔄 [RealTime] Recargando tabla...');
+   //         console.log('🔄 [RealTime] Recargando tabla...');
             if (typeof cargarDatosTabla === 'function') {
                 cargarDatosTabla().then(() => {
-                    console.log('✅ [RealTime] Tabla actualizada');
+                 //   console.log('✅ [RealTime] Tabla actualizada');
                     if (typeof inicializarEventosTabla === 'function') {
                         inicializarEventosTabla();
                     }
@@ -163,17 +166,17 @@ async function iniciarSupabaseRealTime(tipoFrontend, callback) {
                 .subscribe((status) => {
                     console.log(`📊 [RealTime] ${tablaSupabase}: ${status}`);
                     if (status === 'SUBSCRIBED') {
-                        console.log(`✅ [RealTime] Conectado a: ${tablaSupabase}`);
+            //            console.log(`✅ [RealTime] Conectado a: ${tablaSupabase}`);
                     } else if (status === 'CHANNEL_ERROR') {
-                        console.error(`❌ [RealTime] Error en ${tablaSupabase} - Habilita Realtime en Supabase`);
+              //          console.error(`❌ [RealTime] Error en ${tablaSupabase} - Habilita Realtime en Supabase`);
                     }
                 });
 
             realtimeChannels.push(channel);
         }
 
-        console.log(`🎯 [RealTime] Escuchando ${tablasSupabase.length} tabla(s): ${tablasSupabase.join(', ')}`);
-        console.log('⚠️ IMPORTANTE: Habilita Realtime en Supabase Dashboard → Database → Replication');
+      //  console.log(`🎯 [RealTime] Escuchando ${tablasSupabase.length} tabla(s): ${tablasSupabase.join(', ')}`);
+    //    console.log('⚠️ IMPORTANTE: Habilita Realtime en Supabase Dashboard → Database → Replication');
 
         return realtimeChannels;
     } catch (error) {
@@ -187,11 +190,11 @@ async function iniciarRealtimeEnTablaActual() {
     const tablaEl = document.getElementById('tabla');
     const tipo = tablaEl?.getAttribute('data-tipo');
     if (!tipo) {
-        console.log('📋 [RealTime] No hay tabla con data-tipo en el componente actual');
+     //   console.log('📋 [RealTime] No hay tabla con data-tipo en el componente actual');
         return;
     }
 
-    console.log(`🚀 [RealTime] Iniciando realtime para tabla: ${tipo}`);
+   // console.log(`🚀 [RealTime] Iniciando realtime para tabla: ${tipo}`);
     await iniciarSupabaseRealTime(tipo);
 }
 
@@ -200,7 +203,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tablaEl = document.getElementById('tabla');
     const tipo = tablaEl?.getAttribute('data-tipo');
     if (!tipo) {
-        console.log('📋 [RealTime] DOMContentLoaded: No hay tabla inicial, esperando carga de componente...');
+        // console.log('📋 [RealTime] DOMContentLoaded: No hay tabla inicial, esperando carga de componente...');
         return;
     }
 
@@ -217,7 +220,7 @@ async function cargarDatosTabla() {
     }
 
     const renderLista = (lista) => {
-        console.log('Renderizando lista de recursos:', lista); //debug
+       // console.log('Renderizando lista de recursos:', lista); //debug
         tbody.innerHTML = '';
 
         const formatDisponible = (valor) => {
@@ -255,9 +258,9 @@ async function cargarDatosTabla() {
             tbody.appendChild(tr);
         });
         
-        console.log(`✅ ${lista.length} filas renderizadas con eventos de clic`);
+       // console.log(`✅ ${lista.length} filas renderizadas con eventos de clic`);
     };
-    const apiBase = window.API_BASE_URL || 'http://localhost:3000';
+    const apiBase = window.API_BASE_URL ;
     let lista = [];
     if (tipo === 'solicitudes') {
         // Obtener boleta del usuario autenticado
@@ -299,7 +302,6 @@ async function cargarDatosTabla() {
             return;
         }
     }
-    console.log('Datos obtenidos de la API:', lista); //debug
     renderLista(lista);
 }
 

@@ -66,6 +66,33 @@ img {
 }
 
 
+
+.toast {
+    background-color: #333;
+    color: #fff;
+    padding: 12px 18px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    min-width: 250px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    opacity: 0;
+    transform: translateX(100%);
+    animation: slideIn 0.5s forwards, fadeOut 0.5s forwards 3s;
+}
+
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
 .container-informacion {
     /* CENTRADO UNIVERSAL SIN FLEX */
     width: 150em;

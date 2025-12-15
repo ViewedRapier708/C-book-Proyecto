@@ -3,6 +3,7 @@ const { CrearSolicitud,CancelarSolicitud } = require("../models/ModeloSolicitude
 const tipos = ['computadora', 'restirador', 'libro'];
 async function crearSolicitud(req,res) {
     const { tipo ,boleta,idRecurso } = req.body;
+    console.log("Datos recibidos para crear solicitud:", { tipo, boleta, idRecurso }); //debug
     const regularExpression = /^[0-9 ]{10}$/;
     const regularExpressiontipo = /^[a-zA-Z]+$/;
 
@@ -12,7 +13,7 @@ async function crearSolicitud(req,res) {
     }
     if (!regularExpression.test(boleta)) {
         return res.status(400).json({ success: false, message: 'La boleta debe ser un número válido de longitud 10' });
-    }else if (!regularExpressiontipo.test(tipo).toLowerCase()) {
+    }else if (!regularExpressiontipo.test(tipo)) {
         return res.status(400).json({ success: false, message: 'El tipo de solicitud debe contener solo letras' });
     }else if (!Number.isInteger(idRecurso) || idRecurso <= 0) {
         return res.status(400).json({ success: false, message: 'El ID del recurso debe ser un número entero positivo' });
