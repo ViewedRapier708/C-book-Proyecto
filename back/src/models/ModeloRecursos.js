@@ -40,7 +40,7 @@ const libros = async () => {
     numero_ejemplar,
     anio,
     estatus_item,
-    "Disponibilidad",
+    "Disponible",
     coleccion,
     libros (
       titulo,

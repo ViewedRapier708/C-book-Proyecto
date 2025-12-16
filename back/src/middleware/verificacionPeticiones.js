@@ -39,7 +39,7 @@ async function verificarDisponibilidad(req, res, next) {
             });
         }
         const pendientes = await ObtenerSolicitudesActivasPorBoleta(tipo, numeroBoleta);//Verificar si tiene solicitudes activas del usuario
-        console.log("Resultado de solicitudes activas:", pendientes);
+
         if (!pendientes.success) {
             return res.status(500).json({
                 success: false,
@@ -62,11 +62,11 @@ async function verificarDisponibilidad(req, res, next) {
         }
     }
     //Verificar disponibilidad del recurso segun el tipo
-    const disponibilidad = await VerificarDisponibilidadRecurso(tipo, recurso_id); //Verificar si el recurso esta disponible
+    const disponibilidad = await VerificarDisponibilidadRecurso(tipo, idRecurso); //Verificar si el recurso esta disponible
     console.log("Resultado de disponibilidad:", disponibilidad);
     if (disponibilidad.success === true && disponibilidad.message == null) {
 
-        next(disponibilidad);
+        next();
     }
     if (disponibilidad.success === false) {
         return res.status(400).json({

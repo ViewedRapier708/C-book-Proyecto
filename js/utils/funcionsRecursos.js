@@ -187,9 +187,10 @@ async function confirmarSolicitud() {
 
     const resultado = await response.json();
     console.log('Respuesta del servidor:', resultado);
-console.log('aqui me rompo despues')
+
     if (response.ok && resultado.success) {
       // Éxito
+      alert('¡Solicitud realizada con éxito!');
       mostrarNotificacion('✅ ¡Solicitud confirmada exitosamente!', 'success');
       cerrarModal();
       
@@ -202,7 +203,8 @@ console.log('aqui me rompo despues')
       }
     } else {
       // Error del servidor
-      mostrarNotificacion(`❌ ${resultado.message || 'No se pudo procesar la solicitud'}`, 'error');
+      mostrarNotificacion(`❌ ${resultado.error|| 'No se pudo procesar la solicitud'}`, 'error');
+      cerrarModal();
     }
 
     // Restaurar botón
@@ -245,19 +247,77 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
   const notifPrevia = document.querySelector('.notificacion-solicitud');
   if (notifPrevia) notifPrevia.remove();
 
+  // Crear el contenedor de notificaciones si no existe
+  let notifContainer = document.querySelector('.notificaciones-container');
+  if (!notifContainer) {
+    notifContainer = document.createElement('div');
+    notifContainer.className = 'notificaciones-container';
+    notifContainer.style.position = 'fixed';
+    notifContainer.style.top = '24px';
+    notifContainer.style.right = '24px';
+    notifContainer.style.zIndex = '9999';
+    notifContainer.style.display = 'flex';
+    notifContainer.style.flexDirection = 'column';
+    notifContainer.style.gap = '12px';
+    document.body.appendChild(notifContainer);
+  }
+
+  // Inyectar CSS de animaciones solo una vez
+    if (!document.getElementById('notificacion-anim-css')) {
+      const style = document.createElement('style');
+      style.id = 'notificacion-anim-css';
+      style.textContent = `
+        @keyframes notifFadeIn {
+          from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes notifFadeOut {
+          from { opacity: 1; transform: translateY(0) scale(1); }
+          to   { opacity: 0; transform: translateY(-30px) scale(0.95); }
+        }
+        .notificacion-solicitud {
+          animation: notifFadeIn 0.5s cubic-bezier(.4,1.4,.6,1) both;
+          min-width: 260px;
+          max-width: 350px;
+          background: #fff;
+          border-radius: 8px;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+          padding: 16px 20px 16px 16px;
+          font-size: 1rem;
+          color: #222;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          border-left: 5px solid #2196f3;
+        }
+        .notificacion-success { border-left-color: #43a047; }
+        .notificacion-error { border-left-color: #e53935; }
+        .notificacion-info { border-left-color: #2196f3; }
+        .notificacion-solicitud.animar-entrada {
+          animation: notifFadeIn 0.5s cubic-bezier(.4,1.4,.6,1) both;
+          opacity: 1 !important;
+          transform: translateY(0) scale(1) !important;
+        }
+        .notificacion-solicitud.saliendo {
+          animation: notifFadeOut 0.45s cubic-bezier(.4,1.4,.6,1) both;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
   const notif = document.createElement('div');
   notif.className = `notificacion-solicitud notificacion-${tipo}`;
   notif.innerHTML = `
     <span>${mensaje}</span>
-    <button onclick="this.parentElement.remove()">×</button>
+    <button style="margin-left:8px; background:none; border:none; font-size:18px; cursor:pointer;" onclick="this.parentElement.remove()">×</button>
   `;
-  
-  document.body.appendChild(notif);
-  
-  // Auto-remover después de 4 segundos
+
+  notifContainer.appendChild(notif);
+
+  // Auto-remover después de 4 segundos con animación de salida
   setTimeout(() => {
-    notif.classList.add('notificacion-salir');
-    setTimeout(() => notif.remove(), 300);
+    notif.classList.add('saliendo');
+    setTimeout(() => notif.remove(), 450);
   }, 4000);
 }
 
