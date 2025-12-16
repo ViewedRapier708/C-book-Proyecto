@@ -215,8 +215,6 @@ async function login(req, res) {
   }
 }
 
-
-// ==================== CERRAR SESIÓN ====================
 async function verificarSesion(req, res) {
   try {
     const sessionUser = req.session.user;
@@ -235,6 +233,8 @@ async function verificarSesion(req, res) {
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
+
+// ==================== CERRAR SESIÓN ====================
 
 async function cerrarSesion(req, res) {
   try {
@@ -260,11 +260,6 @@ function sanitizeSessionUser(sessionUser = {}) {
   if (!sessionUser) return null;
   const { tokens, ...publicData } = sessionUser;
   return publicData;
-}
-
-function shouldRefresh(expiresAt) {
-  if (!expiresAt) return false;
-  return expiresAt - Date.now() <= SESSION_SAFETY_WINDOW_MS;
 }
 
 function regenerateSession(req) {
@@ -295,4 +290,4 @@ function destroySession(req, res) {
 
 
 
-module.exports = { registro, verificarCorreo, login, verificarSesion, cerrarSesion };
+module.exports = { registro, verificarCorreo, login, cerrarSesion ,verificarSesion};

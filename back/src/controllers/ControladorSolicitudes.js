@@ -54,18 +54,20 @@ async function cancelarSolicitud(req,res) {
     }
 }
 
-async function obtenerSolicitudesUsuario(req, res) {
-    const { boleta } = req.body;
-    if (!boleta) {
-        return res.status(400).json({ success: false, message: 'Falta la boleta del usuario' });
+async function obtencionSolicitudesUsuario(req,res) {
+  const boleta = req.session.user.boleta;
+  console.log("Obteniendo solicitudes para boleta:", boleta); //debug
+  try {
+    const resultado = await modelosRecursos.getSolicitudes(boleta);
+    if (!resultado.success) {
+      return res.status(500).json({ success: false, error: resultado.error || 'Error al obtener solicitudes' });
     }
-    const resultado = await ObtenerSolicitudesUsuario(boleta);
-    console.log("Resultado de obtenerSolicitudesUsuario:", resultado); //debug
-    if (resultado.success) {
-        return res.status(200).json({ success: true, solicitudes: resultado.solicitudes });
-    } else {
-        return res.status(500).json({ success: false, message: resultado.message || 'Error al obtener las solicitudes' });
-    }
-}   
+    return res.status(200).json({ success: true, data: resultado.data });
+  } catch (err) {
+    console.error('Error en obtencionSolicitudesUsuario:', err);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
 
-module.exports = { crearSolicitud, cancelarSolicitud, obtenerSolicitudesUsuario };
+}
+
+module.exports = { crearSolicitud, cancelarSolicitud, obtencionSolicitudesUsuario };
