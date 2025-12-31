@@ -236,22 +236,28 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
     }
 
 }
-async function ObtenerSolicitudesUsuario(boleta) {
-    try {
-        const { data, error } = await supabase
-            .from('v_solicitudes_alumno')
-            .select('*')
-            .eq('registro_id', boleta)
+async function getSolicitudes(boleta) {
+  const supabase = getClient();
+  try {
+    const { data, error } = await supabase//Retorna todas las solicitudes hechas por un alumno
+      .from('v_solicitudes_alumno')
+      .select('*')
+      .eq('registro_id', boleta);
 
-        if (error) {
-            console.error("Error obteniendo solicitudes del usuario:", error);
-            return { success: false, error: error.message };
-        }
-        return { success: true, data: data };
-    } catch (error) {
-
+      console.log("Data recuperada:", data); //debug
+    if (error) {
+      console.error("Error obteniendo solicitudes:", error);
+      return { success: false, error: error.message };
     }
+
+    console.log("Solicitudes obtenidas:", data); //debug
+    return { success: true, data };
+  } catch (err) {
+    console.error("Error en getSolicitudes:", err);
+    return { success: false, error: 'Error interno' };
+  }
 }
+
 
 
 // ==================== CANCELACION DE SOLICITUD ====================
@@ -288,7 +294,7 @@ module.exports = {
     VerificarDisponibilidadRecurso,
     ObtenerSolicitudesActivasPorBoleta,
     CancelarSolicitud,
-    ObtenerSolicitudesUsuario
+    getSolicitudes
 };
 
 

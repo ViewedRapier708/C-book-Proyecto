@@ -108,7 +108,6 @@ async function crearUsuarioEnTabla(boleta, correo) {
 }
 
 // ==================== VERIFICACIÓN ====================
-
 // Verificar si el correo fue confirmado por boleta
 async function verificarConfirmacionPorBoleta(boleta) {
   const supabase = getClient();
@@ -267,6 +266,9 @@ async function revocarSesionesSupabase(accessToken) {
     return { success: false, error: 'Error interno' };
   }
 }
+//===================Obtener solicitudes de un usuario=================== 
+
+
 module.exports = { 
   validarBoletaEnTabla, 
   validarCorreoEnTabla, 
