@@ -104,12 +104,7 @@ async function iniciarSupabaseRealTime(tipoFrontend, callback) {
         }
 
         // Obtener las tablas a escuchar (puede ser un array)
-<<<<<<< HEAD
-        const tablasSupabase = TABLA_SUPABASE[tipoFrontend] ;
-        console.log(`🔄 [RealTime] Mapeando "${tipoFrontend}" -> [${tablasSupabase.join(', ')}]`);
-=======
         const tablasSupabase = TABLA_SUPABASE[tipoFrontend] || [tipoFrontend];
->>>>>>> a6a41cdd06e4496bec485c8e27a5ce890996c623
 
         if (!supabaseClient) {
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
