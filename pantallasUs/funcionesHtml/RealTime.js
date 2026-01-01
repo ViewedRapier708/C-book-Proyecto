@@ -23,25 +23,6 @@ const formatDisponible = (valor) => {
     if (valor === 'Sí' || valor === 'No') return valor;
     return valor;
 };
-
-const appendRow = (tipoTabla, obj) => {
-    const tbody = document.getElementById('Tbody');
-    const tipoActual = document.getElementById('tabla')?.getAttribute('data-tipo');
-    if (!tbody || tipoTabla !== tipoActual) return;
-
-    const tr = document.createElement('tr');
-    const fila = mapRowValues(tipoTabla, obj);
-    fila.forEach((valor) => {
-        const td = document.createElement('td');
-        td.textContent = formatDisponible(valor);
-        tr.appendChild(td);
-    });
-    tr.dataset.recurso = JSON.stringify(obj );
-    tr.dataset.rowKey = getRowKey(tipoTabla, obj) ;
-    tbody.appendChild(tr);
-};
-
-// Normaliza un recurso a un array de valores según el tipo de tabla
 const mapRowValues = (tipo, obj) => {
     if (Array.isArray(obj)) return obj;
     const recurso = obj || {};
@@ -49,7 +30,7 @@ const mapRowValues = (tipo, obj) => {
     // Para libros (tabla ejemplares)
     if (tipo === 'libro') {
         const libro = recurso.libros || {};
-        return [
+        return [//Retorna un array con los valores en el orden correcto
             libro.titulo || recurso.titulo || '-',
             libro.autor || recurso.autor || '-',
             libro.clasificacion || recurso.clasificacion || '-',
@@ -86,13 +67,32 @@ const mapRowValues = (tipo, obj) => {
     return Object.values(recurso);
 };
 
-// Obtiene una clave única por fila para facilitar updates/deletes
 const getRowKey = (tipo, obj) => {
-    const recurso = obj ;
+    const recurso = obj;
     if (tipo === 'libro') return recurso.numero_ejemplar || recurso.id || recurso.libros?.isbn || null;
     if (tipo === 'computadora') return recurso.no_computadora || recurso.id || null;
     if (tipo === 'restirador') return recurso.no_restirador || recurso.id || null;
     return recurso.id || recurso._id || null;
+};
+
+const appendRow = (tipoTabla, obj) => {
+    const tbody = document.getElementById('Tbody');
+    const tipoActual = document.getElementById('tabla')?.getAttribute('data-tipo');
+    if (!tbody || tipoTabla !== tipoActual) return;
+
+    const tr = document.createElement('tr');
+    const fila = mapRowValues(tipoTabla, obj);
+    fila.forEach((valor) => {
+        const td = document.createElement('td');
+        td.textContent = formatDisponible(valor);
+        tr.appendChild(td);
+    });
+    tr.dataset.recurso = JSON.stringify(obj);
+    tr.dataset.rowKey = getRowKey(tipoTabla, obj);
+    tbody.appendChild(tr);
+
+
+
 };
 
 // Función para inicializar Supabase Realtime según documentación oficial
@@ -104,12 +104,7 @@ async function iniciarSupabaseRealTime(tipoFrontend, callback) {
         }
 
         // Obtener las tablas a escuchar (puede ser un array)
-<<<<<<< HEAD
-        const tablasSupabase = TABLA_SUPABASE[tipoFrontend] ;
-        console.log(`🔄 [RealTime] Mapeando "${tipoFrontend}" -> [${tablasSupabase.join(', ')}]`);
-=======
-        const tablasSupabase = TABLA_SUPABASE[tipoFrontend] || [tipoFrontend];
->>>>>>> a6a41cdd06e4496bec485c8e27a5ce890996c623
+        const tablasSupabase = TABLA_SUPABASE[tipoFrontend];
 
         if (!supabaseClient) {
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -128,8 +123,8 @@ async function iniciarSupabaseRealTime(tipoFrontend, callback) {
             const nuevoRegistro = payload?.new;
             const antiguoRegistro = payload?.old;
             //console.log(`📥 [RealTime] Evento en ${payload.table}:`, payload.eventType);
-           // console.log('Nuevo', nuevoRegistro);
-         //   console.log('Antiguo', antiguoRegistro);
+            // console.log('Nuevo', nuevoRegistro);
+            //   console.log('Antiguo', antiguoRegistro);
 
             if (typeof callback === 'function') {
                 callback(payload);
@@ -137,10 +132,10 @@ async function iniciarSupabaseRealTime(tipoFrontend, callback) {
             }
 
             // Para cualquier cambio, recargar la tabla completa
-   //         console.log('🔄 [RealTime] Recargando tabla...');
+            //         console.log('🔄 [RealTime] Recargando tabla...');
             if (typeof cargarDatosTabla === 'function') {
                 cargarDatosTabla().then(() => {
-                 //   console.log('✅ [RealTime] Tabla actualizada');
+                    //   console.log('✅ [RealTime] Tabla actualizada');
                     if (typeof inicializarEventosTabla === 'function') {
                         inicializarEventosTabla();
                     }
@@ -151,7 +146,7 @@ async function iniciarSupabaseRealTime(tipoFrontend, callback) {
         // Crear un canal para cada tabla
         for (const tablaSupabase of tablasSupabase) {
             const channelName = `realtime-${tablaSupabase}-${Date.now()}`;
-            
+
             const channel = supabaseClient
                 .channel(channelName)
                 .on(
@@ -166,17 +161,17 @@ async function iniciarSupabaseRealTime(tipoFrontend, callback) {
                 .subscribe((status) => {
                     console.log(`📊 [RealTime] ${tablaSupabase}: ${status}`);
                     if (status === 'SUBSCRIBED') {
-            //            console.log(`✅ [RealTime] Conectado a: ${tablaSupabase}`);
+                        //            console.log(`✅ [RealTime] Conectado a: ${tablaSupabase}`);
                     } else if (status === 'CHANNEL_ERROR') {
-              //          console.error(`❌ [RealTime] Error en ${tablaSupabase} - Habilita Realtime en Supabase`);
+                        //          console.error(`❌ [RealTime] Error en ${tablaSupabase} - Habilita Realtime en Supabase`);
                     }
                 });
 
             realtimeChannels.push(channel);
         }
 
-      //  console.log(`🎯 [RealTime] Escuchando ${tablasSupabase.length} tabla(s): ${tablasSupabase.join(', ')}`);
-    //    console.log('⚠️ IMPORTANTE: Habilita Realtime en Supabase Dashboard → Database → Replication');
+        //  console.log(`🎯 [RealTime] Escuchando ${tablasSupabase.length} tabla(s): ${tablasSupabase.join(', ')}`);
+        //    console.log('⚠️ IMPORTANTE: Habilita Realtime en Supabase Dashboard → Database → Replication');
 
         return realtimeChannels;
     } catch (error) {
@@ -190,11 +185,11 @@ async function iniciarRealtimeEnTablaActual() {
     const tablaEl = document.getElementById('tabla');
     const tipo = tablaEl?.getAttribute('data-tipo');
     if (!tipo) {
-     //   console.log('📋 [RealTime] No hay tabla con data-tipo en el componente actual');
+        //   console.log('📋 [RealTime] No hay tabla con data-tipo en el componente actual');
         return;
     }
 
-   // console.log(`🚀 [RealTime] Iniciando realtime para tabla: ${tipo}`);
+    // console.log(`🚀 [RealTime] Iniciando realtime para tabla: ${tipo}`);
     await iniciarSupabaseRealTime(tipo);
 }
 
@@ -220,9 +215,7 @@ async function cargarDatosTabla() {
     }
 
     const renderLista = (lista) => {
-       // console.log('Renderizando lista de recursos:', lista); //debug
-        tbody.innerHTML = '';
-
+        tbody.innerHTML = ''
         const formatDisponible = (valor) => {
             if (typeof valor === 'boolean') return valor ? 'Sí' : 'No';
             if (valor === null || valor === undefined) return '-';
@@ -242,11 +235,11 @@ async function cargarDatosTabla() {
 
             tr.dataset.recurso = JSON.stringify(obj);
             tr.dataset.rowKey = getRowKey(tipo, obj) || '';
-            
+
             // Agregar clase y evento de clic para selección
             tr.classList.add('fila-recurso');
             tr.style.cursor = 'pointer';
-            tr.addEventListener('click', function() {
+            tr.addEventListener('click', function () {
                 // Usar la función global desde window
                 if (typeof window.seleccionarFila === 'function') {
                     window.seleccionarFila(this);
@@ -254,13 +247,13 @@ async function cargarDatosTabla() {
                     console.error('seleccionarFila no está definida');
                 }
             });
-            
+
             tbody.appendChild(tr);
         });
-        
-       // console.log(`✅ ${lista.length} filas renderizadas con eventos de clic`);
+
+        // console.log(`✅ ${lista.length} filas renderizadas con eventos de clic`);
     };
-    const apiBase = window.API_BASE_URL ;
+    const apiBase = window.API_BASE_URL;
     let lista = [];
     if (tipo === 'solicitudes') {
         // Obtener boleta del usuario autenticado
@@ -296,7 +289,7 @@ async function cargarDatosTabla() {
             headers: { 'Accept': 'application/json' }
         });
         const respuesta = await peticion.json();
-        lista = Array.isArray(respuesta?.data)  ? respuesta.data : (Array.isArray(respuesta) ? respuesta : []);
+        lista = Array.isArray(respuesta?.data) ? respuesta.data : (Array.isArray(respuesta) ? respuesta : []);
         if (!Array.isArray(lista)) {
             console.error('Respuesta de recursos no es lista', respuesta);
             return;
@@ -325,9 +318,9 @@ const ActualizarFilaTabla = (antiguo, nuevo) => {
     const target = rowKey
         ? filas.find((fila) => fila.dataset.rowKey === String(rowKey))
         : filas.find((fila) => {
-              const celdas = Array.from(fila.querySelectorAll('td'));
-              return antiguoVals.every((valor, idx) => celdas[idx] && celdas[idx].textContent == valor);
-          });
+            const celdas = Array.from(fila.querySelectorAll('td'));
+            return antiguoVals.every((valor, idx) => celdas[idx] && celdas[idx].textContent == valor);
+        });
 
     if (!target) {
         console.warn('No se encontró la fila a actualizar');
@@ -355,9 +348,9 @@ const eliminarFilaTabla = (antiguo) => {
     const target = rowKey
         ? filas.find((fila) => fila.dataset.rowKey === String(rowKey))
         : filas.find((fila) => {
-              const celdas = Array.from(fila.querySelectorAll('td'));
-              return antiguoVals.every((valor, idx) => celdas[idx] && celdas[idx].textContent == valor);
-          });
+            const celdas = Array.from(fila.querySelectorAll('td'));
+            return antiguoVals.every((valor, idx) => celdas[idx] && celdas[idx].textContent == valor);
+        });
 
     if (target) {
         target.remove();
