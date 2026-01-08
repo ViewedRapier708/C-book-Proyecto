@@ -173,8 +173,11 @@ async function login(req, res) {
       return res.status(400).json({ error: loginResult.error || 'Error al iniciar sesión' });
     }
     const userData = await traerUsuarioInfo(boleta);
-    const nombre = (userData.data?.boletas?.nombre || '').trim();
-    const grupo = userData.data?.boletas?.Grupo || '';
+
+    console.log("Usuario autenticado:", userData); //debug
+    const nombre = (userData.data?.boletas?.nombre ).trim();
+    const grupo = userData.data?.boletas?.Grupo ;
+    const rol= userData.data?.rol ;
   //  console.log("Datos del usuario:", userData); //debug
    // console.log("Login exitoso, sesión creada"); //debug
 
@@ -207,7 +210,8 @@ async function login(req, res) {
     return res.status(200).json({
       success: true,
       mensaje: 'Inicio de sesión exitoso',
-      user: sanitizeSessionUser(req.session.user)
+      user: sanitizeSessionUser(req.session.user),
+      rol:rol
     });
   } catch (err) {
   //  console.error("Error en login:", err);

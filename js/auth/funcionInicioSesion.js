@@ -28,6 +28,7 @@ async function iniciarSesion(event) {
 
         // Llamar al backend usando ruta relativa (mismo origen)
         const apiBase = window.API_BASE_URL || 'http://localhost:3000';
+        console.log('Usando API base:', apiBase); //debug
         const res = await fetch(`${apiBase}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -55,8 +56,18 @@ async function iniciarSesion(event) {
         mensajeDiv.style.color = 'green';
 
         // Redirigir al dashboard
+
+        console.log('Redirigiendo al dashboard...'); //debug
+        alert(data.rol); //debug
         setTimeout(() => {
+
+            if (data.rol === 'admin') {
+                window.location.href = './pantallasUs/admin.html';
+            }   else if (data.rol === 'docente') {
             window.location.href = './pantallasUs/usuario.html';
+            }
+
+
         }, 400);
 
         return false;
