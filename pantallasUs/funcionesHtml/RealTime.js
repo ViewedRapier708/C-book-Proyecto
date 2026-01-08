@@ -26,7 +26,7 @@ const formatDisponible = (valor) => {
 const mapRowValues = (tipo, obj) => {
     if (Array.isArray(obj)) return obj;
     const recurso = obj || {};
-
+console.log('Mapeando fila para tipo:', tipo, 'con recurso:', recurso);
     // Para libros (tabla ejemplares)
     if (tipo === 'libro') {
         const libro = recurso.libros || {};
@@ -63,25 +63,32 @@ const mapRowValues = (tipo, obj) => {
             recurso.estado_de_material ?? '-'
         ];
     }
+    //Para la visualizacion de las solicitudes echas
 
+    if (tipo === 'solicitudes') {
+        return [
+         recurso.tipo,recurso.recurso.id,recurso.fecha_solicitud,recurso.hora_solicitud,recurso.hora_limite,recurso.estado
+        ];
+    }
     return Object.values(recurso);
 };
 
-const getRowKey = (tipo, obj) => {
+const getRowKey = (tipo, obj) => {//Obtiene una clave única para la fila basada en el tipo de recurso 
     const recurso = obj;
     if (tipo === 'libro') return recurso.numero_ejemplar || recurso.id || recurso.libros?.isbn || null;
     if (tipo === 'computadora') return recurso.no_computadora || recurso.id || null;
     if (tipo === 'restirador') return recurso.no_restirador || recurso.id || null;
+    if (tipo === 'solicitudes') return recurso.id || null; 
     return recurso.id || recurso._id || null;
 };
 
-const appendRow = (tipoTabla, obj) => {
+const appendRow = (tipoTabla, obj) => {//Crea una nueva fila en la tabla HTML de los recursos
     const tbody = document.getElementById('Tbody');
     const tipoActual = document.getElementById('tabla')?.getAttribute('data-tipo');
     if (!tbody || tipoTabla !== tipoActual) return;
 
     const tr = document.createElement('tr');
-    const fila = mapRowValues(tipoTabla, obj);
+    const fila = mapRowValues(tipoTabla, obj);//Obtiene los valores de la fila mapeados de un arreglo 
     fila.forEach((valor) => {
         const td = document.createElement('td');
         td.textContent = formatDisponible(valor);
@@ -206,7 +213,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     iniciarSupabaseRealTime(tipo);
 });
 
-async function cargarDatosTabla() {
+async function cargarDatosTabla() {//Cargar los datos de la tabla HTML de los recursos desde la API y renderizarlos en la tabla 
     const tbody = document.getElementById('Tbody');
     const tipo = document.getElementById('tabla')?.getAttribute('data-tipo');
     if (!tbody || !tipo) {
@@ -298,7 +305,7 @@ async function cargarDatosTabla() {
     renderLista(lista);
 }
 
-const ActualizarFilaTabla = (antiguo, nuevo) => {
+const ActualizarFilaTabla = (antiguo, nuevo) => {//Actualiza una fila existente en la tabla HTML de los recursos esto se utiliza en tiempo real
     const tbody = document.getElementById('Tbody');
     const tipo = document.getElementById('tabla')?.getAttribute('data-tipo');
     if (!tbody || !tipo) return;
@@ -336,7 +343,7 @@ const ActualizarFilaTabla = (antiguo, nuevo) => {
     target.dataset.rowKey = getRowKey(tipo, nuevo) || target.dataset.rowKey || '';
 };
 
-const eliminarFilaTabla = (antiguo) => {
+const eliminarFilaTabla = (antiguo) => {//Esto se utiliza para eliminar una fila en tiempo real
     const tbody = document.getElementById('Tbody');
     const tipo = document.getElementById('tabla')?.getAttribute('data-tipo');
     if (!tbody || !tipo) return;
