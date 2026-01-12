@@ -198,8 +198,8 @@ async function confirmarSolicitud() {
       limpiarSeleccion();
       
       // Recargar tabla para reflejar cambios
-      if (typeof cargarDatosTabla === 'function') {
-        cargarDatosTabla();
+      if (typeof cargarDatosEnTabla === 'function') {
+        cargarDatosEnTabla();
       }
     } else {
       // Error del servidor

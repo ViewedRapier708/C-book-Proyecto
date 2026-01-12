@@ -236,46 +236,79 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
     }
 
 }
-async function ObtenerSolicitudesUsuario(boleta) {
-    try {
-        const { data, error } = await supabase
-            .from('v_solicitudes_alumno')
-            .select('*')
-            .eq('registro_id', boleta)
+async function getSolicitudes(boleta) {
+  const supabase = getClient();
+  try {
+        console.log('[Solicitudes] Consultando v_solicitudes_alumno con boleta/registro_id:', boleta);
+    const { data, error } = await supabase//Retorna todas las solicitudes hechas por un alumno
+      .from('v_solicitudes_alumno')
+      .select('*')
+      .eq('registro_id', boleta);
 
-        if (error) {
-            console.error("Error obteniendo solicitudes del usuario:", error);
-            return { success: false, error: error.message };
-        }
-        return { success: true, data: data };
-    } catch (error) {
-
+        console.log('[Solicitudes] Data recuperada:', {
+            total: Array.isArray(data) ? data.length : 0,
+            preview: Array.isArray(data) ? data.slice(0, 5) : data
+        });
+    if (error) {
+      console.error("Error obteniendo solicitudes:", error);
+      return { success: false, error: error.message };
     }
+
+    console.log("Solicitudes obtenidas:", data); //debug
+    return { success: true, data };
+  } catch (err) {
+    console.error("Error en getSolicitudes:", err);
+    return { success: false, error: 'Error interno' };
+  }
 }
 
 
+
 // ==================== CANCELACION DE SOLICITUD ====================
-async function CancelarSolicitud(solicitudId) {
+async function CancelarSolicitud(tipoSolicitud, solicitudId, boleta) {
     const id = Number(solicitudId);
     if (!Number.isInteger(id)) {
         return { success: false, error: 'ID de solicitud inválido' };
     }
-    try {
-        const { error } = await supabase
-            .from('solicitudes_computadora')
-            .update({ estado_solicitud_id: 3 }) //3 representa 'cancelada'
-            .eq('id', id)
-            .eq('estado_solicitud_id', 1); //Solo cancelar si está en 'pendiente'
-        if (error) {
-            console.error("Error cancelando solicitud:", error);
-            return { success: false, error: error.message };
-        }
-        return { success: true, error: null };
-    } catch (err) {
-        console.error("Error en CancelarSolicitud:", err);
-        return { success: false, error: 'Error interno del servidor' };
+
+    let tabla = null;
+    switch (tipoSolicitud) {
+        case 'computadora':
+            tabla = 'solicitudes_computadora';
+            break;
+        case 'restirador':
+            tabla = 'solicitudes_restirador';
+            break;
+        case 'libro':
+            tabla = 'solicitudes_libros';
+            break;
+        default:
+            return { success: false, error: 'Tipo de solicitud inválido' };
     }
 
+    try {
+        let query = supabase
+            .from(tabla)
+            .update({ estado_asistencia_id: 3 }) // 3 = cancelada
+            .eq('id', id)
+            .eq('estado_asistencia_id', 1); // solo cancelar si está pendiente
+
+        if (boleta) {
+            query = query.eq('usuario_boleta', String(boleta));
+        }
+
+        const { error } = await query;
+
+        if (error) {
+            console.error('Error cancelando solicitud:', error);
+            return { success: false, error: error.message };
+        }
+
+        return { success: true, error: null };
+    } catch (err) {
+        console.error('Error en CancelarSolicitud:', err);
+        return { success: false, error: 'Error interno del servidor' };
+    }
 }
 
 
@@ -288,7 +321,7 @@ module.exports = {
     VerificarDisponibilidadRecurso,
     ObtenerSolicitudesActivasPorBoleta,
     CancelarSolicitud,
-    ObtenerSolicitudesUsuario
+    getSolicitudes
 };
 
 

@@ -55,12 +55,11 @@ async function registrarEnAuth(boleta, correo, password) {
         emailRedirectTo: "https://viewedrapier708.github.io/C-book-Proyecto/pantallasUs/confirmacionCorreo.html",
         data: { 
           boleta: boleta,
-  
+          rol: 'alumno'
         }
       }
     });
 
-    console.log("Registro Auth:", data?.user?.id, error?.message); //debug
 
     if (error) {
       let mensaje = error.message;
@@ -108,7 +107,6 @@ async function crearUsuarioEnTabla(boleta, correo) {
 }
 
 // ==================== VERIFICACIÓN ====================
-
 // Verificar si el correo fue confirmado por boleta
 async function verificarConfirmacionPorBoleta(boleta) {
   const supabase = getClient();
@@ -208,7 +206,7 @@ async function traerUsuarioInfo(boleta) {
       .select(`
         boleta,
         correo,
-        tiene_documentos,
+        tiene_documentos,rol,
         boletas (
           boleta,
           nombre,
@@ -267,6 +265,9 @@ async function revocarSesionesSupabase(accessToken) {
     return { success: false, error: 'Error interno' };
   }
 }
+//===================Obtener solicitudes de un usuario=================== 
+
+
 module.exports = { 
   validarBoletaEnTabla, 
   validarCorreoEnTabla, 

@@ -49,9 +49,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Dar tiempo para que el DOM se actualice
                     setTimeout(() => {
                         // Cargar datos de la tabla del componente recién inyectado
-                        if (typeof cargarDatosTabla === 'function') {
+                        if (typeof cargarDatosEnTabla === 'function') {
                             console.log('Solicitando datos para la tabla...');
-                            cargarDatosTabla()
+                            cargarDatosEnTabla()
                                 .then(() => {
                                     console.log('✅ Datos cargados en la tabla');
                                     
@@ -61,9 +61,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                         inicializarFiltrosTabla();
                                     }
                                     // Iniciar realtime después de cargar los datos
-                                    if (typeof iniciarRealtimeEnTablaActual === 'function') {
+                                    if (typeof configurarTiempoRealParaTablaActual === 'function') {
                                         console.log('Iniciando Supabase Realtime...');
-                                        iniciarRealtimeEnTablaActual();
+                                        configurarTiempoRealParaTablaActual();
                                     }
                                 })
                                 .catch(err => {
