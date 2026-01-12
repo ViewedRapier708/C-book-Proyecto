@@ -55,12 +55,11 @@ async function registrarEnAuth(boleta, correo, password) {
         emailRedirectTo: "https://viewedrapier708.github.io/C-book-Proyecto/pantallasUs/confirmacionCorreo.html",
         data: { 
           boleta: boleta,
-  
+          rol: 'alumno'
         }
       }
     });
 
-    console.log("Registro Auth:", data?.user?.id, error?.message); //debug
 
     if (error) {
       let mensaje = error.message;
@@ -207,7 +206,7 @@ async function traerUsuarioInfo(boleta) {
       .select(`
         boleta,
         correo,
-        tiene_documentos,
+        tiene_documentos,rol,
         boletas (
           boleta,
           nombre,
