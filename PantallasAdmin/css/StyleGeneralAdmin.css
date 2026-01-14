@@ -46,10 +46,12 @@ body {
 
 .container-informacion {
     width: 100%;
-    max-width: 1400px;
+    max-width: clamp(1000px, 90vw, 1400px); /* Responsive entre 1000px y 1400px */
     margin: 0 auto;
     padding: clamp(0.8rem, 1.8vw, 1.5rem);
     box-sizing: border-box;
+    
+    /* DISEÑO */
     background: linear-gradient(
         180deg,
         rgba(255, 255, 255, 0.95) 0%,
@@ -59,9 +61,37 @@ body {
     box-shadow: 0 8px 24px rgba(123, 2, 51, 0.08);
     backdrop-filter: blur(8px) saturate(110%);
     border: 1px solid rgba(157, 48, 108, 0.08);
-    min-height: 70vh;
+    transition: all 0.3s ease;
+    
+    /* ALTURA DINÁMICA - se ajusta al contenido */
+    height: auto;
+    min-height: min-content; /* Solo el contenido mínimo necesario */
+    
+    /* POSICIÓN */
     position: relative;
+    
+    /* OPCIONAL: centrado de texto */
     text-align: center;
+}
+
+.container-informacion:hover {
+    box-shadow: 0 12px 32px rgba(123, 2, 51, 0.12);
+    transform: translateY(-2px);
+}
+
+/* Media queries para ajustes adicionales */
+@media (max-width: 1400px) {
+    .container-informacion {
+        max-width: 95%;
+    }
+}
+
+@media (max-width: 768px) {
+    .container-informacion {
+        max-width: 100%;
+        padding: 1rem;
+        border-radius: 8px;
+    }
 }
 
 .container-informacion:hover {

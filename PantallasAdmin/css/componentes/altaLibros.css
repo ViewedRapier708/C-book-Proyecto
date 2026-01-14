@@ -231,23 +231,86 @@ textarea:focus {
 
 .layout-dos-columnas {
     display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: 2rem;
-    /* align-items: start; Eliminado para simetría de altura */
+    grid-template-columns: 1fr clamp(280px, 22vw, 350px);
+    gap: clamp(1rem, 2vw, 2rem);
+    width: 100%;
 }
 
 .columna-principal {
     display: flex;
     flex-direction: column;
+    min-width: 0; /* Previene overflow en grid */
 }
 
 .columna-estadisticas {
     background: #FFFFFF;
     border-radius: 15px;
-    padding: 1.5rem;
+    padding: clamp(1rem, 2vw, 1.5rem);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     position: sticky;
     top: 2rem;
+    align-self: flex-start; /* Evita que se estire verticalmente */
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+}
+
+.container-datos-sistema h3 {
+    color: #7B0233;
+    font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+    margin-bottom: 1rem;
+    text-align: center;
+    border-bottom: 2px solid #7B0233;
+    padding-bottom: 0.5rem;
+}
+
+.dato-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.dato-item:last-child {
+    border-bottom: none;
+}
+
+.dato-label {
+    font-weight: 600;
+    color: #333;
+    font-size: clamp(0.8rem, 1.2vw, 0.9rem);
+}
+
+.dato-value {
+    font-weight: 700;
+    color: #7B0233;
+    font-size: clamp(0.9rem, 1.3vw, 1rem);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .layout-dos-columnas {
+        grid-template-columns: 1fr 280px;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 900px) {
+    .layout-dos-columnas {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .columna-estadisticas {
+        position: static;
+        max-height: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .layout-dos-columnas {
+        gap: 1rem;
+    }
 }
 
 .container-datos-sistema h3 {
