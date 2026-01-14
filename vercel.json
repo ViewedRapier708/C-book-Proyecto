@@ -6,10 +6,6 @@
       "includeFiles": "back/**"
     }
   },
-  "builds": [
-    { "src": "api/index.js", "use": "@vercel/node" },
-    { "src": "**/*", "use": "@vercel/static" }
-  ],
   "routes": [
     { "src": "/auth/(.*)", "dest": "/api/index.js" },
     { "src": "/debug/(.*)", "dest": "/api/index.js" },
