@@ -2,7 +2,7 @@
   "version": 2,
   "functions": {
     "api/index.js": {
-      "includeFiles": ["back/**"]
+      "includeFiles": "back/**"
     }
   },
   "routes": [
