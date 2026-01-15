@@ -112,6 +112,9 @@ module.exports = app;
 
 // Puerto (solo para ejecución local)
 if (require.main === module) {
+  // Inicia los cron jobs solo cuando se ejecuta como servidor (node app.js)
+  require('./cron');
+
   const PORT = Number(process.env.PORT) || 3000;
   app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
