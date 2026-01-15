@@ -5,12 +5,8 @@ const SESSION_REFRESH_THRESHOLD_MS = 60000;
 module.exports = async function sessionGuard(req, res, next) {
   console.log("sessionGuard - Inicio de verificación de sesión");
   try {
-    console.log("sessionGuard - Verificando sesión");
-    console.log('sessionGuard - headers.cookie:', req.headers && req.headers.cookie);
-    const sessionUser = req.session.user;
-    console.log("Session User:", sessionUser); //debug
+      const sessionUser = req.session.user;
     if (!sessionUser) {
-      console.log("sessionGuard - No hay sesión activa");
       return res.status(401).json({ error: 'No hay sesión activa' });
     }
 

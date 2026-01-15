@@ -19,10 +19,14 @@ async function CrearSolicitud(tipoSolicitud, boleta, idRecurso) {
 
 //==================Funciones de los materiales para agregar los registros==================
 async function CrearSolicitudComputadora(boleta, idRecurso) {
+    const noRecurzo =await supabase.from('computadoras').select('id').eq('no_computadora', idRecurso).single();
+
+console.log("No Recurso Computadora:", noRecurzo); //debug
+
     try {
         const { error } = await supabase
             .from('solicitudes_computadora')
-            .insert([{ usuario_boleta: boleta, computadora_id: idRecurso }]);
+            .insert([{ usuario_boleta: boleta, computadora_id: noRecurzo.data.id }]);
         //El estado se pone automáticamente en 'pendiente'
         if (error) {
             console.error("Error creando solicitud de computadora:", error);
