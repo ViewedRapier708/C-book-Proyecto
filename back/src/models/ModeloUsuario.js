@@ -6,20 +6,39 @@ const { getClient } = require('../config/db');
 async function validarBoletaEnTabla(boleta) {
   const supabase = getClient();
   try {
-    const { data, error } = await supabase
-      .from('usuarios_web_movil')
-      .select('boleta')
-      .eq('boleta', boleta)
-      .maybeSingle();
+ 
 
-    if (error) {
-      console.error("Error validando boleta:", error);
-      return false;
-    }
-    return !!data; // true si existe
+const { data: boletaData, error: errorBoleta } = await supabase
+  .from('boletas')
+  .select('boleta')
+  .eq('boleta', boleta)
+  .maybeSingle();
+
+if (errorBoleta) {
+  console.error("Error validando boleta boletas:", errorBoleta);
+  return false;
+}
+if (!boletaData) {
+  return {respuesta:true,msg:"Boleta no encontrada verifique su boleta"};
+}
+ const { data: usuario, error } = await supabase
+  .from('usuarios_web_movil')
+  .select('boleta')
+  .eq('boleta', boleta)
+  .maybeSingle();
+
+if (error) {
+  console.error("Error validando boleta usuarios:", error);
+  return false;
+}
+
+if (usuario) {
+  return {respuesta:true,msg:"Boleta ya registrada en otra cuenta"};
+}
+
   } catch (err) {
     console.error("Error en validarBoletaEnTabla:", err);
-    return false;
+    return {respuesta:true,msg:"Error interno"};
   }
 }
 

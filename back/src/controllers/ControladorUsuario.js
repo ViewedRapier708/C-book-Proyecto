@@ -47,10 +47,10 @@ async function registro(req, res) {
     
     const boletaExiste = await validarBoletaEnTabla(boleta);
 
-
-    if (boletaExiste) {
-      return res.status(400).json({ error: 'Esta boleta ya tiene una cuenta registrada' });
+    if (boletaExiste.respuesta) {
+      return res.status(400).json({ error: boletaExiste.msg });
     }
+    
 
     // Verificar si el correo ya existe
      const correoExiste = await validarCorreoEnTabla(correo);
@@ -293,5 +293,13 @@ function destroySession(req, res) {
 }
 
 
+
+
+//=====================Modificacion de la cuenta
+
+
+
+
+//=======================Eliminacion de la cuenta
 
 module.exports = { registro, verificarCorreo, login, cerrarSesion ,verificarSesion};
