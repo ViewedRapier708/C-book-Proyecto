@@ -46,7 +46,8 @@ async function registro(req, res) {
     // Verificar si la boleta ya existe
     
     const boletaExiste = await validarBoletaEnTabla(boleta);
-
+    console.log("Validación de boleta existente:", boletaExiste); //debug
+    
     if (boletaExiste.respuesta) {
       return res.status(400).json({ error: boletaExiste.msg });
     }

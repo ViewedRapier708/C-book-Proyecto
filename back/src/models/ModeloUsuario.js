@@ -35,7 +35,7 @@ if (error) {
 if (usuario) {
   return {respuesta:true,msg:"Boleta ya registrada en otra cuenta"};
 }
-
+return {respuesta:false,msg:"Registro de boleta disponible"};
   } catch (err) {
     console.error("Error en validarBoletaEnTabla:", err);
     return {respuesta:true,msg:"Error interno"};
