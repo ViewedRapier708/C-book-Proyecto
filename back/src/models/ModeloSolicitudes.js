@@ -315,7 +315,6 @@ async function CancelarSolicitud(tipoSolicitud, solicitudId, boleta) {
     }
 }
 
-
 // ==================== EXPORTAR FUNCIONES ====================
 module.exports = {
     CrearSolicitud,

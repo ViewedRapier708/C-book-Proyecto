@@ -1,21 +1,9 @@
-/**
- * CONFIGURACIÓN Y CONEXIÓN CON SUPABASE
- * Estas constantes permiten la conexión con el servidor de base de datos en tiempo real.
- */
 const URL_SUPABASE = 'https://yondcnkwcekmkovdeaso.supabase.co';
 const CLAVE_ANONIMA_SUPABASE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvbmRjbmt3Y2VrbWtvdmRlYXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA2ODYyMDQsImV4cCI6MjA3NjI2MjIwNH0.4NqF_hCv7RiXrOjO9fxfRHPzikpZ61siqMZV_rlUQew';
 
-/**
- * VARIABLES GLOBALES DE ESTADO
- * Guardan información sobre la conexión activa para evitar duplicados.
- */
 let canalesTiempoReal = []; // Lista de canales activos (suscripciones)
 let clienteSupabase = null; // Instancia única del cliente de Supabase
 
-/**
- * MAPEO DE RECURSOS
- * Relaciona los nombres usados en la interfaz con los nombres técnicos de las tablas en la base de datos.
- */
 const MAPEO_TABLAS_SUPABASE = {
     'computadora': ['computadoras'],
     'libro': ['libros', 'ejemplares'], // Los libros dependen de títulos y ejemplares físicos
@@ -25,12 +13,7 @@ const MAPEO_TABLAS_SUPABASE = {
     'solicitudes': ['solicitudes_computadora', 'solicitudes_restirador', 'solicitudes_libros']
 };
 
-/**
- * UTILIDADES DE FORMATO
- * Funciones simples para que los datos se vean bien en la pantalla.
- */
 
-// Convierte valores booleanos o nulos en texto legible ("Sí", "No", "-")
 const formatearValorLegible = (valor) => {
     if (typeof valor === 'boolean') return valor ? 'Sí' : 'No';
     if (valor === null || valor === undefined) return '-';
@@ -38,28 +21,13 @@ const formatearValorLegible = (valor) => {
     return valor;
 };
 
-/**
- * Convierte el estado de una solicitud (numérico o texto) a un string legible.
- *
- * Casos soportados:
- * - 1 -> "Pendiente"
- * - 2 -> "Atendida" (o aprobada/confirmada, según tu catálogo)
- * - 3 -> "Cancelada"
- * - 4 -> "No asistió"
- * - 5 -> "Vencida"
- *
- * Si llega un texto (ej. "pendiente"), se normaliza.
- */
 const parsearEstadoSolicitud = (estado) => {
     if (estado === null || estado === undefined) return '-';
 
-    // Si viene como string (ej. desde una vista)
     if (typeof estado === 'string') {
         const normalizado = estado.trim().toLowerCase();
         if (!normalizado) return '-';
-
-        // Soporta strings numéricos
-        if (/^\d+$/.test(normalizado)) {
+                if (/^\d+$/.test(normalizado)) {
             return parsearEstadoSolicitud(Number(normalizado));
         }
 
@@ -94,10 +62,7 @@ const parsearEstadoSolicitud = (estado) => {
     return String(estado);
 };
 
-/**
- * Lee la boleta desde localStorage si existe.
- * Nota: la API usa sesión/cookie, esto solo se usa para filtrar Realtime.
- */
+
 const obtenerBoletaLocal = () => {
     try {
         const datosUsuario = JSON.parse(localStorage.getItem('user_data') || '{}');
@@ -107,9 +72,6 @@ const obtenerBoletaLocal = () => {
     }
 };
 
-/**
- * Obtiene de forma tolerante el ID del recurso asociado a una solicitud.
- */
 const obtenerIdRecursoSolicitud = (solicitud) => {
     if (!solicitud || typeof solicitud !== 'object') return '-';
     return (
@@ -124,9 +86,6 @@ const obtenerIdRecursoSolicitud = (solicitud) => {
     );
 };
 
-/**
- * Formatea una fecha/hora para mostrarla en una sola columna.
- */
 const formatearFechaSolicitud = (solicitud) => {
     const fecha = solicitud?.fecha_solicitud ?? solicitud?.fecha ?? solicitud?.created_at ?? '';
     const hora = solicitud?.hora_solicitud ?? solicitud?.hora ?? '';
@@ -135,14 +94,17 @@ const formatearFechaSolicitud = (solicitud) => {
     return `${fechaTxt} ${hora}`.trim();
 };
 
-// Extrae y ordena los datos de un objeto para que coincidan con las columnas de la tabla HTML
 const mapearValoresFila = (tipoRecurso, datos) => {
     if (Array.isArray(datos)) return datos;
     const recurso = datos || {};
+    console.log('Mapeando fila para tipo:', tipoRecurso, 'con datos:', recurso);
     
     // Configuración específica por cada tipo de recurso
     if (tipoRecurso === 'libro') {
         const infoLibro = recurso.libros || {};
+
+        // Debug: Mostrar infoLibro, recurso y disponibilidad
+       
         return [
             infoLibro.titulo || recurso.titulo || '-',
             infoLibro.autor || recurso.autor || '-',
@@ -150,7 +112,7 @@ const mapearValoresFila = (tipoRecurso, datos) => {
             infoLibro.tipo_material || recurso.tipo_material || '-',
             recurso.anio ?? '-',
             recurso.numero_ejemplar ?? '-',
-            recurso.Disponibilidad ?? recurso.disponibilidad ?? recurso.estatus_item ?? '-'
+        recurso.Disponible 
         ];
     }
 
@@ -187,9 +149,8 @@ const mapearValoresFila = (tipoRecurso, datos) => {
     }
 
     return Object.values(recurso);
-};
+};//Funcion que retorna un arreglo para los el mapeo de los recusos
 
-// Genera un identificador único para buscar la fila en el HTML
 const obtenerIdentificadorFila = (tipoRecurso, datos) => {
     if (tipoRecurso === 'libro') return datos.numero_ejemplar || datos.id || datos.libros?.isbn || null;
     if (tipoRecurso === 'computadora') return datos.no_computadora || datos.id || null;
@@ -208,7 +169,6 @@ const agregarFilaATabla = (tipoDeTabla, datosRecurso) => {
     const cuerpoTabla = document.getElementById('Tbody');
     const tipoActualInterfaz = document.getElementById('tabla')?.getAttribute('data-tipo');
     
-    // Solo agregar si estamos viendo la tabla correcta
     if (!cuerpoTabla || tipoDeTabla !== tipoActualInterfaz) return;
 
     const filaElemento = document.createElement('tr');
@@ -399,6 +359,7 @@ async function cargarDatosEnTabla() {
                 headers: { 'Accept': 'application/json' }
             });
             const dataObtenida = await respuesta.json();
+            alert('Datos obtenidos de la API:', dataObtenida); //debug    
             datosFinales = Array.isArray(dataObtenida?.data) ? dataObtenida.data : (Array.isArray(dataObtenida) ? dataObtenida : []);
         }
 
