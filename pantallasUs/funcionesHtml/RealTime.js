@@ -143,6 +143,13 @@ const mapearValoresFila = (tipoRecurso, datos) => {
     // Configuración específica por cada tipo de recurso
     if (tipoRecurso === 'libro') {
         const infoLibro = recurso.libros || {};
+
+        // Debug: Mostrar infoLibro, recurso y disponibilidad
+        console.log("infoLibro:", infoLibro);
+        console.log("recurso:", recurso);
+        console.log("disponibilidad:", recurso.Disponibilidad );
+        console.log("recurso.disponibilidad ",recurso.disponibilidad )
+        console.log("recurso.estatus_item ",recurso.estatus_item )
         return [
             infoLibro.titulo || recurso.titulo || '-',
             infoLibro.autor || recurso.autor || '-',
@@ -399,6 +406,7 @@ async function cargarDatosEnTabla() {
                 headers: { 'Accept': 'application/json' }
             });
             const dataObtenida = await respuesta.json();
+            alert('Datos obtenidos de la API:', dataObtenida); //debug    
             datosFinales = Array.isArray(dataObtenida?.data) ? dataObtenida.data : (Array.isArray(dataObtenida) ? dataObtenida : []);
         }
 
