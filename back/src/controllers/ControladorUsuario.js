@@ -175,6 +175,7 @@ async function login(req, res) {
     const userData = await traerUsuarioInfo(boleta);
     const nombre = (userData.data?.boletas?.nombre || '').trim();
     const grupo = userData.data?.boletas?.Grupo || '';
+    const tipo_usuario = userData.data?.tipo_usuario || 'estudiante';
     console.log("Datos del usuario:", userData); //debug
     console.log("Login exitoso, sesión creada"); //debug
 
@@ -192,6 +193,7 @@ async function login(req, res) {
       email: loginResult.user.email,
       boleta,
       grupo,
+      tipo_usuario,
       tokens: {
         accessToken: supabaseSession.access_token,
         refreshToken: supabaseSession.refresh_token,

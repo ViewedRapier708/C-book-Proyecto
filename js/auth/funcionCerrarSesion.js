@@ -1,6 +1,7 @@
-const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
+
 
 async function cerrarSesion() {
+    const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
     try {
         const res = await fetch(`${API_BASE}/auth/logout`, {
             method: 'POST',

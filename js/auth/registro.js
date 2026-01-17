@@ -1,8 +1,7 @@
 // Registro de usuario - Llama al backend
 
-const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
-
 async function registro(event) {
+    const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
     event.preventDefault();
 
     const form = event.target;

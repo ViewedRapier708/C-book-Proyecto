@@ -8,6 +8,8 @@
     const esRegistro = paginaActual.includes('registro.html');
     const esConfirmacion = paginaActual.includes('confirmacion.html') || paginaActual.includes('confirmacionCorreo.html');
     const esPaginaPublica = esIndex || esRegistro || esConfirmacion;
+    const esPaginaAdmin = paginaActual.includes('/PantallasAdmin/');
+    const esPaginaUsuario = paginaActual.includes('/pantallasUs/');
 
     function obtenerUsuarioLocal() {
         const userData = localStorage.getItem('user_data');
@@ -59,12 +61,34 @@
         const usuario = await obtenerUsuarioServidor();
         const sesionValida = !!usuario;
 
-        console.log('SessionGuard - Página:', paginaActual, '- Sesión:', sesionValida);
+        console.log('SessionGuard - Página:', paginaActual, '- Sesión:', sesionValida, '- Usuario:', usuario);
 
         if (sesionValida) {
+            const esAdmin = usuario.tipo_usuario === 'administrador';
+
+            // Si está en página pública, redirigir a su dashboard
             if (esPaginaPublica) {
-                const destino = esIndex ? './pantallasUs/usuario.html' : '../pantallasUs/usuario.html';
+                let destino;
+                if (esAdmin) {
+                    destino = esIndex ? './PantallasAdmin/admin.html' : '../PantallasAdmin/admin.html';
+                } else {
+                    destino = esIndex ? './pantallasUs/usuario.html' : '../pantallasUs/usuario.html';
+                }
                 window.location.replace(destino);
+                return;
+            }
+
+            // Verificar que el usuario esté en la sección correcta
+            if (esAdmin && esPaginaUsuario) {
+                // Admin intentando acceder a páginas de usuario
+                window.location.replace('../PantallasAdmin/admin.html');
+                return;
+            }
+
+            if (!esAdmin && esPaginaAdmin) {
+                // Usuario normal intentando acceder a páginas de admin
+                alert('Acceso denegado. No tienes permisos de administrador.');
+                window.location.replace('../pantallasUs/usuario.html');
                 return;
             }
 

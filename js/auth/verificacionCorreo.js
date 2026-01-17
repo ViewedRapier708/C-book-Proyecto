@@ -1,8 +1,6 @@
 // verificacionCorreo.js
 // Bucle de polling que consulta al backend
 
-const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
-
 // Variables de control
 let intervalId = null;
 const INTERVALO_VERIFICACION = 3000; // 3 segundos
@@ -53,6 +51,7 @@ async function verificarUsuario() {
         const { boleta, correo, grupo } = JSON.parse(datosRegistro);
 
         // Llamar al backend con los datos
+        const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
         const res = await fetch(`${API_BASE}/auth/verificar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

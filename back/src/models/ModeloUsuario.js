@@ -204,6 +204,7 @@ async function traerUsuarioInfo(boleta) {
         boleta,
         correo,
         tiene_documentos,
+        tipo_usuario,
         boletas (
           boleta,
           nombre,

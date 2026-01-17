@@ -1,8 +1,7 @@
 // Iniciar sesión - Llama al backend
 
-const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
-
 async function iniciarSesion(event) {
+    const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
     event.preventDefault();
 
     const boleta = document.getElementById('boleta').value;
@@ -55,9 +54,13 @@ async function iniciarSesion(event) {
         mensajeDiv.textContent = '¡Inicio de sesión exitoso!';
         mensajeDiv.style.color = 'green';
 
-        // Redirigir al dashboard
+        // Redirigir al dashboard según tipo de usuario
         setTimeout(() => {
-            window.location.href = './pantallasUs/usuario.html';
+            if (data.user && data.user.tipo_usuario === 'administrador') {
+                window.location.href = './PantallasAdmin/admin.html';
+            } else {
+                window.location.href = './pantallasUs/usuario.html';
+            }
         }, 400);
 
         return false;
