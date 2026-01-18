@@ -12,11 +12,8 @@ router.post('/verificar', verificarCorreo);
 router.post('/login', login);
 router.get('/session', verificarSesion);
 router.post('/logout', sessionGuard, cerrarSesion);
-
-
 router.get('/recursos', obtenerRecursosPorTipo);
 router.get('/recursos/usuario', controladorSolicitudes.obtencionSolicitudesUsuario);
-
 router.post('/solicitud', sessionGuard,middlewareAutenticacion.verificarDisponibilidad,controladorSolicitudes.crearSolicitud);
 router.delete('/solicitud/:tipo/:id', sessionGuard, controladorSolicitudes.cancelarSolicitud);
 

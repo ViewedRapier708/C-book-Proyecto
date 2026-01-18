@@ -23,6 +23,27 @@ function inicializarFiltrosTabla() {
     if (!headerRow) return;
 
     const headers = headerRow.querySelectorAll('th');
+
+    // Preparar layout interno dentro del cuadro blanco (container-tabla)
+    // Esto mantiene filtros y tabla dentro del mismo contenedor base.
+    let tablaLayout = containerTabla.querySelector('.tabla-layout');
+    let tablaWrapper = containerTabla.querySelector('.tabla-wrapper');
+
+    if (!tablaLayout) {
+        tablaLayout = document.createElement('div');
+        tablaLayout.classList.add('tabla-layout');
+
+        tablaWrapper = document.createElement('div');
+        tablaWrapper.classList.add('tabla-wrapper');
+
+        // Insertar el layout interno al inicio del contenedor blanco
+        // y mover la tabla dentro del wrapper.
+        containerTabla.insertBefore(tablaLayout, containerTabla.firstChild);
+        tablaWrapper.appendChild(tabla);
+        tablaLayout.appendChild(tablaWrapper);
+
+        containerTabla.classList.add('container-tabla--with-filtros');
+    }
     
     // Crear contenedor de filtros
     const filtrosContainer = document.createElement('div');
@@ -78,8 +99,13 @@ function inicializarFiltrosTabla() {
 
     filtrosContainer.appendChild(filtrosGrid);
 
-    // Insertar ANTES del container-tabla (en el layout)
-    layout.insertBefore(filtrosContainer, containerTabla);
+    // Insertar filtros dentro del cuadro blanco, al lado de la tabla
+    // Siempre antes del wrapper de la tabla.
+    tablaLayout = containerTabla.querySelector('.tabla-layout');
+    tablaWrapper = containerTabla.querySelector('.tabla-wrapper');
+    if (tablaLayout && tablaWrapper) {
+        tablaLayout.insertBefore(filtrosContainer, tablaWrapper);
+    }
     
     console.log('✅ [Filtros] Filtros inicializados correctamente');
 }
@@ -89,7 +115,7 @@ function inicializarFiltrosTabla() {
  */
 function filtrarTabla() {
     const tabla = document.getElementById('tabla');
-    const tbody = document.getElementById('Tbody');
+    const tbody = document.getElementById('Tbody') || tabla?.querySelector('tbody');
     const layout = tabla?.closest('.layout');
     if (!tabla || !tbody || !layout) return;
 
@@ -217,11 +243,6 @@ function debounce(func, wait) {
         timeout = setTimeout(later, wait);
     };
 }
-
-// Exponer funciones globalmente
-window.inicializarFiltrosTabla = inicializarFiltrosTabla;
-window.filtrarTabla = filtrarTabla;
-window.limpiarFiltros = limpiarFiltros;
 
 // Exponer funciones globalmente
 window.inicializarFiltrosTabla = inicializarFiltrosTabla;

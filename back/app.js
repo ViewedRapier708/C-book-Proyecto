@@ -1,8 +1,6 @@
 const cors = require('cors');
 const express = require('express');
 const session = require('express-session');
-const { render } = require('ejs');
-const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -11,6 +9,11 @@ const authRoutes = require('./src/routes/Rutas.js');
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const isProduction = NODE_ENV === 'production';
 const sessionSecret = process.env.SESSION_SECRET || 'dev_session_secret_change_me';
+
+if (isProduction) {
+  // Necesario para cookies secure detrás de proxy (Vercel)
+  app.set('trust proxy', 1);
+}
 
 // Middleware para leer JSON
 app.use(express.json());
@@ -27,22 +30,45 @@ const defaultOrigins = [
 
 const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
   ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
-  : defaultOrigins;
+  : null;
 
 app.use(cors({
-  origin: allowedOrigins,
+  // Si no se define CORS_ALLOWED_ORIGINS, permitir (útil para deploy donde front+api comparten origen)
+  origin: allowedOrigins || true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // ===============================
-//  STORE PARA VER SESIONES
+//  STORE PARA SESIONES
 // ===============================
-const MemoryStore = session.MemoryStore;
-const sessionStore = new MemoryStore();
+let sessionStore;
 
+function buildSessionStore() {
+  // En Serverless (Vercel) MemoryStore se pierde entre invocaciones.
+  // Si se proporciona DATABASE_URL, usar Postgres.
+  const databaseUrl = process.env.DATABASE_URL;
+  if (databaseUrl) {
+    const PgSession = require('connect-pg-simple')(session);
+    const { Pool } = require('pg');
+    const pool = new Pool({
+      connectionString: databaseUrl,
+      ssl: isProduction ? { rejectUnauthorized: false } : undefined
+    });
 
+    return new PgSession({
+      pool,
+      tableName: process.env.SESSION_TABLE || 'session',
+      createTableIfMissing: true
+    });
+  }
+
+  const MemoryStore = session.MemoryStore;
+  return new MemoryStore();
+}
+
+sessionStore = buildSessionStore();
 
 // Configuración de sesión
 app.use(session({
@@ -52,8 +78,8 @@ app.use(session({
   store: sessionStore,
   cookie: {
     httpOnly: true,
-    secure: false,
-    sameSite:'lax',
+    secure: isProduction,
+    sameSite: 'lax',
     maxAge: 1000 * 60 * 60 * 2 // 2h por defecto
   }
 }));
@@ -82,8 +108,15 @@ app.get('/debug/sesiones', (req, res) => {//Quitar en produccion
 // Rutas de autenticación
 app.use('/auth', authRoutes);
 
-// Puerto
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+module.exports = app;
+
+// Puerto (solo para ejecución local)
+if (require.main === module) {
+  // Inicia los cron jobs solo cuando se ejecuta como servidor (node app.js)
+  require('./cron');
+
+  const PORT = Number(process.env.PORT) || 3000;
+  app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  });
+}
