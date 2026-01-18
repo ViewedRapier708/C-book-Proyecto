@@ -12,14 +12,19 @@
 
 .container-cancelar-solicitudes .container-tabla {
     margin-bottom: 1rem;
+    overflow-x: auto;
+    max-width: 100%;
 }
 
-.container-cancelar-solicitudes table th:nth-child(1) { width: 12%; }
-.container-cancelar-solicitudes table th:nth-child(2) { width: 15%; }
-.container-cancelar-solicitudes table th:nth-child(3) { width: 20%; }
-.container-cancelar-solicitudes table th:nth-child(4) { width: 18%; }
-.container-cancelar-solicitudes table th:nth-child(5) { width: 15%; }
-.container-cancelar-solicitudes table th:nth-child(6) { width: 20%; }
+.container-cancelar-solicitudes table {
+    min-width: 1000px;
+}
+
+.container-cancelar-solicitudes table th,
+.container-cancelar-solicitudes table td {
+    white-space: nowrap;
+    padding: 0.75rem;
+}
 
 .btn-cancelar {
     padding: 0.5rem 1rem;

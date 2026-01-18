@@ -94,6 +94,23 @@ const formatearFechaSolicitud = (solicitud) => {
     return `${fechaTxt} ${hora}`.trim();
 };
 
+const formatearHoraAMPM = (hora) => {
+    if (!hora || hora === '-') return '-';
+    const horaStr = String(hora).trim();
+    const partes = horaStr.split(':');
+    if (partes.length < 2) return hora;
+    
+    let horas = parseInt(partes[0], 10);
+    const minutos = partes[1];
+    
+    if (isNaN(horas)) return hora;
+    
+    const periodo = horas >= 12 ? 'PM' : 'AM';
+    horas = horas % 12 || 12;
+    
+    return `${horas}:${minutos} ${periodo}`;
+};
+
 const mapearValoresFila = (tipoRecurso, datos) => {
     if (Array.isArray(datos)) return datos;
     const recurso = datos || {};
@@ -142,14 +159,16 @@ const mapearValoresFila = (tipoRecurso, datos) => {
         return [
             recurso.id ?? '-',
             recurso.tipo ?? '-',
-            obtenerIdRecursoSolicitud(recurso),
-            formatearFechaSolicitud(recurso),
+            recurso.recurso_id ?? '-',
+            recurso.fecha_solicitud ?? '-',
+            formatearHoraAMPM(recurso.hora_solicitud),
+            formatearHoraAMPM(recurso.hora_limite),
             parsearEstadoSolicitud(estadoCrudo)
         ];
     }
 
     return Object.values(recurso);
-};//Funcion que retorna un arreglo para los el mapeo de los recusos
+};
 
 const obtenerIdentificadorFila = (tipoRecurso, datos) => {
     if (tipoRecurso === 'libro') return datos.numero_ejemplar || datos.id || datos.libros?.isbn || null;
@@ -158,13 +177,6 @@ const obtenerIdentificadorFila = (tipoRecurso, datos) => {
     if (tipoRecurso === 'solicitudes') return datos.id || null; 
     return datos.id || datos._id || null;
 };
-
-/**
- * FUNCIONES DE MANIPULACIÓN DE LA TABLA (DOM)
- * Estas funciones actualizan lo que el usuario ve en pantalla.
- */
-
-// Agrega una nueva fila al final de la tabla
 const agregarFilaATabla = (tipoDeTabla, datosRecurso) => {
     const cuerpoTabla = document.getElementById('Tbody');
     const tipoActualInterfaz = document.getElementById('tabla')?.getAttribute('data-tipo');
@@ -199,10 +211,6 @@ const agregarFilaATabla = (tipoDeTabla, datosRecurso) => {
     cuerpoTabla.appendChild(filaElemento);
 };
 
-/**
- * Configura la conexión de Supabase Realtime para escuchar cambios en vivo.
- * Por defecto, cuando llega un cambio, se recarga la tabla desde la API.
- */
 async function inicializarTiempoRealSupabase(tipoInterfaz, callbackCambio) {
     try {
         if (typeof window.supabase === 'undefined') return null;
@@ -261,11 +269,6 @@ async function inicializarTiempoRealSupabase(tipoInterfaz, callbackCambio) {
     }
 }
 
-/**
- * INICIALIZACIÓN AUTOMÁTICA
- */
-
-// Función global para reiniciar el tiempo real (útil cuando se cambia de pestaña sin recargar)
 async function configurarTiempoRealParaTablaActual() {
     const elementoTabla = document.getElementById('tabla');
     const tipo = elementoTabla?.getAttribute('data-tipo');
@@ -274,12 +277,6 @@ async function configurarTiempoRealParaTablaActual() {
     }
 }
 
-/**
- * LÓGICA DE DATOS Y TIEMPO REAL
- * Controla la obtención de información desde el servidor y las actualizaciones automáticas.
- */
-
-// Carga los datos iniciales desde la API y los dibuja en la tabla
 async function cargarDatosEnTabla() {
     const cuerpoTabla = document.getElementById('Tbody');
     const tipoRecurso = document.getElementById('tabla')?.getAttribute('data-tipo');
@@ -289,12 +286,8 @@ async function cargarDatosEnTabla() {
         return;
     }
 
-    /**
-     * Renderiza filas en el tbody actual.
-     * Para "solicitudes", agrega una columna de acciones con botón cancelar.
-     */
     const renderizarLista = (listaDatos) => {
-        cuerpoTabla.innerHTML = ''; // Limpiamos la tabla antes de cargar
+        cuerpoTabla.innerHTML = ''; 
         
         listaDatos.forEach((datos) => {
             const fila = document.createElement('tr');
@@ -318,13 +311,12 @@ async function cargarDatosEnTabla() {
                 fila.appendChild(celdaAcciones);
             }
 
-            // Configuración de la fila para interacción
             fila.dataset.recurso = JSON.stringify(datos);
             fila.dataset.rowKey = obtenerIdentificadorFila(tipoRecurso, datos) || '';
             fila.classList.add('fila-recurso');
             fila.style.cursor = 'pointer';
             
-            // Evento para seleccionar la fila al hacer clic
+     
             fila.addEventListener('click', function () {
                 if (typeof window.seleccionarFila === 'function') {
                     window.seleccionarFila(this);
@@ -352,6 +344,7 @@ async function cargarDatosEnTabla() {
             } else {
                 const dataObtenida = await respuesta.json();
                 datosFinales = (dataObtenida?.success && Array.isArray(dataObtenida?.data)) ? dataObtenida.data : [];
+                alert('Datos obtenidos de la API:', dataObtenida); //debug
             }
         } else {
             const respuesta = await fetch(`${urlBaseApi}/auth/recursos?tipo=${tipoRecurso}`, {
@@ -374,9 +367,7 @@ async function cargarDatosEnTabla() {
     }
 }
 
-/**
- * Envía la petición de cancelación a la API.
- */
+
 async function cancelarSolicitudDesdeTabla(tipo, idSolicitud, boton) {
     const urlBaseApi = window.API_BASE_URL;
     const id = String(idSolicitud || '').trim();
@@ -409,7 +400,7 @@ async function cancelarSolicitudDesdeTabla(tipo, idSolicitud, boton) {
             return;
         }
 
-        // Refresco completo (simple y consistente con Realtime)
+
         await cargarDatosEnTabla();
     } catch (err) {
         console.error('Error cancelando solicitud:', err);
@@ -420,10 +411,7 @@ async function cancelarSolicitudDesdeTabla(tipo, idSolicitud, boton) {
     }
 }
 
-/**
- * Inicializa eventos de interacción de la tabla actual.
- * Para "solicitudes", agrega handler al botón "Cancelar".
- */
+
 function inicializarEventosTabla() {
     const tabla = document.getElementById('tabla');
     const tipoRecurso = tabla?.getAttribute('data-tipo');
@@ -448,7 +436,6 @@ function inicializarEventosTabla() {
     cuerpoTabla.setAttribute('data-cancel-handler', 'true');
 }
 
-// Actualiza los valores de una fila existente sin recargar toda la página
 const actualizarFilaEnTabla = (datosAntiguos, datosNuevos) => {
     const cuerpoTabla = document.getElementById('Tbody');
     const tipoActual = document.getElementById('tabla')?.getAttribute('data-tipo');
@@ -480,7 +467,7 @@ const actualizarFilaEnTabla = (datosAntiguos, datosNuevos) => {
     filaDestino.dataset.rowKey = obtenerIdentificadorFila(tipoActual, datosNuevos) || filaDestino.dataset.rowKey;
 };
 
-// Elimina una fila de la tabla HTML
+
 const eliminarFilaDeTabla = (datosARemover) => {
     const cuerpoTabla = document.getElementById('Tbody');
     const tipoActual = document.getElementById('tabla')?.getAttribute('data-tipo');
@@ -502,7 +489,6 @@ const eliminarFilaDeTabla = (datosARemover) => {
     }
 };
 
-// Al cargar el documento, busca si hay una tabla activa y arranca el sistema
 document.addEventListener('DOMContentLoaded', async () => {
     const elementoTabla = document.getElementById('tabla');
     const tipoRecurso = elementoTabla?.getAttribute('data-tipo');
