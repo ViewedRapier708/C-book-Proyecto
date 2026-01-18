@@ -244,7 +244,7 @@ async function verificarSesion(req, res) {
 async function cerrarSesion(req, res) {
   try {
     const accessToken = req.session?.user?.tokens?.accessToken;
-//console.log('Cerrando sesión para accessToken:', accessToken); //debug
+
     if (accessToken) {
       const revocado = await revocarSesionesSupabase(accessToken);
       if (!revocado.success) {
@@ -294,9 +294,6 @@ function destroySession(req, res) {
 }
 
 
-
-
-//=====================Modificacion de la cuenta
 
 
 

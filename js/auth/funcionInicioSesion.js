@@ -58,13 +58,14 @@ async function iniciarSesion(event) {
         // Redirigir al dashboard
 
         console.log('Redirigiendo al dashboard...'); //debug
-        alert(data.rol); //debug
+        console.log('Rol del usuario:', data.rol); //debug
         setTimeout(() => {
 
-            if (data.rol === 'admin') {
-                window.location.href = './pantallasUs/admin.html';
-            }   else if (data.rol === 'docente') {
-            window.location.href = './pantallasUs/usuario.html';
+            if (data.rol === 'Admin') {
+                window.location.href = './PantallasAdmin/admin.html';
+            } else {
+                // Usuario normal (docente o estudiante)
+                window.location.href = './pantallasUs/usuario.html';
             }
 
 
