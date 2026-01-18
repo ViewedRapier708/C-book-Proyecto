@@ -141,7 +141,7 @@ async function verificarCorreo(req, res) {
     console.error("Error en verificarCorreo:", err);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
-}
+}//Modificar para la verificacion por correo , osea que verifique si ya hay algun usuario en la tabla 
 
 // ==================== LOGIN ====================
 async function login(req, res) {

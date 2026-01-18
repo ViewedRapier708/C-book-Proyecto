@@ -27,12 +27,32 @@
 }
 
 .btn-cancelar {
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
-    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    padding: 0.6rem 1.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: #E91E63;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
     white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(233, 30, 99, 0.3);
 }
 
-.btn-cancelar:hover {
-    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+.btn-cancelar:hover:not(:disabled) {
+    background: #C2185B;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(233, 30, 99, 0.4);
+}
+
+.btn-cancelar:disabled {
+    background: #BDBDBD;
+    color: #757575;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+    transform: none;
 }

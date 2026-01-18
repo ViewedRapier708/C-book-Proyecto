@@ -274,7 +274,7 @@ async function CancelarSolicitud(tipoSolicitud, solicitudId, boleta) {
     if (!Number.isInteger(id)) {
         return { success: false, error: 'ID de solicitud inválido' };
     }
-
+    console.log("Cancelando solicitud:", { tipoSolicitud, id, boleta }); //debug
     let tabla = null;
     switch (tipoSolicitud) {
         case 'computadora':
