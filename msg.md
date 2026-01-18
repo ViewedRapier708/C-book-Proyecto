@@ -14,11 +14,11 @@ Se tiene que seguir checando la funcion de registro y login
 ---Usuario 
 Se tiene que empezar la solicitud de los materiales:
 -Esta tiene que tener una funcion que registre el tiempo al momento de hacer la peticion
--se tiene que checar que el usuario no haga otra peticion de tipo ( restirador o computadora)
--Se tiene que checar que el usuario no tenga mas de 2 peticiones de los libros 
 -Se tiene que poner una funcion que cancele la peticion en base a la fecha de expiracion de la peticion
 -Se tiene que cancelar la peticion al usar el programa mientras tenga la solicitud activa
 -Se tiene que bloquear el espacio por 1:30 al hacer la peticion y al momento de que expire el tiempo se tiene que liberar 
+
+
 
 ---Administrador
 --Cancela las solcitudes del usuario
@@ -26,3 +26,11 @@ Se tiene que empezar la solicitud de los materiales:
 --Acepta los documentos del usuario 
 --Ingresa los materiales (restiradores,computadoras)
 --Ve los usuarios registrados en el sistema y puede activar la opcion que puedan actualizar los datos cada semestre
+
+
+--QUE FALTA
+
+-acabar lo de admin sepa si ya esta bien
+-que se pueda cancelar las peticiones
+-Modificacion de los datos del usuario
+-

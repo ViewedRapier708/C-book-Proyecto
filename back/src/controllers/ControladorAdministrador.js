@@ -38,13 +38,13 @@ const obtenerComputadoras = async (req, res) => {
  */
 const crearComputadora = async (req, res) => {
   try {
-    const { procesador, programas, carrera } = req.body;
+    const { no_inventario, no_computadora, procesador, programas, carrera, Observacion } = req.body;
 
     // Validar datos requeridos
-    if (!procesador || !programas || !carrera) {
+    if (!no_inventario || !no_computadora || !procesador || !programas || !carrera) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Faltan datos requeridos: procesador, programas, carrera' 
+        message: 'Faltan datos requeridos: no_inventario, no_computadora, procesador, programas, carrera' 
       });
     }
 
@@ -52,10 +52,14 @@ const crearComputadora = async (req, res) => {
     const { data, error } = await supabase
       .from('computadoras')
       .insert([{ 
+        no_inventario,
+        no_computadora,
         procesador, 
         programas, 
-        carrera, 
-        ocupado: false 
+        carrera,
+        Observacion: Observacion || 'N/A',
+        Disponible: true,
+        En_funcionamiento: true
       }])
       .select();
 
@@ -86,8 +90,7 @@ const crearComputadora = async (req, res) => {
  */
 const actualizarComputadora = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { procesador, programas, carrera, ocupado } = req.body;
+    const { id, no_inventario, no_computadora, procesador, programas, carrera, Disponible, En_funcionamiento, Observacion } = req.body;
 
     if (!id) {
       return res.status(400).json({ 
@@ -97,10 +100,14 @@ const actualizarComputadora = async (req, res) => {
     }
 
     const updateData = {};
+    if (no_inventario !== undefined) updateData.no_inventario = no_inventario;
+    if (no_computadora !== undefined) updateData.no_computadora = no_computadora;
     if (procesador !== undefined) updateData.procesador = procesador;
     if (programas !== undefined) updateData.programas = programas;
     if (carrera !== undefined) updateData.carrera = carrera;
-    if (ocupado !== undefined) updateData.ocupado = ocupado;
+    if (Disponible !== undefined) updateData.Disponible = Disponible;
+    if (En_funcionamiento !== undefined) updateData.En_funcionamiento = En_funcionamiento;
+    if (Observacion !== undefined) updateData.Observacion = Observacion;
 
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({ 
@@ -150,7 +157,7 @@ const actualizarComputadora = async (req, res) => {
  */
 const eliminarComputadora = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
 
     if (!id) {
       return res.status(400).json({ 
@@ -233,7 +240,7 @@ const obtenerLibros = async (req, res) => {
  */
 const crearLibro = async (req, res) => {
   try {
-    const { titulo, autor, isbn, editorial, año_publicacion, categoria, descripcion } = req.body;
+    const { titulo, clasificacion, isbn, tipo_material, autor } = req.body;
 
     // Validar datos requeridos
     if (!titulo || !autor) {
@@ -248,13 +255,10 @@ const crearLibro = async (req, res) => {
       .from('libros')
       .insert([{ 
         titulo, 
-        autor, 
-        isbn, 
-        editorial, 
-        año_publicacion, 
-        categoria, 
-        descripcion,
-        ocupado: false 
+        clasificacion: clasificacion || null,
+        isbn: isbn || null,
+        tipo_material: tipo_material || null,
+        autor
       }])
       .select();
 
@@ -285,8 +289,7 @@ const crearLibro = async (req, res) => {
  */
 const actualizarLibro = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { titulo, autor, isbn, editorial, año_publicacion, categoria, descripcion, ocupado } = req.body;
+    const { id, titulo, clasificacion, isbn, tipo_material, autor } = req.body;
 
     if (!id) {
       return res.status(400).json({ 
@@ -297,13 +300,10 @@ const actualizarLibro = async (req, res) => {
 
     const updateData = {};
     if (titulo !== undefined) updateData.titulo = titulo;
-    if (autor !== undefined) updateData.autor = autor;
+    if (clasificacion !== undefined) updateData.clasificacion = clasificacion;
     if (isbn !== undefined) updateData.isbn = isbn;
-    if (editorial !== undefined) updateData.editorial = editorial;
-    if (año_publicacion !== undefined) updateData.año_publicacion = año_publicacion;
-    if (categoria !== undefined) updateData.categoria = categoria;
-    if (descripcion !== undefined) updateData.descripcion = descripcion;
-    if (ocupado !== undefined) updateData.ocupado = ocupado;
+    if (tipo_material !== undefined) updateData.tipo_material = tipo_material;
+    if (autor !== undefined) updateData.autor = autor;
 
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({ 
@@ -353,7 +353,7 @@ const actualizarLibro = async (req, res) => {
  */
 const eliminarLibro = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
 
     if (!id) {
       return res.status(400).json({ 
@@ -436,15 +436,25 @@ const obtenerRestiradores = async (req, res) => {
  */
 const crearRestirador = async (req, res) => {
   try {
-    const { ubicacion, descripcion } = req.body;
+    const { no_inventario, no_restirador, Observacion } = req.body;
+
+    // Validar datos requeridos
+    if (!no_inventario || !no_restirador) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Faltan datos requeridos: no_inventario, no_restirador' 
+      });
+    }
 
     const supabase = getClient();
     const { data, error } = await supabase
       .from('restiradores')
       .insert([{ 
-        ubicacion, 
-        descripcion,
-        ocupado: false 
+        no_inventario, 
+        no_restirador,
+        Observacion: Observacion || 'N/A',
+        Disponible: true,
+        estado_de_material: true
       }])
       .select();
 
@@ -475,8 +485,7 @@ const crearRestirador = async (req, res) => {
  */
 const actualizarRestirador = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { ubicacion, descripcion, ocupado } = req.body;
+    const { id, no_inventario, no_restirador, Disponible, estado_de_material, Observacion } = req.body;
 
     if (!id) {
       return res.status(400).json({ 
@@ -486,9 +495,11 @@ const actualizarRestirador = async (req, res) => {
     }
 
     const updateData = {};
-    if (ubicacion !== undefined) updateData.ubicacion = ubicacion;
-    if (descripcion !== undefined) updateData.descripcion = descripcion;
-    if (ocupado !== undefined) updateData.ocupado = ocupado;
+    if (no_inventario !== undefined) updateData.no_inventario = no_inventario;
+    if (no_restirador !== undefined) updateData.no_restirador = no_restirador;
+    if (Disponible !== undefined) updateData.Disponible = Disponible;
+    if (estado_de_material !== undefined) updateData.estado_de_material = estado_de_material;
+    if (Observacion !== undefined) updateData.Observacion = Observacion;
 
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({ 
@@ -538,7 +549,7 @@ const actualizarRestirador = async (req, res) => {
  */
 const eliminarRestirador = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
 
     if (!id) {
       return res.status(400).json({ 
@@ -621,23 +632,22 @@ const obtenerGuardaropas = async (req, res) => {
  */
 const crearGuardaropa = async (req, res) => {
   try {
-    const { numero, ubicacion, descripcion } = req.body;
+    const { id } = req.body;
 
-    if (!numero) {
+    if (!id) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Número de guardaropa requerido' 
+        message: 'ID de guardaropa requerido' 
       });
     }
 
     const supabase = getClient();
     const { data, error } = await supabase
-      .from('guardaropas')
+      .from('guardarropas')
       .insert([{ 
-        numero,
-        ubicacion, 
-        descripcion,
-        ocupado: false 
+        id,
+        ocupado: false,
+        estado: true
       }])
       .select();
 
@@ -668,8 +678,7 @@ const crearGuardaropa = async (req, res) => {
  */
 const actualizarGuardaropa = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { numero, ubicacion, descripcion, ocupado } = req.body;
+    const { id, ocupado, estado } = req.body;
 
     if (!id) {
       return res.status(400).json({ 
@@ -679,10 +688,8 @@ const actualizarGuardaropa = async (req, res) => {
     }
 
     const updateData = {};
-    if (numero !== undefined) updateData.numero = numero;
-    if (ubicacion !== undefined) updateData.ubicacion = ubicacion;
-    if (descripcion !== undefined) updateData.descripcion = descripcion;
     if (ocupado !== undefined) updateData.ocupado = ocupado;
+    if (estado !== undefined) updateData.estado = estado;
 
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({ 
@@ -732,7 +739,7 @@ const actualizarGuardaropa = async (req, res) => {
  */
 const eliminarGuardaropa = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
 
     if (!id) {
       return res.status(400).json({ 
@@ -829,7 +836,7 @@ const obtenerSolicitudes = async (req, res) => {
  */
 const obtenerSolicitudPorId = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
 
     if (!id) {
       return res.status(400).json({ 
@@ -878,7 +885,7 @@ const obtenerSolicitudPorId = async (req, res) => {
  */
 const aprobarSolicitud = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
 
     if (!id) {
       return res.status(400).json({ 
@@ -944,8 +951,7 @@ const aprobarSolicitud = async (req, res) => {
  */
 const rechazarSolicitud = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { motivo } = req.body;
+    const { id, motivo } = req.body;
 
     if (!id) {
       return res.status(400).json({ 
@@ -1012,8 +1018,7 @@ const rechazarSolicitud = async (req, res) => {
  */
 const cancelarSolicitud = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { motivo } = req.body;
+    const { id, motivo } = req.body;
 
     if (!id) {
       return res.status(400).json({ 
@@ -1180,7 +1185,132 @@ const obtenerEstadisticas = async (req, res) => {
   }
 };
 
+// ==================== AUTENTICACIÓN DE ADMINISTRADOR ====================
+/**
+ * Login de administrador (local, sin base de datos)
+ */
+const loginAdministrador = async (req, res) => {
+  try {
+    const { identificador, password } = req.body;
+
+    // Validar datos requeridos
+    if (!identificador || !password) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Identificador y contraseña requeridos' 
+      });
+    }
+
+    // Validar formato del identificador (10 dígitos)
+    if (!/^\d{10}$/.test(identificador)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'El identificador debe tener exactamente 10 dígitos' 
+      });
+    }
+
+    // Credenciales hardcodeadas (deberías usar variables de entorno en producción)
+    const ADMIN_IDENTIFICADOR = process.env.ADMIN_IDENTIFICADOR || '1234567890';
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+
+    // Verificar credenciales
+    if (identificador === ADMIN_IDENTIFICADOR && password === ADMIN_PASSWORD) {
+      // Crear sesión de administrador
+      req.session.admin = {
+        identificador: identificador,
+        rol: 'admin',
+        loginTime: new Date().toISOString()
+      };
+
+      // Guardar sesión
+      await new Promise((resolve, reject) => {
+        req.session.save(err => (err ? reject(err) : resolve()));
+      });
+
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Login de administrador exitoso',
+        data: {
+          identificador: identificador,
+          rol: 'admin'
+        }
+      });
+    } else {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Credenciales de administrador inválidas' 
+      });
+    }
+  } catch (error) {
+    console.error('Error en loginAdministrador:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Cerrar sesión de administrador
+ */
+const cerrarSesionAdministrador = async (req, res) => {
+  try {
+    req.session.admin = null;
+    
+    await new Promise((resolve, reject) => {
+      req.session.save(err => (err ? reject(err) : resolve()));
+    });
+
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Sesión de administrador cerrada exitosamente' 
+    });
+  } catch (error) {
+    console.error('Error en cerrarSesionAdministrador:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error al cerrar sesión', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Verificar sesión de administrador
+ */
+const verificarSesionAdministrador = async (req, res) => {
+  try {
+    if (req.session.admin) {
+      return res.status(200).json({ 
+        success: true, 
+        data: {
+          identificador: req.session.admin.identificador,
+          rol: req.session.admin.rol,
+          loginTime: req.session.admin.loginTime
+        }
+      });
+    } else {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'No hay sesión de administrador activa' 
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error al verificar sesión', 
+      error: error.message 
+    });
+  }
+};
+
 module.exports = {
+  // Autenticación
+  loginAdministrador,
+  cerrarSesionAdministrador,
+  verificarSesionAdministrador,
+  
   // Computadoras
   obtenerComputadoras,
   crearComputadora,

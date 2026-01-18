@@ -9,18 +9,15 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>No.</th>
-                                <th>Tamaño</th>
+                                <th>No. Restirador</th>
+                                <th>No. Inventario</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>R001</td>
-                                <td>Grande</td>
-                                <td>Disponible</td>
-                                <td><button class="btn-editar">Editar</button></td>
+                                <td colspan="4">Cargando...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -28,7 +25,7 @@
             </div>
             
             <div class="container-btn-alta">
-                <button class="btn-alta" id="btn-agregar">Agregar Restiradores</button>
+                <button class="btn-alta" id="btn-agregar">➕ Agregar Restirador</button>
             </div>
         </div>
         
@@ -37,24 +34,8 @@
             <div class="container-datos-sistema">
                 <h3>Estadísticas Restiradores</h3>
                 <div class="dato-item">
-                    <span class="dato-label">Total Restiradores:</span>
-                    <span class="dato-value">75</span>
-                </div>
-                <div class="dato-item">
-                    <span class="dato-label">Disponibles:</span>
-                    <span class="dato-value">62</span>
-                </div>
-                <div class="dato-item">
-                    <span class="dato-label">En Uso:</span>
-                    <span class="dato-value">10</span>
-                </div>
-                <div class="dato-item">
-                    <span class="dato-label">Mantenimiento:</span>
-                    <span class="dato-value">3</span>
-                </div>
-                <div class="dato-item">
-                    <span class="dato-label">Última Actualización:</span>
-                    <span class="dato-value">13/11/2025</span>
+                    <span class="dato-label">Cargando...</span>
+                    <span class="dato-value">...</span>
                 </div>
             </div>
         </div>
@@ -69,29 +50,67 @@
         
         <div class="container-formulario">
             <div class="form-group">
-                <label for="cantidad">Cantidad a Agregar:</label>
-                <input type="number" id="cantidad" placeholder="Ingrese la cantidad" min="1">
+                <label for="no_inventario">No. Inventario: *</label>
+                <input type="text" id="no_inventario" placeholder="Ej: INV-REST-001" required>
             </div>
             <div class="form-group">
-                <label for="tamano">Tamaño:</label>
-                <select id="tamano">
-                    <option value="">Seleccione un tamaño</option>
-                    <option value="Pequeño">Pequeño</option>
-                    <option value="Mediano">Mediano</option>
-                    <option value="Grande">Grande</option>
-                </select>
+                <label for="no_restirador">No. Restirador: *</label>
+                <input type="number" id="no_restirador" placeholder="Ej: 1" min="1" required>
             </div>
             <div class="form-group">
-                <label for="estado">Estado Inicial:</label>
-                <select id="estado">
-                    <option value="disponible">Disponible</option>
-                    <option value="mantenimiento">En Mantenimiento</option>
-                </select>
+                <label for="observacion">Observación:</label>
+                <textarea id="observacion" rows="3" placeholder="Observaciones adicionales"></textarea>
             </div>
         </div>
         <div class="modal-botones">
-            <button class="btn-limpiar" id="btn-limpiar">Limpiar</button>
-            <button class="btn-guardar" id="btn-guardar">Guardar</button>
+            <button class="btn-limpiar" id="btn-limpiar">🧹 Limpiar</button>
+            <button class="btn-guardar" id="btn-guardar">💾 Guardar</button>
         </div>
     </div>
 </div>
+
+<script src="../PantallasAdmin/js/gestionRestiradores.js"></script>
+
+<style>
+.badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    margin-right: 0.25rem;
+    display: inline-block;
+}
+
+.badge-disponible {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.badge-ocupado {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.badge-success {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.badge-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.btn-eliminar {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 0.5rem;
+}
+
+.btn-eliminar:hover {
+    background-color: #c82333;
+}
+</style>

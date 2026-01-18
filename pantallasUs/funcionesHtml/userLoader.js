@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(html => {
                 // Quitar la clase de entrada para resetear cualquier animación previa
                 contentLoader.classList.remove('component-enter');
+
                 // Insertar el HTML del componente cargado en el contenedor
                 contentLoader.innerHTML = html;
                 
@@ -27,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // y permita reiniciar la animación al volver a añadir la clase
                 void contentLoader.offsetWidth;
                 // Añadir la clase que activa la animación de entrada del contenedor
-                contentLoader.classList.add('component-enter');
+                contentLoader.classList.add('component-enter');// Animación de entrada del contenedor principal
                 
                 // Seleccionar elementos que tendrán animaciones internas específicas
                 const tables = contentLoader.querySelectorAll('.container-tabla');
@@ -44,20 +45,63 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 // Inicializar eventos de la tabla después de cargar el componente
-                setTimeout(() => {
-                    // Cargar datos de la tabla si existe
-                    if (tables.length > 0 && typeof cargarTabla === 'function') {
-                        cargarTabla().catch(err => {
-                            console.error('Error cargando tabla:', err);
-                        });
-                    }
-                    
-                    // Inicializar eventos
-                    if (typeof inicializarEventosTabla === 'function') {
-                        console.log('Inicializando eventos de tabla...');
-                        inicializarEventosTabla();
-                    }
-                }, 100);
+                if (tables.length > 0) {
+                    // Dar tiempo para que el DOM se actualice
+                    setTimeout(() => {
+                        // Cargar datos de la tabla del componente recién inyectado
+                        if (typeof cargarDatosEnTabla === 'function') {
+                            console.log('Solicitando datos para la tabla...');
+                            cargarDatosEnTabla()
+                                .then(() => {
+                                    console.log('✅ Datos cargados en la tabla');
+                                    
+                                    // Inicializar filtros de la tabla
+                                    if (typeof inicializarFiltrosTabla === 'function') {
+                                        console.log('Inicializando filtros de tabla...');
+                                        inicializarFiltrosTabla();
+                                    }
+                                    // Iniciar realtime después de cargar los datos
+                                    if (typeof configurarTiempoRealParaTablaActual === 'function') {
+                                        console.log('Iniciando Supabase Realtime...');
+                                        configurarTiempoRealParaTablaActual();
+                                    }
+                                })
+                                .catch(err => {
+                                    console.error('Error al cargar datos de tabla:', err);
+                                });
+                        }
+                        // Configurar botón Solicitar
+                        const btnApartar = contentLoader.querySelector('.btn-apartar');
+                        if (btnApartar && !btnApartar.hasAttribute('data-listener-added')) {
+                            console.log('Configurando botón Solicitar...');
+                            btnApartar.style.display = 'none';
+                            btnApartar.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                            
+                                if (typeof abrirModal === 'function') {
+                                    abrirModal();
+
+                                }
+                            });
+                            btnApartar.setAttribute('data-listener-added', 'true');
+                        }
+
+                        // Configurar botones del modal
+                
+
+                        // Configurar cierre del modal al hacer clic fuera
+                        const modal = contentLoader.querySelector('#modal-confirmacion');
+                        if (modal && !modal.hasAttribute('data-listener-added')) {
+                            modal.addEventListener('click', function(e) {
+                                if (e.target === modal && typeof cerrarModal === 'function') {
+                                    cerrarModal();
+                                }
+                            });
+                            modal.setAttribute('data-listener-added', 'true');
+                        }
+                    }, 100);
+                }
             })
             .catch(err => {
                 console.error('Error cargando componente:', err);
@@ -70,25 +114,39 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     };
 
+
     // Configurar eventos de los enlaces de navegación
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
+   let linkActivo = null;
 
-            const component = link.getAttribute('data-component');
-            const title = link.getAttribute('data-title');
+navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
 
-            if (component && title) {
-                // Actualizar estado activo
-                navLinks.forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
+        // Si se vuelve a hacer clic en el mismo link, no hace nada
+        if (link === linkActivo) return;
 
-                // Cargar componente
-                loadComponent(component, title);
+        const component = link.getAttribute('data-component');
+        const title = link.getAttribute('data-title');
+
+        if (component && title) {
+
+            // Liberar el link anterior
+            if (linkActivo) {
+                linkActivo.classList.remove('active');
+                linkActivo.classList.remove('disabled');
             }
-        });
-    });
 
+            // Bloquear el link actual
+            link.classList.add('active');
+            link.classList.add('disabled');
+
+            linkActivo = link;
+
+            // Cargar componente
+            loadComponent(component, title);
+        }
+    });
+});
     // Cargar componente inicial (inicio)
     const inicioLink = Array.from(navLinks).find(link => 
         link.getAttribute('data-component') === 'inicio'

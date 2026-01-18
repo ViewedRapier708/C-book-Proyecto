@@ -1,6 +1,6 @@
 const { getClient } = require('../config/db');
 const supabase = getClient();
-const tipos = ['computadora', 'restirador', 'libro'];
+
 
 // ==================== CREAR SOLICITUD ====================
 async function CrearSolicitud(tipoSolicitud, boleta, idRecurso) {
@@ -14,19 +14,19 @@ async function CrearSolicitud(tipoSolicitud, boleta, idRecurso) {
         default:
             return { success: false, error: 'Tipo de solicitud inválido' };
     }
-
- 
-
-
 }
 
 
 //==================Funciones de los materiales para agregar los registros==================
 async function CrearSolicitudComputadora(boleta, idRecurso) {
+    const noRecurzo =await supabase.from('computadoras').select('id').eq('no_computadora', idRecurso).single();
+
+console.log("No Recurso Computadora:", noRecurzo); //debug
+
     try {
         const { error } = await supabase
             .from('solicitudes_computadora')
-            .insert([{ usuario_boleta: boleta, recurso_id: idRecurso }]);
+            .insert([{ usuario_boleta: boleta, computadora_id: noRecurzo.data.id }]);
         //El estado se pone automáticamente en 'pendiente'
         if (error) {
             console.error("Error creando solicitud de computadora:", error);
@@ -60,9 +60,17 @@ async function CrearSolicitudRestiradores(boleta, idRecurso) {
 }
 async function CrearSolicitudlibro(boleta, idRecurso) {
     try {
+        // Estado 1 = pendiente (ajusta si tu catálogo es diferente)
+        const estadoPendiente = 1;
+        const now = new Date();
+        // No se envían fechas, se usan los defaults de la tabla
         const { error } = await supabase
             .from('solicitudes_libros')
-            .insert([{ usuario_boleta: boleta, ejemplar_id: idRecurso }]);
+            .insert([{
+                usuario_boleta: boleta,
+                ejemplar_id: idRecurso
+                // fechas y demás campos usan los defaults de la tabla
+            }]);
         if (error) {
             console.error("Error creando solicitud de libro:", error);
             return { success: false, error: error.message };
@@ -89,77 +97,77 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
             return { disponible: false, error: 'Tipo de recurso inválido' };
     }
 
+    async function VerificarDisponibilidadComputadora(n_recurso) {
+        try {
+            const { data, error } = await supabase.from('computadoras').select('id,Disponible').eq('no_computadora', n_recurso).single();
+            console.log("Disponibilidad Computadora:", data, error); //debug
+
+            if (error) {
+                console.error("Error verificando disponibilidad:", error);
+                return { success: false, message: error.message };
+            }
+            if (data.length === 0) {
+                return { success: false, message: 'Recurso no encontrado' };
+            }
+            if (data.Disponible === false) {
+                return { message: 'La computadora no está disponible actualmente', success: false };
+            }
+            return { success: true, message: null, idRecurso: data.id };//Indica que la computadora está disponible
 
 
-}
-
-async function VerificarDisponibilidadComputadora(n_recurso) {
-    try {
-        const { data, error } = await supabase.from('computadoras').select('Disponible').eq('no_computadora', n_recurso).single();
-        console.log("Disponibilidad Computadora:", data, error); //debug
-
-        if (error) {
-            console.error("Error verificando disponibilidad:", error);
-            return { success: false, message: error.message };
+        } catch (error) {
+            return { success: false, message: 'Error interno del servidor' };
         }
-        if (data.length === 0) {
-            return { success: false, message: 'Recurso no encontrado' };
-        }
-        if (data.Disponible === false) {
-            return { message: 'La computadora no está disponible actualmente', success: false };
-        }
-        return { success: true, message: null };//Indica que la computadora está disponible
 
+    }
+    async function VerificarDisponibilidadRestirador(n_recurso) {
+        try {
+            const { data, error } = await supabase.from('restiradores').select('id,Disponible').eq('no_restirador', n_recurso).single();
+            console.log("Disponibilidad Restirador:", data, error); //debug
+            if (error) {
+                console.error("Error verificando disponibilidad:", error);
+                return { success: false, message: error.message };
+            }
+            if (data.length === 0) {
+                return { success: false, message: 'Recurso no encontrado' };
+            }
+            if (data.Disponible === false) {
+                return { message: 'El restirador no está disponible actualmente', success: false };
+            }
+            return { success: true, message: null, idRecurso: data.id };   //Indica que el restirador está disponible
 
-    } catch (error) {
-        return { success: false, message: 'Error interno del servidor' };
+        } catch (error) {
+
+            return { success: false, message: 'Error interno del servidor' };
+
+        }
+
+    }
+    async function VerificarDisponibilidadLibro(n_recurso) {
+        try {
+            const { data, error } = await supabase.from('ejemplares').select('id,Disponible').eq('libro_id', n_recurso).single();
+
+            console.log("Disponibilidad Libro:", data, error);
+            if (error) {
+                console.error("Error verificando disponibilidad:", error);
+                return { success: false, message: error.message };
+            }
+            if (data.length === 0) {
+                return { success: false, message: 'Recurso no encontrado' };
+            }
+            if (data.Disponible === false) {
+                return { message: 'El libro no está disponible actualmente', success: false };
+            }
+            return { success: true, message: null, idRecurso: data.id };//Indica que el libro está disponible
+        } catch (error) {
+            return { success: false, message: 'Error interno del servidor' };
+        }
+
     }
 
 }
-async function VerificarDisponibilidadRestirador(n_recurso) {
-    try {
-        const { data, error } = await supabase.from('restiradores').select('Disponible').eq('no_restirador', n_recurso).single();
-        console.log("Disponibilidad Restirador:", data, error); //debug
-        if (error) {
-            console.error("Error verificando disponibilidad:", error);
-            return { success: false, message: error.message };
-        }
-        if (data.length === 0) {
-            return { success: false, message: 'Recurso no encontrado' };
-        }
-        if (data.Disponible === false) {
-            return { message: 'El restirador no está disponible actualmente', success: false };
-        }
-        return { success: true, message: null };   //Indica que el restirador está disponible
 
-    } catch (error) {
 
-        return { success: false, message: 'Error interno del servidor' };
-
-    }
-
-}
-async function VerificarDisponibilidadLibro(n_recurso) {
-    try {
-        const { data, error } = await supabase.from('ejemplares').select('Disponibilidad').eq('libro_id', n_recurso).single();
-
-        console.log("Disponibilidad Libro:", data, error);
-        if (error) {
-            console.error("Error verificando disponibilidad:", error);
-            return { success: false, message: error.message };
-        }
-        if (data.length === 0) {
-            return { success: false, message: 'Recurso no encontrado' };
-        }
-        if (data.Disponibilidad === false) {
-            return { message: 'El libro no está disponible actualmente', success: false };
-        }
-        return { success: true, message: null };//Indica que el libro está disponible
-    } catch (error) {
-        return { success: false, message: 'Error interno del servidor' };
-    }
-
-}
 
 // ==================== OBTENER SOLICITUDES ACTIVAS ====================
 async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
@@ -167,9 +175,7 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
     if (!tipo || !boleta) {
         return { success: false, error: 'Faltan datos obligatorios' };
     }
-    if (!tipos.includes(tipo)) {
-        return { success: false, error: 'Tipo de solicitud inválido' };
-    }
+
     if (tipo === 'computadora' || tipo === 'restirador') {
         if (!Number.isInteger(numeroBoleta)) {
             return { success: false, error: 'Boleta inválida' };
@@ -202,7 +208,7 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
             console.error('Error contando solicitudes activas:', err);
             return { success: false, error: 'Error interno del servidor' };
         }
-    }else if(tipo === 'libro'){ 
+    } else if (tipo === 'libro') {
         //Contar solicitudes activas en la tabla de libros
         const libros = await contarPendientesPorTabla(supabase, 'solicitudes_libros', numeroBoleta);
         if (!libros.success) {
@@ -213,32 +219,101 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
             total: libros.count
         }
     }
-}
+    async function contarPendientesPorTabla(client, tabla, boleta) {
+        try {
+            console.log(`Contando solicitudes activas en ${tabla} para boleta ${boleta}`); //debug
+            const { data, count, error } = await client
+                .from(tabla)
+                .select('id', { count: 'exact' })
+                .eq('usuario_boleta', String(boleta))
+                .eq('estado_asistencia_id', 1);
+            if (error) {
+                console.error(`Error consultando ${tabla}:`, error);
+                return { success: false, error: error.message, count: 0 };
+            }
 
-async function contarPendientesPorTabla(client, tabla, boleta) {
-    try {
-        const { error, count } = await client
-            .from(tabla)
-            .select('id', { count: 'exact', head: true })
-            .eq('usuario_boleta', boleta)
-            .eq('estado', 'pendiente' || '');
-        console.log(`Conteo en ${tabla} para boleta ${boleta}:`, count, error); //debug
-        if (error) {
-            console.error(`Error consultando ${tabla}:`, error);
-            return { success: false, error: error.message, count: 0 };
+            return { success: true, count: count };
+        } catch (err) {
+            console.error(`Error inesperado consultando ${tabla}:`, err);
+            return { success: false, error: 'Error interno', count: 0 };
         }
-
-        return { success: true, count: count };
-    } catch (err) {
-        console.error(`Error inesperado consultando ${tabla}:`, err);
-        return { success: false, error: 'Error interno', count: 0 };
     }
+
 }
+async function getSolicitudes(boleta) {
+  const supabase = getClient();
+  try {
+        console.log('[Solicitudes] Consultando v_solicitudes_alumno con boleta/registro_id:', boleta);
+    const { data, error } = await supabase//Retorna todas las solicitudes hechas por un alumno
+      .from('v_solicitudes_alumno')
+      .select('*')
+      .eq('registro_id', boleta);
+
+        console.log('[Solicitudes] Data recuperada:', {
+            total: Array.isArray(data) ? data.length : 0,
+            preview: Array.isArray(data) ? data.slice(0, 5) : data
+        });
+    if (error) {
+      console.error("Error obteniendo solicitudes:", error);
+      return { success: false, error: error.message };
+    }
+
+    console.log("Solicitudes obtenidas:", data); //debug
+    return { success: true, data };
+  } catch (err) {
+    console.error("Error en getSolicitudes:", err);
+    return { success: false, error: 'Error interno' };
+  }
+}
+
 
 
 // ==================== CANCELACION DE SOLICITUD ====================
-async function CancelarSolicitud(solicitudId) { }
+async function CancelarSolicitud(tipoSolicitud, solicitudId, boleta) {
+    const id = Number(solicitudId);
+    if (!Number.isInteger(id)) {
+        return { success: false, error: 'ID de solicitud inválido' };
+    }
 
+    let tabla = null;
+    switch (tipoSolicitud) {
+        case 'computadora':
+            tabla = 'solicitudes_computadora';
+            break;
+        case 'restirador':
+            tabla = 'solicitudes_restirador';
+            break;
+        case 'libro':
+            tabla = 'solicitudes_libros';
+            break;
+        default:
+            return { success: false, error: 'Tipo de solicitud inválido' };
+    }
+
+    try {
+        let query = supabase
+            .from(tabla)
+            .update({ estado_asistencia_id: 3 }) // 3 = cancelada
+            .eq('id', id)
+            .eq('estado_asistencia_id', 1); // solo cancelar si está pendiente
+
+        if (boleta) {
+            query = query.eq('usuario_boleta', String(boleta));
+        }
+
+        const { error } = await query;
+
+        if (error) {
+            console.error('Error cancelando solicitud:', error);
+            return { success: false, error: error.message };
+        }
+
+        return { success: true, error: null };
+    } catch (err) {
+        console.error('Error en CancelarSolicitud:', err);
+        return { success: false, error: 'Error interno del servidor' };
+    }
+}
 
 // ==================== EXPORTAR FUNCIONES ====================
 module.exports = {
@@ -248,7 +323,8 @@ module.exports = {
     CrearSolicitudlibro,
     VerificarDisponibilidadRecurso,
     ObtenerSolicitudesActivasPorBoleta,
-    CancelarSolicitud
+    CancelarSolicitud,
+    getSolicitudes
 };
 
 

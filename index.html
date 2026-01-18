@@ -47,10 +47,10 @@
                     <h2>INICIAR SESIÓN</h2>
                 </div>
 <script src=""></script>
-                <!-- ========================================
-                     FORMULARIO DE INICIO DE SESIÓN
+                 <!-- ========================================
+                     FORMULARIO DE INICIO DE SESIÓN (usa fetch desde JS)
                      ======================================== -->
-                <form id="form-login" onsubmit="return iniciarSesion(event)">
+                 <form id="form-login" onsubmit="return iniciarSesion(event)">
                     
                     <label for="boleta">Usuario</label>
                     <input 
@@ -81,9 +81,8 @@
                     </div>
 
                     <div class="messaje"></div>
-
                     <button type="submit" class="btn-crear-cuenta">ACCEDER</button>
-
+                
                     <div class="separator">O</div>
 
                     <!-- Botón que cambia al formulario de registro -->
@@ -93,14 +92,13 @@
                 
                     <div class="divider"></div> 
                     <a href="./PantallasAdmin/admin.html">admin</a>
-                    <a href="./pantallasUs/usuario.html">usuario</a>
 
                 </form>
 
                 <!-- ========================================
                      FORMULARIO DE REGISTRO (OCULTO POR DEFECTO)
                      ======================================== -->
-                <form id="form-registro" onsubmit="registro(event)" style="display: none;">
+                <form id="form-registro" onsubmit="return registro(event)" style="display: none;">
                     
                     <!-- Número de Boleta -->
                     <label for="boleta-registro">Número de boleta</label>
@@ -172,6 +170,13 @@
 
             </div>
         </div>
+    </div>
+    
+    <!-- Enlace para administradores -->
+    <div style="text-align: center; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <a href="./loginAdmin.html" style="color: white; text-decoration: none; font-weight: bold; font-size: 0.9rem;">
+            🔐 Acceso Administradores
+        </a>
     </div>
 </body>
 </html>

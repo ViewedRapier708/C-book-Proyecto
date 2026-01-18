@@ -1,17 +1,10 @@
 {
-  "name": "back",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "name": "c-book-proyecto",
+  "private": true,
   "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.84.0",
     "bcryptjs": "^2.4.3",
@@ -23,7 +16,13 @@
     "express-session": "^1.18.2",
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.10",
-    "nodemon": "^3.1.10",
     "pg": "^8.13.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "scripts": {
+    "dev:back": "nodemon back/app.js",
+    "start:back": "node back/app.js"
   }
 }

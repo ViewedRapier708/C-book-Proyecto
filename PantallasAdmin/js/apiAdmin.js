@@ -6,11 +6,65 @@ const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
 // ==========================================
 
 /**
+ * Login de administrador
+ */
+async function loginAdmin(identificador, password) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ identificador, password })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('Login exitoso:', data);
+            return data;
+        } else {
+            console.error('Error en login:', data.message);
+            return data;
+        }
+    } catch (error) {
+        console.error('Error en login:', error);
+        return { success: false, message: 'Error de conexión' };
+    }
+}
+
+/**
+ * Verificar sesión de administrador
+ */
+async function verificarSesionAdmin() {
+    try {
+        const response = await fetch(`${API_BASE}/admin/session`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+        
+        if (!data.success) {
+            console.log('No hay sesión de administrador activa');
+            return false;
+        }
+
+        console.log('Sesión de administrador activa:', data.data);
+        return true;
+    } catch (error) {
+        console.error('Error verificando sesión:', error);
+        return false;
+    }
+}
+
+/**
  * Función para cerrar sesión
  */
 async function logout() {
     try {
-        const response = await fetch(`${API_BASE}/auth/logout`, {
+        const response = await fetch(`${API_BASE}/admin/logout`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -18,7 +72,9 @@ async function logout() {
             credentials: 'include'
         });
 
-        if (response.ok) {
+        const data = await response.json();
+
+        if (data.success) {
             // Limpiar datos locales
             localStorage.removeItem('usuario');
             sessionStorage.clear();
@@ -38,134 +94,434 @@ async function logout() {
     }
 }
 
-/**
- * Verificar sesión de administrador
- */
-async function verificarSesionAdmin() {
-    try {
-        const response = await fetch(`${API_BASE}/auth/session`, {
-            method: 'GET',
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            window.location.href = '../index.html';
-            return false;
-        }
-
-        const data = await response.json();
-        
-        // Verificar que sea administrador
-        if (!data.user || data.user.tipo_usuario !== 'administrador') {
-            alert('Acceso denegado. Solo administradores pueden acceder a esta sección.');
-            window.location.href = '../index.html';
-            return false;
-        }
-
-        return true;
-    } catch (error) {
-        console.error('Error verificando sesión:', error);
-        window.location.href = '../index.html';
-        return false;
-    }
-}
-
 // ==========================================
 // FUNCIONES PARA GESTIÓN DE RECURSOS
 // ==========================================
 
+// ========== RESTIRADORES ==========
+
 /**
- * Obtener recursos por tipo
+ * Obtener todos los restiradores
  */
-async function obtenerRecursos(tipo) {
+async function obtenerRestiradores() {
     try {
-        const response = await fetch(`${API_BASE}/auth/recursos?tipo=${tipo}`, {
+        const response = await fetch(`${API_BASE}/admin/restiradores`, {
             method: 'GET',
             credentials: 'include'
         });
 
-        if (!response.ok) {
-            throw new Error(`Error al obtener ${tipo}s`);
+        const data = await response.json();
+        
+        if (!data.success) {
+            console.error('Error al obtener restiradores:', data.message);
+            return [];
         }
 
-        const data = await response.json();
-        return data;
+        return data.data || [];
     } catch (error) {
-        console.error(`Error obteniendo ${tipo}s:`, error);
+        console.error('Error obteniendo restiradores:', error);
         return [];
     }
 }
 
 /**
- * Crear nuevo recurso
+ * Crear nuevo restirador
  */
-async function crearRecurso(tipo, datos) {
+async function crearRestirador(restirador) {
     try {
-        const response = await fetch(`${API_BASE}/auth/recursos/${tipo}`, {
+        const response = await fetch(`${API_BASE}/admin/restiradores`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             credentials: 'include',
-            body: JSON.stringify(datos)
+            body: JSON.stringify(restirador)
         });
 
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Error al crear recurso');
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Error al crear restirador');
         }
 
-        return await response.json();
+        return data;
     } catch (error) {
-        console.error('Error creando recurso:', error);
+        console.error('Error creando restirador:', error);
         throw error;
     }
 }
 
 /**
- * Actualizar recurso existente
+ * Actualizar restirador existente
  */
-async function actualizarRecurso(tipo, id, datos) {
+async function actualizarRestirador(restirador) {
     try {
-        const response = await fetch(`${API_BASE}/auth/recursos/${tipo}/${id}`, {
-            method: 'PUT',
+        const response = await fetch(`${API_BASE}/admin/restiradores/actualizar`, {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             credentials: 'include',
-            body: JSON.stringify(datos)
+            body: JSON.stringify(restirador)
         });
 
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Error al actualizar recurso');
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Error al actualizar restirador');
         }
 
-        return await response.json();
+        return data;
     } catch (error) {
-        console.error('Error actualizando recurso:', error);
+        console.error('Error actualizando restirador:', error);
         throw error;
     }
 }
 
 /**
- * Eliminar recurso
+ * Eliminar restirador
  */
-async function eliminarRecurso(tipo, id) {
+async function eliminarRestirador(id) {
     try {
-        const response = await fetch(`${API_BASE}/auth/recursos/${tipo}/${id}`, {
-            method: 'DELETE',
+        const response = await fetch(`${API_BASE}/admin/restiradores/eliminar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ id })
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Error al eliminar restirador');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error eliminando restirador:', error);
+        throw error;
+    }
+}
+
+// ========== COMPUTADORAS ==========
+
+/**
+ * Obtener todas las computadoras
+ */
+async function obtenerComputadoras() {
+    try {
+        const response = await fetch(`${API_BASE}/admin/computadoras`, {
+            method: 'GET',
             credentials: 'include'
         });
 
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Error al eliminar recurso');
+        const data = await response.json();
+        
+        if (!data.success) {
+            console.error('Error al obtener computadoras:', data.message);
+            return [];
         }
 
-        return await response.json();
+        return data.data || [];
     } catch (error) {
-        console.error('Error eliminando recurso:', error);
+        console.error('Error obteniendo computadoras:', error);
+        return [];
+    }
+}
+
+/**
+ * Crear nueva computadora
+ */
+async function crearComputadora(computadora) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/computadoras`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify(computadora)
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Error al crear computadora');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error creando computadora:', error);
+        throw error;
+    }
+}
+
+/**
+ * Actualizar computadora existente
+ */
+async function actualizarComputadora(computadora) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/computadoras/actualizar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify(computadora)
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Error al actualizar computadora');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error actualizando computadora:', error);
+        throw error;
+    }
+}
+
+/**
+ * Eliminar computadora
+ */
+async function eliminarComputadora(id) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/computadoras/eliminar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ id })
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Error al eliminar computadora');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error eliminando computadora:', error);
+        throw error;
+    }
+}
+
+// ========== LIBROS ==========
+
+/**
+ * Obtener todos los libros
+ */
+async function obtenerLibros() {
+    try {
+        const response = await fetch(`${API_BASE}/admin/libros`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+        
+        if (!data.success) {
+            console.error('Error al obtener libros:', data.message);
+            return [];
+        }
+
+        return data.data || [];
+    } catch (error) {
+        console.error('Error obteniendo libros:', error);
+        return [];
+    }
+}
+
+/**
+ * Crear nuevo libro
+ */
+async function crearLibro(libro) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/libros`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify(libro)
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Error al crear libro');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error creando libro:', error);
+        throw error;
+    }
+}
+
+/**
+ * Actualizar libro existente
+ */
+async function actualizarLibro(libro) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/libros/actualizar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify(libro)
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Error al actualizar libro');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error actualizando libro:', error);
+        throw error;
+    }
+}
+
+/**
+ * Eliminar libro
+ */
+async function eliminarLibro(id) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/libros/eliminar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ id })
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Error al eliminar libro');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error eliminando libro:', error);
+        throw error;
+    }
+}
+
+// ========== GUARDAROPAS ==========
+
+/**
+ * Obtener todos los guardaropas
+ */
+async function obtenerGuardaropas() {
+    try {
+        const response = await fetch(`${API_BASE}/admin/guardaropas`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+        
+        if (!data.success) {
+            console.error('Error al obtener guardaropas:', data.message);
+            return [];
+        }
+
+        return data.data || [];
+    } catch (error) {
+        console.error('Error obteniendo guardaropas:', error);
+        return [];
+    }
+}
+
+/**
+ * Crear nuevo guardaropa
+ */
+async function crearGuardaropa(guardaropa) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/guardaropas`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify(guardaropa)
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Error al crear guardaropa');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error creando guardaropa:', error);
+        throw error;
+    }
+}
+
+/**
+ * Actualizar guardaropa existente
+ */
+async function actualizarGuardaropa(guardaropa) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/guardaropas/actualizar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify(guardaropa)
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Error al actualizar guardaropa');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error actualizando guardaropa:', error);
+        throw error;
+    }
+}
+
+/**
+ * Eliminar guardaropa
+ */
+async function eliminarGuardaropa(id) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/guardaropas/eliminar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ id })
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Error al eliminar guardaropa');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error eliminando guardaropa:', error);
         throw error;
     }
 }
@@ -177,19 +533,21 @@ async function eliminarRecurso(tipo, id) {
 /**
  * Obtener todas las solicitudes
  */
-async function obtenerSolicitudes(filtros = {}) {
+async function obtenerSolicitudes() {
     try {
-        const params = new URLSearchParams(filtros);
-        const response = await fetch(`${API_BASE}/auth/solicitudes?${params}`, {
+        const response = await fetch(`${API_BASE}/admin/solicitudes`, {
             method: 'GET',
             credentials: 'include'
         });
 
-        if (!response.ok) {
-            throw new Error('Error al obtener solicitudes');
+        const data = await response.json();
+        
+        if (!data.success) {
+            console.error('Error al obtener solicitudes:', data.message);
+            return [];
         }
 
-        return await response.json();
+        return data.data || [];
     } catch (error) {
         console.error('Error obteniendo solicitudes:', error);
         return [];
@@ -197,28 +555,138 @@ async function obtenerSolicitudes(filtros = {}) {
 }
 
 /**
- * Actualizar estado de solicitud
+ * Obtener detalle de una solicitud
  */
-async function actualizarEstadoSolicitud(id, nuevoEstado) {
+async function obtenerSolicitudDetalle(id) {
     try {
-        const response = await fetch(`${API_BASE}/auth/solicitudes/${id}/estado`, {
-            method: 'PUT',
+        const response = await fetch(`${API_BASE}/admin/solicitudes/detalle`, {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             credentials: 'include',
-            body: JSON.stringify({ estado: nuevoEstado })
+            body: JSON.stringify({ id })
         });
 
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Error al actualizar solicitud');
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Error al obtener solicitud');
         }
 
-        return await response.json();
+        return data;
     } catch (error) {
-        console.error('Error actualizando solicitud:', error);
+        console.error('Error obteniendo solicitud:', error);
         throw error;
+    }
+}
+
+/**
+ * Aprobar solicitud
+ */
+async function aprobarSolicitud(id) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/solicitudes/aprobar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ id })
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Error al aprobar solicitud');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error aprobando solicitud:', error);
+        throw error;
+    }
+}
+
+/**
+ * Rechazar solicitud
+ */
+async function rechazarSolicitud(id, motivo) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/solicitudes/rechazar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ id, motivo })
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Error al rechazar solicitud');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error rechazando solicitud:', error);
+        throw error;
+    }
+}
+
+/**
+ * Cancelar solicitud
+ */
+async function cancelarSolicitudAdmin(id, motivo) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/solicitudes/cancelar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ id, motivo })
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Error al cancelar solicitud');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error cancelando solicitud:', error);
+        throw error;
+    }
+}
+
+// ==========================================
+// FUNCIONES PARA ESTADÍSTICAS
+// ==========================================
+
+/**
+ * Obtener estadísticas del sistema
+ */
+async function obtenerEstadisticas() {
+    try {
+        const response = await fetch(`${API_BASE}/admin/estadisticas`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+        
+        if (!data.success) {
+            console.error('Error al obtener estadísticas:', data.message);
+            return null;
+        }
+
+        return data.data || null;
+    } catch (error) {
+        console.error('Error obteniendo estadísticas:', error);
+        return null;
     }
 }
 
