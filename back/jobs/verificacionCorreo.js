@@ -24,7 +24,7 @@ async function verificarCorreo() {
 
     // 1. Obtener todos los usuarios de Auth
     const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
-
+    console.log('[VerificaciónCorreo] Usuarios obtenidos de Auth:', authData);
     if (authError) {
       console.error('[VerificaciónCorreo] Error listando usuarios de Auth:', authError);
       return;

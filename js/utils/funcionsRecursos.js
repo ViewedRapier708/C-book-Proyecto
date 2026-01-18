@@ -130,8 +130,7 @@ async function confirmarSolicitud() {
     alert('No hay recurso seleccionado');
     return;
   }
-  // Obtener el tipo de recurso de la tabla
-  const tabla = document.getElementById('tabla');
+  // Obtener el tipo de recurso de la tabla  const tabla = document.getElementById('tabla');
   const tipoRecurso = tabla?.getAttribute('data-tipo') ;
   // Obtener datos del usuario de localStorage (donde se guarda en el login)
   const usuarioData = localStorage.getItem('user_data');
@@ -146,7 +145,13 @@ async function confirmarSolicitud() {
     // Puede ser string "101", convertir a número
     idRecurso = parseInt(recursoSeleccionado['No. Computadora'] || recursoSeleccionado.no_computadora);
   } else if (tipoRecurso === 'libro') {
-    idRecurso = parseInt(recursoSeleccionado['No. de ejemplar'] || recursoSeleccionado.numero_ejemplar);
+    idRecurso = parseInt(
+      recursoSeleccionado.id ||
+      recursoSeleccionado.ejemplar_id ||
+      recursoSeleccionado['ID'] ||
+      recursoSeleccionado.numero_ejemplar ||
+      recursoSeleccionado['No. de ejemplar']
+    );
   } else if (tipoRecurso === 'restirador') {
     idRecurso = parseInt(recursoSeleccionado['ID'] || recursoSeleccionado.no_restirador || recursoSeleccionado.id);
   }

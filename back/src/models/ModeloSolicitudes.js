@@ -60,9 +60,8 @@ async function CrearSolicitudRestiradores(boleta, idRecurso) {
 }
 async function CrearSolicitudlibro(boleta, idRecurso) {
     try {
+        console.log("Creando solicitud de libro para boleta:", boleta, "y ejemplar_id:", idRecurso); //debug
         // Estado 1 = pendiente (ajusta si tu catálogo es diferente)
-        const estadoPendiente = 1;
-        const now = new Date();
         // No se envían fechas, se usan los defaults de la tabla
         const { error } = await supabase
             .from('solicitudes_libros')
@@ -99,7 +98,7 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
 
     async function VerificarDisponibilidadComputadora(n_recurso) {
         try {
-            const { data, error } = await supabase.from('computadoras').select('id,Disponible').eq('no_computadora', n_recurso).single();
+            const { data, error } = await supabase.from('computadoras').select('id,Disponible,En_funcionamiento').eq('no_computadora', n_recurso).single();
             console.log("Disponibilidad Computadora:", data, error); //debug
 
             if (error) {
@@ -112,6 +111,9 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
             if (data.Disponible === false) {
                 return { message: 'La computadora no está disponible actualmente', success: false };
             }
+            if (data.En_funcionamiento === false) {
+                return { message: 'La computadora no está en funcionamiento', success: false };
+            }
             return { success: true, message: null, idRecurso: data.id };//Indica que la computadora está disponible
 
 
@@ -122,7 +124,7 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
     }
     async function VerificarDisponibilidadRestirador(n_recurso) {
         try {
-            const { data, error } = await supabase.from('restiradores').select('id,Disponible').eq('no_restirador', n_recurso).single();
+            const { data, error } = await supabase.from('restiradores').select('id,Disponible,estado_de_material').eq('no_restirador', n_recurso).single();
             console.log("Disponibilidad Restirador:", data, error); //debug
             if (error) {
                 console.error("Error verificando disponibilidad:", error);
@@ -133,6 +135,9 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
             }
             if (data.Disponible === false) {
                 return { message: 'El restirador no está disponible actualmente', success: false };
+            }
+            if (data.estado_de_material === false) {
+                return { message: 'El restirador no está en funcionamiento', success: false };
             }
             return { success: true, message: null, idRecurso: data.id };   //Indica que el restirador está disponible
 
@@ -145,14 +150,19 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
     }
     async function VerificarDisponibilidadLibro(n_recurso) {
         try {
-            const { data, error } = await supabase.from('ejemplares').select('id,Disponible').eq('libro_id', n_recurso).single();
+            // Ahora n_recurso es el id del ejemplar
+            const { data, error } = await supabase
+                .from('ejemplares')
+                .select('id,Disponible')
+                .eq('id', n_recurso)
+                .single();
 
             console.log("Disponibilidad Libro:", data, error);
             if (error) {
                 console.error("Error verificando disponibilidad:", error);
                 return { success: false, message: error.message };
             }
-            if (data.length === 0) {
+            if (!data) {
                 return { success: false, message: 'Recurso no encontrado' };
             }
             if (data.Disponible === false) {

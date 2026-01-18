@@ -37,6 +37,7 @@ const libros = async () => {
  const { data, error } = await supabase
   .from('ejemplares')
   .select(`
+    id,
     numero_ejemplar,
     anio,
     estatus_item,

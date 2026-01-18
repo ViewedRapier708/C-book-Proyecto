@@ -1,14 +1,14 @@
-import { getClient } from "../config/db";
+const {getClient} = require("../config/db");
 
 const supabase = getClient();
 
 // ==================== MODELO ADMINISTRADOR ====================
 
-  async function CrearLibro(id, titulo, clasificacion, isbn, tipo_material, autor) {
+    async function CrearLibro(titulo, clasificacion, isbn, tipo_material, autor) {
     try {
         const { data, error } = await supabase
             .from('libros')
-            .insert([{ id, titulo, clasificacion, isbn, tipo_material, autor }])
+                        .insert([{ titulo, clasificacion, isbn, tipo_material, autor }])
             .select();
         if (error) {
             console.error("Error creando libro:", error);
@@ -22,11 +22,11 @@ const supabase = getClient();
 
 }
 
-  async function CrearComputadora(id, procesador, programas, carrera, Disponible, En_funcionamiento, Observacion, no_inventario, no_computadora) {
+  async function CrearComputadora(procesador, programas, carrera, Disponible = true, En_funcionamiento = true, Observacion = 'N/A', no_inventario, no_computadora) {
     try {
         const { data, error } = await supabase
             .from('computadoras')
-            .insert([{ id, procesador, programas, carrera, Disponible, En_funcionamiento, Observacion, no_inventario, no_computadora }])
+            .insert([{ procesador, programas, carrera, Disponible, En_funcionamiento, Observacion, no_inventario, no_computadora }])
             .select();
         if (error) {
             console.error("Error creando computadora:", error);
@@ -39,29 +39,29 @@ const supabase = getClient();
     }
 }
 
-  async function CrearRestirador(id, Disponible, estado_material, Observacion, no_inventario, no_restirador) {
+  async function CrearRestirador(Disponible = true, estado_de_material = true, Observacion = 'N/A', no_inventario, no_restirador) {
     try {
         const { data, error } = await supabase
             .from('restiradores')
-            .insert([{ id, Disponible, estado_material, Observacion, no_inventario, no_restirador }])
+            .insert([{ Disponible, estado_de_material, Observacion, no_inventario, no_restirador }])
             .select();
         if (error) {
-            console.error("Error creando computadora:", error);
+            console.error("Error creando restirador:", error);
             return { success: false, message: error.message };
         }
         return { success: true, data: data };
     } catch (error) {
-        console.error("Error interno creando computadora:", error);
+        console.error("Error interno creando restirador:", error);
         return { success: false, message: 'Error interno del servidor' };
     }
 }
 
 
-  async function CrearGuardarropa(id, ocupado,estado) {
+  async function CrearGuardarropa(ocupado, estado) {
      try {
         const { data, error } = await supabase
             .from('guardarropas')
-            .insert([{ id, ocupado, estado }])
+                .insert([{ ocupado, estado }])
             .select();
         if (error) {
             console.error("Error creando guardarropa:", error);
@@ -72,8 +72,7 @@ const supabase = getClient();
         console.error("Error interno creando guardarropa:", error);
         return { success: false, message: 'Error interno del servidor' };
     }
-}
-
+}//Para despues
 
   async function eliminarComputadora(id) {
     try {
@@ -114,7 +113,7 @@ const supabase = getClient();
   async function eliminarLibro(id) {
     try {
         const { data, error } = await supabase
-            .from('libros')
+            .from('ejemplares')
             .delete()
             .eq('id', id)
             .select();
@@ -129,7 +128,7 @@ const supabase = getClient();
     }
 }
 
-  async function eliminarGuardarropa(id) {
+async function eliminarGuardarropa(id) {
     try {
         const { data, error } = await supabase
             .from('guardarropas')
@@ -165,11 +164,11 @@ const supabase = getClient();
     }
 }
 
-  async function actualizarDatosRestirador(id, Disponible, estado_material, Observacion, no_inventario, no_restirador) {
+  async function actualizarDatosRestirador(id, Disponible, estado_de_material, Observacion, no_inventario, no_restirador) {
     try {
         const { data, error } = await supabase
             .from('restiradores')
-            .update({ Disponible, estado_material, Observacion, no_inventario, no_restirador })
+            .update({ Disponible, estado_de_material, Observacion, no_inventario, no_restirador })
             .eq('id', id)
             .select();
         if (error) {

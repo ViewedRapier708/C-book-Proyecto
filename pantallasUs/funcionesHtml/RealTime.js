@@ -215,7 +215,7 @@ const mapearValoresFila = (tipoRecurso, datos) => {
 };
 
 const obtenerIdentificadorFila = (tipoRecurso, datos) => {
-    if (tipoRecurso === 'libro') return datos.numero_ejemplar || datos.id || datos.libros?.isbn || null;
+    if (tipoRecurso === 'libro') return datos.id || datos.ejemplares?.id || datos.numero_ejemplar || datos.libros?.isbn || null;
     if (tipoRecurso === 'computadora') return datos.no_computadora || datos.id || null;
     if (tipoRecurso === 'restirador') return datos.no_restirador || datos.id || null;
     if (tipoRecurso === 'solicitudes') return datos.id || null;
