@@ -200,13 +200,27 @@ const supabase = getClient();
         return { success: false, message: 'Error interno del servidor' };
     }
 }
+//Obtencion de los materiales
+async function ObtenerMateriales(tipo) {
+    switch (tipo) {
+        case 'libros':
+            return await obtenerLibros();
+        case 'computadoras':
+            return await obtenerComputadoras();
+        case 'restiradores':
+            return await obtenerRestiradores();
+        case 'guardarropas':
+            return await obtenerGuardarropas();
+        default:
+            return { success: false, message: 'Tipo de material no válido' };
+    }
+}
 
-  async function obtenerComputadoras(id) {
+async function obtenerComputadoras() {
     try {
         const { data, error } = await supabase
             .from('computadoras')
             .select('*')
-            .eq('id', id);
         if (error) {
             console.error("Error obteniendo computadora:", error);
             return { success: false, message: error.message };
@@ -217,13 +231,11 @@ const supabase = getClient();
         return { success: false, message: 'Error interno del servidor' };
     }
 }
-
-  async function obtenerLibros(id) {
+  async function obtenerLibros() {
     try {
         const { data, error } = await supabase
             .from('libros')
             .select('*')
-            .eq('id', id);
         if (error) {
             console.error("Error obteniendo libro:", error);
             return { success: false, message: error.message };
@@ -235,12 +247,11 @@ const supabase = getClient();
     }
 }
 
-  async function obtenerRestiradores(id) {
+  async function obtenerRestiradores() {
     try {
         const { data, error } = await supabase
             .from('restiradores')
             .select('*')
-            .eq('id', id);
         if (error) {
             console.error("Error obteniendo restirador:", error);
             return { success: false, message: error.message };
@@ -251,12 +262,11 @@ const supabase = getClient();
         return { success: false, message: 'Error interno del servidor' };
     }
 }
-  async function obtenerGuardarropas(id) {
+  async function obtenerGuardarropas() {
     try {
         const { data, error } = await supabase
             .from('guardarropas')
             .select('*')
-            .eq('id', id);
         if (error) {
             console.error("Error obteniendo guardarropa:", error);
             return { success: false, message: error.message };
@@ -267,7 +277,9 @@ const supabase = getClient();
         return { success: false, message: 'Error interno del servidor' };
     }
 }
+//Aceptacion de las solicitudes del usuario
 
+//Aceptacion de documentacion del usuario
 module.exports = {
     CrearLibro,
     CrearComputadora,
@@ -280,6 +292,7 @@ module.exports = {
     actualizarDatosComputadora,
     actualizarDatosRestirador,
     actualizarDatosLibro,
+    ObtenerMateriales,
     obtenerComputadoras,
     obtenerLibros,
     obtenerRestiradores,
