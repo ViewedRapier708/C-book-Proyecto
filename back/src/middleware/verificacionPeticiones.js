@@ -10,14 +10,16 @@ async function verificarDisponibilidad(req, res, next) {
     console.log("Middleware Verificacion de Recursos activado");
     console.log("Cuerpo de la solicitud:", req.body);
     //Variable que se necesita para saber que tipo de material se esta solicitando
-    const { tipo, recurso_id, boleta } = req.body;
-    if (!recurso_id || !boleta || !tipo) {
+    const { tipo, idRecurso, boleta } = req.body;
+    if (!idRecurso || !boleta || !tipo) {
+        console.log("Faltan datos en la solicitud:", { tipo, idRecurso, boleta });
         return res.status(400).json({
             success: false,
             error: 'Se requieren mas datos para procesar la solicitud porfavor verifique y vuelve a intentarlo'
         });
     }
     if (!tipos.includes(tipo)) {
+        console.log("Tipo de material inválido:", tipo);
         return res.status(400).json({
             success: false,
             error: 'Tipo de material inválido. Los tipos permitidos son: computadora, restirador, libro.'
@@ -37,7 +39,7 @@ async function verificarDisponibilidad(req, res, next) {
             });
         }
         const pendientes = await ObtenerSolicitudesActivasPorBoleta(tipo, numeroBoleta);//Verificar si tiene solicitudes activas del usuario
-        console.log("Resultado de solicitudes activas:", pendientes);
+
         if (!pendientes.success) {
             return res.status(500).json({
                 success: false,
@@ -60,9 +62,10 @@ async function verificarDisponibilidad(req, res, next) {
         }
     }
     //Verificar disponibilidad del recurso segun el tipo
-    const disponibilidad = await VerificarDisponibilidadRecurso(tipo, recurso_id); //Verificar si el recurso esta disponible
+    const disponibilidad = await VerificarDisponibilidadRecurso(tipo, idRecurso); //Verificar si el recurso esta disponible
     console.log("Resultado de disponibilidad:", disponibilidad);
     if (disponibilidad.success === true && disponibilidad.message == null) {
+
         next();
     }
     if (disponibilidad.success === false) {

@@ -24,46 +24,47 @@ async function registro(req, res) {
 
     // Validaciones básicas
     if (!boleta || !correo || !password || !confPsw) {
-      return res.status(400).json({ error: "Faltan datos obligatorios" });
+      return res.status(400).json({ error: 'Faltan datos obligatorios' });
     }
 
     if (!/^\d{10}$/.test(boleta)) {
-      return res.status(400).json({ error: "Boleta debe tener 10 dígitos numéricos" });
+      return res.status(400).json({ error: 'Boleta debe tener 10 dígitos numéricos' });
     }
 
     if (!/^[\w.-]+@[\w.-]+\.\w+$/.test(correo)) {
-      return res.status(400).json({ error: "Correo con formato inválido" });
+      return res.status(400).json({ error: 'Correo con formato inválido' });
     }
 
     if (password.length < 6 || password.length > 16) {
-      return res.status(400).json({ error: "Contraseña debe tener entre 6 y 16 caracteres" });
+      return res.status(400).json({ error: 'Contraseña debe tener entre 6 y 16 caracteres' });
     }
 
     if (password !== confPsw) {
-      return res.status(400).json({ error: "Las contraseñas no coinciden" });
+      return res.status(400).json({ error: 'Las contraseñas no coinciden' });
     }
 
     // Verificar si la boleta ya existe
     
     const boletaExiste = await validarBoletaEnTabla(boleta);
-
-
-    if (boletaExiste) {
-      return res.status(400).json({ error: "Esta boleta ya tiene una cuenta registrada" });
+    console.log("Validación de boleta existente:", boletaExiste); //debug
+    
+    if (boletaExiste.respuesta) {
+      return res.status(400).json({ error: boletaExiste.msg });
     }
+    
 
     // Verificar si el correo ya existe
      const correoExiste = await validarCorreoEnTabla(correo);
     if (correoExiste) {
-      return res.status(400).json({ error: "Este correo ya tiene una cuenta registrada" });
+      return res.status(400).json({ error: 'Este correo ya tiene una cuenta registrada' });
     }
 
     // Registrar en Supabase Auth
     const resultadoAuth = await registrarEnAuth(boleta, correo, password);
     
     if (!resultadoAuth.success) {
-      console.error("Error en Auth:", resultadoAuth.error);
-      return res.status(400).json({ error: resultadoAuth.error || "Error al registrar usuario" });
+     // console.error("Error en Auth:", resultadoAuth.error);
+      return res.status(400).json({ error: resultadoAuth.error || 'Error al registrar usuario' });
     }
 
     console.log("Usuario registrado en Auth:", resultadoAuth.user?.id); //debug
@@ -78,12 +79,12 @@ async function registro(req, res) {
 
     return res.status(200).json({
       success: true,
-      message: "Registro exitoso. Revisa tu correo para verificar la cuenta."
+      message: 'Registro exitoso. Revisa tu correo para verificar la cuenta.'
     });
 
   } catch (err) {
     console.error("Error en registro:", err);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
 
@@ -155,7 +156,7 @@ async function login(req, res) {
       return res.status(400).json({ error: "Boleta debe tener 10 dígitos" });
     }
 
-    console.log("Intento de login para boleta:", boleta); //debug
+    //console.log("Intento de login para boleta:", boleta); //debug
 
     // Buscar correo por boleta
     const busqueda = await buscarCorreoPorBoleta(boleta);
@@ -164,20 +165,30 @@ async function login(req, res) {
       return res.status(400).json({ error: busqueda.error || 'Usuario no encontrado' });
     }
 
-    console.log("Correo encontrado:", busqueda.correo); //debug
+   // console.log("Correo encontrado:", busqueda.correo); //debug
 
     // Iniciar sesión con Supabase Auth
     const loginResult = await loginConAuth(busqueda.correo, password);
     
     if (!loginResult.success) {
-      return res.status(400).json({ error: loginResult.error });
+      return res.status(400).json({ error: loginResult.error || 'Error al iniciar sesión' });
     }
     const userData = await traerUsuarioInfo(boleta);
+<<<<<<< HEAD
     const nombre = (userData.data?.boletas?.nombre || '').trim();
     const grupo = userData.data?.boletas?.Grupo || '';
     const tipo_usuario = userData.data?.tipo_usuario || 'estudiante';
     console.log("Datos del usuario:", userData); //debug
     console.log("Login exitoso, sesión creada"); //debug
+=======
+
+    console.log("Usuario autenticado:", userData); //debug
+    const nombre = (userData.data?.boletas?.nombre ).trim();
+    const grupo = userData.data?.boletas?.Grupo ;
+    const rol= userData.data?.rol ;
+  //  console.log("Datos del usuario:", userData); //debug
+   // console.log("Login exitoso, sesión creada"); //debug
+>>>>>>> 1a1caeb681b5f56f22bb59c4f76f7bdc8d624129
 
     const supabaseSession = loginResult.session;
 
@@ -204,47 +215,27 @@ async function login(req, res) {
 
     await saveSession(req);
 
-    console.log("Datos guardados en sesión:", req.session.user); //debug
+  //  console.log("Datos guardados en sesión:", req.session.user); //debug
 
     return res.status(200).json({
       success: true,
       mensaje: 'Inicio de sesión exitoso',
-      user: sanitizeSessionUser(req.session.user)
+      user: sanitizeSessionUser(req.session.user),
+      rol:rol
     });
   } catch (err) {
-    console.error("Error en login:", err);
+  //  console.error("Error en login:", err);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
 
-
-// ==================== CERRAR SESIÓN ====================
 async function verificarSesion(req, res) {
   try {
     const sessionUser = req.session.user;
-
+    console.log('Verificando sesión para usuario:', sessionUser?.boleta); //debug
     if (!sessionUser) {
-      return res.status(401).json({ autenticado: false, user: null });
-    }
-
-    const needsRefresh = shouldRefresh(sessionUser.tokens?.expiresAt);
-
-    if (needsRefresh && sessionUser.tokens?.refreshToken) {
-      const refreshed = await refrescarSesionSupabase(sessionUser.tokens.refreshToken);
-
-      if (refreshed.success) {
-        sessionUser.tokens = {
-          accessToken: refreshed.session.access_token,
-          refreshToken: refreshed.session.refresh_token || sessionUser.tokens.refreshToken,
-          expiresAt: refreshed.session.expires_at ? refreshed.session.expires_at * 1000 : null,
-          expiresIn: refreshed.session.expires_in
-        };
-        req.session.user = sessionUser;
-        await saveSession(req);
-      } else {
-        await destroySession(req, res);
-        return res.status(401).json({ autenticado: false, error: 'Sesión expirada' });
-      }
+      // Siempre 200 para que el frontend maneje el estado con simplicidad
+      return res.status(200).json({ autenticado: false, user: null });
     }
 
     return res.status(200).json({
@@ -252,19 +243,21 @@ async function verificarSesion(req, res) {
       user: sanitizeSessionUser(sessionUser)
     });
   } catch (err) {
-    console.error('Error en verificarSesion:', err);
+   // console.error('Error en verificarSesion:', err);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
 
+// ==================== CERRAR SESIÓN ====================
+
 async function cerrarSesion(req, res) {
   try {
-    const supabaseUserId = req.session?.user?.supabaseUserId;
-
-    if (supabaseUserId) {
-      const revocado = await revocarSesionesSupabase(supabaseUserId);
+    const accessToken = req.session?.user?.tokens?.accessToken;
+//console.log('Cerrando sesión para accessToken:', accessToken); //debug
+    if (accessToken) {
+      const revocado = await revocarSesionesSupabase(accessToken);
       if (!revocado.success) {
-        console.warn('No se pudo revocar la sesión en Supabase:', revocado.error);
+       // console.warn('No se pudo revocar la sesión en Supabase:', revocado.error);
       }
     }
 
@@ -272,7 +265,7 @@ async function cerrarSesion(req, res) {
 
     return res.status(200).json({ mensaje: 'Sesión cerrada correctamente' });
   } catch (err) {
-    console.error('Error al cerrar sesión:', err);
+    //console.error('Error al cerrar sesión:', err);
     return res.status(500).json({ error: 'No se pudo cerrar la sesión' });
   }
 }
@@ -283,18 +276,13 @@ function sanitizeSessionUser(sessionUser = {}) {
   return publicData;
 }
 
-function shouldRefresh(expiresAt) {
-  if (!expiresAt) return false;
-  return expiresAt - Date.now() <= SESSION_SAFETY_WINDOW_MS;
-}
-
 function regenerateSession(req) {
   return new Promise((resolve, reject) => {
     req.session.regenerate(err => err ? reject(err) : resolve());
   });
 }
 
-function saveSession(req) {
+function saveSession(req) {//Garantiza el envio de la sesion actualizada y la cookie
   return new Promise((resolve, reject) => {
     req.session.save(err => err ? reject(err) : resolve());
   });
@@ -303,25 +291,25 @@ function saveSession(req) {
 function destroySession(req, res) {
   return new Promise((resolve, reject) => {
     if (!req.session) {
-      res.clearCookie('connect.sid', cookieOptions());
+      res.clearCookie('connect.sid');
       return resolve();
     }
 
     req.session.destroy(err => {
-      res.clearCookie('connect.sid', cookieOptions());
+      res.clearCookie('connect.sid');
       return err ? reject(err) : resolve();
     });
   });
 }
 
-function cookieOptions() {
-  const isProduction = (process.env.NODE_ENV || 'development') === 'production';
-  return {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
-    path: '/'
-  };
-}
 
-module.exports = { registro, verificarCorreo, login, verificarSesion, cerrarSesion };
+
+
+//=====================Modificacion de la cuenta
+
+
+
+
+//=======================Eliminacion de la cuenta
+
+module.exports = { registro, verificarCorreo, login, cerrarSesion ,verificarSesion};

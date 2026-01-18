@@ -6,20 +6,39 @@ const { getClient } = require('../config/db');
 async function validarBoletaEnTabla(boleta) {
   const supabase = getClient();
   try {
-    const { data, error } = await supabase
-      .from('usuarios_web_movil')
-      .select('boleta')
-      .eq('boleta', boleta)
-      .maybeSingle();
+ 
 
-    if (error) {
-      console.error("Error validando boleta:", error);
-      return false;
-    }
-    return !!data; // true si existe
+const { data: boletaData, error: errorBoleta } = await supabase
+  .from('boletas')
+  .select('boleta')
+  .eq('boleta', boleta)
+  .maybeSingle();
+
+if (errorBoleta) {
+  console.error("Error validando boleta boletas:", errorBoleta);
+  return false;
+}
+if (!boletaData) {
+  return {respuesta:true,msg:"Boleta no encontrada verifique su boleta"};
+}
+ const { data: usuario, error } = await supabase
+  .from('usuarios_web_movil')
+  .select('boleta')
+  .eq('boleta', boleta)
+  .maybeSingle();
+
+if (error) {
+  console.error("Error validando boleta usuarios:", error);
+  return false;
+}
+
+if (usuario) {
+  return {respuesta:true,msg:"Boleta ya registrada en otra cuenta"};
+}
+return {respuesta:false,msg:"Registro de boleta disponible"};
   } catch (err) {
     console.error("Error en validarBoletaEnTabla:", err);
-    return false;
+    return {respuesta:true,msg:"Error interno"};
   }
 }
 
@@ -55,16 +74,20 @@ async function registrarEnAuth(boleta, correo, password) {
         emailRedirectTo: "https://viewedrapier708.github.io/C-book-Proyecto/pantallasUs/confirmacionCorreo.html",
         data: { 
           boleta: boleta,
-  
+          rol: 'alumno'
         }
       }
     });
 
-    console.log("Registro Auth:", data?.user?.id, error?.message); //debug
 
     if (error) {
+      let mensaje = error.message;
+      // Supabase suele devolver "Database error saving new user" cuando el correo ya existe en Auth
+      if (error.message && error.message.toLowerCase().includes('database error saving new user')) {
+        mensaje = 'Este correo ya está registrado. Intenta iniciar sesión o usa otro correo.';
+      }
       console.error("Error registrando en Auth:", error);
-      return { success: false, error: error.message };
+      return { success: false, error: mensaje };
     }
 
     return { success: true, user: data.user };
@@ -103,7 +126,6 @@ async function crearUsuarioEnTabla(boleta, correo) {
 }
 
 // ==================== VERIFICACIÓN ====================
-
 // Verificar si el correo fue confirmado por boleta
 async function verificarConfirmacionPorBoleta(boleta) {
   const supabase = getClient();
@@ -203,8 +225,12 @@ async function traerUsuarioInfo(boleta) {
       .select(`
         boleta,
         correo,
+<<<<<<< HEAD
         tiene_documentos,
         tipo_usuario,
+=======
+        tiene_documentos,rol,
+>>>>>>> 1a1caeb681b5f56f22bb59c4f76f7bdc8d624129
         boletas (
           boleta,
           nombre,
@@ -243,14 +269,14 @@ async function refrescarSesionSupabase(refreshToken) {
   }
 }
 
-async function revocarSesionesSupabase(userId) {
+async function revocarSesionesSupabase(accessToken) {
   const supabase = getClient();
   try {
-    if (!userId) {
-      return { success: false, error: 'ID de usuario inválido' };
+    if (!accessToken) {
+      return { success: false, error: 'Access token inválido' };
     }
 
-    const { error } = await supabase.auth.admin.signOut(userId);
+    const { error } = await supabase.auth.admin.signOut(accessToken);
 
     if (error) {
       console.error('Error revocando sesión Supabase:', error);
@@ -263,6 +289,9 @@ async function revocarSesionesSupabase(userId) {
     return { success: false, error: 'Error interno' };
   }
 }
+//===================Obtener solicitudes de un usuario=================== 
+
+
 module.exports = { 
   validarBoletaEnTabla, 
   validarCorreoEnTabla, 

@@ -1,9 +1,13 @@
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 1a1caeb681b5f56f22bb59c4f76f7bdc8d624129
 async function cerrarSesion() {
     const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
     try {
-        const res = await fetch(`${API_BASE}/auth/logout`, {
+        const apiBase = window.API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${apiBase}/auth/logout`, {
             method: 'POST',
             credentials: 'include' // ¡Correcto!
         });

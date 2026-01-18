@@ -1,23 +1,26 @@
 const { refrescarSesionSupabase } = require('../models/ModeloUsuario');
 
-const SESSION_REFRESH_THRESHOLD_MS = Number(process.env.SESSION_REFRESH_THRESHOLD_MS) || 60000;
+const SESSION_REFRESH_THRESHOLD_MS = 60000;
 
 module.exports = async function sessionGuard(req, res, next) {
+  console.log("sessionGuard - Inicio de verificación de sesión");
   try {
-    const sessionUser = req.session?.user;
-
+      const sessionUser = req.session.user;
     if (!sessionUser) {
       return res.status(401).json({ error: 'No hay sesión activa' });
     }
 
     if (!sessionUser.tokens?.accessToken) {
+      console.log("sessionGuard - Sesión inválida: falta accessToken");
       return res.status(401).json({ error: 'Sesión inválida' });
     }
 
     if (needsRefresh(sessionUser.tokens.expiresAt)) {
+      console.log("sessionGuard - Refrescando sesión para usuario:", sessionUser.boleta);
       const refreshed = await refrescarSesionSupabase(sessionUser.tokens.refreshToken);
 
       if (!refreshed.success) {
+        console.log("sessionGuard - No se pudo refrescar la sesión, cerrando sesión");
         req.session.user = null;
         return res.status(401).json({ error: 'Sesión expirada' });
       }
@@ -43,6 +46,7 @@ module.exports = async function sessionGuard(req, res, next) {
 };
 
 function needsRefresh(expiresAt) {
+  console.log("sessionGuard - Verificando si necesita refrescar sesión, expiresAt:", expiresAt);
   if (!expiresAt) {
     return false;
   }
@@ -50,6 +54,7 @@ function needsRefresh(expiresAt) {
 }
 
 function persistSession(req) {
+  console.log("sessionGuard - Persistiendo sesión actualizada");
   return new Promise((resolve, reject) => {
     req.session.save(err => (err ? reject(err) : resolve()));
   });
