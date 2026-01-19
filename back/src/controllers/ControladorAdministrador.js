@@ -38,64 +38,87 @@ const obtenerComputadoras = async (req, res) => {
  */
 const crearComputadora = async (req, res) => {
   try {
+    console.log('=== crearComputadora iniciada ===');
+    console.log('Body recibido:', req.body);
+    
     const { procesador, programas, carrera, ram, estado } = req.body;
 
     // Validar datos requeridos
     if (!procesador || !programas || !carrera) {
+      console.log('Faltan datos requeridos');
       return res.status(400).json({ 
         success: false, 
         message: 'Faltan datos requeridos: procesador, programas, carrera' 
       });
     }
 
+    console.log('Obteniendo cliente Supabase...');
     const supabase = getClient();
     
+    console.log('Consultando última computadora...');
     // Obtener el último no_computadora para autoincrementar
-    const { data: lastComp } = await supabase
+    const { data: lastComp, error: queryError } = await supabase
       .from('computadoras')
       .select('no_computadora, no_inventario')
       .order('id', { ascending: false })
       .limit(1);
     
-    // Generar siguiente número
-    let nextNum = 1;
-    if (lastComp && lastComp.length > 0 && lastComp[0].no_computadora) {
-      const match = lastComp[0].no_computadora.match(/\d+/);
-      nextNum = match ? parseInt(match[0]) + 1 : 1;
+    if (queryError) {
+      console.error('Error consultando última computadora:', queryError);
     }
     
+    console.log('Última computadora:', lastComp);
+    
+    // Generar siguiente número como entero
+    let nextNum = 1;
+    if (lastComp && lastComp.length > 0 && lastComp[0].no_computadora) {
+      nextNum = parseInt(lastComp[0].no_computadora) + 1;
+    }
+    
+    console.log('Próximo número:', nextNum);
+    
     const no_inventario = `INV-COMP-${String(nextNum).padStart(3, '0')}`;
-    const no_computadora = `COMP-${String(nextNum).padStart(3, '0')}`;
+    const no_computadora = nextNum; // Número entero para bigint
+    
+    const insertData = {
+      no_inventario,
+      no_computadora,
+      procesador, 
+      programas, 
+      carrera,
+      Observacion: ram || 'N/A',
+      Disponible: true,
+      En_funcionamiento: true
+    };
+    
+    console.log('Datos a insertar:', JSON.stringify(insertData, null, 2));
     
     const { data, error } = await supabase
       .from('computadoras')
-      .insert([{ 
-        no_inventario,
-        no_computadora,
-        procesador, 
-        programas, 
-        carrera,
-        Observacion: ram || 'N/A',
-        Disponible: true,
-        En_funcionamiento: true
-      }])
+      .insert([insertData])
       .select();
 
     if (error) {
-      console.error('Error al crear computadora:', error);
+      console.error('Error de Supabase al crear computadora:', error);
+      console.error('Detalles del error:', JSON.stringify(error, null, 2));
       return res.status(500).json({ 
         success: false, 
-        message: 'Error al crear computadora', 
-        error: error.message 
+        message: 'Error al crear computadora en la base de datos', 
+        error: error.message,
+        details: error.details || error.hint || 'Sin detalles adicionales'
       });
     }
 
+    console.log('Computadora creada exitosamente:', data);
+    
     return res.status(201).json({ 
       success: true, 
       message: 'Computadora creada exitosamente', 
       data: data[0] 
     });
   } catch (error) {
+    console.error('Error en crearComputadora (catch):', error);
+    console.error('Stack trace:', error.stack);
     return res.status(500).json({ 
       success: false, 
       message: 'Error interno del servidor', 
