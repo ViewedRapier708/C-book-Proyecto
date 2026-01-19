@@ -49,12 +49,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Inicializar funcionalidades específicas del componente
                 if (componentName === 'altaComputadoras') {
                     inicializarModalComputadoras();
+                    cargarComputadoras();
                 } else if (componentName === 'altaLibros') {
                     inicializarModalLibros();
+                    cargarLibros();
                 } else if (componentName === 'altaRestiradores') {
                     inicializarModalRestiradores();
+                    cargarRestiradores();
                 } else if (componentName === 'altaGuardaropas') {
                     inicializarModalGuardaropas();
+                    cargarGuardaropas();
                 }
               
             })
@@ -207,21 +211,34 @@ function inicializarModalComputadoras() {
 
     // Evento: Botón Guardar
     if (btnGuardar) {
-        btnGuardar.addEventListener('click', () => {
-            // Aquí puedes agregar la lógica para guardar
+        btnGuardar.addEventListener('click', async () => {
+            const procesador = document.getElementById('procesador')?.value;
+            const programas = document.getElementById('programas')?.value;
+            const carrera = document.getElementById('carrera')?.value;
+            const ram = document.getElementById('ram')?.value;
+            const estado = document.getElementById('estado')?.value;
+            
+            if (!procesador || !programas || !carrera) {
+                alert('Por favor complete los campos requeridos: Procesador, Programas y Carrera');
+                return;
+            }
+            
             const datos = {
-                procesador: document.getElementById('procesador').value,
-                programas: document.getElementById('programas').value,
-                carrera: document.getElementById('carrera').value,
-                ram: document.getElementById('ram').value,
-                estado: document.getElementById('estado').value
+                procesador,
+                programas,
+                carrera,
+                ram: ram || '',
+                estado: estado || 'disponible'
             };
             
-            console.log('Datos a guardar:', datos);
-            // Aquí iría la lógica para enviar al servidor
-            
-            alert('Computadora guardada correctamente');
-            cerrarModal();
+            try {
+                await crearComputadora(datos);
+                alert('Computadora guardada correctamente');
+                cerrarModal();
+                cargarComputadoras(); // Recargar la tabla
+            } catch (error) {
+                alert('Error al guardar: ' + error.message);
+            }
         });
     }
 
@@ -302,18 +319,36 @@ function inicializarModalLibros() {
     }
 
     if (btnGuardar) {
-        btnGuardar.addEventListener('click', () => {
+        btnGuardar.addEventListener('click', async () => {
+            const titulo = document.getElementById('titulo')?.value;
+            const autor = document.getElementById('autor')?.value;
+            const editorial = document.getElementById('editorial')?.value;
+            const isbn = document.getElementById('isbn')?.value;
+            const carrera = document.getElementById('carrera')?.value;
+            const cantidad = document.getElementById('cantidad')?.value;
+            
+            if (!titulo || !autor) {
+                alert('Por favor complete los campos requeridos: Título y Autor');
+                return;
+            }
+            
             const datos = {
-                titulo: document.getElementById('titulo').value,
-                autor: document.getElementById('autor').value,
-                editorial: document.getElementById('editorial').value,
-                isbn: document.getElementById('isbn').value,
-                carrera: document.getElementById('carrera').value,
-                cantidad: document.getElementById('cantidad').value
+                titulo,
+                autor,
+                editorial: editorial || '',
+                isbn: isbn || '',
+                carrera: carrera || '',
+                cantidad: cantidad || '1'
             };
-            console.log('Libro a guardar:', datos);
-            alert('Libro guardado correctamente');
-            cerrarModal();
+            
+            try {
+                await crearLibro(datos);
+                alert('Libro guardado correctamente');
+                cerrarModal();
+                cargarLibros();
+            } catch (error) {
+                alert('Error al guardar: ' + error.message);
+            }
         });
     }
 
@@ -347,9 +382,13 @@ function inicializarModalRestiradores() {
     }
 
     function limpiarFormulario() {
-        document.getElementById('cantidad').value = '';
-        document.getElementById('tamano').value = '';
-        document.getElementById('estado').value = 'disponible';
+        const noInventario = document.getElementById('no_inventario');
+        const noRestirador = document.getElementById('no_restirador');
+        const observacion = document.getElementById('observacion');
+        
+        if (noInventario) noInventario.value = '';
+        if (noRestirador) noRestirador.value = '';
+        if (observacion) observacion.value = '';
     }
 
     if (btnAgregar) {
@@ -359,13 +398,17 @@ function inicializarModalRestiradores() {
             abrirModal();
         });
     }
+    
 
     if (tbody) {
         tbody.addEventListener('click', (e) => {
             if (e.target.classList.contains('btn-editar')) {
                 const fila = e.target.closest('tr');
-                document.getElementById('tamano').value = fila.cells[1].textContent;
-                document.getElementById('estado').value = fila.cells[2].textContent.toLowerCase();
+                const noRestirador = document.getElementById('no_restirador');
+                const noInventario = document.getElementById('no_inventario');
+                
+                if (noRestirador) noRestirador.value = fila.cells[0].textContent;
+                if (noInventario) noInventario.value = fila.cells[1].textContent;
                 
                 modalTitulo.textContent = 'Editar Restirador';
                 abrirModal();
@@ -382,15 +425,30 @@ function inicializarModalRestiradores() {
     }
 
     if (btnGuardar) {
-        btnGuardar.addEventListener('click', () => {
+        btnGuardar.addEventListener('click', async () => {
+            const noInventario = document.getElementById('no_inventario');
+            const noRestirador = document.getElementById('no_restirador');
+            const Observacion = document.getElementById('Observacion');
+            
+            if (!noInventario?.value || !noRestirador?.value) {
+                alert('Por favor complete los campos requeridos: No. Inventario y No. Restirador');
+                return;
+            }
+            
             const datos = {
-                cantidad: document.getElementById('cantidad').value,
-                tamano: document.getElementById('tamano').value,
-                estado: document.getElementById('estado').value
+                no_inventario: noInventario.value,
+                no_restirador: parseInt(noRestirador.value),
+                Observacion: Observacion?.value || ''
             };
-            console.log('Restirador a guardar:', datos);
-            alert('Restirador guardado correctamente');
-            cerrarModal();
+            
+            try {
+                await crearRestirador(datos);
+                alert('Restirador guardado correctamente');
+                cerrarModal();
+                cargarRestiradores(); // Recargar la tabla
+            } catch (error) {
+                alert('Error al guardar: ' + error.message);
+            }
         });
     }
 
@@ -424,8 +482,11 @@ function inicializarModalGuardaropas() {
     }
 
     function limpiarFormulario() {
-        document.getElementById('cantidad').value = '';
-        document.getElementById('estado').value = 'disponible';
+        const cantidad = document.getElementById('cantidad');
+        const estado = document.getElementById('estado');
+        
+        if (cantidad) cantidad.value = '';
+        if (estado) estado.value = 'disponible';
     }
 
     if (btnAgregar) {
@@ -440,8 +501,12 @@ function inicializarModalGuardaropas() {
         tbody.addEventListener('click', (e) => {
             if (e.target.classList.contains('btn-editar')) {
                 const fila = e.target.closest('tr');
-                // Cargar el estado de la fila
-                document.getElementById('estado').value = fila.cells[4].textContent.toLowerCase();
+                const estado = document.getElementById('estado');
+                
+                // Cargar el estado de la fila (columna 4)
+                if (estado && fila.cells[4]) {
+                    estado.value = fila.cells[4].textContent.toLowerCase();
+                }
                 
                 modalTitulo.textContent = 'Editar Guardaropa';
                 abrirModal();
@@ -458,14 +523,30 @@ function inicializarModalGuardaropas() {
     }
 
     if (btnGuardar) {
-        btnGuardar.addEventListener('click', () => {
+        btnGuardar.addEventListener('click', async () => {
+            const cantidad = document.getElementById('cantidad');
+            const estado = document.getElementById('estado');
+            
+            const cantidadVal = cantidad ? parseInt(cantidad.value) : 1;
+            
+            if (!cantidadVal || cantidadVal < 1) {
+                alert('Por favor ingrese una cantidad válida (mínimo 1)');
+                return;
+            }
+            
             const datos = {
-                cantidad: document.getElementById('cantidad').value,
-                estado: document.getElementById('estado').value
+                cantidad: cantidadVal,
+                estado: estado ? estado.value : 'disponible'
             };
-            console.log('Guardaropa a guardar:', datos);
-            alert('Guardaropa guardado correctamente');
-            cerrarModal();
+            
+            try {
+                await crearGuardaropa(datos);
+                alert(`${cantidadVal} guardaropa(s) guardado(s) correctamente`);
+                cerrarModal();
+                cargarGuardaropas();
+            } catch (error) {
+                alert('Error al guardar: ' + error.message);
+            }
         });
     }
 
@@ -476,4 +557,143 @@ function inicializarModalGuardaropas() {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && modal.classList.contains('activo')) cerrarModal();
     });
+}
+
+// ==========================================
+// FUNCIONES DE CARGA DE DATOS DIN�MICOS
+// ==========================================
+
+/**
+ * Cargar computadoras desde el backend
+ */
+async function cargarComputadoras() {
+    try {
+        const computadoras = await obtenerComputadoras();
+        const tbody = document.querySelector('tbody');
+        
+        if (!tbody) return;
+
+        if (!computadoras || computadoras.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6">No hay computadoras registradas</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = computadoras.map(comp => `
+            <tr data-id="${comp.id}">
+                <td>${comp.id || '-'}</td>
+                <td>${comp.procesador || '-'}</td>
+                <td>${comp.ram || '-'}</td>
+                <td>${comp.carrera || '-'}</td>
+                <td>${comp.ocupado ? 'Ocupado' : 'Disponible'}</td>
+                <td><button class="btn-editar">Editar</button></td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error cargando computadoras:', error);
+        const tbody = document.querySelector('tbody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="6">Error al cargar datos</td></tr>';
+        }
+    }
+}
+
+/**
+ * Cargar libros desde el backend
+ */
+async function cargarLibros() {
+    try {
+        const libros = await obtenerLibros();
+        const tbody = document.querySelector('tbody');
+        
+        if (!tbody) return;
+
+        if (!libros || libros.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7">No hay libros registrados</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = libros.map(libro => `
+            <tr data-id="${libro.id}">
+                <td>${libro.id || '-'}</td>
+                <td>${libro.titulo || '-'}</td>
+                <td>${libro.autor || '-'}</td>
+                <td>${libro.editorial || '-'}</td>
+                <td>${libro.carrera || '-'}</td>
+                <td>${libro.cantidad_disponible || 0}</td>
+                <td><button class="btn-editar">Editar</button></td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error cargando libros:', error);
+        const tbody = document.querySelector('tbody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="7">Error al cargar datos</td></tr>';
+        }
+    }
+}
+
+/**
+ * Cargar restiradores desde el backend
+ */
+async function cargarRestiradores() {
+    try {
+        const restiradores = await obtenerRestiradores();
+        const tbody = document.querySelector('tbody');
+        
+        if (!tbody) return;
+
+        if (!restiradores || restiradores.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4">No hay restiradores registrados</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = restiradores.map(rest => `
+            <tr data-id="${rest.id}">
+                <td>${rest.no_restirador || '-'}</td>
+                <td>${rest.no_inventario || '-'}</td>
+                <td>${rest.ocupado ? 'Ocupado' : 'Disponible'}</td>
+                <td><button class="btn-editar">Editar</button></td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error cargando restiradores:', error);
+        const tbody = document.querySelector('tbody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="4">Error al cargar datos</td></tr>';
+        }
+    }
+}
+
+/**
+ * Cargar guardaropas desde el backend
+ */
+async function cargarGuardaropas() {
+    try {
+        const guardaropas = await obtenerGuardaropas();
+        const tbody = document.querySelector('tbody');
+        
+        if (!tbody) return;
+
+        if (!guardaropas || guardaropas.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6">No hay guardaropas registrados</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = guardaropas.map(guard => `
+            <tr data-id="${guard.id}">
+                <td>${guard.id || '-'}</td>
+                <td>${guard.ubicacion || '-'}</td>
+                <td>${guard.piso || '-'}</td>
+                <td>${guard.tipo || '-'}</td>
+                <td>${guard.ocupado ? 'Ocupado' : 'Disponible'}</td>
+                <td><button class="btn-editar">Editar</button></td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error cargando guardaropas:', error);
+        const tbody = document.querySelector('tbody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="6">Error al cargar datos</td></tr>';
+        }
+    }
 }

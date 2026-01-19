@@ -17,7 +17,7 @@
         if (!data.success) {
             console.log('No hay sesión de administrador activa');
             alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-            window.location.href = '../loginAdmin.html';
+            window.location.href = '../index.html';
             return;
         }
 
@@ -29,7 +29,7 @@
     } catch (error) {
         console.error('Error verificando sesión:', error);
         alert('Error al verificar la sesión. Redirigiendo al login...');
-        window.location.href = '../loginAdmin.html';
+        window.location.href = '../index.html';
     }
 })();
 

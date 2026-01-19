@@ -10,7 +10,7 @@ const API_BASE = window.API_BASE_URL || 'http://localhost:3000';
  */
 async function loginAdmin(identificador, password) {
     try {
-        const response = await fetch(`${API_BASE}/admin/login`, {
+        const response = await fetch(`${API_BASE}/auth/admin/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -39,19 +39,31 @@ async function loginAdmin(identificador, password) {
  */
 async function verificarSesionAdmin() {
     try {
-        const response = await fetch(`${API_BASE}/admin/session`, {
+        const response = await fetch(`${API_BASE}/auth/session`, {
             method: 'GET',
             credentials: 'include'
         });
 
-        const data = await response.json();
-        
-        if (!data.success) {
-            console.log('No hay sesión de administrador activa');
+        if (!response.ok) {
+            console.log('No hay sesión activa');
             return false;
         }
 
-        console.log('Sesión de administrador activa:', data.data);
+        const data = await response.json();
+        
+        if (!data.autenticado || !data.user) {
+            console.log('Usuario no autenticado');
+            return false;
+        }
+
+        // Verificar que sea administrador
+        if (data.user.tipo_usuario !== 'administrador') {
+            console.log('Usuario no es administrador');
+            window.location.href = '../index.html';
+            return false;
+        }
+
+        console.log('Sesión de administrador activa:', data.user);
         return true;
     } catch (error) {
         console.error('Error verificando sesión:', error);
@@ -64,7 +76,7 @@ async function verificarSesionAdmin() {
  */
 async function logout() {
     try {
-        const response = await fetch(`${API_BASE}/admin/logout`, {
+        const response = await fetch(`${API_BASE}/auth/logout`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -72,23 +84,17 @@ async function logout() {
             credentials: 'include'
         });
 
-        const data = await response.json();
-
-        if (data.success) {
-            // Limpiar datos locales
-            localStorage.removeItem('usuario');
-            sessionStorage.clear();
-            
-            // Redirigir a la página de inicio
-            window.location.href = '../index.html';
-        } else {
-            console.error('Error al cerrar sesión');
-            // Aún así redirigir
-            window.location.href = '../index.html';
-        }
+        // Limpiar datos locales
+        localStorage.removeItem('user_data');
+        localStorage.removeItem('usuario');
+        sessionStorage.clear();
+        
+        // Redirigir a la página de inicio
+        window.location.href = '../index.html';
     } catch (error) {
         console.error('Error en logout:', error);
         // Limpiar y redirigir de todas formas
+        localStorage.removeItem('user_data');
         localStorage.removeItem('usuario');
         window.location.href = '../index.html';
     }
@@ -105,7 +111,7 @@ async function logout() {
  */
 async function obtenerRestiradores() {
     try {
-        const response = await fetch(`${API_BASE}/admin/restiradores`, {
+        const response = await fetch(`${API_BASE}/auth/admin/restiradores`, {
             method: 'GET',
             credentials: 'include'
         });
@@ -129,7 +135,7 @@ async function obtenerRestiradores() {
  */
 async function crearRestirador(restirador) {
     try {
-        const response = await fetch(`${API_BASE}/admin/restiradores`, {
+        const response = await fetch(`${API_BASE}/auth/admin/restiradores`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -156,7 +162,7 @@ async function crearRestirador(restirador) {
  */
 async function actualizarRestirador(restirador) {
     try {
-        const response = await fetch(`${API_BASE}/admin/restiradores/actualizar`, {
+        const response = await fetch(`${API_BASE}/auth/admin/restiradores/actualizar`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -183,7 +189,7 @@ async function actualizarRestirador(restirador) {
  */
 async function eliminarRestirador(id) {
     try {
-        const response = await fetch(`${API_BASE}/admin/restiradores/eliminar`, {
+        const response = await fetch(`${API_BASE}/auth/admin/restiradores/eliminar`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -212,7 +218,7 @@ async function eliminarRestirador(id) {
  */
 async function obtenerComputadoras() {
     try {
-        const response = await fetch(`${API_BASE}/admin/computadoras`, {
+        const response = await fetch(`${API_BASE}/auth/admin/computadoras`, {
             method: 'GET',
             credentials: 'include'
         });
@@ -236,7 +242,7 @@ async function obtenerComputadoras() {
  */
 async function crearComputadora(computadora) {
     try {
-        const response = await fetch(`${API_BASE}/admin/computadoras`, {
+        const response = await fetch(`${API_BASE}/auth/admin/computadoras`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -263,7 +269,7 @@ async function crearComputadora(computadora) {
  */
 async function actualizarComputadora(computadora) {
     try {
-        const response = await fetch(`${API_BASE}/admin/computadoras/actualizar`, {
+        const response = await fetch(`${API_BASE}/auth/admin/computadoras/actualizar`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -290,7 +296,7 @@ async function actualizarComputadora(computadora) {
  */
 async function eliminarComputadora(id) {
     try {
-        const response = await fetch(`${API_BASE}/admin/computadoras/eliminar`, {
+        const response = await fetch(`${API_BASE}/auth/admin/computadoras/eliminar`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -319,7 +325,7 @@ async function eliminarComputadora(id) {
  */
 async function obtenerLibros() {
     try {
-        const response = await fetch(`${API_BASE}/admin/libros`, {
+        const response = await fetch(`${API_BASE}/auth/admin/libros`, {
             method: 'GET',
             credentials: 'include'
         });
@@ -343,7 +349,7 @@ async function obtenerLibros() {
  */
 async function crearLibro(libro) {
     try {
-        const response = await fetch(`${API_BASE}/admin/libros`, {
+        const response = await fetch(`${API_BASE}/auth/admin/libros`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -370,7 +376,7 @@ async function crearLibro(libro) {
  */
 async function actualizarLibro(libro) {
     try {
-        const response = await fetch(`${API_BASE}/admin/libros/actualizar`, {
+        const response = await fetch(`${API_BASE}/auth/admin/libros/actualizar`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -397,7 +403,7 @@ async function actualizarLibro(libro) {
  */
 async function eliminarLibro(id) {
     try {
-        const response = await fetch(`${API_BASE}/admin/libros/eliminar`, {
+        const response = await fetch(`${API_BASE}/auth/admin/libros/eliminar`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -426,7 +432,7 @@ async function eliminarLibro(id) {
  */
 async function obtenerGuardaropas() {
     try {
-        const response = await fetch(`${API_BASE}/admin/guardaropas`, {
+        const response = await fetch(`${API_BASE}/auth/admin/guardaropas`, {
             method: 'GET',
             credentials: 'include'
         });
@@ -450,7 +456,7 @@ async function obtenerGuardaropas() {
  */
 async function crearGuardaropa(guardaropa) {
     try {
-        const response = await fetch(`${API_BASE}/admin/guardaropas`, {
+        const response = await fetch(`${API_BASE}/auth/admin/guardaropas`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -477,7 +483,7 @@ async function crearGuardaropa(guardaropa) {
  */
 async function actualizarGuardaropa(guardaropa) {
     try {
-        const response = await fetch(`${API_BASE}/admin/guardaropas/actualizar`, {
+        const response = await fetch(`${API_BASE}/auth/admin/guardaropas/actualizar`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -504,7 +510,7 @@ async function actualizarGuardaropa(guardaropa) {
  */
 async function eliminarGuardaropa(id) {
     try {
-        const response = await fetch(`${API_BASE}/admin/guardaropas/eliminar`, {
+        const response = await fetch(`${API_BASE}/auth/admin/guardaropas/eliminar`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -535,7 +541,7 @@ async function eliminarGuardaropa(id) {
  */
 async function obtenerSolicitudes() {
     try {
-        const response = await fetch(`${API_BASE}/admin/solicitudes`, {
+        const response = await fetch(`${API_BASE}/auth/admin/solicitudes`, {
             method: 'GET',
             credentials: 'include'
         });
@@ -559,7 +565,7 @@ async function obtenerSolicitudes() {
  */
 async function obtenerSolicitudDetalle(id) {
     try {
-        const response = await fetch(`${API_BASE}/admin/solicitudes/detalle`, {
+        const response = await fetch(`${API_BASE}/auth/admin/solicitudes/detalle`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -586,7 +592,7 @@ async function obtenerSolicitudDetalle(id) {
  */
 async function aprobarSolicitud(id) {
     try {
-        const response = await fetch(`${API_BASE}/admin/solicitudes/aprobar`, {
+        const response = await fetch(`${API_BASE}/auth/admin/solicitudes/aprobar`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -613,7 +619,7 @@ async function aprobarSolicitud(id) {
  */
 async function rechazarSolicitud(id, motivo) {
     try {
-        const response = await fetch(`${API_BASE}/admin/solicitudes/rechazar`, {
+        const response = await fetch(`${API_BASE}/auth/admin/solicitudes/rechazar`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -640,7 +646,7 @@ async function rechazarSolicitud(id, motivo) {
  */
 async function cancelarSolicitudAdmin(id, motivo) {
     try {
-        const response = await fetch(`${API_BASE}/admin/solicitudes/cancelar`, {
+        const response = await fetch(`${API_BASE}/auth/admin/solicitudes/cancelar`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -671,7 +677,7 @@ async function cancelarSolicitudAdmin(id, motivo) {
  */
 async function obtenerEstadisticas() {
     try {
-        const response = await fetch(`${API_BASE}/admin/estadisticas`, {
+        const response = await fetch(`${API_BASE}/auth/admin/estadisticas`, {
             method: 'GET',
             credentials: 'include'
         });

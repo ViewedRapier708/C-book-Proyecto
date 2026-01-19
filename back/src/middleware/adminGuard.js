@@ -1,45 +1,61 @@
 /**
  * Middleware para verificar que el usuario tenga permisos de administrador
- * Verificación local sin acceso a base de datos
+ * Soporta sistema unificado (req.session.user) y sistema legacy (req.session.admin)
  */
 module.exports = async function adminGuard(req, res, next) {
   console.log("adminGuard - Verificando permisos de administrador");
   
   try {
-    // Verificar si existe sesión de administrador
+    // Verificar si existe sesión de usuario (sistema unificado)
+    const sessionUser = req.session.user;
+    
+    // Si no hay sesión de usuario, verificar sesión de admin (sistema legacy)
     const sessionAdmin = req.session.admin;
     
-    if (!sessionAdmin) {
-      console.log("adminGuard - No hay sesión de administrador activa");
+    // Si no hay ninguna sesión activa
+    if (!sessionUser && !sessionAdmin) {
+      console.log("adminGuard - No hay sesión activa");
       return res.status(401).json({ 
         success: false, 
-        error: 'No hay sesión de administrador activa. Por favor inicia sesión como administrador.' 
+        error: 'No hay sesión activa. Por favor inicia sesión.' 
       });
     }
 
-    // Verificar que tenga el rol correcto
-    if (sessionAdmin.rol !== 'admin') {
-      console.log("adminGuard - Rol inválido:", sessionAdmin.rol);
-      return res.status(403).json({ 
-        success: false, 
-        error: 'No tienes permisos de administrador para realizar esta acción' 
-      });
-    }
+    // Si hay sesión de usuario (sistema unificado)
+    if (sessionUser) {
+      // Verificar que tenga tipo de usuario administrador
+      if (sessionUser.tipo_usuario !== 'administrador') {
+        console.log("adminGuard - Usuario no es administrador:", sessionUser.tipo_usuario);
+        return res.status(403).json({ 
+          success: false, 
+          error: 'No tienes permisos de administrador para realizar esta acción' 
+        });
+      }
 
-    // Verificar que tenga identificador válido (10 dígitos)
-    if (!sessionAdmin.identificador || !/^\d{10}$/.test(sessionAdmin.identificador)) {
-      console.log("adminGuard - Identificador inválido");
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Sesión de administrador inválida' 
-      });
-    }
+      // Verificar que tenga boleta válida (10 dígitos)
+      if (!sessionUser.boleta || !/^\d{10}$/.test(sessionUser.boleta)) {
+        console.log("adminGuard - Boleta inválida");
+        return res.status(401).json({ 
+          success: false, 
+          error: 'Sesión de administrador inválida' 
+        });
+      }
 
-    console.log("adminGuard - Usuario autorizado como administrador:", sessionAdmin.identificador);
-    
-    // Guardar datos del admin en res.locals para uso en controladores
-    res.locals.adminIdentificador = sessionAdmin.identificador;
-    res.locals.adminRol = sessionAdmin.rol;
+      console.log("adminGuard - Usuario autorizado como administrador:", sessionUser.boleta);
+      
+      // Guardar datos del admin en res.locals para uso en controladores
+      res.locals.adminBoleta = sessionUser.boleta;
+      res.locals.adminNombre = sessionUser.nombre;
+      res.locals.adminEmail = sessionUser.email;
+      
+    } else if (sessionAdmin) {
+      // Sistema legacy de admin
+      console.log("adminGuard - Admin autorizado (sistema legacy):", sessionAdmin.identificador);
+      
+      // Guardar datos del admin legacy en res.locals
+      res.locals.adminIdentificador = sessionAdmin.identificador;
+      res.locals.adminRol = sessionAdmin.rol;
+    }
     
     next();
   } catch (err) {

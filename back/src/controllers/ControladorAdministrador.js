@@ -38,17 +38,35 @@ const obtenerComputadoras = async (req, res) => {
  */
 const crearComputadora = async (req, res) => {
   try {
-    const { no_inventario, no_computadora, procesador, programas, carrera, Observacion } = req.body;
+    const { procesador, programas, carrera, ram, estado } = req.body;
 
     // Validar datos requeridos
-    if (!no_inventario || !no_computadora || !procesador || !programas || !carrera) {
+    if (!procesador || !programas || !carrera) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Faltan datos requeridos: no_inventario, no_computadora, procesador, programas, carrera' 
+        message: 'Faltan datos requeridos: procesador, programas, carrera' 
       });
     }
 
     const supabase = getClient();
+    
+    // Obtener el último no_computadora para autoincrementar
+    const { data: lastComp } = await supabase
+      .from('computadoras')
+      .select('no_computadora, no_inventario')
+      .order('id', { ascending: false })
+      .limit(1);
+    
+    // Generar siguiente número
+    let nextNum = 1;
+    if (lastComp && lastComp.length > 0 && lastComp[0].no_computadora) {
+      const match = lastComp[0].no_computadora.match(/\d+/);
+      nextNum = match ? parseInt(match[0]) + 1 : 1;
+    }
+    
+    const no_inventario = `INV-COMP-${String(nextNum).padStart(3, '0')}`;
+    const no_computadora = `COMP-${String(nextNum).padStart(3, '0')}`;
+    
     const { data, error } = await supabase
       .from('computadoras')
       .insert([{ 
@@ -57,13 +75,14 @@ const crearComputadora = async (req, res) => {
         procesador, 
         programas, 
         carrera,
-        Observacion: Observacion || 'N/A',
+        Observacion: ram || 'N/A',
         Disponible: true,
         En_funcionamiento: true
       }])
       .select();
 
     if (error) {
+      console.error('Error al crear computadora:', error);
       return res.status(500).json({ 
         success: false, 
         message: 'Error al crear computadora', 
@@ -240,7 +259,7 @@ const obtenerLibros = async (req, res) => {
  */
 const crearLibro = async (req, res) => {
   try {
-    const { titulo, clasificacion, isbn, tipo_material, autor } = req.body;
+    const { titulo, autor, editorial, isbn, carrera, cantidad } = req.body;
 
     // Validar datos requeridos
     if (!titulo || !autor) {
@@ -255,14 +274,15 @@ const crearLibro = async (req, res) => {
       .from('libros')
       .insert([{ 
         titulo, 
-        clasificacion: clasificacion || null,
+        clasificacion: carrera || null,
         isbn: isbn || null,
-        tipo_material: tipo_material || null,
+        tipo_material: editorial || null,
         autor
       }])
       .select();
 
     if (error) {
+      console.error('Error al crear libro:', error);
       return res.status(500).json({ 
         success: false, 
         message: 'Error al crear libro', 
@@ -276,6 +296,7 @@ const crearLibro = async (req, res) => {
       data: data[0] 
     });
   } catch (error) {
+    console.error('Error interno crearLibro:', error);
     return res.status(500).json({ 
       success: false, 
       message: 'Error interno del servidor', 
@@ -632,26 +653,37 @@ const obtenerGuardaropas = async (req, res) => {
  */
 const crearGuardaropa = async (req, res) => {
   try {
-    const { id } = req.body;
+    const { cantidad, estado } = req.body;
 
-    if (!id) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'ID de guardaropa requerido' 
-      });
-    }
+    const cantidadNum = parseInt(cantidad) || 1;
 
     const supabase = getClient();
+    
+    // Obtener el último ID para autoincrementar
+    const { data: lastGuard } = await supabase
+      .from('guardarropas')
+      .select('id')
+      .order('id', { ascending: false })
+      .limit(1);
+    
+    let nextId = lastGuard && lastGuard.length > 0 ? (lastGuard[0].id || 0) + 1 : 1;
+    
+    // Crear múltiples guardaropas según la cantidad
+    const guardaropas = [];
+    for (let i = 0; i < cantidadNum; i++) {
+      guardaropas.push({
+        id: nextId + i,
+        ocupado: false,
+        estado: estado === 'disponible'
+      });
+    }
     const { data, error } = await supabase
       .from('guardarropas')
-      .insert([{ 
-        id,
-        ocupado: false,
-        estado: true
-      }])
+      .insert(guardaropas)
       .select();
 
     if (error) {
+      console.error('Error al crear guardaropa:', error);
       return res.status(500).json({ 
         success: false, 
         message: 'Error al crear guardaropa', 
@@ -661,10 +693,11 @@ const crearGuardaropa = async (req, res) => {
 
     return res.status(201).json({ 
       success: true, 
-      message: 'Guardaropa creado exitosamente', 
-      data: data[0] 
+      message: `${cantidadNum} guardaropa(s) creado(s) exitosamente`, 
+      data 
     });
   } catch (error) {
+    console.error('Error interno crearGuardaropa:', error);
     return res.status(500).json({ 
       success: false, 
       message: 'Error interno del servidor', 
@@ -1222,10 +1255,15 @@ const loginAdministrador = async (req, res) => {
         loginTime: new Date().toISOString()
       };
 
-      // Guardar sesión
-      await new Promise((resolve, reject) => {
-        req.session.save(err => (err ? reject(err) : resolve()));
-      });
+      // Guardar sesión (manejo de errores mejorado)
+      try {
+        await new Promise((resolve, reject) => {
+          req.session.save(err => (err ? reject(err) : resolve()));
+        });
+      } catch (saveError) {
+        console.warn('Advertencia al guardar sesión:', saveError.message);
+        // Continuar aunque falle el save - la sesión está en memoria
+      }
 
       return res.status(200).json({ 
         success: true, 

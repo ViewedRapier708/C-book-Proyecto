@@ -218,18 +218,35 @@ async function login(req, res) {
 }
 
 
-// ==================== CERRAR SESIÓN ====================
+// ==================== VERIFICAR SESIÓN ====================
 async function verificarSesion(req, res) {
   try {
-    const sessionUser = req.session.user;
-
-    if (!sessionUser) {
+    // Verificar que req.session existe
+    if (!req.session) {
+      console.log('verificarSesion: No hay objeto session en req');
       return res.status(401).json({ autenticado: false, user: null });
     }
 
-    const needsRefresh = shouldRefresh(sessionUser.tokens?.expiresAt);
+    const sessionUser = req.session.user;
 
-    if (needsRefresh && sessionUser.tokens?.refreshToken) {
+    if (!sessionUser) {
+      console.log('verificarSesion: No hay usuario en sesión');
+      return res.status(401).json({ autenticado: false, user: null });
+    }
+
+    // Verificar si los tokens existen antes de intentar refrescar
+    if (!sessionUser.tokens) {
+      console.log('verificarSesion: Usuario sin tokens, sesión válida pero sin tokens de Supabase');
+      return res.status(200).json({
+        autenticado: true,
+        user: sanitizeSessionUser(sessionUser)
+      });
+    }
+
+    const needsRefresh = shouldRefresh(sessionUser.tokens.expiresAt);
+
+    if (needsRefresh && sessionUser.tokens.refreshToken) {
+      console.log('verificarSesion: Intentando refrescar token');
       const refreshed = await refrescarSesionSupabase(sessionUser.tokens.refreshToken);
 
       if (refreshed.success) {
@@ -240,9 +257,20 @@ async function verificarSesion(req, res) {
           expiresIn: refreshed.session.expires_in
         };
         req.session.user = sessionUser;
-        await saveSession(req);
+        
+        try {
+          await saveSession(req);
+        } catch (saveErr) {
+          console.error('Error guardando sesión refrescada:', saveErr);
+          // Continuar aunque falle el guardado
+        }
       } else {
-        await destroySession(req, res);
+        console.log('verificarSesion: Falló el refresh, destruyendo sesión');
+        try {
+          await destroySession(req, res);
+        } catch (destroyErr) {
+          console.error('Error destruyendo sesión:', destroyErr);
+        }
         return res.status(401).json({ autenticado: false, error: 'Sesión expirada' });
       }
     }
@@ -253,7 +281,11 @@ async function verificarSesion(req, res) {
     });
   } catch (err) {
     console.error('Error en verificarSesion:', err);
-    return res.status(500).json({ error: 'Error interno del servidor' });
+    console.error('Stack trace:', err.stack);
+    return res.status(500).json({ 
+      error: 'Error interno del servidor',
+      autenticado: false 
+    });
   }
 }
 
