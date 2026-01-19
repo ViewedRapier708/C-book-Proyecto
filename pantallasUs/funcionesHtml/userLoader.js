@@ -50,19 +50,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     setTimeout(() => {
                         // Cargar datos de la tabla del componente recién inyectado
                         if (typeof cargarDatosEnTabla === 'function') {
-                            console.log('Solicitando datos para la tabla...');
                             cargarDatosEnTabla()
                                 .then(() => {
-                                    console.log('✅ Datos cargados en la tabla');
-                                    
                                     // Inicializar filtros de la tabla
                                     if (typeof inicializarFiltrosTabla === 'function') {
-                                        console.log('Inicializando filtros de tabla...');
                                         inicializarFiltrosTabla();
                                     }
                                     // Iniciar realtime después de cargar los datos
                                     if (typeof configurarTiempoRealParaTablaActual === 'function') {
-                                        console.log('Iniciando Supabase Realtime...');
                                         configurarTiempoRealParaTablaActual();
                                     }
                                 })
@@ -73,7 +68,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Configurar botón Solicitar
                         const btnApartar = contentLoader.querySelector('.btn-apartar');
                         if (btnApartar && !btnApartar.hasAttribute('data-listener-added')) {
-                            console.log('Configurando botón Solicitar...');
                             btnApartar.style.display = 'none';
                             btnApartar.addEventListener('click', function(e) {
                                 e.preventDefault();

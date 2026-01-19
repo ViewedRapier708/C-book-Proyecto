@@ -9,8 +9,6 @@ const modeloVerificacion = {
             .select('id,ocupado')
             .eq('id', id).maybeSingle();
 
-            console.log("Verificacion Restirador: modelo verificacion");
-            console.log(data);
         if (error) { return { error, data: null }; }
 
         if (data.ocupado == true) {
@@ -19,7 +17,6 @@ const modeloVerificacion = {
             return { success: true, data: data };
         }
     }, verificarSolicitudComputadora: async ({ id }) => {
-        console.log("Verificando Computadora ID:--" + ID);
         const { getClient } = require('../config/db.js');
         const supabase = getClient();
         const { data, error } = await supabase
@@ -30,8 +27,6 @@ const modeloVerificacion = {
             return { error: 'Computadora no encontrada', data: null };
         }
         if (error) { return { error, data: null }; }
-        console.log("Verificacion Computadora:");
-        console.log(data);
         if (data.ocupado == true) {
             return { error: new Error('Computadora no disponible'), data: null };
         } else {
@@ -39,7 +34,6 @@ const modeloVerificacion = {
 
         }
     }, verificarSolicitudLibro: async ({ id }) => {
-        console.log("Verificando Libro ID:--", id);
         const { getClient } = require('../config/db.js');
         const supabase = getClient();
 
@@ -55,8 +49,6 @@ const modeloVerificacion = {
             .eq('id', libroID)
             .maybeSingle();
 
-        console.log("Data Verificacion Libro:", data);
-
         if (error) {
             return { error, data: null };
         }
@@ -68,7 +60,6 @@ const modeloVerificacion = {
         if (data.cantidad_disponible <= 0) {
             return { error: new Error('Libro no disponible'), data: null };
         } else {
-            console.log("Cantidad Disponible:", data.cantidad_disponible);
             return data.cantidad_disponible;
         }
     }

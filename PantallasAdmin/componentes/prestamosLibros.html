@@ -1,34 +1,35 @@
-<div class="container-solicitudes">
-    <h2>Alumnos Solicitantes de Libros</h2>
+<div class="container-prestamos">
+    <h2>Préstamos de Libros Activos</h2>
     
-    <div class="layout">
+    <div class="layout-dos-columnas">
         <div class="columna-tabla">
             <div class="container-tabla">
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
+                                <th>ID Préstamo</th>
                                 <th>Boleta</th>
                                 <th>Nombre Completo</th>
                                 <th>Grupo</th>
                                 <th>Correo</th>
-                                <th>Documentación</th>
-                                <th>Libro Solicitado</th>
-                                <th>Fecha Solicitud</th>
+                                <th>Libro</th>
+                                <th>Ejemplar</th>
+                                <th>Fecha Inicio</th>
+                                <th>Fecha Entrega (Límite)</th>
                                 <th>Estado</th>
                                 <th>Devuelto</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="tabla-solicitudes-libros">
+                        <tbody id="tabla-prestamos-libros">
                             <!-- Carga dinámica -->
                         </tbody>
                     </table>
                 </div>
             </div>
-            
-            <div class="paginacion">
-                <button class="btn-recargar" onclick="cargarSolicitudesLibros()">
+             <div class="paginacion">
+                <button class="btn-recargar" onclick="cargarPrestamosLibros()">
                     <i class="fas fa-sync-alt"></i> Recargar
                 </button>
             </div>

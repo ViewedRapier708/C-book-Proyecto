@@ -101,8 +101,6 @@ async function registrarEnAuth(boleta, correo, password) {
 async function crearUsuarioEnTabla(boleta, correo) {
   const supabase = getClient();
   try {
-    console.log("Creando usuario en tabla:", { boleta, correo }); //debug
-    
     const { data, error } = await supabase
       .from('usuarios_web_movil')
       .insert([{
@@ -117,7 +115,6 @@ async function crearUsuarioEnTabla(boleta, correo) {
       return { success: false, error: error.message };
     }
 
-    console.log("Usuario creado:", data); //debug
     return { success: true, data: data };
   } catch (err) {
     console.error("Error en crearUsuarioEnTabla:", err);
@@ -191,8 +188,6 @@ async function loginConAuth(correo, password) {
       email: correo,
       password: password
     });
-
-    console.log("Login Auth:", data?.session ? 'Sesión creada' : 'Sin sesión', error?.message); //debug
 
     if (error) {
       let mensaje = 'Error al iniciar sesión';

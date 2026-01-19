@@ -14,8 +14,15 @@ const {
     actualizarDatosEjemplar,
     ObtenerUsuarios,
     HabilitarDocumentacionUsuario,
-    ObtenerMateriales
+    ObtenerMateriales,
+    ObtenerSolicitudesLibros,
+    ActualizarEstadoSolicitudLibro,
+    EntregarLibro,
+    ObtenerPrestamosLibros,
+    MarcarPrestamoDevuelto
 } = require('../models/ModeloAdministrador.js');
+const { enviarCorreo } = require('../utils/servicioCorreo.js');
+const { getClient } = require("../config/db");
 
 // ==================== CREAR MATERIALES ====================
 
@@ -48,6 +55,13 @@ async function crearLibro(req, res) {
                 message: 'Todos los campos del ejemplar son requeridos'
             });
         }
+        if(numero_ejemplar<0) {
+            return res.status(400).json({
+                success: false,
+                message: 'El número de ejemplar no puede ser negativo'
+            });            
+        }
+
 
         const resultadoLibro = await CrearLibro(titulo, clasificacion, isbn, tipo_material, autor);
 
@@ -194,8 +208,6 @@ async function eliminarMaterial(req, res) {
 
         const id = Number(idParam);
 
-        console.log('[eliminarMaterial] tipo:', tipo, 'id:', idParam);
-        
         if (!idParam || Number.isNaN(id)) {
             return res.status(400).json({ 
                 success: false, 
@@ -225,8 +237,6 @@ async function eliminarMaterial(req, res) {
                 });
         }
 
-        console.log('[eliminarMaterial] resultado:', resultado);
-        
         if (resultado.success) {
             return res.status(200).json(resultado);
         } else {
@@ -452,6 +462,159 @@ async function habilitarDocumentacion(req, res) {
     }
 }
 
+// ==================== SOLICITUDES Y PRÉSTAMOS ====================
+
+async function obtenerSolicitudesLibros(req, res) {
+    try {
+        const resultado = await ObtenerSolicitudesLibros();
+        if (resultado.success) {
+            return res.status(200).json(resultado);
+        }
+        return res.status(400).json(resultado);
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error interno' });
+    }
+}
+
+async function gestionarSolicitud(req, res) {
+    try {
+        const { id } = req.params;
+        const { estado, boletaUser, motivo } = req.body; 
+        // estado: 2 (Aprobar), 3 (Rechazar)
+
+        if (!id || !estado || !boletaUser) {
+            return res.status(400).json({ success: false, message: 'Faltan datos' });
+        }
+
+        if (Number(estado) === 2) {
+            const supabase = getClient();
+            const { data: usuarioDoc, error: errorDoc } = await supabase
+                .from('usuarios_web_movil')
+                .select('tiene_documentos')
+                .eq('boleta', boletaUser)
+                .single();
+
+            if (errorDoc || !usuarioDoc) {
+                return res.status(400).json({ success: false, message: 'El alumno no tiene documentación aprobada' });
+            }
+
+            if (!usuarioDoc.tiene_documentos) {
+                return res.status(400).json({ success: false, message: 'El alumno no tiene documentación aprobada' });
+            }
+        }
+
+        const resultado = await ActualizarEstadoSolicitudLibro(id, estado, motivo);
+
+        if (resultado.success) {
+            // Enviar correo
+            try {
+                const supabase = getClient();
+                const { data: usuario } = await supabase
+                    .from('usuarios_web_movil')
+                    .select('correo')
+                    .eq('boleta', boletaUser)
+                    .single();
+
+                if (usuario && usuario.correo) {
+                    const estatusTexto = estado === 2 ? "Aprobada" : "Rechazada";
+                    const mensaje = estado === 2 
+                        ? "Tu solicitud ha sido aprobada. Tienes 2 días hábiles para pasar a biblioteca a recoger el libro."
+                        : `Lamentablemente tu solicitud ha sido rechazada. Motivo: ${motivo || 'No especificado'}`;
+
+                    await enviarCorreo(
+                        usuario.correo, 
+                        `Actualización de Solicitud: ${estatusTexto}`, 
+                        `<p>${mensaje}</p>`
+                    );
+                }
+            } catch (emailErr) {
+                console.error("Error enviando correo update:", emailErr);
+            }
+
+            return res.status(200).json({ success: true, message: "Estado actualizado" });
+        }
+        return res.status(400).json(resultado);
+    } catch (error) {
+        console.error("Error gestionando solicitud:", error);
+        return res.status(500).json({ success: false, message: 'Error interno' });
+    }
+}
+
+async function registrarEntrega(req, res) {
+    try {
+        const { id } = req.params;
+        const { boleta, idEjemplar } = req.body;
+
+        let boletaValidacion = boleta;
+        if (!boletaValidacion) {
+            const supabase = getClient();
+            const { data: solicitud, error: errorSolicitud } = await supabase
+                .from('solicitudes_libros')
+                .select('usuario_boleta')
+                .eq('id', id)
+                .single();
+
+            if (!errorSolicitud && solicitud?.usuario_boleta) {
+                boletaValidacion = solicitud.usuario_boleta;
+            }
+        }
+
+        if (boletaValidacion) {
+            const supabase = getClient();
+            const { data: usuarioDoc, error: errorDoc } = await supabase
+                .from('usuarios_web_movil')
+                .select('tiene_documentos')
+                .eq('boleta', boletaValidacion)
+                .single();
+
+            if (errorDoc || !usuarioDoc || !usuarioDoc.tiene_documentos) {
+                return res.status(400).json({ success: false, message: 'El alumno no tiene documentación aprobada' });
+            }
+        }
+
+        const resultado = await EntregarLibro(id, boleta, idEjemplar);
+
+        if (resultado.success) {
+             return res.status(200).json({ success: true, message: "Libro entregado, préstamo activo." });
+        }
+        return res.status(400).json(resultado);
+    } catch (error) {
+        console.error("Error registrando entrega:", error);
+        return res.status(500).json({ success: false, message: 'Error interno' });
+    }
+}
+
+async function obtenerPrestamosLibros(req, res) {
+    try {
+        const resultado = await ObtenerPrestamosLibros();
+        if (resultado.success) {
+            return res.status(200).json(resultado);
+        }
+        return res.status(400).json(resultado);
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error interno' });
+    }
+}
+
+async function marcarPrestamoDevuelto(req, res) {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({ success: false, message: 'Faltan datos' });
+        }
+
+        const resultado = await MarcarPrestamoDevuelto(id);
+        if (resultado.success) {
+            return res.status(200).json({ success: true, message: 'Préstamo marcado como devuelto.' });
+        }
+
+        return res.status(400).json(resultado);
+    } catch (error) {
+        console.error("Error marcando préstamo devuelto:", error);
+        return res.status(500).json({ success: false, message: 'Error interno' });
+    }
+}
+
 
 module.exports = {
     crearLibro,
@@ -464,5 +627,10 @@ module.exports = {
     actualizarRestirador,
     obtenerMateriales,
     obtenerUsuarios,
-    habilitarDocumentacion
+    habilitarDocumentacion,
+    obtenerSolicitudesLibros,
+    gestionarSolicitud,
+    registrarEntrega,
+    obtenerPrestamosLibros,
+    marcarPrestamoDevuelto
 };

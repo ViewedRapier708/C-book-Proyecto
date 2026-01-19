@@ -14,7 +14,6 @@ function inicializarFiltrosTabla() {
 
     // Verificar si ya existen filtros
     if (layout.querySelector('.filtros-container')) {
-        console.log('📋 [Filtros] Ya existen filtros');
         return;
     }
 
@@ -107,7 +106,6 @@ function inicializarFiltrosTabla() {
         tablaLayout.insertBefore(filtrosContainer, tablaWrapper);
     }
     
-    console.log('✅ [Filtros] Filtros inicializados correctamente');
 }
 
 /**
