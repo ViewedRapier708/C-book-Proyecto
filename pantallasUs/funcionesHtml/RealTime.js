@@ -1,36 +1,20 @@
-/**
- * CONFIGURACIÓN Y CONEXIÓN CON SUPABASE
- * Estas constantes permiten la conexión con el servidor de base de datos en tiempo real.
- */
 const URL_SUPABASE = 'https://yondcnkwcekmkovdeaso.supabase.co';
 const CLAVE_ANONIMA_SUPABASE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvbmRjbmt3Y2VrbWtvdmRlYXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA2ODYyMDQsImV4cCI6MjA3NjI2MjIwNH0.4NqF_hCv7RiXrOjO9fxfRHPzikpZ61siqMZV_rlUQew';
 
-/**
- * VARIABLES GLOBALES DE ESTADO
- * Guardan información sobre la conexión activa para evitar duplicados.
- */
 let canalesTiempoReal = []; // Lista de canales activos (suscripciones)
 let clienteSupabase = null; // Instancia única del cliente de Supabase
 
-/**
- * MAPEO DE RECURSOS
- * Relaciona los nombres usados en la interfaz con los nombres técnicos de las tablas en la base de datos.
- */
 const MAPEO_TABLAS_SUPABASE = {
     'computadora': ['computadoras'],
     'libro': ['libros', 'ejemplares'], // Los libros dependen de títulos y ejemplares físicos
     'restirador': ['restiradores'],
     'areaconsulta': ['area_consulta'],
     // Las solicitudes se guardan por tipo en tablas distintas
-    'solicitudes': ['solicitudes_computadora', 'solicitudes_restirador', 'solicitudes_libros']
+    'solicitudes': ['solicitudes_computadora', 'solicitudes_restirador', 'solicitudes_libros'],
+    'solicitudes-libros': ['solicitudes_libros']
 };
 
-/**
- * UTILIDADES DE FORMATO
- * Funciones simples para que los datos se vean bien en la pantalla.
- */
 
-// Convierte valores booleanos o nulos en texto legible ("Sí", "No", "-")
 const formatearValorLegible = (valor) => {
     if (typeof valor === 'boolean') return valor ? 'Sí' : 'No';
     if (valor === null || valor === undefined) return '-';
@@ -38,28 +22,13 @@ const formatearValorLegible = (valor) => {
     return valor;
 };
 
-/**
- * Convierte el estado de una solicitud (numérico o texto) a un string legible.
- *
- * Casos soportados:
- * - 1 -> "Pendiente"
- * - 2 -> "Atendida" (o aprobada/confirmada, según tu catálogo)
- * - 3 -> "Cancelada"
- * - 4 -> "No asistió"
- * - 5 -> "Vencida"
- *
- * Si llega un texto (ej. "pendiente"), se normaliza.
- */
 const parsearEstadoSolicitud = (estado) => {
     if (estado === null || estado === undefined) return '-';
 
-    // Si viene como string (ej. desde una vista)
     if (typeof estado === 'string') {
         const normalizado = estado.trim().toLowerCase();
         if (!normalizado) return '-';
-
-        // Soporta strings numéricos
-        if (/^\d+$/.test(normalizado)) {
+                if (/^\d+$/.test(normalizado)) {
             return parsearEstadoSolicitud(Number(normalizado));
         }
 
@@ -94,10 +63,7 @@ const parsearEstadoSolicitud = (estado) => {
     return String(estado);
 };
 
-/**
- * Lee la boleta desde localStorage si existe.
- * Nota: la API usa sesión/cookie, esto solo se usa para filtrar Realtime.
- */
+
 const obtenerBoletaLocal = () => {
     try {
         const datosUsuario = JSON.parse(localStorage.getItem('user_data') || '{}');
@@ -107,9 +73,6 @@ const obtenerBoletaLocal = () => {
     }
 };
 
-/**
- * Obtiene de forma tolerante el ID del recurso asociado a una solicitud.
- */
 const obtenerIdRecursoSolicitud = (solicitud) => {
     if (!solicitud || typeof solicitud !== 'object') return '-';
     return (
@@ -124,9 +87,6 @@ const obtenerIdRecursoSolicitud = (solicitud) => {
     );
 };
 
-/**
- * Formatea una fecha/hora para mostrarla en una sola columna.
- */
 const formatearFechaSolicitud = (solicitud) => {
     const fecha = solicitud?.fecha_solicitud ?? solicitud?.fecha ?? solicitud?.created_at ?? '';
     const hora = solicitud?.hora_solicitud ?? solicitud?.hora ?? '';
@@ -135,14 +95,46 @@ const formatearFechaSolicitud = (solicitud) => {
     return `${fechaTxt} ${hora}`.trim();
 };
 
-// Extrae y ordena los datos de un objeto para que coincidan con las columnas de la tabla HTML
+const formatearHoraAMPM = (hora) => {
+    if (!hora || hora === '-') return '-';
+    const horaStr = String(hora).trim();
+    const partes = horaStr.split(':');
+    if (partes.length < 2) return hora;
+    
+    let horas = parseInt(partes[0], 10);
+    const minutos = partes[1];
+    
+    if (isNaN(horas)) return hora;
+    
+    const periodo = horas >= 12 ? 'PM' : 'AM';
+    horas = horas % 12 || 12;
+    
+    return `${horas}:${minutos} ${periodo}`;
+};
+
+const formatearFechaCompleta = (timestamp) => {
+    if (!timestamp) return '-';
+    const fecha = new Date(timestamp);
+    return fecha.toLocaleString('es-MX', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+};
+
 const mapearValoresFila = (tipoRecurso, datos) => {
     if (Array.isArray(datos)) return datos;
     const recurso = datos || {};
-    
+
     // Configuración específica por cada tipo de recurso
     if (tipoRecurso === 'libro') {
         const infoLibro = recurso.libros || {};
+
+        // Debug: Mostrar infoLibro, recurso y disponibilidad
+       
         return [
             infoLibro.titulo || recurso.titulo || '-',
             infoLibro.autor || recurso.autor || '-',
@@ -150,7 +142,7 @@ const mapearValoresFila = (tipoRecurso, datos) => {
             infoLibro.tipo_material || recurso.tipo_material || '-',
             recurso.anio ?? '-',
             recurso.numero_ejemplar ?? '-',
-            recurso.Disponibilidad ?? recurso.disponibilidad ?? recurso.estatus_item ?? '-'
+        recurso.Disponible 
         ];
     }
 
@@ -180,35 +172,47 @@ const mapearValoresFila = (tipoRecurso, datos) => {
         return [
             recurso.id ?? '-',
             recurso.tipo ?? '-',
-            obtenerIdRecursoSolicitud(recurso),
-            formatearFechaSolicitud(recurso),
+            recurso.recurso_id ?? '-',
+            recurso.fecha_solicitud ?? '-',
+            formatearHoraAMPM(recurso.hora_solicitud),
+            formatearHoraAMPM(recurso.hora_limite),
             parsearEstadoSolicitud(estadoCrudo)
+        ];
+    }
+
+    if (tipoRecurso === 'solicitudes-libros') {
+        // Mapear datos de solicitudes_libros
+        const tituloLibro = recurso.ejemplares?.libros?.titulo || '-';
+        const numeroEjemplar = recurso.ejemplares?.numero_ejemplar || '-';
+        const estadoId = recurso.estado_asistencia_id;
+        const estadoNombre = parsearEstadoSolicitud(estadoId);
+
+        return [
+            recurso.id ?? '-',
+            tituloLibro,
+            numeroEjemplar,
+            formatearFechaCompleta(recurso.fecha_solicitud),
+            formatearFechaCompleta(recurso.fecha_limite_respuesta),
+            recurso.fecha_limite_recoleccion ? formatearFechaCompleta(recurso.fecha_limite_recoleccion) : '-',
+            estadoNombre
         ];
     }
 
     return Object.values(recurso);
 };
 
-// Genera un identificador único para buscar la fila en el HTML
 const obtenerIdentificadorFila = (tipoRecurso, datos) => {
-    if (tipoRecurso === 'libro') return datos.numero_ejemplar || datos.id || datos.libros?.isbn || null;
+    if (tipoRecurso === 'libro') return datos.id || datos.ejemplares?.id || datos.numero_ejemplar || datos.libros?.isbn || null;
     if (tipoRecurso === 'computadora') return datos.no_computadora || datos.id || null;
     if (tipoRecurso === 'restirador') return datos.no_restirador || datos.id || null;
-    if (tipoRecurso === 'solicitudes') return datos.id || null; 
+    if (tipoRecurso === 'solicitudes') return datos.id || null;
+    if (tipoRecurso === 'solicitudes-libros') return datos.id || null;
     return datos.id || datos._id || null;
 };
-
-/**
- * FUNCIONES DE MANIPULACIÓN DE LA TABLA (DOM)
- * Estas funciones actualizan lo que el usuario ve en pantalla.
- */
-
-// Agrega una nueva fila al final de la tabla
 const agregarFilaATabla = (tipoDeTabla, datosRecurso) => {
     const cuerpoTabla = document.getElementById('Tbody');
     const tipoActualInterfaz = document.getElementById('tabla')?.getAttribute('data-tipo');
     
-    // Solo agregar si estamos viendo la tabla correcta
     if (!cuerpoTabla || tipoDeTabla !== tipoActualInterfaz) return;
 
     const filaElemento = document.createElement('tr');
@@ -239,10 +243,6 @@ const agregarFilaATabla = (tipoDeTabla, datosRecurso) => {
     cuerpoTabla.appendChild(filaElemento);
 };
 
-/**
- * Configura la conexión de Supabase Realtime para escuchar cambios en vivo.
- * Por defecto, cuando llega un cambio, se recarga la tabla desde la API.
- */
 async function inicializarTiempoRealSupabase(tipoInterfaz, callbackCambio) {
     try {
         if (typeof window.supabase === 'undefined') return null;
@@ -287,9 +287,7 @@ async function inicializarTiempoRealSupabase(tipoInterfaz, callbackCambio) {
             const nuevoCanal = clienteSupabase
                 .channel(nombreCanal)
                 .on('postgres_changes', params, procesarNotificacion)
-                .subscribe((estado) => {
-                    console.log(`📡 [TiempoReal] Estado en ${nombreTabla}: ${estado}`);
-                });
+                .subscribe();
 
             canalesTiempoReal.push(nuevoCanal);
         }
@@ -301,11 +299,6 @@ async function inicializarTiempoRealSupabase(tipoInterfaz, callbackCambio) {
     }
 }
 
-/**
- * INICIALIZACIÓN AUTOMÁTICA
- */
-
-// Función global para reiniciar el tiempo real (útil cuando se cambia de pestaña sin recargar)
 async function configurarTiempoRealParaTablaActual() {
     const elementoTabla = document.getElementById('tabla');
     const tipo = elementoTabla?.getAttribute('data-tipo');
@@ -314,27 +307,18 @@ async function configurarTiempoRealParaTablaActual() {
     }
 }
 
-/**
- * LÓGICA DE DATOS Y TIEMPO REAL
- * Controla la obtención de información desde el servidor y las actualizaciones automáticas.
- */
-
-// Carga los datos iniciales desde la API y los dibuja en la tabla
 async function cargarDatosEnTabla() {
     const cuerpoTabla = document.getElementById('Tbody');
     const tipoRecurso = document.getElementById('tabla')?.getAttribute('data-tipo');
     
+
     if (!cuerpoTabla || !tipoRecurso) {
         console.error('❌ Error: No se encontró el contenedor de la tabla o el tipo de recurso.');
         return;
     }
 
-    /**
-     * Renderiza filas en el tbody actual.
-     * Para "solicitudes", agrega una columna de acciones con botón cancelar.
-     */
     const renderizarLista = (listaDatos) => {
-        cuerpoTabla.innerHTML = ''; // Limpiamos la tabla antes de cargar
+        cuerpoTabla.innerHTML = ''; 
         
         listaDatos.forEach((datos) => {
             const fila = document.createElement('tr');
@@ -351,20 +335,57 @@ async function cargarDatosEnTabla() {
                 const btnCancelar = document.createElement('button');
                 btnCancelar.type = 'button';
                 btnCancelar.className = 'btn-cancelar';
-                btnCancelar.textContent = 'Cancelar Solicitud';
+                btnCancelar.textContent = 'Cancelar';
                 btnCancelar.dataset.solicitudId = datos?.id ?? '';
                 btnCancelar.dataset.tipo = datos?.tipo ?? '';
+                
+                // Solo permitir cancelar si está pendiente (estado_asistencia_id = 1)
+                if (datos?.estado_asistencia_id !== 1 && datos?.estado_asistencia !== 1 && datos?.estado !== 1) {
+                    btnCancelar.disabled = true;
+                }
+                
+                btnCancelar.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    if (confirm(`¿Deseas cancelar esta solicitud de ${datos.tipo}?`)) {
+                        await cancelarSolicitudDesdeTabla(datos.tipo, datos.id, btnCancelar);
+                    }
+                });
+                
                 celdaAcciones.appendChild(btnCancelar);
                 fila.appendChild(celdaAcciones);
             }
 
-            // Configuración de la fila para interacción
+            if (tipoRecurso === 'solicitudes-libros') {
+                const celdaAcciones = document.createElement('td');
+                const btnCancelar = document.createElement('button');
+                btnCancelar.type = 'button';
+                btnCancelar.className = 'btn-cancelar-solicitud-libro';
+                btnCancelar.textContent = 'Cancelar';
+                btnCancelar.dataset.solicitudId = datos?.id ?? '';
+                btnCancelar.dataset.tipo = 'libro';
+                
+                // Solo permitir cancelar si está pendiente (estado 1)
+                if (datos?.estado_asistencia_id !== 1) {
+                    btnCancelar.disabled = true;
+                }
+                
+                btnCancelar.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    if (confirm('¿Deseas cancelar esta solicitud de libro?')) {
+                        await cancelarSolicitudDesdeTabla('libro', datos.id, btnCancelar);
+                    }
+                });
+                
+                celdaAcciones.appendChild(btnCancelar);
+                fila.appendChild(celdaAcciones);
+            }
+
             fila.dataset.recurso = JSON.stringify(datos);
             fila.dataset.rowKey = obtenerIdentificadorFila(tipoRecurso, datos) || '';
             fila.classList.add('fila-recurso');
             fila.style.cursor = 'pointer';
             
-            // Evento para seleccionar la fila al hacer clic
+     
             fila.addEventListener('click', function () {
                 if (typeof window.seleccionarFila === 'function') {
                     window.seleccionarFila(this);
@@ -391,7 +412,52 @@ async function cargarDatosEnTabla() {
                 datosFinales = [];
             } else {
                 const dataObtenida = await respuesta.json();
-                datosFinales = (dataObtenida?.success && Array.isArray(dataObtenida?.data)) ? dataObtenida.data : [];
+                // Filtrar para excluir solicitudes de libros (tipo === 'libro')
+                const todasSolicitudes = (dataObtenida?.success && Array.isArray(dataObtenida?.data)) ? dataObtenida.data : [];
+                datosFinales = todasSolicitudes.filter(solicitud => solicitud.tipo !== 'libro');
+            }
+        } else if (tipoRecurso === 'solicitudes-libros') {
+
+            // Usar el cliente de Supabase existente que ya está configurado
+            if (!clienteSupabase) {
+                clienteSupabase = supabase.createClient(URL_SUPABASE, CLAVE_ANONIMA_SUPABASE);
+            }
+            // Obtener boleta del usuario desde sesión
+            const sesionResp = await fetch(`${urlBaseApi}/auth/session`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            const sesionData = await sesionResp.json();
+            const boleta = sesionData?.user?.boleta;
+            
+            if (!boleta) {
+                console.error('❌ NO SE ENCONTRÓ BOLETA DEL USUARIO');
+                datosFinales = [];
+            } else {
+                const { data, error } = await clienteSupabase
+                    .from('solicitudes_libros')
+                    .select(`
+                        *,
+                        ejemplares:ejemplar_id (
+                            id,
+                            numero_ejemplar,
+                            libros:libro_id (
+                                id,
+                                titulo,
+                                autor
+                            )
+                        )
+                    `)
+                    .eq('usuario_boleta', boleta)
+                    .order('fecha_solicitud', { ascending: false });
+                
+                if (error) {
+                    console.error('❌ ERROR SUPABASE:', error);
+                    console.error('Error completo:', JSON.stringify(error, null, 2));
+                    datosFinales = [];
+                } else {
+                    datosFinales = data || [];
+                }
             }
         } else {
             const respuesta = await fetch(`${urlBaseApi}/auth/recursos?tipo=${tipoRecurso}`, {
@@ -399,11 +465,11 @@ async function cargarDatosEnTabla() {
                 headers: { 'Accept': 'application/json' }
             });
             const dataObtenida = await respuesta.json();
+            alert('Datos obtenidos de la API:', dataObtenida); //debug    
             datosFinales = Array.isArray(dataObtenida?.data) ? dataObtenida.data : (Array.isArray(dataObtenida) ? dataObtenida : []);
         }
 
         renderizarLista(datosFinales);
-
         // Re-enganchar handlers (p.ej. botón cancelar) después de re-render
         if (typeof inicializarEventosTabla === 'function') {
             inicializarEventosTabla();
@@ -413,9 +479,7 @@ async function cargarDatosEnTabla() {
     }
 }
 
-/**
- * Envía la petición de cancelación a la API.
- */
+
 async function cancelarSolicitudDesdeTabla(tipo, idSolicitud, boton) {
     const urlBaseApi = window.API_BASE_URL;
     const id = String(idSolicitud || '').trim();
@@ -448,7 +512,7 @@ async function cancelarSolicitudDesdeTabla(tipo, idSolicitud, boton) {
             return;
         }
 
-        // Refresco completo (simple y consistente con Realtime)
+
         await cargarDatosEnTabla();
     } catch (err) {
         console.error('Error cancelando solicitud:', err);
@@ -459,10 +523,7 @@ async function cancelarSolicitudDesdeTabla(tipo, idSolicitud, boton) {
     }
 }
 
-/**
- * Inicializa eventos de interacción de la tabla actual.
- * Para "solicitudes", agrega handler al botón "Cancelar".
- */
+
 function inicializarEventosTabla() {
     const tabla = document.getElementById('tabla');
     const tipoRecurso = tabla?.getAttribute('data-tipo');
@@ -487,7 +548,6 @@ function inicializarEventosTabla() {
     cuerpoTabla.setAttribute('data-cancel-handler', 'true');
 }
 
-// Actualiza los valores de una fila existente sin recargar toda la página
 const actualizarFilaEnTabla = (datosAntiguos, datosNuevos) => {
     const cuerpoTabla = document.getElementById('Tbody');
     const tipoActual = document.getElementById('tabla')?.getAttribute('data-tipo');
@@ -519,7 +579,7 @@ const actualizarFilaEnTabla = (datosAntiguos, datosNuevos) => {
     filaDestino.dataset.rowKey = obtenerIdentificadorFila(tipoActual, datosNuevos) || filaDestino.dataset.rowKey;
 };
 
-// Elimina una fila de la tabla HTML
+
 const eliminarFilaDeTabla = (datosARemover) => {
     const cuerpoTabla = document.getElementById('Tbody');
     const tipoActual = document.getElementById('tabla')?.getAttribute('data-tipo');
@@ -541,7 +601,6 @@ const eliminarFilaDeTabla = (datosARemover) => {
     }
 };
 
-// Al cargar el documento, busca si hay una tabla activa y arranca el sistema
 document.addEventListener('DOMContentLoaded', async () => {
     const elementoTabla = document.getElementById('tabla');
     const tipoRecurso = elementoTabla?.getAttribute('data-tipo');

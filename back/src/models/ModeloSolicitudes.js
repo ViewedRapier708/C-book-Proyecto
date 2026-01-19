@@ -21,8 +21,6 @@ async function CrearSolicitud(tipoSolicitud, boleta, idRecurso) {
 async function CrearSolicitudComputadora(boleta, idRecurso) {
     const noRecurzo =await supabase.from('computadoras').select('id').eq('no_computadora', idRecurso).single();
 
-console.log("No Recurso Computadora:", noRecurzo); //debug
-
     try {
         const { error } = await supabase
             .from('solicitudes_computadora')
@@ -61,8 +59,6 @@ async function CrearSolicitudRestiradores(boleta, idRecurso) {
 async function CrearSolicitudlibro(boleta, idRecurso) {
     try {
         // Estado 1 = pendiente (ajusta si tu catálogo es diferente)
-        const estadoPendiente = 1;
-        const now = new Date();
         // No se envían fechas, se usan los defaults de la tabla
         const { error } = await supabase
             .from('solicitudes_libros')
@@ -99,9 +95,7 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
 
     async function VerificarDisponibilidadComputadora(n_recurso) {
         try {
-            const { data, error } = await supabase.from('computadoras').select('id,Disponible').eq('no_computadora', n_recurso).single();
-            console.log("Disponibilidad Computadora:", data, error); //debug
-
+            const { data, error } = await supabase.from('computadoras').select('id,Disponible,En_funcionamiento').eq('no_computadora', n_recurso).single();
             if (error) {
                 console.error("Error verificando disponibilidad:", error);
                 return { success: false, message: error.message };
@@ -111,6 +105,9 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
             }
             if (data.Disponible === false) {
                 return { message: 'La computadora no está disponible actualmente', success: false };
+            }
+            if (data.En_funcionamiento === false) {
+                return { message: 'La computadora no está en funcionamiento', success: false };
             }
             return { success: true, message: null, idRecurso: data.id };//Indica que la computadora está disponible
 
@@ -122,8 +119,7 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
     }
     async function VerificarDisponibilidadRestirador(n_recurso) {
         try {
-            const { data, error } = await supabase.from('restiradores').select('id,Disponible').eq('no_restirador', n_recurso).single();
-            console.log("Disponibilidad Restirador:", data, error); //debug
+            const { data, error } = await supabase.from('restiradores').select('id,Disponible,estado_de_material').eq('no_restirador', n_recurso).single();
             if (error) {
                 console.error("Error verificando disponibilidad:", error);
                 return { success: false, message: error.message };
@@ -133,6 +129,9 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
             }
             if (data.Disponible === false) {
                 return { message: 'El restirador no está disponible actualmente', success: false };
+            }
+            if (data.estado_de_material === false) {
+                return { message: 'El restirador no está en funcionamiento', success: false };
             }
             return { success: true, message: null, idRecurso: data.id };   //Indica que el restirador está disponible
 
@@ -145,14 +144,18 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
     }
     async function VerificarDisponibilidadLibro(n_recurso) {
         try {
-            const { data, error } = await supabase.from('ejemplares').select('id,Disponible').eq('libro_id', n_recurso).single();
+            // Ahora n_recurso es el id del ejemplar
+            const { data, error } = await supabase
+                .from('ejemplares')
+                .select('id,Disponible')
+                .eq('id', n_recurso)
+                .single();
 
-            console.log("Disponibilidad Libro:", data, error);
             if (error) {
                 console.error("Error verificando disponibilidad:", error);
                 return { success: false, message: error.message };
             }
-            if (data.length === 0) {
+            if (!data) {
                 return { success: false, message: 'Recurso no encontrado' };
             }
             if (data.Disponible === false) {
@@ -221,7 +224,6 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
     }
     async function contarPendientesPorTabla(client, tabla, boleta) {
         try {
-            console.log(`Contando solicitudes activas en ${tabla} para boleta ${boleta}`); //debug
             const { data, count, error } = await client
                 .from(tabla)
                 .select('id', { count: 'exact' })
@@ -243,22 +245,15 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
 async function getSolicitudes(boleta) {
   const supabase = getClient();
   try {
-        console.log('[Solicitudes] Consultando v_solicitudes_alumno con boleta/registro_id:', boleta);
     const { data, error } = await supabase//Retorna todas las solicitudes hechas por un alumno
       .from('v_solicitudes_alumno')
       .select('*')
       .eq('registro_id', boleta);
-
-        console.log('[Solicitudes] Data recuperada:', {
-            total: Array.isArray(data) ? data.length : 0,
-            preview: Array.isArray(data) ? data.slice(0, 5) : data
-        });
     if (error) {
       console.error("Error obteniendo solicitudes:", error);
       return { success: false, error: error.message };
     }
 
-    console.log("Solicitudes obtenidas:", data); //debug
     return { success: true, data };
   } catch (err) {
     console.error("Error en getSolicitudes:", err);
@@ -274,7 +269,6 @@ async function CancelarSolicitud(tipoSolicitud, solicitudId, boleta) {
     if (!Number.isInteger(id)) {
         return { success: false, error: 'ID de solicitud inválido' };
     }
-
     let tabla = null;
     switch (tipoSolicitud) {
         case 'computadora':
@@ -314,7 +308,6 @@ async function CancelarSolicitud(tipoSolicitud, solicitudId, boleta) {
         return { success: false, error: 'Error interno del servidor' };
     }
 }
-
 
 // ==================== EXPORTAR FUNCIONES ====================
 module.exports = {

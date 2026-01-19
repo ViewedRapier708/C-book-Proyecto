@@ -11,7 +11,7 @@
 }
 
 .container-computadoras .container-tabla {
-    margin-bottom: 2rem;
+    margin-bottom: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -25,30 +25,28 @@
 .container-computadoras .container-tabla,
 .container-computadoras .table-responsive {
     overflow-x: hidden !important;
-    overflow-y: hidden !important;
+    overflow-y: auto !important;
+}
+
+.container-computadoras .table-responsive {
+    max-height: none;
+    height: 100%;
 }
 
 .container-computadoras table {
     width: 100%;
-    table-layout: fixed;
     border-collapse: collapse;
 }
 
 .container-computadoras table th,
 .container-computadoras table td {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    padding: 0.8rem 0.6rem;
-    text-align: center;
+    padding: 0.5rem 0.65rem;
+    font-size: 0.85rem;
+    line-height: 1.35;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
-
-.container-computadoras table th:nth-child(1) { width: 10%; }
-.container-computadoras table th:nth-child(2) { width: 22%; }
-.container-computadoras table th:nth-child(3) { width: 12%; }
-.container-computadoras table th:nth-child(4) { width: 18%; }
-.container-computadoras table th:nth-child(5) { width: 18%; }
-.container-computadoras table th:nth-child(6) { width: 20%; }
 
 .container-computadoras .btn-editar {
     padding: 0.4rem 0.8rem;

@@ -1,67 +1,49 @@
 <div class="container-libros">
-    <h2>Registro de Nuevo Libro</h2>
-    
+    <div class="mensaje-alerta" id="mensaje-libros" hidden></div>
+
     <div class="layout-dos-columnas">
-        <!-- Columna Izquierda: Tabla -->
         <div class="columna-principal">
+            <div class="tabla-encabezado">
+                <div class="tabla-info">
+                    <span class="tabla-total" data-total="libros">Total: 0</span>
+                </div>
+                <div class="tabla-acciones">
+                    <button class="btn-recargar" data-recargar="libros">Recargar</button>
+                </div>
+            </div>
             <div class="container-tabla">
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>ID Ejemplar</th>
                                 <th>Título</th>
                                 <th>Autor</th>
-                                <th>Editorial</th>
-                                <th>Carrera</th>
+                                <th>Clasificación</th>
+                                <th>ISBN</th>
+                                <th>Tipo</th>
+                                <th>Código Barras</th>
+                                <th>No. Ejemplar</th>
+                                <th>Año</th>
+                                <th>Estatus</th>
                                 <th>Disponible</th>
+                                <th>Colección</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>001</td>
-                                <td>Algoritmos y Programación</td>
-                                <td>Juan Pérez</td>
-                                <td>McGraw Hill</td>
-                                <td>Sistemas</td>
-                                <td>5</td>
-                                <td><button class="btn-editar">Editar</button></td>
-                            </tr>
-                        </tbody>
+                        <tbody id="tabla-libros"></tbody>
                     </table>
                 </div>
             </div>
-            
+
+            <div class="paginacion" data-paginacion="libros">
+                <button class="btn-paginacion" data-prev>Anterior</button>
+                <span class="pagina-actual">Página 1</span>
+                <button class="btn-paginacion" data-next>Siguiente</button>
+            </div>
+
             <div class="container-btn-alta">
                 <button class="btn-alta" id="btn-agregar">Agregar Libro</button>
-            </div>
-        </div>
-        
-        <!-- Columna Derecha: Estadísticas -->
-        <div class="columna-estadisticas">
-            <div class="container-datos-sistema">
-                <h3>Información del Sistema</h3>
-                <div class="dato-item">
-                    <span class="dato-label">Total Libros:</span>
-                    <span class="dato-value">150</span>
-                </div>
-                <div class="dato-item">
-                    <span class="dato-label">Disponibles:</span>
-                    <span class="dato-value">132</span>
-                </div>
-                <div class="dato-item">
-                    <span class="dato-label">Prestados:</span>
-                    <span class="dato-value">15</span>
-                </div>
-                <div class="dato-item">
-                    <span class="dato-label">En Revisión:</span>
-                    <span class="dato-value">3</span>
-                </div>
-                <div class="dato-item">
-                    <span class="dato-label">Última Actualización:</span>
-                    <span class="dato-value">13/11/2025</span>
-                </div>
             </div>
         </div>
     </div>
@@ -74,6 +56,8 @@
         <h3 id="modal-titulo">Nuevo Libro</h3>
         
         <div class="container-formulario">
+            <input type="hidden" id="libro_id">
+            <input type="hidden" id="ejemplar_id">
             <div class="form-group">
                 <label for="titulo">Título:</label>
                 <input type="text" id="titulo" placeholder="Ingrese el título del libro">
@@ -83,26 +67,43 @@
                 <input type="text" id="autor" placeholder="Ingrese el autor del libro">
             </div>
             <div class="form-group">
-                <label for="editorial">Editorial:</label>
-                <input type="text" id="editorial" placeholder="Ingrese la editorial del libro">
+                <label for="clasificacion">Clasificación:</label>
+                <input type="text" id="clasificacion" placeholder="Ingrese la clasificación">
             </div>
             <div class="form-group">
                 <label for="isbn">ISBN:</label>
                 <input type="text" id="isbn" placeholder="Ingrese el código ISBN">
             </div>
             <div class="form-group">
-                <label for="carrera">Carrera:</label>
-                <select id="carrera">
-                    <option value="">Seleccione una carrera</option>
-                    <option value="Sistemas Digitales">Sistemas Digitales</option>
-                    <option value="Programación">Programación</option>
-                    <option value="Mecatrónica">Mecatrónica</option>
-                    <option value="Tronco Común">Tronco Común</option>
+                <label for="tipo_material">Tipo de material:</label>
+                <input type="text" id="tipo_material" placeholder="Ingrese el tipo de material">
+            </div>
+            <div class="form-group">
+                <label for="codigo_barras">Código de barras:</label>
+                <input type="text" id="codigo_barras" placeholder="Ingrese el código de barras">
+            </div>
+            <div class="form-group">
+                <label for="numero_ejemplar">Número de ejemplar:</label>
+                <input type="text" id="numero_ejemplar" placeholder="Ingrese el número de ejemplar">
+            </div>
+            <div class="form-group">
+                <label for="anio">Año:</label>
+                <input type="number" id="anio" placeholder="Ingrese el año">
+            </div>
+            <div class="form-group">
+                <label for="estatus_item">Estatus:</label>
+                <input type="text" id="estatus_item" placeholder="Ingrese el estatus">
+            </div>
+            <div class="form-group">
+                <label for="disponible">Disponible:</label>
+                <select id="disponible">
+                    <option value="true">Sí</option>
+                    <option value="false">No</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="cantidad">Cantidad Disponible:</label>
-                <input type="number" id="cantidad" placeholder="Ingrese la cantidad" min="1">
+                <label for="coleccion">Colección:</label>
+                <input type="text" id="coleccion" placeholder="Ingrese la colección">
             </div>
         </div>
         

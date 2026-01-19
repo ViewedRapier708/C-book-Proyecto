@@ -11,7 +11,7 @@
 }
 
 .container-libros .container-tabla {
-    margin-bottom: 2rem;
+    margin-bottom: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -25,31 +25,28 @@
 .container-libros .container-tabla,
 .container-libros .table-responsive {
     overflow-x: hidden !important;
-    overflow-y: hidden !important;
+    overflow-y: auto !important;
+}
+
+.container-libros .table-responsive {
+    max-height: none;
+    height: 100%;
 }
 
 .container-libros table {
     width: 100%;
-    table-layout: fixed;
     border-collapse: collapse;
 }
 
 .container-libros table th,
 .container-libros table td {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    padding: 0.8rem 0.5rem;
-    text-align: center;
+    padding: 0.5rem 0.65rem;
+    font-size: 0.85rem;
+    line-height: 1.35;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
-
-.container-libros table th:nth-child(1) { width: 8%; }
-.container-libros table th:nth-child(2) { width: 20%; }
-.container-libros table th:nth-child(3) { width: 14%; }
-.container-libros table th:nth-child(4) { width: 14%; }
-.container-libros table th:nth-child(5) { width: 14%; }
-.container-libros table th:nth-child(6) { width: 12%; }
-.container-libros table th:nth-child(7) { width: 18%; }
 
 .container-libros .btn-editar {
     padding: 0.4rem 0.8rem;

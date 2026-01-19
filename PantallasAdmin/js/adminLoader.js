@@ -46,16 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     pageTitle.textContent = title;
                 }
 
-                // Inicializar funcionalidades específicas del componente
-                if (componentName === 'altaComputadoras') {
-                    inicializarModalComputadoras();
-                } else if (componentName === 'altaLibros') {
-                    inicializarModalLibros();
-                } else if (componentName === 'altaRestiradores') {
-                    inicializarModalRestiradores();
-                } else if (componentName === 'altaGuardaropas') {
-                    inicializarModalGuardaropas();
-                }
+                inicializarComponente(componentName);
               
             })
             .catch(err => {
@@ -110,6 +101,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         inicializarComputadoras();
                     }
                     break;
+                case 'solicitudesLibros':
+                    if (typeof inicializarSolicitudesLibros === 'function') {
+                        inicializarSolicitudesLibros();
+                    }
+                    break;
+                case 'prestamosLibros':
+                    if (typeof inicializarPrestamosLibros === 'function') {
+                        inicializarPrestamosLibros();
+                    }
+                    break;
                 case 'altaLibros':
                     if (typeof inicializarLibros === 'function') {
                         inicializarLibros();
@@ -120,18 +121,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         inicializarRestiradores();
                     }
                     break;
-                case 'altaGuardaropas':
-                    if (typeof inicializarGuardaropas === 'function') {
-                        inicializarGuardaropas();
-                    }
-                    break;
-                case 'solicitudesLibros':
-                    if (typeof inicializarSolicitudes === 'function') {
-                        inicializarSolicitudes();
+                case 'usuarios':
+                    if (typeof inicializarUsuarios === 'function') {
+                        inicializarUsuarios();
                     }
                     break;
                 default:
-                    console.log(`No hay inicialización para: ${componentName}`);
             }
         }, 100);
     }
@@ -217,7 +212,6 @@ function inicializarModalComputadoras() {
                 estado: document.getElementById('estado').value
             };
             
-            console.log('Datos a guardar:', datos);
             // Aquí iría la lógica para enviar al servidor
             
             alert('Computadora guardada correctamente');
@@ -311,7 +305,6 @@ function inicializarModalLibros() {
                 carrera: document.getElementById('carrera').value,
                 cantidad: document.getElementById('cantidad').value
             };
-            console.log('Libro a guardar:', datos);
             alert('Libro guardado correctamente');
             cerrarModal();
         });
@@ -388,7 +381,6 @@ function inicializarModalRestiradores() {
                 tamano: document.getElementById('tamano').value,
                 estado: document.getElementById('estado').value
             };
-            console.log('Restirador a guardar:', datos);
             alert('Restirador guardado correctamente');
             cerrarModal();
         });
@@ -463,7 +455,6 @@ function inicializarModalGuardaropas() {
                 cantidad: document.getElementById('cantidad').value,
                 estado: document.getElementById('estado').value
             };
-            console.log('Guardaropa a guardar:', datos);
             alert('Guardaropa guardado correctamente');
             cerrarModal();
         });

@@ -24,11 +24,8 @@ async function iniciarSesion(event) {
         mensajeDiv.textContent = 'Verificando credenciales...';
         mensajeDiv.style.color = 'blue';
 
-        console.log('Intentando login para boleta:', boleta); //debug
-
         // Llamar al backend usando ruta relativa (mismo origen)
         const apiBase = window.API_BASE_URL || 'http://localhost:3000';
-        console.log('Usando API base:', apiBase); //debug
         const res = await fetch(`${apiBase}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -37,7 +34,6 @@ async function iniciarSesion(event) {
         });
 
         const data = await res.json();
-        console.log('Login response:', data); //debug
         if (!res.ok) {
             mensajeDiv.textContent = data.error || 'Error al iniciar sesión';
             mensajeDiv.style.color = 'red';
@@ -45,7 +41,6 @@ async function iniciarSesion(event) {
         }
 
         // Login exitoso
-        console.log('Login exitoso! Sesión:', data); //debug
         
         // Guardar datos del usuario en localStorage (solo información pública)
         if (data.user) {
@@ -57,14 +52,13 @@ async function iniciarSesion(event) {
 
         // Redirigir al dashboard
 
-        console.log('Redirigiendo al dashboard...'); //debug
-        alert(data.rol); //debug
         setTimeout(() => {
 
-            if (data.rol === 'admin') {
-                window.location.href = './pantallasUs/admin.html';
-            }   else if (data.rol === 'docente') {
-            window.location.href = './pantallasUs/usuario.html';
+            if (data.rol === 'Admin') {
+                window.location.href = './PantallasAdmin/admin.html';
+            } else {
+                // Usuario normal (docente o estudiante)
+                window.location.href = './pantallasUs/usuario.html';
             }
 
 

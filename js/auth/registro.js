@@ -69,8 +69,6 @@ async function registro(event) {
         });
 
         const data = await res.json();
-        console.log('Registro response:', data); //debug
-
         if (!res.ok) {
             mensajeDiv.textContent = data.error || 'Error al registrar';
             mensajeDiv.style.color = 'red';

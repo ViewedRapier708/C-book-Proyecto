@@ -69,8 +69,6 @@ async function verificarUsuario() {
             contadorIntentos.textContent = `Intento ${intentos} de ${MAX_INTENTOS}`;
         }
 
-        console.log('Verificando... intento', intentos); //debug
-
         // Obtener datos del localStorage o de query params
         const datosRegistro = obtenerDatosRegistro();
         if (!datosRegistro) {
@@ -90,8 +88,6 @@ async function verificarUsuario() {
         });
 
         const data = await res.json();
-        console.log('Verificación response:', data); //debug
-
         if (!res.ok && data.error) {
             // Error del servidor
             if (data.error.includes('sesión')) {
@@ -103,7 +99,6 @@ async function verificarUsuario() {
 
         if (data.confirmado) {
             // ¡Éxito! Correo confirmado y usuario creado
-            console.log('¡Correo confirmado!'); //debug
             // Limpiar localStorage
             localStorage.removeItem('datosRegistro');
             detenerVerificacion();
@@ -146,7 +141,6 @@ function iniciarVerificacion() {
     // Iniciar el intervalo para verificaciones periódicas
     intervalId = setInterval(verificarUsuario, INTERVALO_VERIFICACION);
     
-    console.log('Bucle de verificación iniciado'); //debug
 }
 
 // Detener el bucle de verificación
@@ -154,7 +148,6 @@ function detenerVerificacion() {
     if (intervalId) {
         clearInterval(intervalId);
         intervalId = null;
-        console.log('Bucle de verificación detenido'); //debug
     }
 }
 

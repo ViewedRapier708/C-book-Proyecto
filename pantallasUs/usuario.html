@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    
+   
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="api-base-url" content="http://127.0.0.1:3000">
     <title>Mis Solicitudes - C-Book</title>
-
+ <script src="../js/config/apiConfig.js"></script>
+    <script src="../js/auth/sessionGuard.js"></script>
+    <script src="../js/auth/funcionCerrarSesion.js"></script>  
     <link rel="stylesheet" href="css/EstiloAside.css">
     <link rel="stylesheet" href="css/StyleGeneral.css">
     <link rel="stylesheet" href="css/componentes-base.css">
@@ -16,11 +18,16 @@
     <link rel="stylesheet" href="css/componentes/solicitudRestiradores.css">
     <link rel="stylesheet" href="css/componentes/areaConsulta.css">
     <link rel="stylesheet" href="css/componentes/cancelarSolicitudes.css">
+    <link rel="stylesheet" href="css/componentes/misSolicitudesLibros.css">
     <link rel="shortcut icon" href="../img/logo_C_Book.jpg" type="image/x-icon">
+<<<<<<< HEAD
     <link rel="stylesheet" href="./css/componentes/filtroslibros.css">
    <script src="../js/config/apiConfig.js"></script>
     <script src="../js/auth/sessionGuard.js"></script>
     <script src="../js/auth/funcionCerrarSesion.js"></script> 
+=======
+  
+>>>>>>> 764c1ce10802ee8cafc54a729d9c22721b1dafad
 </head>
 <body>
     
@@ -42,7 +49,8 @@
                     <a href="#" class="link-secciones nav-link" data-component="solicitudRestiradores" data-title="SOLICITUD DE RESTIRADORES">Restiradores</a>
                     <a href="#" class="link-secciones nav-link" data-component="areaConsulta" data-title="ÁREA DE CONSULTA">Área de Consulta</a>
                     <a href="#" class="link-secciones nav-link" data-component="solicitudLibros" data-title="LIBROS">Solicitar Préstamo de Libros</a>
-                    <a href="#" class="link-secciones nav-link" data-component="cancelarSolicitudes" data-title="VISUALIZAR MIS SOLICITUDES">Visualizar Solicitudes Hechas</a>
+                    <a href="#" class="link-secciones nav-link" data-component="cancelarSolicitudes" data-title="VISUALIZAR MIS SOLICITUDES">Mis Solicitudes de Recursos</a>
+                    <a href="#" class="link-secciones nav-link" data-component="misSolicitudesLibros" data-title="MIS SOLICITUDES DE LIBROS">Mis Solicitudes de Libros</a>
                 </div>
                 <div class="btn-cerrar-sesion">
                     <a href="#" class="link-secciones" onclick="cerrarSesion(); return false;">Cerrar Sesión</a>
@@ -110,36 +118,6 @@
             });
         })();
     </script>
-    <!-- esta parte esta comentada xq no vaiga siendo q haya algun error o si se pueda incluir en algun 
-        -> otro archivo para mantener limpio el codigo de html
-        <script>    
-    // Iniciar Supabase RealTime cuando se carga la página
-        window.addEventListener('DOMContentLoaded', () => {
-            console.log('🎬 Iniciando Supabase RealTime para múltiples tablas...');
-            
-            // Suscribirse a cambios en restiradores, ejemplares, computadoras y guardarropas
-            iniciarRealTime((change) => {
-                // Aquí puedes manejar los cambios recibidos de cualquier tabla
-                console.log(`📨 Cambio en tabla "${change.tabla}":`, change);
-                
-                // Manejar según el tipo de cambio y la tabla
-                switch (change.type) {
-                    case 'INSERT':
-                        console.log(`➕ Nuevo ${change.tabla} agregado:`, change.data);
-                        // Actualizar UI: agregar nueva fila
-                        break;
-                    case 'UPDATE':
-                        console.log(`✏️ ${change.tabla} actualizado:`, change.data);
-                        // Actualizar UI: modificar fila existente
-                        break;
-                    case 'DELETE':
-                        console.log(`🗑️ ${change.tabla} eliminado:`, change.data);
-                        // Actualizar UI: eliminar fila
-                        break;
-                }
-            });
-        });
-    </script>
-    -->
+   
 </body>
 </html>

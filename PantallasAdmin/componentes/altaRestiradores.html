@@ -1,61 +1,42 @@
 <div class="container-restiradores">
-    <h2>Registro de Nuevos Restiradores</h2>
-    
+    <div class="mensaje-alerta" id="mensaje-restiradores" hidden></div>
+
     <div class="layout-dos-columnas">
-        <!-- Columna Izquierda: Tabla -->
         <div class="columna-principal">
+            <div class="tabla-encabezado">
+                <div class="tabla-info">
+                    <span class="tabla-total" data-total="restiradores">Total: 0</span>
+                </div>
+                <div class="tabla-acciones">
+                    <button class="btn-recargar" data-recargar="restiradores">Recargar</button>
+                </div>
+            </div>
             <div class="container-tabla">
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th>No.</th>
-                                <th>Tamaño</th>
-                                <th>Estado</th>
+                                <th>No. Restirador</th>
+                                <th>No. Inventario</th>
+                                <th>Disponible</th>
+                                <th>Estado material</th>
+                                <th>Observación</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>R001</td>
-                                <td>Grande</td>
-                                <td>Disponible</td>
-                                <td><button class="btn-editar">Editar</button></td>
-                            </tr>
-                        </tbody>
+                        <tbody id="tabla-restiradores"></tbody>
                     </table>
                 </div>
+            </div>
+
+            <div class="paginacion" data-paginacion="restiradores">
+                <button class="btn-paginacion" data-prev>Anterior</button>
+                <span class="pagina-actual">Página 1</span>
+                <button class="btn-paginacion" data-next>Siguiente</button>
             </div>
             
             <div class="container-btn-alta">
                 <button class="btn-alta" id="btn-agregar">Agregar Restiradores</button>
-            </div>
-        </div>
-        
-        <!-- Columna Derecha: Estadísticas -->
-        <div class="columna-estadisticas">
-            <div class="container-datos-sistema">
-                <h3>Estadísticas Restiradores</h3>
-                <div class="dato-item">
-                    <span class="dato-label">Total Restiradores:</span>
-                    <span class="dato-value">75</span>
-                </div>
-                <div class="dato-item">
-                    <span class="dato-label">Disponibles:</span>
-                    <span class="dato-value">62</span>
-                </div>
-                <div class="dato-item">
-                    <span class="dato-label">En Uso:</span>
-                    <span class="dato-value">10</span>
-                </div>
-                <div class="dato-item">
-                    <span class="dato-label">Mantenimiento:</span>
-                    <span class="dato-value">3</span>
-                </div>
-                <div class="dato-item">
-                    <span class="dato-label">Última Actualización:</span>
-                    <span class="dato-value">13/11/2025</span>
-                </div>
             </div>
         </div>
     </div>
@@ -68,25 +49,32 @@
         <h3 id="modal-titulo">Nuevo Restirador</h3>
         
         <div class="container-formulario">
+            <input type="hidden" id="restirador_id">
             <div class="form-group">
-                <label for="cantidad">Cantidad a Agregar:</label>
-                <input type="number" id="cantidad" placeholder="Ingrese la cantidad" min="1">
-            </div>
-            <div class="form-group">
-                <label for="tamano">Tamaño:</label>
-                <select id="tamano">
-                    <option value="">Seleccione un tamaño</option>
-                    <option value="Pequeño">Pequeño</option>
-                    <option value="Mediano">Mediano</option>
-                    <option value="Grande">Grande</option>
+                <label for="disponible">Disponible:</label>
+                <select id="disponible">
+                    <option value="true">Sí</option>
+                    <option value="false">No</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="estado">Estado Inicial:</label>
-                <select id="estado">
-                    <option value="disponible">Disponible</option>
-                    <option value="mantenimiento">En Mantenimiento</option>
+                <label for="estado_material">Estado de material:</label>
+                <select id="estado_material">
+                    <option value="true">Funcional</option>
+                    <option value="false">Dañado</option>
                 </select>
+            </div>
+            <div class="form-group">
+                <label for="observacion">Observación:</label>
+                <input type="text" id="observacion" placeholder="Ingrese la observación">
+            </div>
+            <div class="form-group">
+                <label for="no_inventario">No. Inventario:</label>
+                <input type="text" id="no_inventario" placeholder="Ingrese el número de inventario">
+            </div>
+            <div class="form-group">
+                <label for="no_restirador">No. Restirador:</label>
+                <input type="number" id="no_restirador" placeholder="Ingrese el número de restirador">
             </div>
         </div>
         <div class="modal-botones">

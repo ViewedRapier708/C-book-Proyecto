@@ -36,7 +36,6 @@
                     method: 'GET',
                     credentials: 'include' // IMPORTANTE: manda la cookie de sesión
                 });
-              //  console.log('SessionGuard - /auth/session intento', intento, 'status:', respuesta);
 
                 if (!respuesta.ok) {
                     console.warn('SessionGuard - /auth/session no OK, intento', intento, 'status:', respuesta.status);
@@ -44,7 +43,8 @@
                     const datos = await respuesta.json();
                     return {
                         autenticado: datos.autenticado === true,
-                        usuario: datos.user || null
+                        usuario: datos.user || null,
+                        rol: datos.user ? datos.user.rol : null
                     };
                 }
             } catch (error) {
@@ -63,24 +63,26 @@
 
     async function aplicarLogicaRedireccion() {
         const { autenticado, usuario } = await verificarSesionEnBackendConReintentos();
-      //  console.log('SessionGuard - Autenticado:', autenticado, 'Usuario:', usuario, 'esPaginaPublica:', esPaginaPublica, 'esIndex:', esIndex);
 
         if (autenticado) {
             // Si el usuario ya inició sesión y está en login/registro, mandarlo a su panel
             if (esPaginaPublica) {
-               // console.log('SessionGuard - autenticado en página pública, redirigiendo a usuario.html');
-                window.location.href = './pantallasUs/usuario.html';
+                alert (usuario.rol)
+              if (usuario && usuario.rol === 'Admin') {
+                    window.location.href = './pantallasAdmin/administrador.html';
+                    return;
+                }
+                if (usuario && usuario.rol === 'Alumno') {
+                     window.location.href = './pantallasUs/usuario.html';
                 return;
+                }
+              
             }
-            // console.log('SessionGuard - autenticado en página protegida, se queda');
             return;
         }
 
-       // console.log('SessionGuard - NO autenticado, esPaginaPublica:', esPaginaPublica);
-
         // No autenticado
         if (!esPaginaPublica) {
-            // console.log('SessionGuard - redirigiendo a ../index.html por no autenticado');
             window.location.href = '../index.html';
             return;
         }
@@ -99,7 +101,6 @@ if (window.history && window.history.replaceState) {
     window.history.replaceState(null, document.title, window.location.href);
     window.addEventListener('popstate', function () {
         // Cada vez que intenta retroceder, lo volvemos a llevar a la URL actual
-       // console.log('SessionGuard - intento de retroceso bloqueado');
         window.history.pushState(null, document.title, window.location.href);
     });
 }

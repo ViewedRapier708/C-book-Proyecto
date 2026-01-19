@@ -23,9 +23,7 @@ async function verificarAsistencia(params) {
     Object.entries(Act_computadoras || {}).forEach(([key, value]) => {
         let fechaActual = new Date().getHours();//Obtener la hora actual
         let fechaActividad = new Date(value.fecha_solicitud);
-        console.log("Fecha actividad computadora:", fechaActividad);
         let horaLimite = fechaActividad.getHours() ;//Verificar la hora limite de asistencia
-        console.log("Hora actual:", fechaActual, "Hora limite:", horaLimite);
 
         // Verificación real por fecha completa (no solo hora), con tolerancia configurable
         const minutosTolerancia = Number(process.env.ASISTENCIA_TIMEOUT_MINUTES || 60);
@@ -33,7 +31,6 @@ async function verificarAsistencia(params) {
 
         if(fechaActual > horaLimite || new Date() > limiteAsistencia){
             // Aquí puedes actualizar el estado de la actividad en la base de datos si es necesario
-            console.log(`La actividad con ID ${value.id} ha excedido el tiempo límite de asistencia.`);
             tareasCancelacion.push(
                 cancelarActividad(value.id, 'computadora').catch((err) => console.error('Error cancelando computadora:', err))
             );
@@ -43,16 +40,13 @@ async function verificarAsistencia(params) {
     Object.entries(Act_restiradores || {}).forEach(([key, value]) => {
         let fechaActual = new Date().getHours();
         let fechaActividad = new Date(value.fecha_solicitud);
-        console.log("Fecha actividad restirador:", fechaActividad);
         let horaLimite = fechaActividad.getHours() ;
-        console.log("Hora actual:", fechaActual, "Hora limite:", horaLimite);
 
         const minutosTolerancia = Number(process.env.ASISTENCIA_TIMEOUT_MINUTES || 60);
         const limiteAsistencia = new Date(fechaActividad.getTime() + (minutosTolerancia * 60 * 1000));
 
         if(fechaActual > horaLimite || new Date() > limiteAsistencia){
             // Aquí puedes actualizar el estado de la actividad en la base de datos si es necesario
-            console.log(`La actividad con ID ${value.id} ha excedido el tiempo límite de asistencia.`);
             tareasCancelacion.push(
                 cancelarActividad(value.id, 'restirador').catch((err) => console.error('Error cancelando restirador:', err))
             );
@@ -64,13 +58,10 @@ async function verificarAsistencia(params) {
         let mesActual = new Date().getMonth() + 1; // Los meses en JavaScript son base 0 
         let diaActual = new Date().getDate();
         let horaActual = new Date().getHours();
-        console.log("Mes actual:", mesActual, "Dia actual:", diaActual, "Hora actual:", horaActual);
         let fechaActividad = new Date(value.fecha_solicitud);
-        console.log("Fecha actividad libro:", fechaActividad);
         let mesLimite = fechaActividad.getMonth() + 1;
         let diaLimite = fechaActividad.getDate();
         let horaLimite = fechaActividad.getHours();
-        console.log("Mes limite:", mesLimite, "Dia limite:", diaLimite, "Hora limite:", horaLimite);
 
         // ====== LIBROS: checar fechas límite de tu tabla ======
         // - estado_solicitud_id = 1 (pendiente): si ya pasó fecha_limite_respuesta, se cancela
@@ -81,14 +72,12 @@ async function verificarAsistencia(params) {
         const limiteRecoleccion = value.fecha_limite_recoleccion ? new Date(value.fecha_limite_recoleccion) : null;
 
         if (estadoLibro === 1 && limiteRespuesta && ahora > limiteRespuesta) {
-            console.log(`La solicitud de libro con ID ${value.id} excedió fecha_limite_respuesta.`);
             tareasCancelacion.push(
                 cancelarActividad(value.id, 'libro').catch((err) => console.error('Error cancelando libro (limite_respuesta):', err))
             );
         }
 
         if (estadoLibro === 2 && limiteRecoleccion && ahora > limiteRecoleccion) {
-            console.log(`La solicitud de libro con ID ${value.id} excedió fecha_limite_recoleccion.`);
             tareasCancelacion.push(
                 cancelarActividad(value.id, 'libro').catch((err) => console.error('Error cancelando libro (limite_recoleccion):', err))
             );
@@ -97,19 +86,12 @@ async function verificarAsistencia(params) {
         // Mantengo tu condición original como fallback (por si falta fecha_limite_*)
         if(mesActual > mesLimite || (mesActual === mesLimite && diaActual > diaLimite) || (mesActual === mesLimite && diaActual === diaLimite && horaActual > horaLimite)){
             // Aquí puedes actualizar el estado de la actividad en la base de datos si es necesario
-            console.log(`La solicitud de libro con ID ${value.id} ha excedido el tiempo límite de asistencia.`);
         }
 
         
     });
 
     
-    console.log("Verificación de asistencia ejecutada");
-//debug
-    console.log("Actividades de computadoras:", Act_computadoras);
-    console.log("Actividades de restiradores:", Act_restiradores);
-    console.log("Solicitudes de libros:", Solicicitudes_libros);
-
     // Asegura que las cancelaciones disparadas por el forEach terminen
     if (tareasCancelacion.length > 0) {
         await Promise.allSettled(tareasCancelacion);
@@ -160,7 +142,6 @@ const cancelarActividad = async (ID_SOLICITUD, tipo = null) => {
     }
 
     // Lógica para cancelar la actividad en la base de datos
-    console.log(`Actividad con ID ${ID_SOLICITUD} cancelada por no asistencia.`);
 }
 
 module.exports = { verificarAsistencia };
