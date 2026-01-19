@@ -111,36 +111,6 @@
             });
         })();
     </script>
-    <!-- esta parte esta comentada xq no vaiga siendo q haya algun error o si se pueda incluir en algun 
-        -> otro archivo para mantener limpio el codigo de html
-        <script>    
-    // Iniciar Supabase RealTime cuando se carga la página
-        window.addEventListener('DOMContentLoaded', () => {
-            console.log('🎬 Iniciando Supabase RealTime para múltiples tablas...');
-            
-            // Suscribirse a cambios en restiradores, ejemplares, computadoras y guardarropas
-            iniciarRealTime((change) => {
-                // Aquí puedes manejar los cambios recibidos de cualquier tabla
-                console.log(`📨 Cambio en tabla "${change.tabla}":`, change);
-                
-                // Manejar según el tipo de cambio y la tabla
-                switch (change.type) {
-                    case 'INSERT':
-                        console.log(`➕ Nuevo ${change.tabla} agregado:`, change.data);
-                        // Actualizar UI: agregar nueva fila
-                        break;
-                    case 'UPDATE':
-                        console.log(`✏️ ${change.tabla} actualizado:`, change.data);
-                        // Actualizar UI: modificar fila existente
-                        break;
-                    case 'DELETE':
-                        console.log(`🗑️ ${change.tabla} eliminado:`, change.data);
-                        // Actualizar UI: eliminar fila
-                        break;
-                }
-            });
-        });
-    </script>
-    -->
+   
 </body>
 </html>

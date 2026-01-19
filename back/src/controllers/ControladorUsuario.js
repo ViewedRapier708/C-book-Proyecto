@@ -46,8 +46,6 @@ async function registro(req, res) {
     // Verificar si la boleta ya existe
     
     const boletaExiste = await validarBoletaEnTabla(boleta);
-    console.log("Validación de boleta existente:", boletaExiste); //debug
-    
     if (boletaExiste.respuesta) {
       return res.status(400).json({ error: boletaExiste.msg });
     }
@@ -67,15 +65,11 @@ async function registro(req, res) {
       return res.status(400).json({ error: resultadoAuth.error || 'Error al registrar usuario' });
     }
 
-    console.log("Usuario registrado en Auth:", resultadoAuth.user?.id); //debug
-
     // Guardar datos en sesión para la verificación
     req.session.registro = {
       boleta,
       correo
     };
-
-    console.log("Datos guardados en sesión:", req.session.registro); //debug
 
     return res.status(200).json({
       success: true,
@@ -101,12 +95,8 @@ async function verificarCorreo(req, res) {
       });
     }
 
-    console.log("Verificando confirmación para boleta:", boleta); //debug
-
     // Verificar si el correo fue confirmado
     const resultado = await verificarConfirmacionPorBoleta(boleta);
-    
-    console.log("Resultado verificación:", resultado); //debug
 
     if (!resultado.confirmado) {
       return res.status(200).json({ 
@@ -129,8 +119,6 @@ async function verificarCorreo(req, res) {
         });
       }
     }
-
-    console.log("Usuario verificado y creado exitosamente"); //debug
 
     return res.status(200).json({ 
       confirmado: true,
@@ -156,16 +144,12 @@ async function login(req, res) {
       return res.status(400).json({ error: "Boleta debe tener 10 dígitos" });
     }
 
-    //console.log("Intento de login para boleta:", boleta); //debug
-
     // Buscar correo por boleta
     const busqueda = await buscarCorreoPorBoleta(boleta);
     
     if (!busqueda.success) {
       return res.status(400).json({ error: busqueda.error || 'Usuario no encontrado' });
     }
-
-   // console.log("Correo encontrado:", busqueda.correo); //debug
 
     // Iniciar sesión con Supabase Auth
     const loginResult = await loginConAuth(busqueda.correo, password);
@@ -175,12 +159,9 @@ async function login(req, res) {
     }
     const userData = await traerUsuarioInfo(boleta);
 
-    console.log("Usuario autenticado:", userData); //debug
     const nombre = (userData.data?.boletas?.nombre ).trim();
     const grupo = userData.data?.boletas?.Grupo ;
     const rol= userData.data?.rol ;
-  //  console.log("Datos del usuario:", userData); //debug
-   // console.log("Login exitoso, sesión creada"); //debug
 
     const supabaseSession = loginResult.session;
 
@@ -196,6 +177,7 @@ async function login(req, res) {
       email: loginResult.user.email,
       boleta,
       grupo,
+
       tokens: {
         accessToken: supabaseSession.access_token,
         refreshToken: supabaseSession.refresh_token,
@@ -205,8 +187,6 @@ async function login(req, res) {
     };
 
     await saveSession(req);
-
-  //  console.log("Datos guardados en sesión:", req.session.user); //debug
 
     return res.status(200).json({
       success: true,
@@ -223,7 +203,6 @@ async function login(req, res) {
 async function verificarSesion(req, res) {
   try {
     const sessionUser = req.session.user;
-    console.log('Verificando sesión para usuario:', sessionUser?.boleta); //debug
     if (!sessionUser) {
       // Siempre 200 para que el frontend maneje el estado con simplicidad
       return res.status(200).json({ autenticado: false, user: null });

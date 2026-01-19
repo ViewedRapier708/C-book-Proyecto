@@ -17,8 +17,6 @@ function seleccionarFila(fila) {
   // Guardar el recurso seleccionado
   recursoSeleccionado = JSON.parse(fila.dataset.recurso);
 
-  console.log('Recurso seleccionado:', recursoSeleccionado);
-
   // Buscar el botón en el .layout (fuera del container-tabla)
   const layout = fila.closest('.layout');
   const btnApartar = layout?.querySelector('.container-btn-apartar .btn-apartar');
@@ -50,8 +48,6 @@ function abrirModal() {
 
   // Llenar los datos del modal
   const detallesModal = document.getElementById('detalles-recurso');
-  console.log('Contenedor de detalles encontrado:', detallesModal ? 'SI' : 'NO');
-  
   if (detallesModal) {
     let htmlDetalles = '<ul class="lista-detalles">';
     
@@ -69,14 +65,12 @@ function abrirModal() {
     }
     htmlDetalles += '</ul>';
     detallesModal.innerHTML = htmlDetalles;
-    console.log('Datos insertados en el modal');
   }
 
   // Mostrar el modal con animación
   modal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
   
-  console.log('Modal visible');
 }
 
 /** Formatea el nombre del campo para mostrarlo bonito */
@@ -116,7 +110,6 @@ function formatearValor(value) {
 
 /** Cierra el modal de confirmación */
 function cerrarModal() {
-  console.log('=== CERRANDO MODAL ===');
   const modal = document.getElementById('modal-confirmacion');
   if (modal) {
     modal.style.display = 'none';
@@ -155,7 +148,6 @@ async function confirmarSolicitud() {
   } else if (tipoRecurso === 'restirador') {
     idRecurso = parseInt(recursoSeleccionado['ID'] || recursoSeleccionado.no_restirador || recursoSeleccionado.id);
   }
-  console.log('ID del recurso:', idRecurso, 'Tipo:', tipoRecurso);
   if (!idRecurso || isNaN(idRecurso)) {
     mostrarNotificacion('❌ No se pudo identificar el recurso seleccionado', 'error');
     return;
@@ -166,8 +158,6 @@ async function confirmarSolicitud() {
     boleta: usuario.boleta,
     idRecurso: idRecurso
   };
-
-  console.log('Enviando solicitud:', solicitud);
 
   try {
     // Actualizar botón para indicar que se está procesando
@@ -191,8 +181,6 @@ async function confirmarSolicitud() {
     });
 
     const resultado = await response.json();
-    console.log('Respuesta del servidor:', resultado);
-
     if (response.ok && resultado.success) {
       // Éxito
       alert('¡Solicitud realizada con éxito!');
@@ -336,6 +324,6 @@ window.inicializarEventosTabla = inicializarEventosTabla;
 // Inicializar cuando se carga el componente
 if (typeof document !== 'undefined' && document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', function() {
-    console.log('funcionsRecursos.js cargado y listo');
+    // Inicialización sin logs.
   });
 }

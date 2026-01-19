@@ -5,7 +5,9 @@ const adminState = {
 	libros: { page: 1, total: 0, limit: PAGE_LIMIT },
 	computadoras: { page: 1, total: 0, limit: PAGE_LIMIT },
 	restiradores: { page: 1, total: 0, limit: PAGE_LIMIT },
-	usuarios: { page: 1, total: 0, limit: PAGE_LIMIT }
+	usuarios: { page: 1, total: 0, limit: PAGE_LIMIT },
+    solicitudesLibros: { page: 1, total: 0, limit: PAGE_LIMIT },
+    prestamosLibros: { page: 1, total: 0, limit: PAGE_LIMIT }
 };
 
 function formatBoolean(value) {
@@ -51,6 +53,44 @@ function ocultarMensaje(container) {
 	container.classList.remove('success', 'error', 'warning', 'info');
 }
 
+let toastContainer = null;
+
+function obtenerToastContainer() {
+	if (toastContainer) return toastContainer;
+	const container = document.createElement('div');
+	container.className = 'toast-container';
+	container.setAttribute('role', 'status');
+	container.setAttribute('aria-live', 'polite');
+	container.setAttribute('aria-atomic', 'true');
+	document.body.appendChild(container);
+	toastContainer = container;
+	return toastContainer;
+}
+
+function mostrarToast(mensaje, tipo = 'success') {
+	const container = obtenerToastContainer();
+	if (!container) return;
+	const toast = document.createElement('div');
+	toast.className = `toast toast-${tipo}`;
+	toast.textContent = mensaje;
+	container.appendChild(toast);
+
+	requestAnimationFrame(() => {
+		toast.classList.add('visible');
+	});
+
+	const cerrarToast = () => {
+		toast.classList.remove('visible');
+		toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+	};
+
+	const timeoutId = window.setTimeout(cerrarToast, 4000);
+	toast.addEventListener('click', () => {
+		window.clearTimeout(timeoutId);
+		cerrarToast();
+	});
+}
+
 function actualizarTotal(tipo, total) {
 	const totalElement = document.querySelector(`[data-total="${tipo}"]`);
 	if (totalElement) {
@@ -71,8 +111,6 @@ function actualizarPaginacion(tipo) {
 	const hasNextByCount = adminState[tipo].lastCount === limit;
 	const hasNext = hasNextByTotal || hasNextByCount || ((total || 0) > limit);
 
-	console.log(`[paginacion] ${tipo}`, { page, total, limit, hasPrev, hasNext, lastCount: adminState[tipo].lastCount });
-
 	if (prevBtn) prevBtn.disabled = !hasPrev;
 	if (nextBtn) nextBtn.disabled = !hasNext;
 	if (pageLabel) pageLabel.textContent = `Página ${page}`;
@@ -86,7 +124,6 @@ function configurarPaginacion(tipo, onReload) {
 
 	if (prevBtn) {
 		prevBtn.addEventListener('click', () => {
-			console.log(`[click prev] ${tipo} page=${adminState[tipo].page}`);
 			if (adminState[tipo].page > 1) {
 				adminState[tipo].page -= 1;
 				onReload();
@@ -96,7 +133,6 @@ function configurarPaginacion(tipo, onReload) {
 
 	if (nextBtn) {
 		nextBtn.addEventListener('click', () => {
-			console.log(`[click next] ${tipo} page=${adminState[tipo].page}`);
 			adminState[tipo].page += 1;
 			onReload();
 		});
@@ -186,7 +222,6 @@ async function cargarLibros() {
 	ocultarMensaje(mensaje);
 	try {
 		const { page, limit } = adminState.libros;
-		console.log('[cargarLibros] request', { page, limit });
 		const resultado = await requestJson(`/auth/admin/materiales/libros?page=${page}&limit=${limit}`);
 		const tabla = document.getElementById('tabla-libros');
 
@@ -242,7 +277,6 @@ async function cargarLibros() {
 
 		adminState.libros.total = resultado.total || 0;
 		adminState.libros.lastCount = filas.length;
-		console.log('[cargarLibros] response', { total: adminState.libros.total, count: filas.length });
 		actualizarTotal('libros', adminState.libros.total);
 		actualizarPaginacion('libros');
 	} catch (error) {
@@ -322,19 +356,19 @@ function inicializarLibros() {
 					method: 'PUT',
 					body: JSON.stringify(payload)
 				});
-				mostrarMensaje(mensaje, 'success', 'Libro actualizado correctamente.');
+				mostrarToast('Material actualizado exitosamente.');
 			} else {
 				await requestJson('/auth/admin/libros', {
 					method: 'POST',
 					body: JSON.stringify(payload)
 				});
-				mostrarMensaje(mensaje, 'success', 'Libro registrado correctamente.');
+				mostrarToast('Material agregado exitosamente.');
 			}
 
 			cerrarModal(modal);
 			cargarLibros();
 		} catch (error) {
-			mostrarMensaje(mensaje, 'error', error.message);
+			mostrarToast(error.message || 'No se pudo guardar el material.', 'error');
 		}
 	});
 
@@ -378,10 +412,10 @@ function inicializarLibros() {
 
 			try {
 				await requestJson(`/auth/admin/materiales/libros/${ejemplarId}`, { method: 'DELETE' });
-				mostrarMensaje(mensaje, 'success', 'Ejemplar eliminado correctamente.');
+				mostrarToast('Material eliminado exitosamente.');
 				cargarLibros();
 			} catch (error) {
-				mostrarMensaje(mensaje, 'error', error.message);
+				mostrarToast(error.message || 'No se pudo eliminar el material.', 'error');
 			}
 		}
 	});
@@ -396,7 +430,6 @@ async function cargarComputadoras() {
 	ocultarMensaje(mensaje);
 	try {
 		const { page, limit } = adminState.computadoras;
-		console.log('[cargarComputadoras] request', { page, limit });
 		const resultado = await requestJson(`/auth/admin/materiales/computadoras?page=${page}&limit=${limit}`);
 		const tabla = document.getElementById('tabla-computadoras');
 
@@ -441,7 +474,6 @@ async function cargarComputadoras() {
 
 		adminState.computadoras.total = resultado.total || 0;
 		adminState.computadoras.lastCount = filas.length;
-		console.log('[cargarComputadoras] response', { total: adminState.computadoras.total, count: filas.length });
 		actualizarTotal('computadoras', adminState.computadoras.total);
 		actualizarPaginacion('computadoras');
 	} catch (error) {
@@ -504,19 +536,19 @@ function inicializarComputadoras() {
 					method: 'PUT',
 					body: JSON.stringify(payload)
 				});
-				mostrarMensaje(mensaje, 'success', 'Computadora actualizada correctamente.');
+				mostrarToast('Material actualizado exitosamente.');
 			} else {
 				await requestJson('/auth/admin/computadoras', {
 					method: 'POST',
 					body: JSON.stringify(payload)
 				});
-				mostrarMensaje(mensaje, 'success', 'Computadora registrada correctamente.');
+				mostrarToast('Material agregado exitosamente.');
 			}
 
 			cerrarModal(modal);
 			cargarComputadoras();
 		} catch (error) {
-			mostrarMensaje(mensaje, 'error', error.message);
+			mostrarToast(error.message || 'No se pudo guardar el material.', 'error');
 		}
 	});
 
@@ -552,10 +584,17 @@ function inicializarComputadoras() {
 
 			try {
 				await requestJson(`/auth/admin/materiales/computadoras/${id}`, { method: 'DELETE' });
-				mostrarMensaje(mensaje, 'success', 'Computadora eliminada correctamente.');
+				mostrarToast('Material eliminado exitosamente.');
 				cargarComputadoras();
 			} catch (error) {
-				mostrarMensaje(mensaje, 'error', error.message);
+				if (error.message?.includes('fk_solicitudes_computadora_equipo')) {
+					mostrarToast(
+						'No se puede eliminar el material porque hay solicitudes relacionadas con ese material.',
+						'error'
+					);
+				} else {
+					mostrarToast(error.message || 'No se pudo eliminar el material.', 'error');
+				}
 			}
 		}
 	});
@@ -570,7 +609,6 @@ async function cargarRestiradores() {
 	ocultarMensaje(mensaje);
 	try {
 		const { page, limit } = adminState.restiradores;
-		console.log('[cargarRestiradores] request', { page, limit });
 		const resultado = await requestJson(`/auth/admin/materiales/restiradores?page=${page}&limit=${limit}`);
 		const tabla = document.getElementById('tabla-restiradores');
 
@@ -609,7 +647,6 @@ async function cargarRestiradores() {
 
 		adminState.restiradores.total = resultado.total || 0;
 		adminState.restiradores.lastCount = filas.length;
-		console.log('[cargarRestiradores] response', { total: adminState.restiradores.total, count: filas.length });
 		actualizarTotal('restiradores', adminState.restiradores.total);
 		actualizarPaginacion('restiradores');
 	} catch (error) {
@@ -666,19 +703,19 @@ function inicializarRestiradores() {
 					method: 'PUT',
 					body: JSON.stringify(payload)
 				});
-				mostrarMensaje(mensaje, 'success', 'Restirador actualizado correctamente.');
+				mostrarToast('Material actualizado exitosamente.');
 			} else {
 				await requestJson('/auth/admin/restiradores', {
 					method: 'POST',
 					body: JSON.stringify(payload)
 				});
-				mostrarMensaje(mensaje, 'success', 'Restirador registrado correctamente.');
+				mostrarToast('Material agregado exitosamente.');
 			}
 
 			cerrarModal(modal);
 			cargarRestiradores();
 		} catch (error) {
-			mostrarMensaje(mensaje, 'error', error.message);
+			mostrarToast(error.message || 'No se pudo guardar el material.', 'error');
 		}
 	});
 
@@ -711,10 +748,10 @@ function inicializarRestiradores() {
 
 			try {
 				await requestJson(`/auth/admin/materiales/restiradores/${id}`, { method: 'DELETE' });
-				mostrarMensaje(mensaje, 'success', 'Restirador eliminado correctamente.');
+				mostrarToast('Material eliminado exitosamente.');
 				cargarRestiradores();
 			} catch (error) {
-				mostrarMensaje(mensaje, 'error', error.message);
+				mostrarToast(error.message || 'No se pudo eliminar el material.', 'error');
 			}
 		}
 	});
@@ -729,7 +766,6 @@ async function cargarUsuarios() {
 	ocultarMensaje(mensaje);
 	try {
 		const { page, limit } = adminState.usuarios;
-		console.log('[cargarUsuarios] request', { page, limit });
 		const resultado = await requestJson(`/auth/admin/usuarios?page=${page}&limit=${limit}`);
 		const tabla = document.getElementById('tabla-usuarios');
 
@@ -757,7 +793,6 @@ async function cargarUsuarios() {
 
 		adminState.usuarios.total = resultado.total || 0;
 		adminState.usuarios.lastCount = (resultado.data || []).length;
-		console.log('[cargarUsuarios] response', { total: adminState.usuarios.total, count: adminState.usuarios.lastCount });
 		actualizarTotal('usuarios', adminState.usuarios.total);
 		actualizarPaginacion('usuarios');
 	} catch (error) {
@@ -809,7 +844,209 @@ function inicializarUsuarios() {
 	cargarUsuarios();
 }
 
+// ==================== SOLICITUDES LIBROS ====================
+
+async function cargarSolicitudesLibros() {
+    const tbody = document.getElementById('tabla-solicitudes-libros');
+    if (!tbody) return;
+    
+	tbody.innerHTML = '<tr><td colspan="10" class="loading">Cargando solicitudes...</td></tr>';
+    
+    try {
+        const respuesta = await requestJson('/auth/admin/solicitudes/libros');
+        if (respuesta.success) {
+            tbody.innerHTML = '';
+
+            if (respuesta.data.length === 0) {
+				 tbody.innerHTML = '<tr><td colspan="10">No hay solicitudes registradas.</td></tr>';
+                 return;
+            }
+
+            respuesta.data.forEach(solicitud => {
+                const tr = document.createElement('tr');
+				const estadoId = Number(solicitud.estado_asistencia_id);
+				const estado = estadoId === 1
+					? 'Pendiente'
+					: estadoId === 2
+						? 'Aprobada (Por Recoger)'
+						: estadoId === 3
+							? 'Rechazada'
+							: 'Cancelada';
+                const usuario = solicitud.usuarios_web_movil;
+				const alumno = usuario?.boletas;
+                const libro = solicitud.ejemplares?.libros;
+				const prestamos = solicitud.prestamos_libros;
+				const prestamoArray = Array.isArray(prestamos) ? prestamos : (prestamos ? [prestamos] : []);
+				const devuelto = prestamoArray.some(p => Number(p.estado_prestamo_id) === 3);
+				const tieneDocumentos = usuario?.tiene_documentos ? 'Sí' : 'No';
+                
+                let botones = '';
+				if (estadoId === 1) {
+                    botones = `
+                        <button class="btn-aprobar" onclick="gestionarSolicitud(${solicitud.id}, 2, '${usuario?.boleta}')">Aprobar</button>
+                        <button class="btn-rechazar" onclick="gestionarSolicitud(${solicitud.id}, 3, '${usuario?.boleta}')">Rechazar</button>
+                    `;
+				} else if (estadoId === 2) {
+                    botones = `
+                        <button class="btn-guardar" style="background: #28a745; color: white; border-color: #28a745;" onclick="entregarLibro(${solicitud.id}, '${usuario?.boleta}', ${solicitud.ejemplares?.id})">
+                             <i class="fas fa-check"></i> Entregar Libro
+                        </button>
+                    `;
+                }
+
+                tr.innerHTML = `
+                    <td>${usuario?.boleta || 'N/A'}</td>
+					<td>${alumno?.nombre || 'N/A'}</td>
+					<td>${alumno?.Grupo || 'N/A'}</td>
+					<td>${usuario?.correo || 'N/A'}</td>
+					<td>${tieneDocumentos}</td>
+                    <td>${libro?.titulo || 'N/A'}</td>
+                    <td>${new Date(solicitud.fecha_solicitud).toLocaleDateString()}</td>
+					<td><span class="badge ${estadoId === 1 ? 'badge-warning' : estadoId === 2 ? 'badge-success' : 'badge-danger'}">${estado}</span></td>
+					<td>${devuelto ? 'Sí' : 'No'}</td>
+                    <td class="acciones-botones">${botones}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    } catch (error) {
+        console.error("Error cargando solicitudes:", error);
+		tbody.innerHTML = `<tr><td colspan="10" class="error">Error: ${error.message}</td></tr>`;
+    }
+}
+
+async function gestionarSolicitud(id, estado, boletaUser) {
+    let motivo = null;
+    if (estado === 3) { // Rechazar
+        motivo = prompt("Ingrese el motivo del rechazo:");
+        if (motivo === null) return; // Cancelado
+    }
+
+    if (!confirm(`¿Estás seguro de ${estado === 2 ? 'APROBAR' : 'RECHAZAR'} esta solicitud?`)) return;
+
+    try {
+        const res = await requestJson(`/auth/admin/solicitudes/libros/${id}/gestionar`, {
+            method: 'POST',
+            body: JSON.stringify({ estado, boletaUser, motivo })
+        });
+        
+        mostrarToast(res.message, 'success');
+        cargarSolicitudesLibros();
+    } catch (error) {
+         mostrarToast("Error: " + error.message, 'error');
+    }
+}
+
+async function entregarLibro(idSolicitud, boleta, idEjemplar) {
+    if (!confirm("¿Confirmar que el alumno ha recogido el libro y se inicia el préstamo?")) return;
+
+    try {
+        const res = await requestJson(`/auth/admin/solicitudes/libros/${idSolicitud}/entregar`, {
+             method: 'POST',
+             body: JSON.stringify({ boleta, idEjemplar })
+        });
+        mostrarToast(res.message, 'success');
+        cargarSolicitudesLibros(); 
+    } catch (error) {
+        mostrarToast("Error: " + error.message, 'error');
+    }
+}
+
+// ==================== PRÉSTAMOS LIBROS ====================
+
+async function cargarPrestamosLibros() {
+    const tbody = document.getElementById('tabla-prestamos-libros');
+    if (!tbody) return;
+    
+	tbody.innerHTML = '<tr><td colspan="12" class="loading">Cargando préstamos...</td></tr>';
+
+    try {
+        const respuesta = await requestJson('/auth/admin/prestamos/libros');
+        if (respuesta.success) {
+            tbody.innerHTML = '';
+            
+            if (respuesta.data.length === 0) {
+				 tbody.innerHTML = '<tr><td colspan="12">No hay préstamos registrados.</td></tr>';
+                 return;
+            }
+
+            respuesta.data.forEach(prestamo => {
+                const tr = document.createElement('tr');
+                const usuario = prestamo.solicitudes_libros?.usuarios_web_movil;
+				const alumno = usuario?.boletas;
+                const libro = prestamo.solicitudes_libros?.ejemplares?.libros;
+                const ejemplar = prestamo.solicitudes_libros?.ejemplares;
+				const estadoId = Number(prestamo.estado_prestamo_id);
+				const estado = estadoId === 1
+					? 'En espera'
+					: estadoId === 2
+						? 'Recogido'
+						: estadoId === 3
+							? 'Devuelto'
+							: 'Perdido';
+				const devuelto = estadoId === 3 ? 'Sí' : 'No';
+				let acciones = '';
+				if (estadoId === 2) {
+					acciones = `
+						<button class="btn-guardar" style="background: #2f855a; color: white; border-color: #2f855a;" onclick="devolverPrestamo(${prestamo.id})">
+							<i class="fas fa-undo"></i> Marcar Devuelto
+						</button>
+					`;
+				}
+
+                tr.innerHTML = `
+                    <td>${prestamo.id}</td>
+                    <td>${usuario?.boleta || 'N/A'}</td>
+					<td>${alumno?.nombre || 'N/A'}</td>
+					<td>${alumno?.Grupo || 'N/A'}</td>
+					<td>${usuario?.correo || 'N/A'}</td>
+                    <td>${libro?.titulo || 'N/A'}</td>
+                    <td>${ejemplar?.numero_ejemplar || 'N/A'}</td>
+                    <td>${new Date(prestamo.fecha_inicio_prestamo).toLocaleDateString()}</td>
+                    <td>${new Date(prestamo.fecha_limite_devolucion).toLocaleDateString()}</td>
+					<td>${estado}</td>
+					<td>${devuelto}</td>
+					<td class="acciones-botones">${acciones}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    } catch (error) {
+		tbody.innerHTML = `<tr><td colspan="12" class="error">Error: ${error.message}</td></tr>`;
+    }
+}
+
+async function devolverPrestamo(idPrestamo) {
+	if (!confirm("¿Confirmar devolución del libro?")) return;
+
+	try {
+		const res = await requestJson(`/auth/admin/prestamos/libros/${idPrestamo}/devolver`, {
+			method: 'POST'
+		});
+		mostrarToast(res.message, 'success');
+		cargarPrestamosLibros();
+		cargarSolicitudesLibros();
+	} catch (error) {
+		mostrarToast("Error: " + error.message, 'error');
+	}
+}
+
+function inicializarSolicitudesLibros() {
+    cargarSolicitudesLibros();
+}
+
+function inicializarPrestamosLibros() {
+    cargarPrestamosLibros();
+}
+
 window.inicializarLibros = inicializarLibros;
 window.inicializarComputadoras = inicializarComputadoras;
 window.inicializarRestiradores = inicializarRestiradores;
 window.inicializarUsuarios = inicializarUsuarios;
+window.inicializarSolicitudesLibros = inicializarSolicitudesLibros;
+window.inicializarPrestamosLibros = inicializarPrestamosLibros;
+window.cargarSolicitudesLibros = cargarSolicitudesLibros;
+window.gestionarSolicitud = gestionarSolicitud;
+window.entregarLibro = entregarLibro;
+window.cargarPrestamosLibros = cargarPrestamosLibros;
+window.devolverPrestamo = devolverPrestamo;

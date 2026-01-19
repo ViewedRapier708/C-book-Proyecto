@@ -128,8 +128,7 @@ const formatearFechaCompleta = (timestamp) => {
 const mapearValoresFila = (tipoRecurso, datos) => {
     if (Array.isArray(datos)) return datos;
     const recurso = datos || {};
-    console.log('Mapeando fila para tipo:', tipoRecurso, 'con datos:', recurso);
-    
+
     // Configuración específica por cada tipo de recurso
     if (tipoRecurso === 'libro') {
         const infoLibro = recurso.libros || {};
@@ -183,23 +182,11 @@ const mapearValoresFila = (tipoRecurso, datos) => {
 
     if (tipoRecurso === 'solicitudes-libros') {
         // Mapear datos de solicitudes_libros
-        console.log('Mapeando solicitud de libro:', recurso);
         const tituloLibro = recurso.ejemplares?.libros?.titulo || '-';
         const numeroEjemplar = recurso.ejemplares?.numero_ejemplar || '-';
         const estadoId = recurso.estado_asistencia_id;
         const estadoNombre = parsearEstadoSolicitud(estadoId);
-        
-        console.log('Datos mapeados:', {
-            id: recurso.id,
-            titulo: tituloLibro,
-            ejemplar: numeroEjemplar,
-            estado_id: estadoId,
-            estado: estadoNombre,
-            fecha_solicitud: recurso.fecha_solicitud,
-            fecha_limite_respuesta: recurso.fecha_limite_respuesta,
-            fecha_limite_recoleccion: recurso.fecha_limite_recoleccion
-        });
-        
+
         return [
             recurso.id ?? '-',
             tituloLibro,
@@ -300,9 +287,7 @@ async function inicializarTiempoRealSupabase(tipoInterfaz, callbackCambio) {
             const nuevoCanal = clienteSupabase
                 .channel(nombreCanal)
                 .on('postgres_changes', params, procesarNotificacion)
-                .subscribe((estado) => {
-                    console.log(`📡 [TiempoReal] Estado en ${nombreTabla}: ${estado}`);
-                });
+                .subscribe();
 
             canalesTiempoReal.push(nuevoCanal);
         }
@@ -326,24 +311,18 @@ async function cargarDatosEnTabla() {
     const cuerpoTabla = document.getElementById('Tbody');
     const tipoRecurso = document.getElementById('tabla')?.getAttribute('data-tipo');
     
-    console.log('=== CARGAR DATOS EN TABLA ===');
-    console.log('Tipo de recurso:', tipoRecurso);
-    console.log('Cuerpo tabla existe:', !!cuerpoTabla);
-    
+
     if (!cuerpoTabla || !tipoRecurso) {
         console.error('❌ Error: No se encontró el contenedor de la tabla o el tipo de recurso.');
         return;
     }
 
     const renderizarLista = (listaDatos) => {
-        console.log('Renderizando lista con', listaDatos?.length || 0, 'elementos');
         cuerpoTabla.innerHTML = ''; 
         
         listaDatos.forEach((datos) => {
-            console.log('Procesando fila:', datos);
             const fila = document.createElement('tr');
             const valores = mapearValoresFila(tipoRecurso, datos);
-            console.log('Valores mapeados para fila:', valores);
 
             valores.forEach((valor) => {
                 const celda = document.createElement('td');
@@ -433,39 +412,28 @@ async function cargarDatosEnTabla() {
                 datosFinales = [];
             } else {
                 const dataObtenida = await respuesta.json();
-                console.log('Datos de solicitudes obtenidos de la API:', dataObtenida);
                 // Filtrar para excluir solicitudes de libros (tipo === 'libro')
                 const todasSolicitudes = (dataObtenida?.success && Array.isArray(dataObtenida?.data)) ? dataObtenida.data : [];
                 datosFinales = todasSolicitudes.filter(solicitud => solicitud.tipo !== 'libro');
-                console.log('Solicitudes filtradas (sin libros):', datosFinales);
             }
         } else if (tipoRecurso === 'solicitudes-libros') {
-            console.log('=== INICIANDO CARGA DE SOLICITUDES DE LIBROS ===');
-            
+
             // Usar el cliente de Supabase existente que ya está configurado
             if (!clienteSupabase) {
-                console.log('Creando cliente Supabase...');
                 clienteSupabase = supabase.createClient(URL_SUPABASE, CLAVE_ANONIMA_SUPABASE);
             }
-            console.log('Cliente Supabase disponible');
-            
             // Obtener boleta del usuario desde sesión
-            console.log('Obteniendo sesión del usuario...');
             const sesionResp = await fetch(`${urlBaseApi}/auth/session`, {
                 method: 'GET',
                 credentials: 'include'
             });
-            console.log('Respuesta de sesión status:', sesionResp.status);
             const sesionData = await sesionResp.json();
-            console.log('Datos de sesión:', sesionData);
             const boleta = sesionData?.user?.boleta;
-            console.log('Boleta del usuario:', boleta);
             
             if (!boleta) {
                 console.error('❌ NO SE ENCONTRÓ BOLETA DEL USUARIO');
                 datosFinales = [];
             } else {
-                console.log('Consultando solicitudes_libros para boleta:', boleta);
                 const { data, error } = await clienteSupabase
                     .from('solicitudes_libros')
                     .select(`
@@ -488,16 +456,9 @@ async function cargarDatosEnTabla() {
                     console.error('Error completo:', JSON.stringify(error, null, 2));
                     datosFinales = [];
                 } else {
-                    console.log('✅ SOLICITUDES DE LIBROS OBTENIDAS:', data);
-                    console.log('Cantidad de solicitudes:', data?.length || 0);
-                    if (data && data.length > 0) {
-                        console.log('Primera solicitud (ejemplo):', JSON.stringify(data[0], null, 2));
-                    }
                     datosFinales = data || [];
                 }
             }
-            console.log('=== FIN CARGA DE SOLICITUDES DE LIBROS ===');
-            console.log('datosFinales:', datosFinales);
         } else {
             const respuesta = await fetch(`${urlBaseApi}/auth/recursos?tipo=${tipoRecurso}`, {
                 method: 'GET',
@@ -508,7 +469,7 @@ async function cargarDatosEnTabla() {
             datosFinales = Array.isArray(dataObtenida?.data) ? dataObtenida.data : (Array.isArray(dataObtenida) ? dataObtenida : []);
         }
 
-        renderizarLista(datosFinales);        console.log('✅ Tabla renderizada con', datosFinales.length, 'elementos');
+        renderizarLista(datosFinales);
         // Re-enganchar handlers (p.ej. botón cancelar) después de re-render
         if (typeof inicializarEventosTabla === 'function') {
             inicializarEventosTabla();

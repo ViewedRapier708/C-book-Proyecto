@@ -41,4 +41,11 @@ router.get('/admin/materiales/:tipo', sessionGuard, controladorAdministrador.obt
 router.get('/admin/usuarios', sessionGuard, controladorAdministrador.obtenerUsuarios);
 router.put('/admin/usuarios/:id/habilitar', sessionGuard, controladorAdministrador.habilitarDocumentacion);
 
+// Solicitudes y Préstamos
+router.get('/admin/solicitudes/libros', sessionGuard, controladorAdministrador.obtenerSolicitudesLibros);
+router.post('/admin/solicitudes/libros/:id/gestionar', sessionGuard, controladorAdministrador.gestionarSolicitud);
+router.post('/admin/solicitudes/libros/:id/entregar', sessionGuard, controladorAdministrador.registrarEntrega);
+router.get('/admin/prestamos/libros', sessionGuard, controladorAdministrador.obtenerPrestamosLibros);
+router.post('/admin/prestamos/libros/:id/devolver', sessionGuard, controladorAdministrador.marcarPrestamoDevuelto);
+
 module.exports = router;

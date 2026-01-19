@@ -1,4 +1,6 @@
 const { CrearSolicitud, CancelarSolicitud, getSolicitudes } = require("../models/ModeloSolicitudes");
+const { enviarCorreo } = require("../utils/servicioCorreo");
+const { getClient } = require("../config/db");
 
 const tipos = ['computadora', 'restirador', 'libro'];
 
@@ -11,7 +13,6 @@ const tipos = ['computadora', 'restirador', 'libro'];
  */
 async function crearSolicitud(req,res) {
     const { tipo ,boleta,idRecurso } = req.body;
-    console.log("Datos recibidos para crear solicitud:", { tipo, boleta, idRecurso }); //debug
     const regularExpression = /^[0-9 ]{10}$/;
     const regularExpressiontipo = /^[a-zA-Z]+$/;
 
@@ -30,8 +31,28 @@ async function crearSolicitud(req,res) {
         return res.status(400).json({ success: false, message: 'Tipo de solicitud inválido' });
     }
     await CrearSolicitud(tipo, boleta, idRecurso)
-        .then((resultado) => {
+        .then(async (resultado) => {
             if (resultado.success) {
+                // Enviar correo de confirmación
+                try {
+                    const supabase = getClient();
+                    const { data: usuario } = await supabase
+                        .from('usuarios_web_movil')
+                        .select('correo')
+                        .eq('boleta', boleta)
+                        .single();
+
+                    if (usuario && usuario.correo) {
+                        await enviarCorreo(
+                            usuario.correo,
+                            'Solicitud Recibida - C-Book',
+                            `<p>Tu solicitud de <b>${tipo}</b> ha sido creada correctamente. Estado: <b>Pendiente</b>.</p>`
+                        );
+                    }
+                } catch (emailError) {
+                    console.error('Error al enviar correo de solicitud:', emailError);
+                }
+
                 return res.status(201).json({ success: true, message: 'Solicitud creada exitosamente' });
             } else {
                 return res.status(500).json({ success: false, message: resultado.message || 'Error al crear la solicitud' });
@@ -86,14 +107,8 @@ async function obtencionSolicitudesUsuario(req,res) {
         return res.status(401).json({ success: false, message: 'Sesión no iniciada' });
     }
 
-    console.log("Obteniendo solicitudes para boleta:", boleta); //debug
     try {
         const resultado = await getSolicitudes(boleta);
-        console.log('[Solicitudes] Resultado getSolicitudes:', {
-            success: resultado?.success,
-            total: Array.isArray(resultado?.data) ? resultado.data.length : 0,
-            preview: Array.isArray(resultado?.data) ? resultado.data.slice(0, 5) : null
-        });
         if (!resultado.success) {
             return res.status(500).json({ success: false, error: resultado.error || 'Error al obtener solicitudes' });
         }

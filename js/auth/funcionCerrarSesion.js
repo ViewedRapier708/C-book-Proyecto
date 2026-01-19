@@ -19,8 +19,6 @@ async function cerrarSesion() {
         
         if (!res.ok) {
             console.warn('Logout no confirmado:', data.error || data.mensaje);
-        } else {
-            console.log('Logout:', data.mensaje);
         }
 
         window.location.href = '/index.html'; 
