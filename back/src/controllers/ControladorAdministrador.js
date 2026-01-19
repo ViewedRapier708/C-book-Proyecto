@@ -1,5 +1,6 @@
 const {
     CrearLibro,
+    CrearEjemplar,
     CrearComputadora,
     CrearRestirador,
     CrearGuardarropa,
@@ -10,6 +11,9 @@ const {
     actualizarDatosComputadora,
     actualizarDatosRestirador,
     actualizarDatosLibro,
+    actualizarDatosEjemplar,
+    ObtenerUsuarios,
+    HabilitarDocumentacionUsuario,
     ObtenerMateriales
 } = require('../models/ModeloAdministrador.js');
 
@@ -17,7 +21,19 @@ const {
 
 async function crearLibro(req, res) {
     try {
-        const { titulo, clasificacion, isbn, tipo_material, autor } = req.body;
+        const {
+            titulo,
+            clasificacion,
+            isbn,
+            tipo_material,
+            autor,
+            codigo_barras,
+            numero_ejemplar,
+            anio,
+            estatus_item,
+            Disponible,
+            coleccion
+        } = req.body;
         
         if (!titulo || !clasificacion || !isbn || !tipo_material || !autor) {
             return res.status(400).json({ 
@@ -26,13 +42,50 @@ async function crearLibro(req, res) {
             });
         }
 
-        const resultado = await CrearLibro(titulo, clasificacion, isbn, tipo_material, autor);
-        
-        if (resultado.success) {
-            return res.status(201).json(resultado);
-        } else {
-            return res.status(400).json(resultado);
+        if (!numero_ejemplar || !anio || !estatus_item || !coleccion) {
+            return res.status(400).json({
+                success: false,
+                message: 'Todos los campos del ejemplar son requeridos'
+            });
         }
+
+        const resultadoLibro = await CrearLibro(titulo, clasificacion, isbn, tipo_material, autor);
+
+        if (!resultadoLibro.success) {
+            return res.status(400).json(resultadoLibro);
+        }
+
+        const libroCreado = Array.isArray(resultadoLibro.data) ? resultadoLibro.data[0] : null;
+        const libroId = libroCreado?.id;
+
+        if (!libroId) {
+            return res.status(500).json({
+                success: false,
+                message: 'No se pudo obtener el id del libro creado'
+            });
+        }
+
+        const resultadoEjemplar = await CrearEjemplar(
+            libroId,
+            codigo_barras,
+            numero_ejemplar,
+            anio,
+            estatus_item,
+            Disponible,
+            coleccion
+        );
+
+        if (!resultadoEjemplar.success) {
+            return res.status(400).json(resultadoEjemplar);
+        }
+
+        return res.status(201).json({
+            success: true,
+            data: {
+                libro: resultadoLibro.data,
+                ejemplar: resultadoEjemplar.data
+            }
+        });
     } catch (error) {
         console.error('Error en crearLibro:', error);
         return res.status(500).json({ 
@@ -137,12 +190,16 @@ async function crearGuardarropa(req, res) {
 async function eliminarMaterial(req, res) {
     try {
         const { tipo } = req.params;
-        const { id } = req.body;
+        const { id: idParam } = req.params;
+
+        const id = Number(idParam);
+
+        console.log('[eliminarMaterial] tipo:', tipo, 'id:', idParam);
         
-        if (!id) {
+        if (!idParam || Number.isNaN(id)) {
             return res.status(400).json({ 
                 success: false, 
-                message: 'El id es requerido' 
+                message: 'El id es requerido y debe ser numérico' 
             });
         }
 
@@ -167,6 +224,8 @@ async function eliminarMaterial(req, res) {
                     message: 'Tipo de material no válido' 
                 });
         }
+
+        console.log('[eliminarMaterial] resultado:', resultado);
         
         if (resultado.success) {
             return res.status(200).json(resultado);
@@ -186,7 +245,21 @@ async function eliminarMaterial(req, res) {
 
 async function actualizarLibro(req, res) {
     try {
-        const { id, titulo, clasificacion, isbn, tipo_material, autor } = req.body;
+        const {
+            id,
+            titulo,
+            clasificacion,
+            isbn,
+            tipo_material,
+            autor,
+            ejemplar_id,
+            codigo_barras,
+            numero_ejemplar,
+            anio,
+            estatus_item,
+            Disponible,
+            coleccion
+        } = req.body;
         
         if (!id) {
             return res.status(400).json({ 
@@ -195,13 +268,37 @@ async function actualizarLibro(req, res) {
             });
         }
 
-        const resultado = await actualizarDatosLibro(id, titulo, clasificacion, isbn, tipo_material, autor);
-        
-        if (resultado.success) {
-            return res.status(200).json(resultado);
-        } else {
-            return res.status(400).json(resultado);
+        const resultadoLibro = await actualizarDatosLibro(id, titulo, clasificacion, isbn, tipo_material, autor);
+
+        if (!resultadoLibro.success) {
+            return res.status(400).json(resultadoLibro);
         }
+
+        if (ejemplar_id) {
+            const resultadoEjemplar = await actualizarDatosEjemplar(
+                ejemplar_id,
+                codigo_barras,
+                numero_ejemplar,
+                anio,
+                estatus_item,
+                Disponible,
+                coleccion
+            );
+
+            if (!resultadoEjemplar.success) {
+                return res.status(400).json(resultadoEjemplar);
+            }
+
+            return res.status(200).json({
+                success: true,
+                data: {
+                    libro: resultadoLibro.data,
+                    ejemplar: resultadoEjemplar.data
+                }
+            });
+        }
+
+        return res.status(200).json(resultadoLibro);
     } catch (error) {
         console.error('Error en actualizarLibro:', error);
         return res.status(500).json({ 
@@ -286,8 +383,10 @@ async function actualizarRestirador(req, res) {
 async function obtenerMateriales(req, res) {
     try {
         const { tipo } = req.params;
+        const page = Number.parseInt(req.query.page, 10) || 1;
+        const limit = Number.parseInt(req.query.limit, 10) || 25;
         
-        const resultado = await ObtenerMateriales(tipo);
+        const resultado = await ObtenerMateriales(tipo, { page, limit });
         
         if (resultado.success) {
             return res.status(200).json(resultado);
@@ -303,6 +402,57 @@ async function obtenerMateriales(req, res) {
     }
 }
 
+// ==================== USUARIOS ====================
+
+async function obtenerUsuarios(req, res) {
+    try {
+        const page = Number.parseInt(req.query.page, 10) || 1;
+        const limit = Number.parseInt(req.query.limit, 10) || 25;
+
+        const resultado = await ObtenerUsuarios({ page, limit });
+
+        if (resultado.success) {
+            return res.status(200).json(resultado);
+        }
+
+        return res.status(400).json(resultado);
+    } catch (error) {
+        console.error('Error en obtenerUsuarios:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+}
+
+async function habilitarDocumentacion(req, res) {
+    try {
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                message: 'El id es requerido'
+            });
+        }
+
+        const resultado = await HabilitarDocumentacionUsuario(id);
+
+        if (resultado.success) {
+            return res.status(200).json(resultado);
+        }
+
+        return res.status(400).json(resultado);
+    } catch (error) {
+        console.error('Error en habilitarDocumentacion:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+}
+
+
 module.exports = {
     crearLibro,
     crearComputadora,
@@ -312,5 +462,7 @@ module.exports = {
     actualizarLibro,
     actualizarComputadora,
     actualizarRestirador,
-    obtenerMateriales
+    obtenerMateriales,
+    obtenerUsuarios,
+    habilitarDocumentacion
 };

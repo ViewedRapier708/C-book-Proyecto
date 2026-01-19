@@ -11,7 +11,7 @@
 }
 
 .container-restiradores .container-tabla {
-    margin-bottom: 2rem;
+    margin-bottom: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -25,29 +25,28 @@
 .container-restiradores .container-tabla,
 .container-restiradores .table-responsive {
     overflow-x: hidden !important;
-    overflow-y: hidden !important;
+    overflow-y: auto !important;
+}
+
+.container-restiradores .table-responsive {
+    max-height: none;
+    height: 100%;
 }
 
 .container-restiradores table {
     width: 100%;
-    table-layout: fixed;
     border-collapse: collapse;
 }
 
 .container-restiradores table th,
 .container-restiradores table td {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    padding: 0.8rem 0.6rem;
-    text-align: center;
+    padding: 0.5rem 0.65rem;
+    font-size: 0.85rem;
+    line-height: 1.35;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
-
-/* 4 columnas: No., Tamaño, Estado, Acciones */
-.container-restiradores table th:nth-child(1) { width: 20%; }
-.container-restiradores table th:nth-child(2) { width: 30%; }
-.container-restiradores table th:nth-child(3) { width: 25%; }
-.container-restiradores table th:nth-child(4) { width: 25%; }
 
 .container-restiradores .btn-editar {
     padding: 0.4rem 0.8rem;
@@ -223,9 +222,8 @@ select:focus {
 
 .layout-dos-columnas {
     display: grid;
-    grid-template-columns: 1fr 300px;
+    grid-template-columns: 1fr;
     gap: 2rem;
-    /* align-items: start; Eliminado para simetría de altura */
 }
 
 .columna-principal {

@@ -2,6 +2,16 @@ const {getClient} = require("../config/db");
 
 const supabase = getClient();
 
+const DEFAULT_LIMIT = 25;
+
+function resolvePagination({ page = 1, limit = DEFAULT_LIMIT } = {}) {
+    const safePage = Number.isFinite(page) && page > 0 ? page : 1;
+    const safeLimit = Number.isFinite(limit) && limit > 0 ? limit : DEFAULT_LIMIT;
+    const from = (safePage - 1) * safeLimit;
+    const to = from + safeLimit - 1;
+    return { page: safePage, limit: safeLimit, from, to };
+}
+
 // ==================== MODELO ADMINISTRADOR ====================
 
     async function CrearLibro(titulo, clasificacion, isbn, tipo_material, autor) {
@@ -20,6 +30,35 @@ const supabase = getClient();
         return { success: false, message: 'Error interno del servidor' };
     }
 
+}
+
+async function CrearEjemplar(libro_id, codigo_barras, numero_ejemplar, anio, estatus_item, Disponible = true, coleccion) {
+    try {
+        const { data, error } = await supabase
+            .from('ejemplares')
+            .insert([
+                {
+                    libro_id,
+                    codigo_barras,
+                    numero_ejemplar,
+                    anio,
+                    estatus_item,
+                    Disponible,
+                    coleccion
+                }
+            ])
+            .select();
+
+        if (error) {
+            console.error('Error creando ejemplar:', error);
+            return { success: false, message: error.message };
+        }
+
+        return { success: true, data: data };
+    } catch (error) {
+        console.error('Error interno creando ejemplar:', error);
+        return { success: false, message: 'Error interno del servidor' };
+    }
 }
 
   async function CrearComputadora(procesador, programas, carrera, Disponible = true, En_funcionamiento = true, Observacion = 'N/A', no_inventario, no_computadora) {
@@ -199,88 +238,234 @@ async function eliminarGuardarropa(id) {
         return { success: false, message: 'Error interno del servidor' };
     }
 }
+
+async function actualizarDatosEjemplar(id, codigo_barras, numero_ejemplar, anio, estatus_item, Disponible, coleccion) {
+    try {
+        const { data, error } = await supabase
+            .from('ejemplares')
+            .update({ codigo_barras, numero_ejemplar, anio, estatus_item, Disponible, coleccion })
+            .eq('id', id)
+            .select();
+
+        if (error) {
+            console.error('Error actualizando ejemplar:', error);
+            return { success: false, message: error.message };
+        }
+
+        return { success: true, data: data };
+    } catch (error) {
+        console.error('Error interno actualizando ejemplar:', error);
+        return { success: false, message: 'Error interno del servidor' };
+    }
+}
 //Obtencion de los materiales
-async function ObtenerMateriales(tipo) {
+async function ObtenerMateriales(tipo, pagination = {}) {
     switch (tipo) {
         case 'libros':
-            return await obtenerLibros();
+            return await obtenerLibros(pagination);
         case 'computadoras':
-            return await obtenerComputadoras();
+            return await obtenerComputadoras(pagination);
         case 'restiradores':
-            return await obtenerRestiradores();
+            return await obtenerRestiradores(pagination);
         case 'guardarropas':
-            return await obtenerGuardarropas();
+            return await obtenerGuardarropas(pagination);
         default:
             return { success: false, message: 'Tipo de material no válido' };
     }
 }
 
-async function obtenerComputadoras() {
+async function obtenerComputadoras(pagination) {
     try {
+        const { page, limit, from, to } = resolvePagination(pagination);
+
+        const { count, error: countError } = await supabase
+            .from('computadoras')
+            .select('*', { count: 'exact', head: true });
+
+        if (countError) {
+            console.error('Error obteniendo total computadoras:', countError);
+            return { success: false, message: countError.message };
+        }
+
         const { data, error } = await supabase
             .from('computadoras')
             .select('*')
+            .range(from, to);
+
         if (error) {
-            console.error("Error obteniendo computadora:", error);
+            console.error('Error obteniendo computadora:', error);
             return { success: false, message: error.message };
         }
-        return { success: true, data: data };
+
+        return { success: true, data: data, total: count, page, limit };
     } catch (error) {
-        console.error("Error interno obteniendo computadora:", error);
-        return { success: false, message: 'Error interno del servidor' };
-    }
-}
-  async function obtenerLibros() {
-    try {
-        const { data, error } = await supabase
-            .from('libros')
-            .select('*')
-        if (error) {
-            console.error("Error obteniendo libro:", error);
-            return { success: false, message: error.message };
-        }
-        return { success: true, data: data };
-    } catch (error) {
-        console.error("Error interno obteniendo libro:", error);
+        console.error('Error interno obteniendo computadora:', error);
         return { success: false, message: 'Error interno del servidor' };
     }
 }
 
-  async function obtenerRestiradores() {
+async function obtenerLibros(pagination) {
     try {
+        const { page, limit, from, to } = resolvePagination(pagination);
+
+        const { count, error: countError } = await supabase
+            .from('ejemplares')
+            .select('*', { count: 'exact', head: true });
+
+        if (countError) {
+            console.error('Error obteniendo total libros:', countError);
+            return { success: false, message: countError.message };
+        }
+
         const { data, error } = await supabase
-            .from('restiradores')
-            .select('*')
+            .from('ejemplares')
+            .select(
+                `
+                id,
+                libro_id,
+                codigo_barras,
+                numero_ejemplar,
+                anio,
+                estatus_item,
+                "Disponible",
+                coleccion,
+                libros (
+                    id,
+                    titulo,
+                    autor,
+                    clasificacion,
+                    isbn,
+                    tipo_material
+                )
+                `
+            )
+            .range(from, to);
+
         if (error) {
-            console.error("Error obteniendo restirador:", error);
+            console.error('Error obteniendo libros:', error);
             return { success: false, message: error.message };
         }
-        return { success: true, data: data };
+
+        return { success: true, data: data, total: count, page, limit };
     } catch (error) {
-        console.error("Error interno obteniendo restirador:", error);
+        console.error('Error interno obteniendo libro:', error);
         return { success: false, message: 'Error interno del servidor' };
     }
 }
-  async function obtenerGuardarropas() {
+
+async function obtenerRestiradores(pagination) {
     try {
+        const { page, limit, from, to } = resolvePagination(pagination);
+
+        const { count, error: countError } = await supabase
+            .from('restiradores')
+            .select('*', { count: 'exact', head: true });
+
+        if (countError) {
+            console.error('Error obteniendo total restiradores:', countError);
+            return { success: false, message: countError.message };
+        }
+
+        const { data, error } = await supabase
+            .from('restiradores')
+            .select('*')
+            .range(from, to);
+
+        if (error) {
+            console.error('Error obteniendo restirador:', error);
+            return { success: false, message: error.message };
+        }
+
+        return { success: true, data: data, total: count, page, limit };
+    } catch (error) {
+        console.error('Error interno obteniendo restirador:', error);
+        return { success: false, message: 'Error interno del servidor' };
+    }
+}
+  async function obtenerGuardarropas(pagination) {
+    try {
+        const { page, limit, from, to } = resolvePagination(pagination);
+
+        const { count, error: countError } = await supabase
+            .from('guardarropas')
+            .select('*', { count: 'exact', head: true });
+
+        if (countError) {
+            console.error('Error obteniendo total guardarropas:', countError);
+            return { success: false, message: countError.message };
+        }
+
         const { data, error } = await supabase
             .from('guardarropas')
             .select('*')
+            .range(from, to)
         if (error) {
             console.error("Error obteniendo guardarropa:", error);
             return { success: false, message: error.message };
         }
-        return { success: true, data: data };
+        return { success: true, data: data, total: count, page, limit };
     } catch (error) {
         console.error("Error interno obteniendo guardarropa:", error);
         return { success: false, message: 'Error interno del servidor' };
     }
 }
+
+async function ObtenerUsuarios(pagination) {
+    try {
+        const { page, limit, from, to } = resolvePagination(pagination);
+
+        const { count, error: countError } = await supabase
+            .from('usuarios_web_movil')
+            .select('*', { count: 'exact', head: true });
+
+        if (countError) {
+            console.error('Error obteniendo total usuarios:', countError);
+            return { success: false, message: countError.message };
+        }
+
+        const { data, error } = await supabase
+            .from('usuarios_web_movil')
+            .select('*')
+            .range(from, to);
+
+        if (error) {
+            console.error('Error obteniendo usuarios:', error);
+            return { success: false, message: error.message };
+        }
+
+        return { success: true, data: data, total: count, page, limit };
+    } catch (error) {
+        console.error('Error interno obteniendo usuarios:', error);
+        return { success: false, message: 'Error interno del servidor' };
+    }
+}
+
+async function HabilitarDocumentacionUsuario(id) {
+    try {
+        const { data, error } = await supabase
+            .from('usuarios_web_movil')
+            .update({ tiene_documentos: true })
+            .eq('id', id)
+            .select();
+
+        if (error) {
+            console.error('Error habilitando documentación:', error);
+            return { success: false, message: error.message };
+        }
+
+        return { success: true, data: data };
+    } catch (error) {
+        console.error('Error interno habilitando documentación:', error);
+        return { success: false, message: 'Error interno del servidor' };
+    }
+}
+
 //Aceptacion de las solicitudes del usuario
 
 //Aceptacion de documentacion del usuario
 module.exports = {
     CrearLibro,
+    CrearEjemplar,
     CrearComputadora,
     CrearRestirador,
     CrearGuardarropa,
@@ -291,7 +476,10 @@ module.exports = {
     actualizarDatosComputadora,
     actualizarDatosRestirador,
     actualizarDatosLibro,
+    actualizarDatosEjemplar,
     ObtenerMateriales,
+    ObtenerUsuarios,
+    HabilitarDocumentacionUsuario,
     obtenerComputadoras,
     obtenerLibros,
     obtenerRestiradores,

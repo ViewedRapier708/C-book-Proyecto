@@ -1,0 +1,38 @@
+<div class="container-usuarios">
+    <div class="mensaje-alerta" id="mensaje-usuarios" hidden></div>
+
+    <div class="layout-dos-columnas">
+        <div class="columna-principal">
+            <div class="tabla-encabezado">
+                <div class="tabla-info">
+                    <span class="tabla-total" data-total="usuarios">Total: 0</span>
+                </div>
+                <div class="tabla-acciones">
+                    <button class="btn-recargar" data-recargar="usuarios">Recargar</button>
+                </div>
+            </div>
+            <div class="container-tabla">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Boleta</th>
+                                <th>Correo</th>
+                                <th>Rol</th>
+                                <th>Documentación</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-usuarios"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="paginacion" data-paginacion="usuarios">
+                <button class="btn-paginacion" data-prev>Anterior</button>
+                <span class="pagina-actual">Página 1</span>
+                <button class="btn-paginacion" data-next>Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>

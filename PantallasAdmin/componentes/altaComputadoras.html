@@ -1,65 +1,45 @@
 <div class="container-computadoras">
-    <h2>Registro de Nueva Computadora</h2>
-  
+    <div class="mensaje-alerta" id="mensaje-computadoras" hidden></div>
+
     <div class="layout-dos-columnas">
-        <!-- Columna Izquierda: Tabla -->
         <div class="columna-principal">
+            <div class="tabla-encabezado">
+                <div class="tabla-info">
+                    <span class="tabla-total" data-total="computadoras">Total: 0</span>
+                </div>
+                <div class="tabla-acciones">
+                    <button class="btn-recargar" data-recargar="computadoras">Recargar</button>
+                </div>
+            </div>
             <div class="container-tabla">
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th>No.</th>
+                                <th>No. Computadora</th>
                                 <th>Procesador</th>
-                                <th>RAM</th>
+                                <th>Programas</th>
                                 <th>Carrera</th>
-                                <th>Estado</th>
+                                <th>Disponible</th>
+                                <th>En funcionamiento</th>
+                                <th>Observación</th>
+                                <th>No. Inventario</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>001</td>
-                                <td>Intel Core i5</td>
-                                <td>8GB</td>
-                                <td>Sistemas</td>
-                                <td>Disponible</td>
-                                <td><button class="btn-editar">Editar</button></td>
-                            </tr>
-                        </tbody>
+                        <tbody id="tabla-computadoras"></tbody>
                     </table>
                 </div>
+            </div>
+
+            <div class="paginacion" data-paginacion="computadoras">
+                <button class="btn-paginacion" data-prev>Anterior</button>
+                <span class="pagina-actual">Página 1</span>
+                <button class="btn-paginacion" data-next>Siguiente</button>
             </div>
             
             <div class="container-btn-alta">
                 <button class="btn-alta" id="btn-agregar">Agregar Computadora</button>
-            </div>
-        </div>
-        
-        <!-- Columna Derecha: Estadísticas (siempre visible) -->
-        <div class="columna-estadisticas">
-            <div class="container-datos-sistema">
-                <h3>Información del Sistema</h3>
-                <div class="dato-item">
-                    <span class="dato-label">Total Computadoras:</span>
-                    <span class="dato-value">25</span>
-                </div>
-                <div class="dato-item">
-                    <span class="dato-label">Disponibles:</span>
-                    <span class="dato-value">18</span>
-                </div>
-                <div class="dato-item">
-                    <span class="dato-label">En Uso:</span>
-                    <span class="dato-value">5</span>
-                </div>
-                <div class="dato-item">
-                    <span class="dato-label">Mantenimiento:</span>
-                    <span class="dato-value">2</span>
-                </div>
-                <div class="dato-item">
-                    <span class="dato-label">Última Actualización:</span>
-                    <span class="dato-value">13/11/2025</span>
-                </div>
             </div>
         </div>
     </div>
@@ -72,6 +52,7 @@
         <h3 id="modal-titulo">Nueva Computadora</h3>
         
         <div class="container-formulario">
+            <input type="hidden" id="computadora_id">
             <div class="form-group">
                 <label for="procesador">Procesador:</label>
                 <input type="text" id="procesador" placeholder="Ingrese el procesador">
@@ -82,25 +63,33 @@
             </div>
             <div class="form-group">
                 <label for="carrera">Carrera Especializada:</label>
-                <select id="carrera">
-                    <option value="">Seleccione una carrera</option>
-                    <option value="Sistemas Digitales">Sistemas Digitales</option>
-                    <option value="Programación">Programación</option>
-                    <option value="Mecatronica">Mecatrónica</option>
-                    <option value="tronco-comun">Tronco Común</option>
+                <input type="text" id="carrera" placeholder="Ingrese la carrera">
+            </div>
+            <div class="form-group">
+                <label for="disponible">Disponible:</label>
+                <select id="disponible">
+                    <option value="true">Sí</option>
+                    <option value="false">No</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="ram">Memoria RAM:</label>
-                <input type="text" id="ram" placeholder="Ej: 8GB, 16GB">
+                <label for="en_funcionamiento">En funcionamiento:</label>
+                <select id="en_funcionamiento">
+                    <option value="true">Sí</option>
+                    <option value="false">No</option>
+                </select>
             </div>
             <div class="form-group">
-                <label for="estado">Estado:</label>
-                <select id="estado">
-                    <option value="disponible">Disponible</option>
-                    <option value="ocupada">Ocupada</option>
-                    <option value="mantenimiento">En Mantenimiento</option>
-                </select>
+                <label for="observacion">Observación:</label>
+                <input type="text" id="observacion" placeholder="Ingrese la observación">
+            </div>
+            <div class="form-group">
+                <label for="no_inventario">No. Inventario:</label>
+                <input type="text" id="no_inventario" placeholder="Ingrese el número de inventario">
+            </div>
+            <div class="form-group">
+                <label for="no_computadora">No. Computadora:</label>
+                <input type="number" id="no_computadora" placeholder="Ingrese el número de computadora">
             </div>
         </div>
         

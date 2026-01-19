@@ -27,7 +27,7 @@ router.post('/admin/restiradores', sessionGuard, controladorAdministrador.crearR
 router.post('/admin/guardarropas', sessionGuard, controladorAdministrador.crearGuardarropa);
 
 // Eliminar materiales
-router.delete('/admin/materiales/', sessionGuard, controladorAdministrador.eliminarMaterial);
+router.delete('/admin/materiales/:tipo/:id', sessionGuard, controladorAdministrador.eliminarMaterial);
 
 // Actualizar materiales
 router.put('/admin/libros', sessionGuard, controladorAdministrador.actualizarLibro);
@@ -35,6 +35,10 @@ router.put('/admin/computadoras', sessionGuard, controladorAdministrador.actuali
 router.put('/admin/restiradores', sessionGuard, controladorAdministrador.actualizarRestirador);
 
 // Obtener materiales
-router.get('/admin/materiales/', sessionGuard, controladorAdministrador.obtenerMateriales);
+router.get('/admin/materiales/:tipo', sessionGuard, controladorAdministrador.obtenerMateriales);
+
+// Usuarios (documentación)
+router.get('/admin/usuarios', sessionGuard, controladorAdministrador.obtenerUsuarios);
+router.put('/admin/usuarios/:id/habilitar', sessionGuard, controladorAdministrador.habilitarDocumentacion);
 
 module.exports = router;

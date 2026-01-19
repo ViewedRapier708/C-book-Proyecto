@@ -11,8 +11,7 @@
     <link rel="stylesheet" href="css/componentes/altaLibros.css">
     <link rel="stylesheet" href="css/componentes/altaComputadoras.css">
     <link rel="stylesheet" href="css/componentes/altaRestiradores.css">
-    <link rel="stylesheet" href="css/componentes/altaGuardaropas.css">
-    <link rel="stylesheet" href="css/componentes/solicitudesLibros.css">
+    <link rel="stylesheet" href="css/componentes/altaUsuarios.css">
     <link rel="shortcut icon" href="../img/logo_C_Book.jpg" type="image/x-icon">
     <script src="../js/config/apiConfig.js"></script>
     <script src="../js/auth/sessionGuard.js"></script>
@@ -35,10 +34,7 @@
                     <a href="#" class="link-secciones nav-link" data-component="altaComputadoras" data-title="ALTA DE COMPUTADORAS">Computadoras</a>
                     <a href="#" class="link-secciones nav-link" data-component="altaLibros" data-title="ALTA DE LIBROS">Libros</a>
                     <a href="#" class="link-secciones nav-link" data-component="altaRestiradores" data-title="ALTA DE RESTIRADORES">Restiradores</a>
-                    <a href="#" class="link-secciones nav-link" data-component="altaGuardaropas" data-title="ALTA DE GUARDAROPAS">Guardaropas</a>
-                    
-                    <h3>Solicitudes</h3>
-                    <a href="#" class="link-secciones nav-link" data-component="solicitudesLibros" data-title="SOLICITUDES DE LIBROS">Libros</a>
+                    <a href="#" class="link-secciones nav-link" data-component="usuarios" data-title="USUARIOS DEL SISTEMA">Usuarios</a>
                 </div>
                 <div class="btn-cerrar-sesion">
                     <a href="../index.html" class="link-secciones">Cerrar Sesión</a>
@@ -58,6 +54,22 @@
                 <div class="container-inicio-admin">
                     <h1>BIENVENIDO ADMINISTRADOR ¿QUÉ VAMOS A HACER HOY?</h1>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación genérico -->
+    <div class="modal-overlay" id="modalConfirmacion">
+        <div class="modal-contenido">
+            <span class="modal-cerrar" id="modal-confirmacion-cerrar">&times;</span>
+            <h3 id="modal-confirmacion-titulo">Confirmación</h3>
+            <div class="container-formulario">
+                <p id="modal-confirmacion-mensaje"></p>
+                <div class="detalle-confirmacion" id="modal-confirmacion-detalle"></div>
+            </div>
+            <div class="modal-botones">
+                <button class="btn-limpiar" id="modal-confirmacion-cancelar">Cancelar</button>
+                <button class="btn-guardar" id="modal-confirmacion-aceptar">Confirmar</button>
             </div>
         </div>
     </div>
