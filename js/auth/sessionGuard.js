@@ -68,7 +68,11 @@
         if (autenticado) {
             // Si el usuario ya inició sesión y está en login/registro, mandarlo a su panel
             if (esPaginaPublica) {
-               // console.log('SessionGuard - autenticado en página pública, redirigiendo a usuario.html');
+              if (usuario && usuario.rol === 'admin') {
+                    // console.log('SessionGuard - autenticado como admin, redirigiendo a pantallasAdmin/administrador.html');
+                    window.location.href = './pantallasAdmin/administrador.html';
+                    return;
+                }
                 window.location.href = './pantallasUs/usuario.html';
                 return;
             }

@@ -196,6 +196,7 @@ async function login(req, res) {
       email: loginResult.user.email,
       boleta,
       grupo,
+
       tokens: {
         accessToken: supabaseSession.access_token,
         refreshToken: supabaseSession.refresh_token,
