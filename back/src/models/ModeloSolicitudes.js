@@ -52,10 +52,25 @@ async function CrearSolicitudComputadora(boleta, idRecurso) {
 
 }
 async function CrearSolicitudRestiradores(boleta, idRecurso) {
+   const { data: resData, error: resError } = await supabase
+        .from('restiradores')
+        .select('id')
+        .eq('no_restirador', idRecurso)
+        .limit(1)
+        .maybeSingle();
+
+    if (resError) {
+        console.error("Error buscando restirador:", resError);
+        return { success: false, error: resError.message };
+    }
+
+    if (!resData?.id) {
+        return { success: false, error: 'Recurso no encontrado' };
+    }
     try {
         const { error } = await supabase
             .from('solicitudes_restirador')
-            .insert([{ usuario_boleta: boleta, restirador_id: idRecurso }]);
+            .insert([{ usuario_boleta: boleta, restirador_id: resData.id }]);
 
         if (error) {
             console.error("Error creando solicitud de restirador:", error);
@@ -277,12 +292,108 @@ async function getSolicitudes(boleta) {
       console.error("Error obteniendo solicitudes:", error);
       return { success: false, error: error.message };
     }
+    const solicitudes = Array.isArray(data) ? data : [];
+    const solicitudesEnriquecidas = await anexarNumeroMaterialSolicitudes(supabase, solicitudes);
 
-    return { success: true, data };
+    return { success: true, data: solicitudesEnriquecidas };
   } catch (err) {
     console.error("Error en getSolicitudes:", err);
     return { success: false, error: 'Error interno' };
   }
+}
+
+function normalizarTipoSolicitud(solicitud) {
+    const tipo = solicitud?.tipo ?? solicitud?.tipo_solicitud ?? '';
+    return String(tipo).trim().toLowerCase();
+}
+
+function obtenerIdRecursoSolicitud(solicitud) {
+    if (!solicitud || typeof solicitud !== 'object') return null;
+    const id = (
+        solicitud.recurso_id ??
+        solicitud.id_recurso ??
+        solicitud.computadora_id ??
+        solicitud.restirador_id ??
+        solicitud.ejemplar_id ??
+        solicitud.recurso?.id ??
+        solicitud.recurso ??
+        null
+    );
+    const idNumero = Number(id);
+    return Number.isFinite(idNumero) ? idNumero : null;
+}
+
+async function anexarNumeroMaterialSolicitudes(supabase, solicitudes) {
+    if (!Array.isArray(solicitudes) || solicitudes.length === 0) return solicitudes;
+
+    const idsComputadoras = new Set();
+    const idsRestiradores = new Set();
+    const idsLibros = new Set();
+
+    solicitudes.forEach((solicitud) => {
+        const tipo = normalizarTipoSolicitud(solicitud);
+        const idRecurso = obtenerIdRecursoSolicitud(solicitud);
+        if (!idRecurso) return;
+
+        if (tipo === 'computadora') idsComputadoras.add(idRecurso);
+        if (tipo === 'restirador') idsRestiradores.add(idRecurso);
+        if (tipo === 'libro') idsLibros.add(idRecurso);
+    });
+
+    const [computadorasRes, restiradoresRes, librosRes] = await Promise.all([
+        idsComputadoras.size
+            ? supabase.from('computadoras').select('id,no_computadora').in('id', Array.from(idsComputadoras))
+            : Promise.resolve({ data: [], error: null }),
+        idsRestiradores.size
+            ? supabase.from('restiradores').select('id,no_restirador').in('id', Array.from(idsRestiradores))
+            : Promise.resolve({ data: [], error: null }),
+        idsLibros.size
+            ? supabase.from('ejemplares').select('id,numero_ejemplar').in('id', Array.from(idsLibros))
+            : Promise.resolve({ data: [], error: null })
+    ]);
+
+    if (computadorasRes.error) {
+        console.error('Error obteniendo no_computadora:', computadorasRes.error);
+    }
+    if (restiradoresRes.error) {
+        console.error('Error obteniendo no_restirador:', restiradoresRes.error);
+    }
+    if (librosRes.error) {
+        console.error('Error obteniendo numero_ejemplar:', librosRes.error);
+    }
+
+    const mapaComputadoras = new Map((computadorasRes.data || []).map((item) => [String(item.id), item.no_computadora]));
+    const mapaRestiradores = new Map((restiradoresRes.data || []).map((item) => [String(item.id), item.no_restirador]));
+    const mapaLibros = new Map((librosRes.data || []).map((item) => [String(item.id), item.numero_ejemplar]));
+
+    return solicitudes.map((solicitud) => {
+        const numeroMaterialExistente = (
+            solicitud.numero_material ??
+            solicitud.numero_ejemplar ??
+            solicitud.no_computadora ??
+            solicitud.no_restirador ??
+            solicitud.no_inventario ??
+            null
+        );
+        if (numeroMaterialExistente !== null && numeroMaterialExistente !== undefined) {
+            return { ...solicitud, numero_material: numeroMaterialExistente };
+        }
+
+        const tipo = normalizarTipoSolicitud(solicitud);
+        const idRecurso = obtenerIdRecursoSolicitud(solicitud);
+        const idKey = idRecurso !== null ? String(idRecurso) : null;
+        let numero_material = null;
+
+        if (tipo === 'computadora' && idKey && mapaComputadoras.has(idKey)) {
+            numero_material = mapaComputadoras.get(idKey);
+        } else if (tipo === 'restirador' && idKey && mapaRestiradores.has(idKey)) {
+            numero_material = mapaRestiradores.get(idKey);
+        } else if (tipo === 'libro' && idKey && mapaLibros.has(idKey)) {
+            numero_material = mapaLibros.get(idKey);
+        }
+
+        return { ...solicitud, numero_material: numero_material ?? solicitud.recurso_id ?? solicitud.id_recurso ?? null };
+    });
 }
 
 
