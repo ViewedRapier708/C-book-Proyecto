@@ -1,0 +1,777 @@
+/* ========================================
+   SISTEMA DE CARDS - PANEL USUARIO
+   Diseño personalizado por tipo de recurso
+   ======================================== */
+
+/* =============================================
+   CONTENEDOR PRINCIPAL DE CARDS
+   ============================================= */
+.user-cards-container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0.5rem;
+}
+
+.user-cards-container h2 {
+    color: var(--primary-1);
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: center;
+    padding-bottom: 0.6rem;
+    border-bottom: 2px solid var(--primary-1);
+}
+
+/* =============================================
+   HEADER CON FILTROS PERSONALIZADOS
+   ============================================= */
+.user-filtros {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+.user-filtros-grupo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.user-filtro-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.user-filtro-item label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.user-filtro-select,
+.user-filtro-input {
+    padding: 0.45rem 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    background: var(--surface);
+    color: var(--text);
+    transition: border-color 0.2s ease;
+    min-width: 130px;
+}
+
+.user-filtro-select:hover,
+.user-filtro-select:focus,
+.user-filtro-input:hover,
+.user-filtro-input:focus {
+    border-color: var(--primary-1);
+    outline: none;
+}
+
+.user-filtro-input::placeholder {
+    color: var(--text-muted);
+}
+
+.user-contador {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding: 0.3rem 0.6rem;
+    background: var(--surface-alt);
+    border-radius: 12px;
+    white-space: nowrap;
+}
+
+.user-acciones {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* Botón Limpiar Filtros */
+.user-btn-limpiar {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface-alt) 100%);
+    border: 2px solid var(--primary-1);
+    color: var(--primary-1);
+    padding: 0.5rem 1.2rem;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.user-btn-limpiar:hover {
+    background: var(--primary-1);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(146, 43, 73, 0.25);
+}
+
+.user-btn-limpiar:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(146, 43, 73, 0.2);
+}
+
+.user-btn-limpiar i {
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+}
+
+.user-btn-limpiar:hover i {
+    transform: rotate(90deg);
+}
+
+.btn-recargar {
+    padding: 0.45rem 0.85rem;
+    background: var(--surface);
+    border: 1px solid var(--primary-1);
+    color: var(--primary-1);
+    border-radius: var(--radius);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-recargar:hover {
+    background: var(--primary-1);
+    color: white;
+}
+
+/* =============================================
+   GRID ADAPTATIVO DE CARDS
+   ============================================= */
+.user-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Variante compacta para cards con menos datos */
+.user-grid-compact {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+/* Variante amplia para cards con más datos */
+.user-grid-wide {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+/* =============================================
+   CARD BASE
+   ============================================= */
+.user-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid rgba(123, 2, 51, 0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.user-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.12);
+}
+
+.user-card.selected {
+    border: 2px solid var(--primary-1);
+    box-shadow: 0 4px 16px rgba(123, 2, 51, 0.2);
+}
+
+.user-card.selected::before {
+    content: '✓';
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 20px;
+    height: 20px;
+    background: var(--primary-1);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    z-index: 10;
+}
+
+/* =============================================
+   CARD HEADER
+   ============================================= */
+.user-card-header {
+    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+    padding: 0.7rem 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.user-card-titulo {
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.user-card-subtitulo {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.75rem;
+    font-weight: 400;
+}
+
+/* =============================================
+   CARD BODY
+   ============================================= */
+.user-card-body {
+    padding: 0.75rem 0.9rem;
+}
+
+.user-card-dato {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(123, 2, 51, 0.06);
+}
+
+.user-card-dato:last-child {
+    border-bottom: none;
+}
+
+.user-card-label {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+}
+
+.user-card-value {
+    color: var(--text);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-align: right;
+    word-break: break-word;
+    max-width: 60%;
+}
+
+.user-card-value-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* =============================================
+   CARD FOOTER
+   ============================================= */
+.user-card-footer {
+    padding: 0.6rem 0.9rem;
+    background: rgba(242, 217, 227, 0.2);
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.user-card-footer:empty {
+    display: none;
+}
+
+.user-card-footer .btn-accion {
+    flex: 1;
+    min-width: 80px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.btn-accion-primary {
+    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+    color: white;
+    border: none;
+}
+
+.btn-accion-primary:hover {
+    opacity: 0.9;
+}
+
+.btn-accion-secondary {
+    background: var(--surface);
+    color: var(--primary-1);
+    border: 1px solid var(--primary-1);
+}
+
+.btn-accion-secondary:hover {
+    background: var(--primary-1);
+    color: white;
+}
+
+.btn-accion-danger {
+    background: var(--danger);
+    color: white;
+    border: none;
+}
+
+.btn-accion-danger:hover {
+    opacity: 0.9;
+}
+
+/* =============================================
+   BADGES DE ESTADO
+   ============================================= */
+.badge {
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+}
+
+.badge-disponible {
+    background: var(--success);
+    color: white;
+}
+
+.badge-no-disponible {
+    background: var(--danger);
+    color: white;
+}
+
+.badge-pendiente {
+    background: var(--warning);
+    color: white;
+}
+
+.badge-aprobado {
+    background: var(--success);
+    color: white;
+}
+
+.badge-rechazado {
+    background: var(--danger);
+    color: white;
+}
+
+.badge-cancelado {
+    background: var(--text-muted);
+    color: white;
+}
+
+.badge-en-uso {
+    background: var(--info);
+    color: white;
+}
+
+/* =============================================
+   PAGINACIÓN
+   ============================================= */
+.user-paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    margin-top: 0.5rem;
+}
+
+.user-paginacion-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.user-paginacion-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--primary-1);
+    color: var(--primary-1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+}
+
+.user-paginacion-btn:hover:not(.disabled) {
+    background: var(--primary-1);
+    color: white;
+}
+
+.user-paginacion-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: var(--text-muted);
+    color: var(--text-muted);
+}
+
+.user-paginacion-info {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    min-width: 80px;
+    text-align: center;
+}
+
+.user-paginacion-dots {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.user-paginacion-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.user-paginacion-dot.active {
+    background: var(--primary-1);
+    transform: scale(1.2);
+}
+
+.user-paginacion-dot:hover:not(.active) {
+    background: var(--primary-2);
+}
+
+/* =============================================
+   MENSAJE SIN RESULTADOS
+   ============================================= */
+.user-sin-resultados {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+}
+
+.user-sin-resultados svg {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.user-sin-resultados p {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* =============================================
+   VARIANTES POR TIPO DE RECURSO
+   ============================================= */
+
+/* Cards de Restiradores - Header verde */
+.card-restirador .user-card-header {
+    background: linear-gradient(135deg, #2D7D46 0%, #48A868 100%);
+}
+
+/* Cards de Área de Consulta - Header azul */
+.card-consulta .user-card-header {
+    background: linear-gradient(135deg, #2B6CB0 0%, #4299E1 100%);
+}
+
+/* Cards de Solicitudes pendientes - Header naranja */
+.card-solicitud.pendiente .user-card-header {
+    background: linear-gradient(135deg, #C05621 0%, #DD6B20 100%);
+}
+
+/* Cards de Solicitudes aprobadas */
+.card-solicitud.aprobado .user-card-header {
+    background: linear-gradient(135deg, #276749 0%, #38A169 100%);
+}
+
+/* Cards de Solicitudes rechazadas/canceladas */
+.card-solicitud.rechazado .user-card-header,
+.card-solicitud.cancelado .user-card-header {
+    background: linear-gradient(135deg, #9B2C2C 0%, #C53030 100%);
+}
+
+/* =============================================
+   CARDS DE LIBROS (con soporte para imágenes)
+   ============================================= */
+.card-libro {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-libro .user-card-header {
+    background: linear-gradient(135deg, #553C9A 0%, #805AD5 100%);
+}
+
+/* Contenedor de imagen para portada del libro */
+.user-card-imagen-container {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    position: relative;
+    background: var(--surface-alt);
+    border-bottom: 1px solid var(--border);
+}
+
+.user-card-imagen {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.card-libro:hover .user-card-imagen {
+    transform: scale(1.05);
+}
+
+/* Placeholder cuando no hay imagen */
+.user-card-imagen-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #F7FAFC 0%, #EDF2F7 100%);
+    color: var(--text-muted);
+}
+
+.user-card-imagen-placeholder svg {
+    opacity: 0.4;
+}
+
+.user-card-imagen-placeholder span {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    opacity: 0.6;
+}
+
+/* Meta info del libro (autor, año) */
+.user-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.user-card-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: var(--surface-alt);
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+}
+
+.user-card-meta-item i {
+    font-size: 0.7rem;
+    opacity: 0.7;
+}
+
+/* Clasificación del libro */
+.user-card-clasificacion {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #553C9A;
+    background: rgba(85, 60, 154, 0.1);
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    margin-top: auto;
+}
+
+/* Título del libro */
+.user-card-libro-titulo {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0 0 0.25rem 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Autor del libro */
+.user-card-libro-autor {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 0 0 0.75rem 0;
+    font-style: italic;
+}
+
+/* Detalles del libro en grid */
+.user-card-libro-detalles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.user-card-libro-detalles .user-card-dato {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.user-card-libro-detalles .user-card-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.3px;
+}
+
+.user-card-libro-detalles .user-card-value {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+/* Badge en imagen para libros */
+.user-card-imagen-container .badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 2;
+}
+
+/* Grid optimizado para libros (más columnas, formato más vertical) */
+.user-grid.grid-libros {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+@media (min-width: 1200px) {
+    .user-grid.grid-libros {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+@media (max-width: 1024px) {
+    .user-grid {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+    
+    .user-filtros {
+        padding: 0.6rem 0.8rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .user-cards-container {
+        padding: 0.25rem;
+    }
+    
+    .user-filtros {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .user-filtros-grupo {
+        justify-content: center;
+    }
+    
+    .user-acciones {
+        justify-content: center;
+    }
+    
+    .user-grid {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 0.75rem;
+    }
+    
+    .user-paginacion {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .user-card-header {
+        padding: 0.6rem 0.75rem;
+    }
+    
+    .user-card-body {
+        padding: 0.6rem 0.75rem;
+    }
+    
+    .user-card-titulo {
+        font-size: 0.85rem;
+    }
+    
+    .user-filtro-item {
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .user-paginacion-dots {
+        display: none;
+    }
+}
+
+/* =============================================
+   LOADING STATE
+   ============================================= */
+.user-cards-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.user-cards-loading::after {
+    content: '';
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary-1);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

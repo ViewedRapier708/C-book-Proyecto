@@ -1,44 +1,47 @@
-<div class="container-restiradores">
+<div class="admin-cards-container">
+    <h2>Gestión de Restiradores</h2>
     <div class="mensaje-alerta" id="mensaje-restiradores" hidden></div>
 
-    <div class="layout-dos-columnas">
-        <div class="columna-principal">
-            <div class="tabla-encabezado">
-                <div class="tabla-info">
-                    <span class="tabla-total" data-total="restiradores">Total: 0</span>
-                </div>
-                <div class="tabla-acciones">
-                    <button class="btn-recargar" data-recargar="restiradores">Recargar</button>
-                </div>
-            </div>
-            <div class="container-tabla">
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>No. Restirador</th>
-                                <th>No. Inventario</th>
-                                <th>Disponible</th>
-                                <th>Estado material</th>
-                                <th>Observación</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-restiradores"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="paginacion" data-paginacion="restiradores">
-                <button class="btn-paginacion" data-prev>Anterior</button>
-                <span class="pagina-actual">Página 1</span>
-                <button class="btn-paginacion" data-next>Siguiente</button>
-            </div>
-            
-            <div class="container-btn-alta">
-                <button class="btn-alta" id="btn-agregar">Agregar Restiradores</button>
-            </div>
+    <div class="admin-header">
+        <div class="admin-filtros">
+            <label for="filtro-restiradores">Filtrar:</label>
+            <select id="filtro-restiradores" class="admin-filtro-select" onchange="filtrarRestiradores()">
+                <option value="todos">Todos</option>
+                <option value="disponible">Disponibles</option>
+                <option value="no-disponible">No disponibles</option>
+                <option value="funcional">Funcional</option>
+                <option value="danado">Dañado</option>
+            </select>
+            <input type="text" id="buscar-restiradores" class="admin-search-input" placeholder="Buscar inventario..." oninput="debouncedFiltrarRestiradores()">
+            <span class="admin-contador" id="contador-restiradores"></span>
         </div>
+        <div class="admin-acciones">
+            <button class="btn-recargar" onclick="cargarRestiradores()">
+                <i class="fas fa-sync-alt"></i> Recargar
+            </button>
+            <button class="btn-alta" id="btn-agregar">
+                <i class="fas fa-plus"></i> Agregar Restirador
+            </button>
+        </div>
+    </div>
+
+    <div class="admin-carousel" id="carousel-restiradores">
+        <button class="admin-arrow admin-arrow-prev" onclick="anteriorPaginaRestiradores()" aria-label="Anterior">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <div class="admin-grid admin-grid-6" id="grid-restiradores">
+            <!-- Carga dinámica de cards -->
+        </div>
+        
+        <button class="admin-arrow admin-arrow-next" onclick="siguientePaginaRestiradores()" aria-label="Siguiente">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <div class="admin-paginacion" id="paginacion-restiradores">
+        <div class="admin-paginacion-dots" id="paginacion-dots-restiradores"></div>
+        <div class="admin-paginacion-contador" id="paginacion-contador-restiradores">0 / 0</div>
     </div>
 </div>
 

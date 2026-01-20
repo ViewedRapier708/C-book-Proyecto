@@ -8,10 +8,44 @@
 .container-computadoras,
 .container-restiradores,
 .container-guardaropas,
-.container-solicitud {
+.container-solicitud,
+.container-usuarios,
+.container-solicitudes,
+.container-documentos {
     width: 100%;
     max-width: 1000px;
     margin: 0 auto;
+}
+
+/* Vista tablas - Contenedores ocupan todo el espacio */
+.vista-tablas .container-libros,
+.vista-tablas .container-computadoras,
+.vista-tablas .container-restiradores,
+.vista-tablas .container-guardaropas,
+.vista-tablas .container-solicitud,
+.vista-tablas .container-usuarios,
+.vista-tablas .container-solicitudes,
+.vista-tablas .container-documentos {
+    max-width: 100%;
+}
+
+.vista-tablas .layout-dos-columnas {
+    height: calc(100vh - 140px);
+}
+
+.vista-tablas .layout {
+    max-width: 100%;
+}
+
+.vista-tablas .container-tabla {
+    background: var(--surface, #FFFFFF);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(123, 2, 51, 0.08);
+    border: 1px solid rgba(123, 2, 51, 0.1);
+}
+
+.vista-tablas .table-responsive {
+    width: 100%;
 }
 
 /* Títulos de componentes */
@@ -153,15 +187,13 @@ tbody td {
 }
 
 .btn-agregar,
-.btn-alta,
-.btn-editar,
-.btn-eliminar {
+.btn-alta {
     background: #FFFFFF;
     color: #000000;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
-    letter-spacing: 1.5px;
-    padding: 1.2rem 3rem;
+    letter-spacing: 1px;
+    padding: 0.8rem 2rem;
     border: 2px solid #E8E8E8;
     border-radius: 50px;
     cursor: pointer;
@@ -172,15 +204,53 @@ tbody td {
     overflow: hidden;
 }
 
+/* Botones de tabla - compactos */
+.btn-editar,
+.btn-eliminar {
+    background: transparent;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    padding: 0.35rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: none;
+    white-space: nowrap;
+    min-width: auto;
+}
+
+.btn-editar {
+    color: #2F855A;
+    border: 1px solid rgba(56, 161, 105, 0.3);
+    background: rgba(56, 161, 105, 0.08);
+}
+
+.btn-eliminar {
+    color: #C53030;
+    border: 1px solid rgba(229, 62, 62, 0.3);
+    background: rgba(229, 62, 62, 0.08);
+}
+
 .btn-agregar:hover,
-.btn-alta:hover,
-.btn-editar:hover,
-.btn-eliminar:hover {
+.btn-alta:hover {
     background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
     color: #FFFFFF;
     border-color: #7B0233;
     box-shadow: 0 8px 25px rgba(123, 2, 51, 0.5);
     transform: translateY(-2px) scale(1.02);
+}
+
+.btn-editar:hover {
+    background: #38A169;
+    color: white;
+    border-color: #38A169;
+}
+
+.btn-eliminar:hover {
+    background: #E53E3E;
+    color: white;
+    border-color: #E53E3E;
 }
 
 .btn-agregar:active,

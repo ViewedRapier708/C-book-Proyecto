@@ -4,11 +4,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const contentLoader = document.getElementById('content-loader');
     const pageTitle = document.getElementById('page-title');
     const navLinks = document.querySelectorAll('.nav-link');
+    const containerWrapper = document.getElementById('container-wrapper');
+    const tituloSeccion = document.getElementById('titulo-seccion');
+
+    // Función para actualizar la vista del contenedor según el componente
+    const actualizarVistaContenedor = (componentName, title) => {
+        if (!containerWrapper) return;
+        
+        // Actualizar el título de la sección
+        if (tituloSeccion) {
+            tituloSeccion.textContent = title;
+        }
+        
+        // Cambiar clases según el componente
+        if (componentName === 'inicio') {
+            containerWrapper.classList.add('vista-inicio');
+            containerWrapper.classList.remove('vista-tablas');
+        } else {
+            containerWrapper.classList.add('vista-tablas');
+            containerWrapper.classList.remove('vista-inicio');
+        }
+    };
 
     // Sistema de carga de componentes
     const loadComponent = (componentName, title) => {
         if (!contentLoader) return;
         const componentPath = `componentes/${componentName}.html`;
+
+        // Actualizar vista del contenedor antes de cargar
+        actualizarVistaContenedor(componentName, title);
 
         fetch(componentPath)
             .then(response => {
@@ -30,6 +54,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Añadir la clase que activa la animación de entrada del contenedor
                 contentLoader.classList.add('component-enter');// Animación de entrada del contenedor principal
                 
+                // Detectar si usa sistema de cards o tablas
+                const cardsContainers = contentLoader.querySelectorAll('[data-usa-cards="true"]');
+                const usaCards = cardsContainers.length > 0;
+                
                 // Seleccionar elementos que tendrán animaciones internas específicas
                 const tables = contentLoader.querySelectorAll('.container-tabla');
                 const buttons = contentLoader.querySelectorAll('.container-btn-apartar');
@@ -44,16 +72,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     pageTitle.textContent = title;
                 }
 
-                // Inicializar eventos de la tabla después de cargar el componente
-                if (tables.length > 0) {
+                // Inicializar cards o tablas según corresponda
+                if (usaCards || tables.length > 0) {
                     // Dar tiempo para que el DOM se actualice
                     setTimeout(() => {
-                        // Cargar datos de la tabla del componente recién inyectado
+                        // Cargar datos (la función detectará si usa cards o tablas)
                         if (typeof cargarDatosEnTabla === 'function') {
                             cargarDatosEnTabla()
                                 .then(() => {
-                                    // Inicializar filtros de la tabla
-                                    if (typeof inicializarFiltrosTabla === 'function') {
+                                    // Solo inicializar filtros de tabla si no usa cards
+                                    if (!usaCards && typeof inicializarFiltrosTabla === 'function') {
                                         inicializarFiltrosTabla();
                                     }
                                     // Iniciar realtime después de cargar los datos
@@ -62,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     }
                                 })
                                 .catch(err => {
-                                    console.error('Error al cargar datos de tabla:', err);
+                                    console.error('Error al cargar datos:', err);
                                 });
                         }
                         // Configurar botón Solicitar

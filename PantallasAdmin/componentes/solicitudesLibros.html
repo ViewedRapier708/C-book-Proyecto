@@ -1,38 +1,39 @@
-<div class="container-solicitudes">
+<div class="container-solicitudes-libros-vertical container-solicitudes-wide">
     <h2>Alumnos Solicitantes de Libros</h2>
     
-    <div class="layout">
-        <div class="columna-tabla">
-            <div class="container-tabla">
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Boleta</th>
-                                <th>Nombre Completo</th>
-                                <th>Grupo</th>
-                                <th>Correo</th>
-                                <th>Documentación</th>
-                                <th>Libro Solicitado</th>
-                                <th>Fecha Solicitud</th>
-                                <th>Fecha Límite Recolección</th>
-                                <th>Estado</th>
-                                <th>Devuelto</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-solicitudes-libros">
-                            <!-- Carga dinámica -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <div class="paginacion">
-                <button class="btn-recargar" onclick="cargarSolicitudesLibros()">
-                    <i class="fas fa-sync-alt"></i> Recargar
-                </button>
-            </div>
+    <div class="solicitudes-header">
+        <div class="filtro-estado-container">
+            <label for="filtro-estado">Filtrar por estado:</label>
+            <select id="filtro-estado" class="filtro-estado" onchange="filtrarSolicitudes()">
+                <option value="todos">Todos</option>
+                <option value="1" selected>Pendientes</option>
+                <option value="2">Aprobadas</option>
+                <option value="3">Rechazadas</option>
+                <option value="4">Canceladas</option>
+            </select>
+            <span class="filtro-contador" id="filtro-contador"></span>
         </div>
+        <button class="btn-recargar" onclick="cargarSolicitudesLibros()">
+            <i class="fas fa-sync-alt"></i> Recargar
+        </button>
+    </div>
+    
+    <div class="solicitudes-carousel">
+        <button class="carousel-arrow carousel-prev" onclick="anteriorPaginaSolicitud()" aria-label="Anterior">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <div class="solicitudes-grid" id="tabla-solicitudes-libros">
+            <!-- Carga dinámica de tarjetas -->
+        </div>
+        
+        <button class="carousel-arrow carousel-next" onclick="siguientePaginaSolicitud()" aria-label="Siguiente">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+    
+    <div class="solicitudes-paginacion">
+        <div class="paginacion-dots" id="solicitudes-dots"></div>
+        <div class="paginacion-contador" id="solicitudes-contador">0 / 0</div>
     </div>
 </div>

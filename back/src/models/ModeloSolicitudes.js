@@ -68,6 +68,7 @@ async function CrearSolicitudRestiradores(boleta, idRecurso) {
         return { success: false, error: 'Recurso no encontrado' };
     }
     try {
+        console.log("Creando solicitud de restirador para boleta:", boleta, "y restirador ID:", idRecurso);
         const { error } = await supabase
             .from('solicitudes_restirador')
             .insert([{ usuario_boleta: boleta, restirador_id: resData.id }]);
