@@ -1,9 +1,20 @@
 // ---------- funcionesRecursos.js ----------
 
 // Variable global para almacenar el recurso seleccionado
-let recursoSeleccionado = null;
+// Usamos window.recursoSeleccionado para compartir con userCards.js
+if (typeof window.recursoSeleccionado === 'undefined') {
+  window.recursoSeleccionado = null;
+}
 
-
+// Getter para mantener compatibilidad con código existente
+Object.defineProperty(window, 'recursoSeleccionadoActual', {
+  get: function() {
+    return window.recursoSeleccionado;
+  },
+  set: function(value) {
+    window.recursoSeleccionado = value;
+  }
+});
 
 /** Selecciona una fila y muestra el botón Solicitar */
 function seleccionarFila(fila) {
@@ -15,7 +26,7 @@ function seleccionarFila(fila) {
   fila.classList.add('seleccionada');
 
   // Guardar el recurso seleccionado
-  recursoSeleccionado = JSON.parse(fila.dataset.recurso);
+  window.recursoSeleccionado = JSON.parse(fila.dataset.recurso);
 
   // Buscar el botón en el .layout (fuera del container-tabla)
   const layout = fila.closest('.layout');
@@ -33,7 +44,7 @@ function seleccionarFila(fila) {
 function abrirModal() {
 
   
-  if (!recursoSeleccionado) {
+  if (!window.recursoSeleccionado) {
     alert('Por favor selecciona un recurso primero');
     return;
   }
@@ -51,7 +62,7 @@ function abrirModal() {
   if (detallesModal) {
     let htmlDetalles = '<ul class="lista-detalles">';
     
-    for (const [key, value] of Object.entries(recursoSeleccionado)) {
+    for (const [key, value] of Object.entries(window.recursoSeleccionado)) {
       // Formatear el nombre de la clave
       const nombreCampo = formatearNombreCampo(key);
       // Formatear el valor
@@ -119,7 +130,7 @@ function cerrarModal() {
 
 /** Confirma la solicitud del recurso */
 async function confirmarSolicitud() {
-  if (!recursoSeleccionado) {
+  if (!window.recursoSeleccionado) {
     alert('No hay recurso seleccionado');
     return;
   }
@@ -136,17 +147,17 @@ async function confirmarSolicitud() {
   let idRecurso = null;
   if (tipoRecurso === 'computadora') {
     // Puede ser string "101", convertir a número
-    idRecurso = parseInt(recursoSeleccionado['No. Computadora'] || recursoSeleccionado.no_computadora);
+    idRecurso = parseInt(window.recursoSeleccionado['No. Computadora'] || window.recursoSeleccionado.no_computadora);
   } else if (tipoRecurso === 'libro') {
     idRecurso = parseInt(
-      recursoSeleccionado.id ||
-      recursoSeleccionado.ejemplar_id ||
-      recursoSeleccionado['ID'] ||
-      recursoSeleccionado.numero_ejemplar ||
-      recursoSeleccionado['No. de ejemplar']
+      window.recursoSeleccionado.id ||
+      window.recursoSeleccionado.ejemplar_id ||
+      window.recursoSeleccionado['ID'] ||
+      window.recursoSeleccionado.numero_ejemplar ||
+      window.recursoSeleccionado['No. de ejemplar']
     );
   } else if (tipoRecurso === 'restirador') {
-    idRecurso = parseInt(recursoSeleccionado['ID'] || recursoSeleccionado.no_restirador || recursoSeleccionado.id);
+    idRecurso = parseInt(window.recursoSeleccionado['ID'] || window.recursoSeleccionado.no_restirador || window.recursoSeleccionado.id);
   }
   if (!idRecurso || isNaN(idRecurso)) {
     mostrarNotificacion('❌ No se pudo identificar el recurso seleccionado', 'error');
@@ -231,7 +242,7 @@ function limpiarSeleccion() {
     btnApartar.style.display = 'none';
   }
   
-  recursoSeleccionado = null;
+  window.recursoSeleccionado = null;
 }
 
 /** Muestra una notificación temporal */
