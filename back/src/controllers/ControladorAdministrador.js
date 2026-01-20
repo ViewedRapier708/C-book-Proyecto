@@ -215,6 +215,32 @@ const validarLibroPayload = (payload, { requireAll = true } = {}) => {
     return null;
 };
 
+const validarDuplicado = async ({ tabla, columna, valor, mensaje, excluirId = null }) => {
+    const supabase = getClient();
+    let query = supabase
+        .from(tabla)
+        .select('id')
+        .eq(columna, valor)
+        .limit(1);
+
+    if (excluirId !== null && excluirId !== undefined && excluirId !== '') {
+        query = query.neq('id', excluirId);
+    }
+
+    const { data, error } = await query.maybeSingle();
+
+    if (error) {
+        console.error(`Error validando duplicado en ${tabla}.${columna}:`, error);
+        return { success: false, message: 'Error interno al validar duplicados' };
+    }
+
+    if (data?.id) {
+        return { success: false, message: mensaje };
+    }
+
+    return { success: true };
+};
+
 // ==================== CREAR MATERIALES ====================
 
 async function crearLibro(req, res) {
@@ -232,6 +258,22 @@ async function crearLibro(req, res) {
     Disponible,
     coleccion
 } = req.body;
+
+// Evitar duplicados de número de ejemplar
+if (numero_ejemplar !== undefined && numero_ejemplar !== null && numero_ejemplar !== '') {
+    const duplicadoEjemplar = await validarDuplicado({
+        tabla: 'ejemplares',
+        columna: 'numero_ejemplar',
+        valor: numero_ejemplar,
+        mensaje: 'El número de ejemplar ya existe'
+    });
+    if (!duplicadoEjemplar.success) {
+        return res.status(409).json({
+            success: false,
+            message: duplicadoEjemplar.message
+        });
+    }
+}
 
 // Validación de campos requeridos
 if (!titulo || !clasificacion || !isbn || !tipo_material || !autor) {
@@ -471,6 +513,32 @@ async function crearComputadora(req, res) {
             no_inventario, no_computadora 
         } = req.body;
 
+        const duplicadoInventario = await validarDuplicado({
+            tabla: 'computadoras',
+            columna: 'no_inventario',
+            valor: no_inventario,
+            mensaje: 'El número de inventario ya existe'
+        });
+        if (!duplicadoInventario.success) {
+            return res.status(409).json({
+                success: false,
+                message: duplicadoInventario.message
+            });
+        }
+
+        const duplicadoNumero = await validarDuplicado({
+            tabla: 'computadoras',
+            columna: 'no_computadora',
+            valor: no_computadora,
+            mensaje: 'El número de computadora ya existe'
+        });
+        if (!duplicadoNumero.success) {
+            return res.status(409).json({
+                success: false,
+                message: duplicadoNumero.message
+            });
+        }
+
         const errorValidacion = validarComputadoraPayload({
             procesador,
             programas,
@@ -517,6 +585,32 @@ async function crearRestirador(req, res) {
         } = req.body;
 
         const estadoMaterial = estado_de_material ?? estado_material;
+
+        const duplicadoInventario = await validarDuplicado({
+            tabla: 'restiradores',
+            columna: 'no_inventario',
+            valor: no_inventario,
+            mensaje: 'El número de inventario ya existe'
+        });
+        if (!duplicadoInventario.success) {
+            return res.status(409).json({
+                success: false,
+                message: duplicadoInventario.message
+            });
+        }
+
+        const duplicadoNumero = await validarDuplicado({
+            tabla: 'restiradores',
+            columna: 'no_restirador',
+            valor: no_restirador,
+            mensaje: 'El número de restirador ya existe'
+        });
+        if (!duplicadoNumero.success) {
+            return res.status(409).json({
+                success: false,
+                message: duplicadoNumero.message
+            });
+        }
 
         const errorValidacion = validarRestiradorPayload({
             Disponible,
@@ -651,6 +745,22 @@ async function actualizarLibro(req, res) {
             });
         }
 
+        if (numero_ejemplar !== undefined && numero_ejemplar !== null && numero_ejemplar !== '' && ejemplar_id) {
+            const duplicadoEjemplar = await validarDuplicado({
+                tabla: 'ejemplares',
+                columna: 'numero_ejemplar',
+                valor: numero_ejemplar,
+                mensaje: 'El número de ejemplar ya existe',
+                excluirId: ejemplar_id
+            });
+            if (!duplicadoEjemplar.success) {
+                return res.status(409).json({
+                    success: false,
+                    message: duplicadoEjemplar.message
+                });
+            }
+        }
+
         const errorValidacion = validarLibroPayload({
             titulo,
             clasificacion,
@@ -727,6 +837,38 @@ async function actualizarComputadora(req, res) {
             });
         }
 
+        if (no_inventario !== undefined && no_inventario !== null && no_inventario !== '') {
+            const duplicadoInventario = await validarDuplicado({
+                tabla: 'computadoras',
+                columna: 'no_inventario',
+                valor: no_inventario,
+                mensaje: 'El número de inventario ya existe',
+                excluirId: id
+            });
+            if (!duplicadoInventario.success) {
+                return res.status(409).json({
+                    success: false,
+                    message: duplicadoInventario.message
+                });
+            }
+        }
+
+        if (no_computadora !== undefined && no_computadora !== null && no_computadora !== '') {
+            const duplicadoNumero = await validarDuplicado({
+                tabla: 'computadoras',
+                columna: 'no_computadora',
+                valor: no_computadora,
+                mensaje: 'El número de computadora ya existe',
+                excluirId: id
+            });
+            if (!duplicadoNumero.success) {
+                return res.status(409).json({
+                    success: false,
+                    message: duplicadoNumero.message
+                });
+            }
+        }
+
         const errorValidacion = validarComputadoraPayload({
             procesador,
             programas,
@@ -779,6 +921,38 @@ async function actualizarRestirador(req, res) {
                 success: false, 
                 message: 'El id es requerido' 
             });
+        }
+
+        if (no_inventario !== undefined && no_inventario !== null && no_inventario !== '') {
+            const duplicadoInventario = await validarDuplicado({
+                tabla: 'restiradores',
+                columna: 'no_inventario',
+                valor: no_inventario,
+                mensaje: 'El número de inventario ya existe',
+                excluirId: id
+            });
+            if (!duplicadoInventario.success) {
+                return res.status(409).json({
+                    success: false,
+                    message: duplicadoInventario.message
+                });
+            }
+        }
+
+        if (no_restirador !== undefined && no_restirador !== null && no_restirador !== '') {
+            const duplicadoNumero = await validarDuplicado({
+                tabla: 'restiradores',
+                columna: 'no_restirador',
+                valor: no_restirador,
+                mensaje: 'El número de restirador ya existe',
+                excluirId: id
+            });
+            if (!duplicadoNumero.success) {
+                return res.status(409).json({
+                    success: false,
+                    message: duplicadoNumero.message
+                });
+            }
         }
 
         const errorValidacion = validarRestiradorPayload({
