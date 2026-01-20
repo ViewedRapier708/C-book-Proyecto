@@ -230,8 +230,6 @@ for (const [campo, limites] of Object.entries(longitudes)) {
     }
 }
 
-// Si todas las validaciones pasan, continuar con el procesamiento
-// ...
 
         const resultadoLibro = await CrearLibro(titulo, clasificacion, isbn, tipo_material, autor);
 
@@ -349,7 +347,7 @@ async function crearRestirador(req, res) {
     }
 }
 
-async function crearGuardarropa(req, res) {
+/*async function crearGuardarropa(req, res) {
     try {
         const { ocupado, estado } = req.body;
 
@@ -368,7 +366,7 @@ async function crearGuardarropa(req, res) {
         });
     }
 }
-
+*/
 // ==================== ELIMINAR MATERIALES ====================
 
 async function eliminarMaterial(req, res) {
@@ -807,7 +805,7 @@ module.exports = {
     crearLibro,
     crearComputadora,
     crearRestirador,
-    crearGuardarropa,
+ 
     eliminarMaterial,
     actualizarLibro,
     actualizarComputadora,

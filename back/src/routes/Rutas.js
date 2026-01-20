@@ -24,7 +24,6 @@ router.delete('/solicitud/:tipo/:id', sessionGuard, controladorSolicitudes.cance
 router.post('/admin/libros', sessionGuard, controladorAdministrador.crearLibro);
 router.post('/admin/computadoras', sessionGuard, controladorAdministrador.crearComputadora);
 router.post('/admin/restiradores', sessionGuard, controladorAdministrador.crearRestirador);
-router.post('/admin/guardarropas', sessionGuard, controladorAdministrador.crearGuardarropa);
 
 // Eliminar materiales
 router.delete('/admin/materiales/:tipo/:id', sessionGuard, controladorAdministrador.eliminarMaterial);
