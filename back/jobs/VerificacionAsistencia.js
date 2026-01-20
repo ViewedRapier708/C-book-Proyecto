@@ -21,6 +21,9 @@ async function verificarAsistencia(params) {
     const tareasCancelacion = [];
    
     Object.entries(Act_computadoras || {}).forEach(([key, value]) => {
+        if (!value || !value.fecha_solicitud) {
+            return;
+        }
         let fechaActual = new Date().getHours();//Obtener la hora actual
         let fechaActividad = new Date(value.fecha_solicitud);
         let horaLimite = fechaActividad.getHours() ;//Verificar la hora limite de asistencia
@@ -38,6 +41,9 @@ async function verificarAsistencia(params) {
     });
 
     Object.entries(Act_restiradores || {}).forEach(([key, value]) => {
+        if (!value || !value.fecha_solicitud) {
+            return;
+        }
         let fechaActual = new Date().getHours();
         let fechaActividad = new Date(value.fecha_solicitud);
         let horaLimite = fechaActividad.getHours() ;
@@ -55,6 +61,9 @@ async function verificarAsistencia(params) {
     });
 
     Object.entries(Solicicitudes_libros || {}).forEach(([key, value]) => {
+        if (!value || !value.fecha_solicitud) {
+            return;
+        }
         let mesActual = new Date().getMonth() + 1; // Los meses en JavaScript son base 0 
         let diaActual = new Date().getDate();
         let horaActual = new Date().getHours();
@@ -67,7 +76,7 @@ async function verificarAsistencia(params) {
         // - estado_solicitud_id = 1 (pendiente): si ya pasó fecha_limite_respuesta, se cancela
         // - estado_solicitud_id = 2 (aprobada / por recolectar): si ya pasó fecha_limite_recoleccion, se cancela
         const ahora = new Date();
-        const estadoLibro = value.estado_solicitud_id;
+        const estadoLibro = value.estado_asistencia_id;
         const limiteRespuesta = value.fecha_limite_respuesta ? new Date(value.fecha_limite_respuesta) : null;
         const limiteRecoleccion = value.fecha_limite_recoleccion ? new Date(value.fecha_limite_recoleccion) : null;
 
@@ -102,9 +111,8 @@ async function verificarAsistencia(params) {
 const obtenerActividades = async () => {
 const Computadoras = await supabase.from('solicitudes_computadora').select('*').eq("estado_asistencia_id",1);
 const Restiradores = await supabase.from('solicitudes_restirador').select('*').eq("estado_asistencia_id",1);
-// Libros: tu tabla maneja estado_solicitud_id, y tiene limites por respuesta/recolección
-// Traemos pendientes (1) y aprobadas por recolectar (2) para poder checar ambas fechas límite.
-const Libros = await supabase.from('solicitudes_libros').select('*').in("estado_solicitud_id",[1,2]);
+// Libros: pendientes (1) y aprobadas por recolectar (2)
+const Libros = await supabase.from('solicitudes_libros').select('*').in("estado_asistencia_id",[1,2]);
 
 return {Computadoras,Restiradores,Libros};
     // Lógica para obtener las actividades programadas desde la base de datos
@@ -131,14 +139,14 @@ const cancelarActividad = async (ID_SOLICITUD, tipo = null) => {
     } else if (tipo === 'libro') {
         await supabase
             .from('solicitudes_libros')
-            .update({ estado_solicitud_id: 4, fecha_cancelacion: nowIso })
+            .update({ estado_asistencia_id: 4 })
             .eq('id', ID_SOLICITUD)
-            .in('estado_solicitud_id', [1, 2]);
+            .in('estado_asistencia_id', [1, 2]);
     } else {
         // Comportamiento original (por compatibilidad): intenta cancelar en todas
         await supabase.from('solicitudes_computadora').update({ estado_asistencia_id: 4 }).eq('id', ID_SOLICITUD);
         await supabase.from('solicitudes_restirador').update({ estado_asistencia_id: 4 }).eq('id', ID_SOLICITUD);
-        await supabase.from('solicitudes_libros').update({ estado_solicitud_id: 4, fecha_cancelacion: nowIso }).eq('id', ID_SOLICITUD);
+        await supabase.from('solicitudes_libros').update({ estado_asistencia_id: 4 }).eq('id', ID_SOLICITUD);
     }
 
     // Lógica para cancelar la actividad en la base de datos

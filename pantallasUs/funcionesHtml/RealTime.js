@@ -14,6 +14,9 @@ const MAPEO_TABLAS_SUPABASE = {
     'solicitudes-libros': ['solicitudes_libros']
 };
 
+const TIME_ZONE_MEXICO = 'America/Mexico_City';
+const ZONA_MEXICO_LABEL = 'Hora de México (CDT/CST)';
+
 
 const formatearValorLegible = (valor) => {
     if (typeof valor === 'boolean') return valor ? 'Sí' : 'No';
@@ -115,7 +118,9 @@ const formatearHoraAMPM = (hora) => {
 const formatearFechaCompleta = (timestamp) => {
     if (!timestamp) return '-';
     const fecha = new Date(timestamp);
-    return fecha.toLocaleString('es-MX', {
+    if (Number.isNaN(fecha.getTime())) return '-';
+    const texto = fecha.toLocaleString('es-MX', {
+        timeZone: TIME_ZONE_MEXICO,
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
@@ -123,6 +128,7 @@ const formatearFechaCompleta = (timestamp) => {
         minute: '2-digit',
         hour12: true
     });
+    return `${texto} ${ZONA_MEXICO_LABEL}`;
 };
 
 const mapearValoresFila = (tipoRecurso, datos) => {

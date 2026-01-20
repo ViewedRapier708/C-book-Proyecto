@@ -22,46 +22,216 @@ const {
     MarcarPrestamoDevuelto
 } = require('../models/ModeloAdministrador.js');
 const { enviarCorreo } = require('../utils/servicioCorreo.js');
+const {
+    agregarDiasHabiles,
+    formatearFechaMexico,
+    obtenerFechaMexico
+} = require('../utils/fechaUtils.js');
 const { getClient } = require("../config/db");
 
 // ==================== CREAR MATERIALES ====================
 
 async function crearLibro(req, res) {
     try {
-        const {
-            titulo,
-            clasificacion,
-            isbn,
-            tipo_material,
-            autor,
-            codigo_barras,
-            numero_ejemplar,
-            anio,
-            estatus_item,
-            Disponible,
-            coleccion
-        } = req.body;
-        
-        if (!titulo || !clasificacion || !isbn || !tipo_material || !autor) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Todos los campos son requeridos' 
-            });
-        }
+      const {
+    titulo,
+    clasificacion,
+    isbn,
+    tipo_material,
+    autor,
+    codigo_barras,
+    numero_ejemplar,
+    anio,
+    estatus_item,
+    Disponible,
+    coleccion
+} = req.body;
 
-        if (!numero_ejemplar || !anio || !estatus_item || !coleccion) {
-            return res.status(400).json({
-                success: false,
-                message: 'Todos los campos del ejemplar son requeridos'
-            });
-        }
-        if(numero_ejemplar<0) {
-            return res.status(400).json({
-                success: false,
-                message: 'El número de ejemplar no puede ser negativo'
-            });            
-        }
+// Validación de campos requeridos
+if (!titulo || !clasificacion || !isbn || !tipo_material || !autor) {
+    return res.status(400).json({ 
+        success: false, 
+        message: 'Todos los campos son requeridos' 
+    });
+}
 
+if (!numero_ejemplar || !anio || !estatus_item || !coleccion || !codigo_barras) {
+    return res.status(400).json({
+        success: false,
+        message: 'Todos los campos del ejemplar son requeridos'
+    });
+}
+
+// Validaciones numéricas
+if (numero_ejemplar < 0) {
+    return res.status(400).json({
+        success: false,
+        message: 'El número de ejemplar no puede ser negativo'
+    });
+}
+
+if (anio < 0) {
+    return res.status(400).json({
+        success: false,
+        message: 'El año no puede ser negativo'
+    });
+}
+
+if (!Number.isInteger(numero_ejemplar)) {
+    return res.status(400).json({
+        success: false,
+        message: 'El número de ejemplar debe ser un número entero'
+    });
+}
+
+if (!Number.isInteger(anio)) { 
+    return res.status(400).json({
+        success: false,
+        message: 'El año debe ser un número entero'
+    });
+}
+
+// Validación del año (rango razonable: 1000-2100)
+const anioActual = new Date().getFullYear();
+if (anio < 1000 || anio > 2100) {
+    return res.status(400).json({
+        success: false,
+        message: 'El año debe estar entre 1000 y 2100'
+    });
+}
+
+// Expresiones regulares para validaciones
+const regex = {
+    // Título: letras, números, espacios, acentos y signos de puntuación comunes, pero sin emojis
+    titulo: /^[\p{L}\p{N}\s\-\.,;:¿?¡!'"()\[\]{}«»–—&@#$%*+=_\\/]*$/u,
+    
+    // Clasificación: letras, números, espacios y puntos (ej: "823.5 M123")
+    clasificacion: /^[\p{L}\p{N}\s\.\-]*$/u,
+    
+    // ISBN-13 o ISBN-10: formato estándar con guiones
+    isbn: /^(?:\d{3}-)?\d{1,5}-\d{1,7}-\d{1,7}-\d{1}$|^\d{9}[\dX]$/,
+    
+    // Tipo de material: solo letras (incluyendo acentos) y espacios
+    tipo_material: /^[\p{L}\s]+$/u,
+    
+    // Autor: letras, espacios, apóstrofes, guiones y acentos
+    autor: /^[\p{L}\s'\-\.]+$/u,
+    
+    // Código de barras: típicamente números, pero algunos sistemas usan letras
+    codigo_barras: /^[\p{L}\p{N}\-]+$/u,
+    
+    // Colección: similar al título pero más restrictivo
+    coleccion: /^[\p{L}\p{N}\s\-\.,;:¿?¡!'"()&]*$/u,
+    
+    // Estatus item: letras, números y guiones bajos
+    estatus_item: /^[\p{L}\p{N}\s_\-]+$/u
+};
+
+// Aplicar validaciones con expresiones regulares
+if (!regex.titulo.test(titulo)) {
+    return res.status(400).json({
+        success: false,
+        message: 'El título contiene caracteres no permitidos (no se permiten emojis)'
+    });
+}
+
+if (!regex.clasificacion.test(clasificacion)) {
+    return res.status(400).json({
+        success: false,
+        message: 'La clasificación solo puede contener letras, números, espacios, puntos y guiones'
+    });
+}
+
+if (!regex.isbn.test(isbn)) {
+    return res.status(400).json({
+        success: false,
+        message: 'El ISBN no tiene un formato válido (ejemplo: 978-3-16-148410-0 o 0-306-40615-2)'
+    });
+}
+
+// Validación adicional para ISBN: eliminar guiones y verificar longitud
+const isbnLimpio = isbn.replace(/-/g, '');
+if (!(isbnLimpio.length === 10 || isbnLimpio.length === 13)) {
+    return res.status(400).json({
+        success: false,
+        message: 'El ISBN debe tener 10 o 13 dígitos (sin contar guiones)'
+    });
+}
+
+if (!regex.tipo_material.test(tipo_material)) {
+    return res.status(400).json({
+        success: false,
+        message: 'El tipo de material solo puede contener letras y espacios'
+    });
+}
+
+if (!regex.autor.test(autor)) {
+    return res.status(400).json({
+        success: false,
+        message: 'El autor solo puede contener letras, espacios, apóstrofes, puntos y guiones'
+    });
+}
+
+if (!regex.codigo_barras.test(codigo_barras)) {
+    return res.status(400).json({
+        success: false,
+        message: 'El código de barras contiene caracteres no permitidos'
+    });
+}
+
+// Validación adicional: longitud mínima para código de barras
+if (codigo_barras.length < 3) {
+    return res.status(400).json({
+        success: false,
+        message: 'El código de barras debe tener al menos 3 caracteres'
+    });
+}
+
+if (!regex.coleccion.test(coleccion)) {
+    return res.status(400).json({
+        success: false,
+        message: 'La colección contiene caracteres no permitidos'
+    });
+}
+
+if (!regex.estatus_item.test(estatus_item)) {
+    return res.status(400).json({
+        success: false,
+        message: 'El estatus del item contiene caracteres no permitidos'
+    });
+}
+
+// Validación adicional para Disponible (si se envía)
+if (Disponible !== undefined && typeof Disponible !== 'boolean') {
+    return res.status(400).json({
+        success: false,
+        message: 'El campo Disponible debe ser un valor booleano (true/false)'
+    });
+}
+
+// Validación de longitud de campos
+const longitudes = {
+    titulo: { min: 1, max: 500 },
+    clasificacion: { min: 1, max: 50 },
+    isbn: { min: 10, max: 17 }, // Con guiones puede ser más largo
+    tipo_material: { min: 1, max: 50 },
+    autor: { min: 1, max: 200 },
+    codigo_barras: { min: 3, max: 50 },
+    coleccion: { min: 1, max: 200 },
+    estatus_item: { min: 1, max: 50 }
+};
+
+for (const [campo, limites] of Object.entries(longitudes)) {
+    if (req.body[campo].length < limites.min || req.body[campo].length > limites.max) {
+        return res.status(400).json({
+            success: false,
+            message: `El campo ${campo} debe tener entre ${limites.min} y ${limites.max} caracteres`
+        });
+    }
+}
+
+// Si todas las validaciones pasan, continuar con el procesamiento
+// ...
 
         const resultadoLibro = await CrearLibro(titulo, clasificacion, isbn, tipo_material, autor);
 
@@ -486,7 +656,13 @@ async function gestionarSolicitud(req, res) {
             return res.status(400).json({ success: false, message: 'Faltan datos' });
         }
 
-        if (Number(estado) === 2) {
+        const estadoNumero = Number(estado);
+        let fechaAprobacion = null;
+        let fechaLimiteRecoleccion = null;
+
+        if (estadoNumero === 2) {
+            fechaAprobacion = obtenerFechaMexico();
+            fechaLimiteRecoleccion = agregarDiasHabiles(fechaAprobacion, 1);
             const supabase = getClient();
             const { data: usuarioDoc, error: errorDoc } = await supabase
                 .from('usuarios_web_movil')
@@ -503,7 +679,13 @@ async function gestionarSolicitud(req, res) {
             }
         }
 
-        const resultado = await ActualizarEstadoSolicitudLibro(id, estado, motivo);
+        const resultado = await ActualizarEstadoSolicitudLibro(
+            id,
+            estadoNumero,
+            motivo,
+            fechaLimiteRecoleccion,
+            fechaAprobacion
+        );
 
         if (resultado.success) {
             // Enviar correo
@@ -516,9 +698,12 @@ async function gestionarSolicitud(req, res) {
                     .single();
 
                 if (usuario && usuario.correo) {
-                    const estatusTexto = estado === 2 ? "Aprobada" : "Rechazada";
-                    const mensaje = estado === 2 
-                        ? "Tu solicitud ha sido aprobada. Tienes 2 días hábiles para pasar a biblioteca a recoger el libro."
+                    const estatusTexto = estadoNumero === 2 ? "Aprobada" : "Rechazada";
+                    const fechaLimiteTexto = fechaLimiteRecoleccion
+                        ? formatearFechaMexico(fechaLimiteRecoleccion)
+                        : '-';
+                    const mensaje = estadoNumero === 2
+                        ? `Tu solicitud ha sido aprobada. Tienes 1 día hábil para pasar a biblioteca a recoger el libro. Fecha límite de recolección: <b>${fechaLimiteTexto}</b>.`
                         : `Lamentablemente tu solicitud ha sido rechazada. Motivo: ${motivo || 'No especificado'}`;
 
                     await enviarCorreo(
@@ -599,11 +784,13 @@ async function obtenerPrestamosLibros(req, res) {
 async function marcarPrestamoDevuelto(req, res) {
     try {
         const { id } = req.params;
+        const { observaciones } = req.body || {};
         if (!id) {
             return res.status(400).json({ success: false, message: 'Faltan datos' });
         }
 
-        const resultado = await MarcarPrestamoDevuelto(id);
+        const fechaDevolucionReal = obtenerFechaMexico();
+        const resultado = await MarcarPrestamoDevuelto(id, fechaDevolucionReal, observaciones);
         if (resultado.success) {
             return res.status(200).json({ success: true, message: 'Préstamo marcado como devuelto.' });
         }
