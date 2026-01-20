@@ -4,11 +4,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const contentLoader = document.getElementById('content-loader');
     const pageTitle = document.getElementById('page-title');
     const navLinks = document.querySelectorAll('.nav-link');
+    const containerWrapper = document.getElementById('container-wrapper');
+    const tituloSeccion = document.getElementById('titulo-seccion');
+
+    // Función para actualizar la vista del contenedor según el componente
+    const actualizarVistaContenedor = (componentName, title) => {
+        if (!containerWrapper) return;
+        
+        // Actualizar el título de la sección
+        if (tituloSeccion) {
+            tituloSeccion.textContent = title;
+        }
+        
+        // Cambiar clases según el componente
+        if (componentName === 'inicio') {
+            containerWrapper.classList.add('vista-inicio');
+            containerWrapper.classList.remove('vista-tablas');
+        } else {
+            containerWrapper.classList.add('vista-tablas');
+            containerWrapper.classList.remove('vista-inicio');
+        }
+    };
 
     // Sistema de carga de componentes
     const loadComponent = (componentName, title) => {
         if (!contentLoader) return;
         const componentPath = `componentes/${componentName}.html`;
+
+        // Actualizar vista del contenedor antes de cargar
+        actualizarVistaContenedor(componentName, title);
 
         fetch(componentPath)
             .then(response => {

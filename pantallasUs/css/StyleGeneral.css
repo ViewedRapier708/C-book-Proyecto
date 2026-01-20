@@ -93,17 +93,35 @@ img {
         transform: translateX(100%);
     }
 }
-.container-informacion {
-    /* CENTRADO UNIVERSAL SIN FLEX */
-    width: 150em;
+
+/* =============================================
+   CONTAINER WRAPPER - Base y Variantes
+   ============================================= */
+.container-wrapper {
+    /* Base neutral */
+    width: 100%;
+    max-width: 1200px;
     height: auto;
     margin: 0 auto;
-
-    /* ESPACIADO RESPONSIVE */
     padding: clamp(0.8rem, 1.8vw, 1.5rem);
     box-sizing: border-box;
+    position: relative;
+    text-align: center;
+    
+    /* Transición suave entre vistas */
+    transition: background 0.25s ease, 
+                box-shadow 0.25s ease, 
+                border 0.25s ease,
+                max-width 0.25s ease;
+}
 
-    /* DISEÑO */
+/* Vista INICIO - Estilo decorativo con fondo */
+.container-wrapper.vista-inicio {
+    max-width: 1000px;
+    min-height: 50vh;
+    max-height: 85vh;
+    
+    /* DISEÑO decorativo */
     background: linear-gradient(180deg,
             rgba(255, 255, 255, 0.95) 0%,
             rgba(249, 249, 249, 0.98) 100%);
@@ -111,27 +129,36 @@ img {
     box-shadow: 0 8px 24px rgba(123, 2, 51, 0.08);
     backdrop-filter: blur(8px) saturate(110%);
     border: 1px solid rgba(157, 48, 108, 0.08);
-    transition: all 0.3s ease;
-    height: auto;
-    min-height: 50vh;
-    max-height: 85vh;
-
-    /* POSICIÓN */
-    position: relative;
-
-    /* OPCIONAL:
-       Si NO quieres centrar el texto, quita esta línea:
-    */
-    text-align: center;
 }
 
-
-
-
-
-.container-informacion:hover {
+.container-wrapper.vista-inicio:hover {
     box-shadow: 0 12px 32px rgba(123, 2, 51, 0.12);
     transform: translateY(-2px);
+}
+
+/* Vista TABLAS - Estilo limpio sin fondo decorativo */
+.container-wrapper.vista-tablas {
+    max-width: 1200px;
+    min-height: auto;
+    max-height: none;
+    
+    /* Sin fondo decorativo */
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    border: none;
+}
+
+.container-wrapper.vista-tablas:hover {
+    box-shadow: none;
+    transform: none;
+}
+
+/* Ajustes del contenido según la vista */
+.container-wrapper.vista-tablas .container-contenido {
+    padding: clamp(0.5rem, 1.5vw, 1.5rem);
+    max-width: 100%;
 }
 
 .container-titulo {
@@ -438,7 +465,18 @@ tbody tr.selected:hover {
 }
 
 @media (max-width: 1024px) {
-
+    /* Container wrapper responsivo */
+    .container-wrapper {
+        max-width: 95%;
+    }
+    
+    .container-wrapper.vista-inicio {
+        max-width: 90%;
+    }
+    
+    .container-wrapper.vista-tablas {
+        max-width: 98%;
+    }
 
     .layout {
         grid-template-columns: 1fr;
@@ -471,6 +509,25 @@ tbody tr.selected:hover {
     .container-main {
         margin-left: 0;
         width: 100%;
+        padding: 1rem;
+    }
+    
+    /* Container wrapper en móviles */
+    .container-wrapper {
+        max-width: 100%;
+        padding: 0.5rem;
+    }
+    
+    .container-wrapper.vista-inicio {
+        max-width: 100%;
+        border-radius: 8px;
+        min-height: auto;
+        max-height: none;
+    }
+    
+    .container-wrapper.vista-tablas {
+        max-width: 100%;
+        padding: 0.25rem;
     }
 
     .container-titulo {
@@ -508,6 +565,22 @@ tbody tr.selected:hover {
     .container-main {
         margin-left: 0;
         width: 100%;
+        padding: 1.5rem;
+    }
+    
+    /* Container wrapper tablets */
+    .container-wrapper {
+        max-width: 100%;
+    }
+    
+    .container-wrapper.vista-inicio {
+        max-width: 95%;
+        min-height: auto;
+        max-height: none;
+    }
+    
+    .container-wrapper.vista-tablas {
+        max-width: 100%;
     }
 
     .container-titulo {
