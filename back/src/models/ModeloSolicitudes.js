@@ -19,12 +19,26 @@ async function CrearSolicitud(tipoSolicitud, boleta, idRecurso) {
 
 //==================Funciones de los materiales para agregar los registros==================
 async function CrearSolicitudComputadora(boleta, idRecurso) {
-    const noRecurzo =await supabase.from('computadoras').select('id').eq('no_computadora', idRecurso).single();
+    const { data: compData, error: compError } = await supabase
+        .from('computadoras')
+        .select('id')
+        .eq('no_computadora', idRecurso)
+        .limit(1)
+        .maybeSingle();
+
+    if (compError) {
+        console.error("Error buscando computadora:", compError);
+        return { success: false, error: compError.message };
+    }
+
+    if (!compData?.id) {
+        return { success: false, error: 'Recurso no encontrado' };
+    }
 
     try {
         const { error } = await supabase
             .from('solicitudes_computadora')
-            .insert([{ usuario_boleta: boleta, computadora_id: noRecurzo.data.id }]);
+            .insert([{ usuario_boleta: boleta, computadora_id: compData.id }]);
         //El estado se pone automáticamente en 'pendiente'
         if (error) {
             console.error("Error creando solicitud de computadora:", error);
@@ -95,12 +109,17 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
 
     async function VerificarDisponibilidadComputadora(n_recurso) {
         try {
-            const { data, error } = await supabase.from('computadoras').select('id,Disponible,En_funcionamiento').eq('no_computadora', n_recurso).single();
+            const { data, error } = await supabase
+                .from('computadoras')
+                .select('id,Disponible,En_funcionamiento')
+                .eq('no_computadora', n_recurso)
+                .limit(1)
+                .maybeSingle();
             if (error) {
                 console.error("Error verificando disponibilidad:", error);
                 return { success: false, message: error.message };
             }
-            if (data.length === 0) {
+            if (!data) {
                 return { success: false, message: 'Recurso no encontrado' };
             }
             if (data.Disponible === false) {
@@ -119,12 +138,17 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
     }
     async function VerificarDisponibilidadRestirador(n_recurso) {
         try {
-            const { data, error } = await supabase.from('restiradores').select('id,Disponible,estado_de_material').eq('no_restirador', n_recurso).single();
+            const { data, error } = await supabase
+                .from('restiradores')
+                .select('id,Disponible,estado_de_material')
+                .eq('no_restirador', n_recurso)
+                .limit(1)
+                .maybeSingle();
             if (error) {
                 console.error("Error verificando disponibilidad:", error);
                 return { success: false, message: error.message };
             }
-            if (data.length === 0) {
+            if (!data) {
                 return { success: false, message: 'Recurso no encontrado' };
             }
             if (data.Disponible === false) {

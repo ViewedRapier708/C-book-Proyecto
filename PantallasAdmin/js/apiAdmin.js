@@ -18,6 +18,25 @@ function formatEstadoMaterial(value) {
 	return value ? 'Funcional' : 'Dañado';
 }
 
+const TIME_ZONE_MEXICO = 'America/Mexico_City';
+const ZONA_MEXICO_LABEL = 'Hora de México (CDT/CST)';
+
+function formatFechaMexico(value) {
+	if (!value) return '-';
+	const fecha = new Date(value);
+	if (Number.isNaN(fecha.getTime())) return '-';
+	const texto = fecha.toLocaleString('es-MX', {
+		timeZone: TIME_ZONE_MEXICO,
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+		hour12: true
+	});
+	return `${texto} ${ZONA_MEXICO_LABEL}`;
+}
+
 async function requestJson(path, options = {}) {
 	const response = await fetch(`${API_BASE}${path}`, {
 		headers: {
@@ -850,7 +869,7 @@ async function cargarSolicitudesLibros() {
     const tbody = document.getElementById('tabla-solicitudes-libros');
     if (!tbody) return;
     
-	tbody.innerHTML = '<tr><td colspan="10" class="loading">Cargando solicitudes...</td></tr>';
+	tbody.innerHTML = '<tr><td colspan="11" class="loading">Cargando solicitudes...</td></tr>';
     
     try {
         const respuesta = await requestJson('/auth/admin/solicitudes/libros');
@@ -858,7 +877,7 @@ async function cargarSolicitudesLibros() {
             tbody.innerHTML = '';
 
             if (respuesta.data.length === 0) {
-				 tbody.innerHTML = '<tr><td colspan="10">No hay solicitudes registradas.</td></tr>';
+				 tbody.innerHTML = '<tr><td colspan="11">No hay solicitudes registradas.</td></tr>';
                  return;
             }
 
@@ -901,7 +920,8 @@ async function cargarSolicitudesLibros() {
 					<td>${usuario?.correo || 'N/A'}</td>
 					<td>${tieneDocumentos}</td>
                     <td>${libro?.titulo || 'N/A'}</td>
-                    <td>${new Date(solicitud.fecha_solicitud).toLocaleDateString()}</td>
+					<td>${formatFechaMexico(solicitud.fecha_solicitud)}</td>
+					<td>${formatFechaMexico(solicitud.fecha_limite_recoleccion)}</td>
 					<td><span class="badge ${estadoId === 1 ? 'badge-warning' : estadoId === 2 ? 'badge-success' : 'badge-danger'}">${estado}</span></td>
 					<td>${devuelto ? 'Sí' : 'No'}</td>
                     <td class="acciones-botones">${botones}</td>
@@ -958,7 +978,7 @@ async function cargarPrestamosLibros() {
     const tbody = document.getElementById('tabla-prestamos-libros');
     if (!tbody) return;
     
-	tbody.innerHTML = '<tr><td colspan="12" class="loading">Cargando préstamos...</td></tr>';
+	tbody.innerHTML = '<tr><td colspan="13" class="loading">Cargando préstamos...</td></tr>';
 
     try {
         const respuesta = await requestJson('/auth/admin/prestamos/libros');
@@ -966,7 +986,7 @@ async function cargarPrestamosLibros() {
             tbody.innerHTML = '';
             
             if (respuesta.data.length === 0) {
-				 tbody.innerHTML = '<tr><td colspan="12">No hay préstamos registrados.</td></tr>';
+				 tbody.innerHTML = '<tr><td colspan="13">No hay préstamos registrados.</td></tr>';
                  return;
             }
 
@@ -1002,8 +1022,9 @@ async function cargarPrestamosLibros() {
 					<td>${usuario?.correo || 'N/A'}</td>
                     <td>${libro?.titulo || 'N/A'}</td>
                     <td>${ejemplar?.numero_ejemplar || 'N/A'}</td>
-                    <td>${new Date(prestamo.fecha_inicio_prestamo).toLocaleDateString()}</td>
-                    <td>${new Date(prestamo.fecha_limite_devolucion).toLocaleDateString()}</td>
+					<td>${formatFechaMexico(prestamo.fecha_inicio_prestamo)}</td>
+					<td>${formatFechaMexico(prestamo.fecha_limite_devolucion)}</td>
+					<td>${formatFechaMexico(prestamo.fecha_devolucion_real)}</td>
 					<td>${estado}</td>
 					<td>${devuelto}</td>
 					<td class="acciones-botones">${acciones}</td>
@@ -1018,10 +1039,12 @@ async function cargarPrestamosLibros() {
 
 async function devolverPrestamo(idPrestamo) {
 	if (!confirm("¿Confirmar devolución del libro?")) return;
+	const observaciones = prompt("Observaciones (opcional):", "") ?? '';
 
 	try {
 		const res = await requestJson(`/auth/admin/prestamos/libros/${idPrestamo}/devolver`, {
-			method: 'POST'
+			method: 'POST',
+			body: JSON.stringify({ observaciones })
 		});
 		mostrarToast(res.message, 'success');
 		cargarPrestamosLibros();

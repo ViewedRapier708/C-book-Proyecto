@@ -470,6 +470,7 @@ async function ObtenerSolicitudesLibros() {
             .select(`
                 id,
                 fecha_solicitud,
+                fecha_limite_recoleccion,
                 usuario_boleta,
                 estado_asistencia_id,
                 usuarios_web_movil (
@@ -498,11 +499,14 @@ async function ObtenerSolicitudesLibros() {
     }
 }
 
-async function ActualizarEstadoSolicitudLibro(idSolicitud, nuevoEstado, motivo = null) {
+async function ActualizarEstadoSolicitudLibro(idSolicitud, nuevoEstado, motivo = null, fechaLimiteRecoleccion = null, fechaAprobacion = null) {
     try {
         const updateData = { estado_asistencia_id: nuevoEstado };
         if (nuevoEstado === 2) { // Aprobada
-            updateData.fecha_aprobacion = new Date();
+            updateData.fecha_aprobacion = fechaAprobacion ?? new Date();
+            if (fechaLimiteRecoleccion) {
+                updateData.fecha_limite_recoleccion = fechaLimiteRecoleccion;
+            }
         } else if (nuevoEstado === 3) { // Rechazada
             updateData.fecha_rechazo = new Date();
             updateData.motivo_rechazo = motivo;
@@ -580,6 +584,8 @@ async function ObtenerPrestamosLibros() {
                 id,
                 fecha_inicio_prestamo,
                 fecha_limite_devolucion,
+                fecha_devolucion_real,
+                observaciones,
                 estado_prestamo_id,
                 solicitudes_libros (
                     id,
@@ -608,7 +614,7 @@ async function ObtenerPrestamosLibros() {
     }
 }
 
-async function MarcarPrestamoDevuelto(idPrestamo) {
+async function MarcarPrestamoDevuelto(idPrestamo, fechaDevolucionReal = null, observaciones = null) {
     try {
         const { data: prestamo, error: errorPrestamo } = await supabase
             .from('prestamos_libros')
@@ -631,9 +637,18 @@ async function MarcarPrestamoDevuelto(idPrestamo) {
             return { success: true };
         }
 
+        const updateData = {
+            estado_prestamo_id: 3,
+            fecha_devolucion_real: fechaDevolucionReal ?? new Date()
+        };
+
+        if (observaciones !== undefined) {
+            updateData.observaciones = observaciones;
+        }
+
         const { error: errorUpdate } = await supabase
             .from('prestamos_libros')
-            .update({ estado_prestamo_id: 3 })
+            .update(updateData)
             .eq('id', idPrestamo);
 
         if (errorUpdate) throw errorUpdate;
