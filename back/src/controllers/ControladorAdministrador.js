@@ -30,6 +30,7 @@ const {
 const { getClient } = require("../config/db");
 
 const REGEX_TEXTO_GENERAL = /^[\p{L}\p{N}\s\-\.,;:¿?¡!'"()&@#$%*+=_\\/]*$/u;
+const REGEX_SOLO_LETRAS = /^[\p{L}\s]+$/u;
 const REGEX_INVENTARIO = /^[\p{L}\p{N}\s\-_.#/]+$/u;
 
 const validarCampoTexto = ({ valor, campo, required = true, min = 1, max = 255, regex = REGEX_TEXTO_GENERAL }) => {
@@ -52,15 +53,24 @@ const validarCampoTexto = ({ valor, campo, required = true, min = 1, max = 255, 
     return null;
 };
 
-const validarEnteroPositivo = ({ valor, campo, required = true }) => {
+const validarEnteroPositivo = ({ valor, campo, required = true, maxDigits }) => {
     if (required && (valor === undefined || valor === null || valor === '')) {
         return `El campo ${campo} es requerido`;
     }
 
     if (valor === undefined || valor === null || valor === '') return null;
 
-    const numero = Number(valor);
-    if (!Number.isInteger(numero) || numero <= 0) {
+    const valorTexto = String(valor).trim();
+    if (maxDigits && valorTexto.length > maxDigits) {
+        return `El campo ${campo} supera la longitud máxima permitida (${maxDigits} dígitos)`;
+    }
+
+    if (!/^\d+$/.test(valorTexto)) {
+        return `El campo ${campo} debe ser un número entero positivo`;
+    }
+
+    const numero = Number(valorTexto);
+    if (!Number.isSafeInteger(numero) || numero <= 0) {
         return `El campo ${campo} debe ser un número entero positivo`;
     }
 
@@ -77,12 +87,12 @@ const validarBooleano = ({ valor, campo }) => {
 const validarComputadoraPayload = (payload, { requireAll = true } = {}) => {
     const errores = [];
 
-    errores.push(validarCampoTexto({ valor: payload.procesador, campo: 'procesador', required: requireAll, max: 255 }));
-    errores.push(validarCampoTexto({ valor: payload.programas, campo: 'programas', required: requireAll, max: 255 }));
-    errores.push(validarCampoTexto({ valor: payload.carrera, campo: 'carrera', required: requireAll, max: 255 }));
-    errores.push(validarCampoTexto({ valor: payload.Observacion, campo: 'Observacion', required: requireAll, max: 500 }));
+    errores.push(validarCampoTexto({ valor: payload.procesador, campo: 'procesador', required: requireAll, max: 50 }));
+    errores.push(validarCampoTexto({ valor: payload.programas, campo: 'programas', required: requireAll, max: 50 }));
+    errores.push(validarCampoTexto({ valor: payload.carrera, campo: 'carrera', required: requireAll, max: 50, regex: REGEX_SOLO_LETRAS }));
+    errores.push(validarCampoTexto({ valor: payload.Observacion, campo: 'Observacion', required: requireAll, max: 50 }));
     errores.push(validarCampoTexto({ valor: payload.no_inventario, campo: 'no_inventario', required: requireAll, max: 50, regex: REGEX_INVENTARIO }));
-    errores.push(validarEnteroPositivo({ valor: payload.no_computadora, campo: 'no_computadora', required: requireAll }));
+    errores.push(validarEnteroPositivo({ valor: payload.no_computadora, campo: 'no_computadora', required: requireAll, maxDigits: 20 }));
     errores.push(validarBooleano({ valor: payload.Disponible, campo: 'Disponible' }));
     errores.push(validarBooleano({ valor: payload.En_funcionamiento, campo: 'En_funcionamiento' }));
 
@@ -93,13 +103,15 @@ const validarRestiradorPayload = (payload, { requireAll = true } = {}) => {
     const errores = [];
 
     errores.push(validarCampoTexto({ valor: payload.no_inventario, campo: 'no_inventario', required: requireAll, max: 50, regex: REGEX_INVENTARIO }));
-    errores.push(validarEnteroPositivo({ valor: payload.no_restirador, campo: 'no_restirador', required: requireAll }));
-    errores.push(validarCampoTexto({ valor: payload.Observacion, campo: 'Observacion', required: requireAll, max: 500 }));
+    errores.push(validarEnteroPositivo({ valor: payload.no_restirador, campo: 'no_restirador', required: requireAll, maxDigits: 20 }));
+    errores.push(validarCampoTexto({ valor: payload.Observacion, campo: 'Observacion', required: requireAll, max: 50 }));
     errores.push(validarBooleano({ valor: payload.Disponible, campo: 'Disponible' }));
     errores.push(validarBooleano({ valor: payload.estado_de_material ?? payload.estado_material, campo: 'estado_de_material' }));
 
     return errores.find(Boolean) || null;
 };
+
+const esVacio = (valor) => valor === undefined || valor === null || valor === '';
 
 const validarLibroPayload = (payload, { requireAll = true } = {}) => {
     const {
@@ -117,23 +129,23 @@ const validarLibroPayload = (payload, { requireAll = true } = {}) => {
     } = payload || {};
 
     if (requireAll) {
-        if (!titulo || !clasificacion || !isbn || !tipo_material || !autor) {
+        if (esVacio(titulo) || esVacio(clasificacion) || esVacio(isbn) || esVacio(tipo_material) || esVacio(autor)) {
             return 'Todos los campos son requeridos';
         }
 
-        if (!numero_ejemplar || !anio || !estatus_item || !coleccion || !codigo_barras) {
+        if (esVacio(numero_ejemplar) || esVacio(anio) || esVacio(estatus_item) || esVacio(coleccion) || esVacio(codigo_barras)) {
             return 'Todos los campos del ejemplar son requeridos';
         }
     }
 
-    if (numero_ejemplar !== undefined) {
+    if (!esVacio(numero_ejemplar)) {
         const numeroEjemplar = Number(numero_ejemplar);
         if (!Number.isInteger(numeroEjemplar) || numeroEjemplar < 0) {
             return 'El número de ejemplar debe ser un número entero no negativo';
         }
     }
 
-    if (anio !== undefined) {
+    if (!esVacio(anio)) {
         const anioNumero = Number(anio);
         if (!Number.isInteger(anioNumero)) {
             return 'El año debe ser un número entero';
@@ -154,37 +166,37 @@ const validarLibroPayload = (payload, { requireAll = true } = {}) => {
         estatus_item: /^[\p{L}\p{N}\s_\-]+$/u
     };
 
-    if (titulo && !regex.titulo.test(titulo)) {
+    if (!esVacio(titulo) && !regex.titulo.test(titulo)) {
         return 'El título contiene caracteres no permitidos (no se permiten emojis)';
     }
-    if (clasificacion && !regex.clasificacion.test(clasificacion)) {
+    if (!esVacio(clasificacion) && !regex.clasificacion.test(clasificacion)) {
         return 'La clasificación solo puede contener letras, números, espacios, puntos y guiones';
     }
-    if (isbn && !regex.isbn.test(isbn)) {
+    if (!esVacio(isbn) && !regex.isbn.test(isbn)) {
         return 'El ISBN no tiene un formato válido (ejemplo: 978-3-16-148410-0 o 0-306-40615-2)';
     }
-    if (isbn) {
-        const isbnLimpio = isbn.replace(/-/g, '');
+    if (!esVacio(isbn)) {
+        const isbnLimpio = String(isbn).replace(/-/g, '');
         if (!(isbnLimpio.length === 10 || isbnLimpio.length === 13)) {
             return 'El ISBN debe tener 10 o 13 dígitos (sin contar guiones)';
         }
     }
-    if (tipo_material && !regex.tipo_material.test(tipo_material)) {
+    if (!esVacio(tipo_material) && !regex.tipo_material.test(tipo_material)) {
         return 'El tipo de material solo puede contener letras y espacios';
     }
-    if (autor && !regex.autor.test(autor)) {
+    if (!esVacio(autor) && !regex.autor.test(autor)) {
         return 'El autor solo puede contener letras, espacios, apóstrofes, puntos y guiones';
     }
-    if (codigo_barras && !regex.codigo_barras.test(codigo_barras)) {
+    if (!esVacio(codigo_barras) && !regex.codigo_barras.test(codigo_barras)) {
         return 'El código de barras contiene caracteres no permitidos';
     }
-    if (codigo_barras && String(codigo_barras).length < 3) {
+    if (!esVacio(codigo_barras) && String(codigo_barras).length < 3) {
         return 'El código de barras debe tener al menos 3 caracteres';
     }
-    if (coleccion && !regex.coleccion.test(coleccion)) {
+    if (!esVacio(coleccion) && !regex.coleccion.test(coleccion)) {
         return 'La colección contiene caracteres no permitidos';
     }
-    if (estatus_item && !regex.estatus_item.test(estatus_item)) {
+    if (!esVacio(estatus_item) && !regex.estatus_item.test(estatus_item)) {
         return 'El estatus del item contiene caracteres no permitidos';
     }
 
@@ -193,18 +205,18 @@ const validarLibroPayload = (payload, { requireAll = true } = {}) => {
     }
 
     const longitudes = {
-        titulo: { min: 1, max: 500 },
+        titulo: { min: 1, max: 50 },
         clasificacion: { min: 1, max: 50 },
-        isbn: { min: 10, max: 17 },
+        isbn: { min: 10, max: 50 },
         tipo_material: { min: 1, max: 50 },
-        autor: { min: 1, max: 200 },
+        autor: { min: 1, max: 50 },
         codigo_barras: { min: 3, max: 50 },
-        coleccion: { min: 1, max: 200 },
+        coleccion: { min: 1, max: 50 },
         estatus_item: { min: 1, max: 50 }
     };
 
     for (const [campo, limites] of Object.entries(longitudes)) {
-        if (payload?.[campo] !== undefined && payload?.[campo] !== null) {
+        if (!esVacio(payload?.[campo])) {
             const valorTexto = String(payload[campo]);
             if (valorTexto.length < limites.min || valorTexto.length > limites.max) {
                 return `El campo ${campo} debe tener entre ${limites.min} y ${limites.max} caracteres`;
@@ -259,204 +271,41 @@ async function crearLibro(req, res) {
     coleccion
 } = req.body;
 
-// Evitar duplicados de número de ejemplar
-if (numero_ejemplar !== undefined && numero_ejemplar !== null && numero_ejemplar !== '') {
-    const duplicadoEjemplar = await validarDuplicado({
-        tabla: 'ejemplares',
-        columna: 'numero_ejemplar',
-        valor: numero_ejemplar,
-        mensaje: 'El número de ejemplar ya existe'
-    });
-    if (!duplicadoEjemplar.success) {
-        return res.status(409).json({
-            success: false,
-            message: duplicadoEjemplar.message
-        });
-    }
-}
+    const errorValidacion = validarLibroPayload({
+        titulo,
+        clasificacion,
+        isbn,
+        tipo_material,
+        autor,
+        codigo_barras,
+        numero_ejemplar,
+        anio,
+        estatus_item,
+        Disponible,
+        coleccion
+    }, { requireAll: true });
 
-// Validación de campos requeridos
-if (!titulo || !clasificacion || !isbn || !tipo_material || !autor) {
-    return res.status(400).json({ 
-        success: false, 
-        message: 'Todos los campos son requeridos' 
-    });
-}
-
-if (!numero_ejemplar || !anio || !estatus_item || !coleccion || !codigo_barras) {
-    return res.status(400).json({
-        success: false,
-        message: 'Todos los campos del ejemplar son requeridos'
-    });
-}
-
-// Validaciones numéricas
-if (numero_ejemplar < 0) {
-    return res.status(400).json({
-        success: false,
-        message: 'El número de ejemplar no puede ser negativo'
-    });
-}
-
-if (anio < 0) {
-    return res.status(400).json({
-        success: false,
-        message: 'El año no puede ser negativo'
-    });
-}
-
-if (!Number.isInteger(numero_ejemplar)) {
-    return res.status(400).json({
-        success: false,
-        message: 'El número de ejemplar debe ser un número entero'
-    });
-}
-
-if (!Number.isInteger(anio)) { 
-    return res.status(400).json({
-        success: false,
-        message: 'El año debe ser un número entero'
-    });
-}
-
-// Validación del año (rango razonable: 1000-2100)
-const anioActual = new Date().getFullYear();
-if (anio < 1000 || anio > 2100) {
-    return res.status(400).json({
-        success: false,
-        message: 'El año debe estar entre 1000 y 2100'
-    });
-}
-
-// Expresiones regulares para validaciones
-const regex = {
-    // Título: letras, números, espacios, acentos y signos de puntuación comunes, pero sin emojis
-    titulo: /^[\p{L}\p{N}\s\-\.,;:¿?¡!'"()\[\]{}«»–—&@#$%*+=_\\/]*$/u,
-    
-    // Clasificación: letras, números, espacios y puntos (ej: "823.5 M123")
-    clasificacion: /^[\p{L}\p{N}\s\.\-]*$/u,
-    
-    // ISBN-13 o ISBN-10: formato estándar con guiones
-    isbn: /^(?:\d{3}-)?\d{1,5}-\d{1,7}-\d{1,7}-\d{1}$|^\d{9}[\dX]$/,
-    
-    // Tipo de material: solo letras (incluyendo acentos) y espacios
-    tipo_material: /^[\p{L}\s]+$/u,
-    
-    // Autor: letras, espacios, apóstrofes, guiones y acentos
-    autor: /^[\p{L}\s'\-\.]+$/u,
-    
-    // Código de barras: típicamente números, pero algunos sistemas usan letras
-    codigo_barras: /^[\p{L}\p{N}\-]+$/u,
-    
-    // Colección: similar al título pero más restrictivo
-    coleccion: /^[\p{L}\p{N}\s\-\.,;:¿?¡!'"()&]*$/u,
-    
-    // Estatus item: letras, números y guiones bajos
-    estatus_item: /^[\p{L}\p{N}\s_\-]+$/u
-};
-
-// Aplicar validaciones con expresiones regulares
-if (!regex.titulo.test(titulo)) {
-    return res.status(400).json({
-        success: false,
-        message: 'El título contiene caracteres no permitidos (no se permiten emojis)'
-    });
-}
-
-if (!regex.clasificacion.test(clasificacion)) {
-    return res.status(400).json({
-        success: false,
-        message: 'La clasificación solo puede contener letras, números, espacios, puntos y guiones'
-    });
-}
-
-if (!regex.isbn.test(isbn)) {
-    return res.status(400).json({
-        success: false,
-        message: 'El ISBN no tiene un formato válido (ejemplo: 978-3-16-148410-0 o 0-306-40615-2)'
-    });
-}
-
-// Validación adicional para ISBN: eliminar guiones y verificar longitud
-const isbnLimpio = isbn.replace(/-/g, '');
-if (!(isbnLimpio.length === 10 || isbnLimpio.length === 13)) {
-    return res.status(400).json({
-        success: false,
-        message: 'El ISBN debe tener 10 o 13 dígitos (sin contar guiones)'
-    });
-}
-
-if (!regex.tipo_material.test(tipo_material)) {
-    return res.status(400).json({
-        success: false,
-        message: 'El tipo de material solo puede contener letras y espacios'
-    });
-}
-
-if (!regex.autor.test(autor)) {
-    return res.status(400).json({
-        success: false,
-        message: 'El autor solo puede contener letras, espacios, apóstrofes, puntos y guiones'
-    });
-}
-
-if (!regex.codigo_barras.test(codigo_barras)) {
-    return res.status(400).json({
-        success: false,
-        message: 'El código de barras contiene caracteres no permitidos'
-    });
-}
-
-// Validación adicional: longitud mínima para código de barras
-if (codigo_barras.length < 3) {
-    return res.status(400).json({
-        success: false,
-        message: 'El código de barras debe tener al menos 3 caracteres'
-    });
-}
-
-if (!regex.coleccion.test(coleccion)) {
-    return res.status(400).json({
-        success: false,
-        message: 'La colección contiene caracteres no permitidos'
-    });
-}
-
-if (!regex.estatus_item.test(estatus_item)) {
-    return res.status(400).json({
-        success: false,
-        message: 'El estatus del item contiene caracteres no permitidos'
-    });
-}
-
-// Validación adicional para Disponible (si se envía)
-if (Disponible !== undefined && typeof Disponible !== 'boolean') {
-    return res.status(400).json({
-        success: false,
-        message: 'El campo Disponible debe ser un valor booleano (true/false)'
-    });
-}
-
-// Validación de longitud de campos
-const longitudes = {
-    titulo: { min: 1, max: 500 },
-    clasificacion: { min: 1, max: 50 },
-    isbn: { min: 10, max: 17 }, // Con guiones puede ser más largo
-    tipo_material: { min: 1, max: 50 },
-    autor: { min: 1, max: 200 },
-    codigo_barras: { min: 3, max: 50 },
-    coleccion: { min: 1, max: 200 },
-    estatus_item: { min: 1, max: 50 }
-};
-
-for (const [campo, limites] of Object.entries(longitudes)) {
-    if (req.body[campo].length < limites.min || req.body[campo].length > limites.max) {
+    if (errorValidacion) {
         return res.status(400).json({
             success: false,
-            message: `El campo ${campo} debe tener entre ${limites.min} y ${limites.max} caracteres`
+            message: errorValidacion
         });
     }
-}
+
+    if (!esVacio(numero_ejemplar)) {
+        const duplicadoEjemplar = await validarDuplicado({
+            tabla: 'ejemplares',
+            columna: 'numero_ejemplar',
+            valor: numero_ejemplar,
+            mensaje: 'El número de ejemplar ya existe'
+        });
+        if (!duplicadoEjemplar.success) {
+            return res.status(409).json({
+                success: false,
+                message: duplicadoEjemplar.message
+            });
+        }
+    }
 
 
         const resultadoLibro = await CrearLibro(titulo, clasificacion, isbn, tipo_material, autor);
@@ -478,8 +327,8 @@ for (const [campo, limites] of Object.entries(longitudes)) {
         const resultadoEjemplar = await CrearEjemplar(
             libroId,
             codigo_barras,
-            numero_ejemplar,
-            anio,
+            Number(numero_ejemplar),
+            Number(anio),
             estatus_item,
             Disponible,
             coleccion
@@ -513,6 +362,24 @@ async function crearComputadora(req, res) {
             no_inventario, no_computadora 
         } = req.body;
 
+        const errorValidacion = validarComputadoraPayload({
+            procesador,
+            programas,
+            carrera,
+            Disponible,
+            En_funcionamiento,
+            Observacion,
+            no_inventario,
+            no_computadora
+        }, { requireAll: true });
+
+        if (errorValidacion) {
+            return res.status(400).json({
+                success: false,
+                message: errorValidacion
+            });
+        }
+
         const duplicadoInventario = await validarDuplicado({
             tabla: 'computadoras',
             columna: 'no_inventario',
@@ -536,24 +403,6 @@ async function crearComputadora(req, res) {
             return res.status(409).json({
                 success: false,
                 message: duplicadoNumero.message
-            });
-        }
-
-        const errorValidacion = validarComputadoraPayload({
-            procesador,
-            programas,
-            carrera,
-            Disponible,
-            En_funcionamiento,
-            Observacion,
-            no_inventario,
-            no_computadora
-        }, { requireAll: true });
-
-        if (errorValidacion) {
-            return res.status(400).json({
-                success: false,
-                message: errorValidacion
             });
         }
 
@@ -837,6 +686,24 @@ async function actualizarComputadora(req, res) {
             });
         }
 
+        const errorValidacion = validarComputadoraPayload({
+            procesador,
+            programas,
+            carrera,
+            Disponible,
+            En_funcionamiento,
+            Observacion,
+            no_inventario,
+            no_computadora
+        }, { requireAll: true });
+
+        if (errorValidacion) {
+            return res.status(400).json({
+                success: false,
+                message: errorValidacion
+            });
+        }
+
         if (no_inventario !== undefined && no_inventario !== null && no_inventario !== '') {
             const duplicadoInventario = await validarDuplicado({
                 tabla: 'computadoras',
@@ -867,24 +734,6 @@ async function actualizarComputadora(req, res) {
                     message: duplicadoNumero.message
                 });
             }
-        }
-
-        const errorValidacion = validarComputadoraPayload({
-            procesador,
-            programas,
-            carrera,
-            Disponible,
-            En_funcionamiento,
-            Observacion,
-            no_inventario,
-            no_computadora
-        }, { requireAll: true });
-
-        if (errorValidacion) {
-            return res.status(400).json({
-                success: false,
-                message: errorValidacion
-            });
         }
 
         const resultado = await actualizarDatosComputadora(
