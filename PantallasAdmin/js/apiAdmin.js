@@ -865,75 +865,282 @@ function inicializarUsuarios() {
 
 // ==================== SOLICITUDES LIBROS ====================
 
+// Variables globales para paginación de solicitudes
+let solicitudesDataOriginal = [];
+let solicitudesFiltradas = [];
+let paginaActualSolicitud = 0;
+const CARDS_POR_PAGINA = 3;
+
 async function cargarSolicitudesLibros() {
-    const tbody = document.getElementById('tabla-solicitudes-libros');
-    if (!tbody) return;
+    const container = document.getElementById('tabla-solicitudes-libros');
+    if (!container) return;
     
-	tbody.innerHTML = '<tr><td colspan="11" class="loading">Cargando solicitudes...</td></tr>';
+    container.innerHTML = '<div class="solicitud-loading">Cargando solicitudes...</div>';
+    ocultarControlesPaginacion();
     
     try {
         const respuesta = await requestJson('/auth/admin/solicitudes/libros');
         if (respuesta.success) {
-            tbody.innerHTML = '';
-
-            if (respuesta.data.length === 0) {
-				 tbody.innerHTML = '<tr><td colspan="11">No hay solicitudes registradas.</td></tr>';
-                 return;
-            }
-
-            respuesta.data.forEach(solicitud => {
-                const tr = document.createElement('tr');
-				const estadoId = Number(solicitud.estado_asistencia_id);
-				const estado = estadoId === 1
-					? 'Pendiente'
-					: estadoId === 2
-						? 'Aprobada (Por Recoger)'
-						: estadoId === 3
-							? 'Rechazada'
-							: 'Cancelada';
-                const usuario = solicitud.usuarios_web_movil;
-				const alumno = usuario?.boletas;
-                const libro = solicitud.ejemplares?.libros;
-				const prestamos = solicitud.prestamos_libros;
-				const prestamoArray = Array.isArray(prestamos) ? prestamos : (prestamos ? [prestamos] : []);
-				const devuelto = prestamoArray.some(p => Number(p.estado_prestamo_id) === 3);
-				const tieneDocumentos = usuario?.tiene_documentos ? 'Sí' : 'No';
-                
-                let botones = '';
-				if (estadoId === 1) {
-                    botones = `
-                        <button class="btn-aprobar" onclick="gestionarSolicitud(${solicitud.id}, 2, '${usuario?.boleta}')">Aprobar</button>
-                        <button class="btn-rechazar" onclick="gestionarSolicitud(${solicitud.id}, 3, '${usuario?.boleta}')">Rechazar</button>
-                    `;
-				} else if (estadoId === 2) {
-                    botones = `
-                        <button class="btn-guardar" style="background: #28a745; color: white; border-color: #28a745;" onclick="entregarLibro(${solicitud.id}, '${usuario?.boleta}', ${solicitud.ejemplares?.id})">
-                             <i class="fas fa-check"></i> Entregar Libro
-                        </button>
-                    `;
-                }
-
-                tr.innerHTML = `
-                    <td>${usuario?.boleta || 'N/A'}</td>
-					<td>${alumno?.nombre || 'N/A'}</td>
-					<td>${alumno?.Grupo || 'N/A'}</td>
-					<td>${usuario?.correo || 'N/A'}</td>
-					<td>${tieneDocumentos}</td>
-                    <td>${libro?.titulo || 'N/A'}</td>
-					<td>${formatFechaMexico(solicitud.fecha_solicitud)}</td>
-					<td>${formatFechaMexico(solicitud.fecha_limite_recoleccion)}</td>
-					<td><span class="badge ${estadoId === 1 ? 'badge-warning' : estadoId === 2 ? 'badge-success' : 'badge-danger'}">${estado}</span></td>
-					<td>${devuelto ? 'Sí' : 'No'}</td>
-                    <td class="acciones-botones">${botones}</td>
-                `;
-                tbody.appendChild(tr);
+            // Ordenar: Pendientes (1) primero, luego por ID descendente
+            solicitudesDataOriginal = respuesta.data.sort((a, b) => {
+                const estadoA = Number(a.estado_asistencia_id);
+                const estadoB = Number(b.estado_asistencia_id);
+                if (estadoA === 1 && estadoB !== 1) return -1;
+                if (estadoB === 1 && estadoA !== 1) return 1;
+                return b.id - a.id;
             });
+            
+            paginaActualSolicitud = 0;
+            
+            // Aplicar filtro por defecto (Pendientes)
+            filtrarSolicitudes();
         }
     } catch (error) {
         console.error("Error cargando solicitudes:", error);
-		tbody.innerHTML = `<tr><td colspan="10" class="error">Error: ${error.message}</td></tr>`;
+        container.innerHTML = `<div class="solicitud-error">Error: ${error.message}</div>`;
+        ocultarControlesPaginacion();
     }
 }
+
+function filtrarSolicitudes() {
+    const filtro = document.getElementById('filtro-estado')?.value || 'todos';
+    
+    if (filtro === 'todos') {
+        solicitudesFiltradas = [...solicitudesDataOriginal];
+    } else {
+        solicitudesFiltradas = solicitudesDataOriginal.filter(
+            s => Number(s.estado_asistencia_id) === Number(filtro)
+        );
+    }
+    
+    paginaActualSolicitud = 0;
+    actualizarContadorFiltro();
+    
+    const container = document.getElementById('tabla-solicitudes-libros');
+    if (solicitudesFiltradas.length === 0) {
+        container.innerHTML = '<div class="solicitud-vacia">No hay solicitudes con este estado.</div>';
+        ocultarControlesPaginacion();
+        return;
+    }
+    
+    mostrarPaginaSolicitudes();
+    generarDotsSolicitudes();
+    actualizarContadorSolicitudes();
+    mostrarControlesPaginacion();
+}
+
+function actualizarContadorFiltro() {
+    const contador = document.getElementById('filtro-contador');
+    if (!contador) return;
+    
+    const filtro = document.getElementById('filtro-estado')?.value || 'todos';
+    const pendientes = solicitudesDataOriginal.filter(s => Number(s.estado_asistencia_id) === 1).length;
+    
+    if (filtro === '1') {
+        contador.textContent = pendientes > 0 ? `${pendientes} pendiente${pendientes > 1 ? 's' : ''}` : '';
+        contador.className = 'filtro-contador' + (pendientes > 0 ? ' filtro-contador-activo' : '');
+    } else if (filtro === 'todos') {
+        contador.textContent = `Total: ${solicitudesDataOriginal.length}`;
+        contador.className = 'filtro-contador';
+    } else {
+        contador.textContent = `${solicitudesFiltradas.length} resultado${solicitudesFiltradas.length !== 1 ? 's' : ''}`;
+        contador.className = 'filtro-contador';
+    }
+}
+
+function getTotalPaginas() {
+    return Math.ceil(solicitudesFiltradas.length / CARDS_POR_PAGINA);
+}
+
+function mostrarPaginaSolicitudes() {
+    const container = document.getElementById('tabla-solicitudes-libros');
+    if (!container || solicitudesFiltradas.length === 0) return;
+
+    const inicio = paginaActualSolicitud * CARDS_POR_PAGINA;
+    const fin = Math.min(inicio + CARDS_POR_PAGINA, solicitudesFiltradas.length);
+    const solicitudesPagina = solicitudesFiltradas.slice(inicio, fin);
+    
+    container.innerHTML = solicitudesPagina.map((solicitud, index) => 
+        crearCardSolicitud(solicitud, index)
+    ).join('');
+    
+    actualizarDotsSolicitudes();
+    actualizarContadorSolicitudes();
+    actualizarEstadoFlechas();
+}
+
+function crearCardSolicitud(solicitud, animationDelay = 0) {
+    const estadoId = Number(solicitud.estado_asistencia_id);
+    const estado = estadoId === 1
+        ? 'Pendiente'
+        : estadoId === 2
+            ? 'Aprobada (Por Recoger)'
+            : estadoId === 3
+                ? 'Rechazada'
+                : 'Cancelada';
+    const usuario = solicitud.usuarios_web_movil;
+    const alumno = usuario?.boletas;
+    const libro = solicitud.ejemplares?.libros;
+    const prestamos = solicitud.prestamos_libros;
+    const prestamoArray = Array.isArray(prestamos) ? prestamos : (prestamos ? [prestamos] : []);
+    const devuelto = prestamoArray.some(p => Number(p.estado_prestamo_id) === 3);
+    const tieneDocumentos = usuario?.tiene_documentos ? 'Sí' : 'No';
+    
+    let botones = '';
+    if (estadoId === 1) {
+        botones = `
+            <button class="btn-aprobar" onclick="gestionarSolicitud(${solicitud.id}, 2, '${usuario?.boleta}')">Aprobar</button>
+            <button class="btn-rechazar" onclick="gestionarSolicitud(${solicitud.id}, 3, '${usuario?.boleta}')">Rechazar</button>
+        `;
+    } else if (estadoId === 2) {
+        botones = `
+            <button class="btn-guardar btn-entregar-libro" onclick="entregarLibro(${solicitud.id}, '${usuario?.boleta}', ${solicitud.ejemplares?.id})">
+                 <i class="fas fa-check"></i> Entregar Libro
+            </button>
+        `;
+    }
+
+    const badgeClass = estadoId === 1 ? 'badge-warning' : estadoId === 2 ? 'badge-success' : 'badge-danger';
+
+    return `
+        <div class="solicitud-card solicitud-card-animada" style="animation-delay: ${animationDelay * 0.08}s">
+            <div class="solicitud-card-header">
+                <span class="solicitud-boleta">${usuario?.boleta || 'N/A'}</span>
+                <span class="badge ${badgeClass}">${estado}</span>
+            </div>
+            <div class="solicitud-card-body">
+                <div class="solicitud-dato">
+                    <span class="solicitud-label">Nombre</span>
+                    <span class="solicitud-value">${alumno?.nombre || 'N/A'}</span>
+                </div>
+                <div class="solicitud-dato">
+                    <span class="solicitud-label">Grupo</span>
+                    <span class="solicitud-value">${alumno?.Grupo || 'N/A'}</span>
+                </div>
+                <div class="solicitud-dato">
+                    <span class="solicitud-label">Correo</span>
+                    <span class="solicitud-value solicitud-correo">${usuario?.correo || 'N/A'}</span>
+                </div>
+                <div class="solicitud-dato">
+                    <span class="solicitud-label">Documentación</span>
+                    <span class="solicitud-value">${tieneDocumentos}</span>
+                </div>
+                <div class="solicitud-dato">
+                    <span class="solicitud-label">Libro Solicitado</span>
+                    <span class="solicitud-value solicitud-libro">${libro?.titulo || 'N/A'}</span>
+                </div>
+                <div class="solicitud-dato">
+                    <span class="solicitud-label">Fecha Solicitud</span>
+                    <span class="solicitud-value">${formatFechaMexico(solicitud.fecha_solicitud)}</span>
+                </div>
+                <div class="solicitud-dato">
+                    <span class="solicitud-label">Fecha Límite</span>
+                    <span class="solicitud-value">${formatFechaMexico(solicitud.fecha_limite_recoleccion)}</span>
+                </div>
+                <div class="solicitud-dato">
+                    <span class="solicitud-label">Devuelto</span>
+                    <span class="solicitud-value">${devuelto ? 'Sí' : 'No'}</span>
+                </div>
+            </div>
+            <div class="solicitud-card-footer">
+                ${botones}
+            </div>
+        </div>
+    `;
+}
+
+function siguientePaginaSolicitud() {
+    if (paginaActualSolicitud < getTotalPaginas() - 1) {
+        paginaActualSolicitud++;
+        mostrarPaginaSolicitudes();
+    }
+}
+
+function anteriorPaginaSolicitud() {
+    if (paginaActualSolicitud > 0) {
+        paginaActualSolicitud--;
+        mostrarPaginaSolicitudes();
+    }
+}
+
+function irAPaginaSolicitud(indice) {
+    if (indice >= 0 && indice < getTotalPaginas()) {
+        paginaActualSolicitud = indice;
+        mostrarPaginaSolicitudes();
+    }
+}
+
+function generarDotsSolicitudes() {
+    const dotsContainer = document.getElementById('solicitudes-dots');
+    if (!dotsContainer) return;
+    
+    const totalPaginas = getTotalPaginas();
+    dotsContainer.innerHTML = '';
+    
+    for (let i = 0; i < totalPaginas; i++) {
+        const dot = document.createElement('button');
+        dot.className = `paginacion-dot ${i === paginaActualSolicitud ? 'active' : ''}`;
+        dot.onclick = () => irAPaginaSolicitud(i);
+        dot.setAttribute('aria-label', `Ir a página ${i + 1}`);
+        dotsContainer.appendChild(dot);
+    }
+}
+
+function actualizarDotsSolicitudes() {
+    const dots = document.querySelectorAll('#solicitudes-dots .paginacion-dot');
+    dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === paginaActualSolicitud);
+    });
+}
+
+function actualizarContadorSolicitudes() {
+    const contador = document.getElementById('solicitudes-contador');
+    if (contador) {
+        const totalPaginas = getTotalPaginas();
+        contador.textContent = `Página ${paginaActualSolicitud + 1} / ${totalPaginas} (${solicitudesFiltradas.length} solicitudes)`;
+    }
+}
+
+function actualizarEstadoFlechas() {
+    const prevBtn = document.querySelector('.carousel-prev');
+    const nextBtn = document.querySelector('.carousel-next');
+    const totalPaginas = getTotalPaginas();
+    
+    if (prevBtn) {
+        prevBtn.disabled = paginaActualSolicitud === 0;
+        prevBtn.classList.toggle('disabled', paginaActualSolicitud === 0);
+    }
+    if (nextBtn) {
+        nextBtn.disabled = paginaActualSolicitud >= totalPaginas - 1;
+        nextBtn.classList.toggle('disabled', paginaActualSolicitud >= totalPaginas - 1);
+    }
+}
+
+function mostrarControlesPaginacion() {
+    const paginacion = document.querySelector('.solicitudes-paginacion');
+    const flechas = document.querySelectorAll('.carousel-arrow');
+    if (paginacion) paginacion.style.display = 'flex';
+    flechas.forEach(f => f.style.display = 'flex');
+}
+
+function ocultarControlesPaginacion() {
+    const paginacion = document.querySelector('.solicitudes-paginacion');
+    const flechas = document.querySelectorAll('.carousel-arrow');
+    if (paginacion) paginacion.style.display = 'none';
+    flechas.forEach(f => f.style.display = 'none');
+}
+
+// Navegación con teclado
+document.addEventListener('keydown', (e) => {
+    const container = document.getElementById('tabla-solicitudes-libros');
+    if (!container || solicitudesFiltradas.length === 0) return;
+    
+    if (e.key === 'ArrowLeft') {
+        anteriorPaginaSolicitud();
+    } else if (e.key === 'ArrowRight') {
+        siguientePaginaSolicitud();
+    }
+})
 
 async function gestionarSolicitud(id, estado, boletaUser) {
     let motivo = null;
@@ -1069,6 +1276,10 @@ window.inicializarUsuarios = inicializarUsuarios;
 window.inicializarSolicitudesLibros = inicializarSolicitudesLibros;
 window.inicializarPrestamosLibros = inicializarPrestamosLibros;
 window.cargarSolicitudesLibros = cargarSolicitudesLibros;
+window.filtrarSolicitudes = filtrarSolicitudes;
+window.siguientePaginaSolicitud = siguientePaginaSolicitud;
+window.anteriorPaginaSolicitud = anteriorPaginaSolicitud;
+window.irAPaginaSolicitud = irAPaginaSolicitud;
 window.gestionarSolicitud = gestionarSolicitud;
 window.entregarLibro = entregarLibro;
 window.cargarPrestamosLibros = cargarPrestamosLibros;

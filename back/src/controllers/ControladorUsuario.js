@@ -7,7 +7,6 @@ const {
   buscarCorreoPorBoleta,
   loginConAuth,
   traerUsuarioInfo,
-  refrescarSesionSupabase,
   revocarSesionesSupabase
 } = require('../models/ModeloUsuario.js');
 

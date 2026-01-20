@@ -727,3 +727,165 @@ select:focus {
     animation: fadeInUp 0.5s ease-out 0.2s forwards;
     opacity: 0;
 }
+
+/* =============================================
+   BOTÓN LIMPIAR FILTROS
+   ============================================= */
+.filtros-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.filtros-titulo {
+    font-weight: 600;
+    color: var(--primary-1);
+    font-size: 1rem;
+}
+
+.btn-limpiar-filtros {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--primary-1);
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+    border: 2px solid var(--primary-2);
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(123, 2, 51, 0.12);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-limpiar-filtros::before {
+    content: '✕';
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.btn-limpiar-filtros::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(123, 2, 51, 0.1);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.4s ease, height 0.4s ease;
+}
+
+.btn-limpiar-filtros:hover {
+    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+    color: #fff;
+    border-color: var(--primary-1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(123, 2, 51, 0.25);
+}
+
+.btn-limpiar-filtros:hover::after {
+    width: 200px;
+    height: 200px;
+}
+
+.btn-limpiar-filtros:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(123, 2, 51, 0.2);
+}
+
+.btn-limpiar-filtros:focus-visible {
+    outline: 3px solid var(--primary-2);
+    outline-offset: 3px;
+}
+
+/* =============================================
+   BOTÓN VER TODOS LOS LIBROS / RESETEAR BÚSQUEDA
+   ============================================= */
+.btn-resetear {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.4rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.2);
+    position: relative;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.btn-resetear::before {
+    content: '📚';
+    font-size: 1rem;
+}
+
+.btn-resetear::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.4s ease, height 0.4s ease;
+}
+
+.btn-resetear:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(123, 2, 51, 0.35);
+    background: linear-gradient(135deg, var(--primary-2) 0%, var(--primary-1) 100%);
+}
+
+.btn-resetear:hover::after {
+    width: 250px;
+    height: 250px;
+}
+
+.btn-resetear:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(123, 2, 51, 0.25);
+}
+
+.btn-resetear:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+}
+
+/* Responsive para el botón */
+@media (max-width: 600px) {
+    .btn-resetear {
+        width: 100%;
+        justify-content: center;
+        padding: 0.75rem 1.2rem;
+    }
+}
+
+/* Responsive para el botón */
+@media (max-width: 600px) {
+    .filtros-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-limpiar-filtros {
+        width: 100%;
+        justify-content: center;
+        padding: 0.7rem 1rem;
+    }
+}

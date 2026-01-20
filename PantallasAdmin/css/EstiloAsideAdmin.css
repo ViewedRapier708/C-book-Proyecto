@@ -16,7 +16,7 @@ body {
 
 aside,
 .container-aside {
-    width: 280px;
+    width: 220px;
     height: 100vh;
     background: linear-gradient(180deg, #FFFFFF 0%, #F9F9F9 100%);
     box-shadow: 2px 0 15px rgba(123, 2, 51, 0.1);
@@ -52,10 +52,10 @@ aside::-webkit-scrollbar-thumb:hover,
 }
 
 .container-logos {
-    padding: 2rem 1.5rem;
+    padding: 1.25rem 1rem;
     display: flex;
     flex-direction: row;
-    gap: 1.5rem;
+    gap: 1rem;
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
@@ -78,14 +78,14 @@ aside::-webkit-scrollbar-thumb:hover,
 }
 
 .logo-containerBTZ {
-    width: 60px;
-    height: 60px;
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.95);
-    border-radius: 12px;
-    padding: 8px;
+    border-radius: 10px;
+    padding: 6px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
     transition: all 0.3s ease;
     cursor: pointer;
@@ -104,7 +104,7 @@ aside::-webkit-scrollbar-thumb:hover,
 
 .container-entrada {
     flex: 1;
-    padding: 2rem 1.5rem 1.5rem 1.5rem;
+    padding: 1rem 0.85rem 1rem 0.85rem;
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -119,11 +119,11 @@ aside::-webkit-scrollbar-thumb:hover,
 
 .container-entrada > h2 {
     color: #7B0233;
-    font-size: 1rem;
+    font-size: 0.85rem;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
     text-align: center;
-    margin: 1rem 0;
+    margin: 0.75rem 0;
     text-transform: uppercase;
 }
 
@@ -136,39 +136,39 @@ aside::-webkit-scrollbar-thumb:hover,
     overflow-y: auto;
 }
 
-.btn-secciones h2 {
+.btn-secciones h2,
+.btn-secciones h3 {
     color: #333;
-    font-size: 0.95rem;
+    font-size: 0.8rem;
     font-weight: 600;
-    margin-bottom: 1rem;
-    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 0.75rem;
     background: linear-gradient(135deg, #F2D9E3 0%, #F8D7E8 100%);
-    border-radius: 10px;
-    border-left: 4px solid #7B0233;
+    border-radius: 8px;
+    border-left: 3px solid #7B0233;
     flex-shrink: 0;
 }
 
 .btn-secciones {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
     flex-shrink: 0;
-   
 }
 
 
 .link-secciones {
     display: flex;
     align-items: center;
-    padding: 0.9rem 1rem;
+    padding: 0.65rem 0.75rem;
     color: #000000;
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: 500;
     background: #FFFFFF;
-    border: 2px solid #E8E8E8;
-    border-radius: 10px;
+    border: 1.5px solid #E8E8E8;
+    border-radius: 8px;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;

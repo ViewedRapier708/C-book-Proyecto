@@ -5,11 +5,75 @@
 .container-solicitud,
 .container-solicitudes {
     animation: fadeInUp 0.5s ease-out;
+    width: 100%;
+    max-width: 100%;
 }
 
 .container-solicitud > h2,
 .container-solicitudes > h2 {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Layout optimizado para tabla vertical */
+.container-solicitudes .layout {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 180px);
+    min-height: 400px;
+}
+
+.container-solicitudes .columna-tabla {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.container-solicitudes .container-tabla {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin-bottom: 0;
+    padding: 1rem;
+}
+
+.container-solicitudes .table-responsive {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+    width: 100%;
+    max-height: calc(100vh - 280px);
+}
+
+/* Tabla compacta para solicitudes */
+.container-solicitudes table {
+    width: 100%;
+    min-width: 900px;
+    font-size: 0.8rem;
+}
+
+.container-solicitudes thead th {
+    padding: 0.6rem 0.5rem;
+    font-size: 0.7rem;
+    white-space: nowrap;
+}
+
+.container-solicitudes tbody td {
+    padding: 0.5rem 0.4rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+/* Paginación */
+.container-solicitudes .paginacion {
+    flex-shrink: 0;
+    padding: 0.75rem 0;
+    margin-top: 0.5rem;
 }
 
 /* Layout de dos columnas con Grid */
@@ -31,12 +95,6 @@
 .columna-estadisticas {
     display: flex;
     flex-direction: column;
-}
-
-.container-solicitudes .container-tabla {
-    flex: 1;
-    overflow-y: auto;
-    margin-bottom: 0;
 }
 
 .container-datos-estadisticas {
@@ -99,21 +157,41 @@
     background-clip: text;
 }
 
-/* Ajustes para la tabla */
+/* Columnas con anchos mínimos compactos */
 .container-solicitud table th:nth-child(1),
-.container-solicitudes table th:nth-child(1) { width: 10%; }
+.container-solicitudes table th:nth-child(1),
+.container-solicitud table td:nth-child(1),
+.container-solicitudes table td:nth-child(1) { width: 8%; }
+
 .container-solicitud table th:nth-child(2),
-.container-solicitudes table th:nth-child(2) { width: 22%; }
+.container-solicitudes table th:nth-child(2),
+.container-solicitud table td:nth-child(2),
+.container-solicitudes table td:nth-child(2) { width: 14%; }
+
 .container-solicitud table th:nth-child(3),
-.container-solicitudes table th:nth-child(3) { width: 10%; }
+.container-solicitudes table th:nth-child(3),
+.container-solicitud table td:nth-child(3),
+.container-solicitudes table td:nth-child(3) { width: 5%; }
+
 .container-solicitud table th:nth-child(4),
-.container-solicitudes table th:nth-child(4) { width: 8%; }
+.container-solicitudes table th:nth-child(4),
+.container-solicitud table td:nth-child(4),
+.container-solicitudes table td:nth-child(4) { width: 14%; }
+
 .container-solicitud table th:nth-child(5),
-.container-solicitudes table th:nth-child(5) { width: 12%; }
+.container-solicitudes table th:nth-child(5),
+.container-solicitud table td:nth-child(5),
+.container-solicitudes table td:nth-child(5) { width: 6%; }
+
 .container-solicitud table th:nth-child(6),
-.container-solicitudes table th:nth-child(6) { width: 12%; }
+.container-solicitudes table th:nth-child(6),
+.container-solicitud table td:nth-child(6),
+.container-solicitudes table td:nth-child(6) { width: 12%; }
+
 .container-solicitud table th:nth-child(7),
-.container-solicitudes table th:nth-child(7) { width: 26%; }
+.container-solicitudes table th:nth-child(7),
+.container-solicitud table td:nth-child(7),
+.container-solicitudes table td:nth-child(7) { width: 10%; }
 
 .btn-aprobar,
 .btn-rechazar,
