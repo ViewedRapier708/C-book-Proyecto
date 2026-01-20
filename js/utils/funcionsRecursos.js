@@ -314,6 +314,21 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
   }, 4000);
 }
 
+/** Inicializa eventos de la tabla (para compatibilidad con RealTime) */
+function inicializarEventosTabla() {
+  const filas = document.querySelectorAll('.fila-recurso');
+  filas.forEach(fila => {
+    if (!fila.hasAttribute('data-eventos-init')) {
+      fila.addEventListener('click', function() {
+        if (typeof window.seleccionarFila === 'function') {
+          window.seleccionarFila(this);
+        }
+      });
+      fila.setAttribute('data-eventos-init', 'true');
+    }
+  });
+}
+
 // Exponer funciones globalmente para onclick en HTML y RealTime.js
 window.abrirModal = abrirModal;
 window.cerrarModal = cerrarModal;

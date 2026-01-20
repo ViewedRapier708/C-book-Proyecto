@@ -18,6 +18,17 @@
     --radius: 8px;
     --card-shadow: 0 6px 16px rgba(123, 2, 51, 0.09);
     --soft-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    
+    /* Variables adicionales para cards */
+    --surface: #FFFFFF;
+    --surface-alt: #FAFAFA;
+    --text: #1A1A1A;
+    --text-muted: #6B6B6B;
+    --border: #E8E8E8;
+    --success: #38A169;
+    --warning: #D69E2E;
+    --danger: #E53E3E;
+    --info: #3182CE;
 }
 .disabled {
     pointer-events: none;

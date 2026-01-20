@@ -306,24 +306,45 @@ async function inicializarTiempoRealSupabase(tipoInterfaz, callbackCambio) {
 }
 
 async function configurarTiempoRealParaTablaActual() {
+    // Detectar tipo desde cards o tabla
+    const cardsContainer = document.querySelector('[data-usa-cards="true"]');
     const elementoTabla = document.getElementById('tabla');
-    const tipo = elementoTabla?.getAttribute('data-tipo');
+    const tipo = cardsContainer?.getAttribute('data-tipo') || elementoTabla?.getAttribute('data-tipo');
     if (tipo) {
         await inicializarTiempoRealSupabase(tipo);
     }
 }
 
 async function cargarDatosEnTabla() {
-    const cuerpoTabla = document.getElementById('Tbody');
-    const tipoRecurso = document.getElementById('tabla')?.getAttribute('data-tipo');
+    // Detectar si se usa sistema de cards o tablas
+    const cardsContainer = document.querySelector('[data-usa-cards="true"]');
+    const usaCards = cardsContainer !== null;
+    const tipoRecurso = usaCards 
+        ? cardsContainer.getAttribute('data-tipo')
+        : document.getElementById('tabla')?.getAttribute('data-tipo');
     
+    const cuerpoTabla = document.getElementById('Tbody');
 
-    if (!cuerpoTabla || !tipoRecurso) {
-        console.error('❌ Error: No se encontró el contenedor de la tabla o el tipo de recurso.');
+    if (!tipoRecurso) {
+        console.error('❌ Error: No se encontró el tipo de recurso.');
+        return;
+    }
+    
+    // Si usa cards pero no hay Tbody, está bien - usaremos cards
+    if (!usaCards && !cuerpoTabla) {
+        console.error('❌ Error: No se encontró el contenedor de la tabla.');
         return;
     }
 
     const renderizarLista = (listaDatos) => {
+        // Si usa sistema de cards, inicializar cards en lugar de tabla
+        if (usaCards && typeof window.inicializarCards === 'function') {
+            window.inicializarCards(listaDatos, tipoRecurso);
+            return;
+        }
+        
+        // Renderizado tradicional en tabla
+        if (!cuerpoTabla) return;
         cuerpoTabla.innerHTML = ''; 
         
         listaDatos.forEach((datos) => {
