@@ -20,6 +20,7 @@ function connect() {
   if (!client) {
     const { url, key } = ensureEnv();
     client = createClient(url, key);
+    console.log('✅ Conexión a Supabase inicializada correctamente');
   }
   return client;
 }
