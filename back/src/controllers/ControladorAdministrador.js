@@ -29,6 +29,192 @@ const {
 } = require('../utils/fechaUtils.js');
 const { getClient } = require("../config/db");
 
+const REGEX_TEXTO_GENERAL = /^[\p{L}\p{N}\s\-\.,;:¿?¡!'"()&@#$%*+=_\\/]*$/u;
+const REGEX_INVENTARIO = /^[\p{L}\p{N}\s\-_.#/]+$/u;
+
+const validarCampoTexto = ({ valor, campo, required = true, min = 1, max = 255, regex = REGEX_TEXTO_GENERAL }) => {
+    const texto = valor === undefined || valor === null ? '' : String(valor).trim();
+
+    if (required && !texto) {
+        return `El campo ${campo} es requerido`;
+    }
+
+    if (!texto) return null;
+
+    if (texto.length < min || texto.length > max) {
+        return `El campo ${campo} debe tener entre ${min} y ${max} caracteres`;
+    }
+
+    if (regex && !regex.test(texto)) {
+        return `El campo ${campo} contiene caracteres no permitidos`;
+    }
+
+    return null;
+};
+
+const validarEnteroPositivo = ({ valor, campo, required = true }) => {
+    if (required && (valor === undefined || valor === null || valor === '')) {
+        return `El campo ${campo} es requerido`;
+    }
+
+    if (valor === undefined || valor === null || valor === '') return null;
+
+    const numero = Number(valor);
+    if (!Number.isInteger(numero) || numero <= 0) {
+        return `El campo ${campo} debe ser un número entero positivo`;
+    }
+
+    return null;
+};
+
+const validarBooleano = ({ valor, campo }) => {
+    if (valor !== undefined && typeof valor !== 'boolean') {
+        return `El campo ${campo} debe ser un valor booleano (true/false)`;
+    }
+    return null;
+};
+
+const validarComputadoraPayload = (payload, { requireAll = true } = {}) => {
+    const errores = [];
+
+    errores.push(validarCampoTexto({ valor: payload.procesador, campo: 'procesador', required: requireAll, max: 255 }));
+    errores.push(validarCampoTexto({ valor: payload.programas, campo: 'programas', required: requireAll, max: 255 }));
+    errores.push(validarCampoTexto({ valor: payload.carrera, campo: 'carrera', required: requireAll, max: 255 }));
+    errores.push(validarCampoTexto({ valor: payload.Observacion, campo: 'Observacion', required: requireAll, max: 500 }));
+    errores.push(validarCampoTexto({ valor: payload.no_inventario, campo: 'no_inventario', required: requireAll, max: 50, regex: REGEX_INVENTARIO }));
+    errores.push(validarEnteroPositivo({ valor: payload.no_computadora, campo: 'no_computadora', required: requireAll }));
+    errores.push(validarBooleano({ valor: payload.Disponible, campo: 'Disponible' }));
+    errores.push(validarBooleano({ valor: payload.En_funcionamiento, campo: 'En_funcionamiento' }));
+
+    return errores.find(Boolean) || null;
+};
+
+const validarRestiradorPayload = (payload, { requireAll = true } = {}) => {
+    const errores = [];
+
+    errores.push(validarCampoTexto({ valor: payload.no_inventario, campo: 'no_inventario', required: requireAll, max: 50, regex: REGEX_INVENTARIO }));
+    errores.push(validarEnteroPositivo({ valor: payload.no_restirador, campo: 'no_restirador', required: requireAll }));
+    errores.push(validarCampoTexto({ valor: payload.Observacion, campo: 'Observacion', required: requireAll, max: 500 }));
+    errores.push(validarBooleano({ valor: payload.Disponible, campo: 'Disponible' }));
+    errores.push(validarBooleano({ valor: payload.estado_de_material ?? payload.estado_material, campo: 'estado_de_material' }));
+
+    return errores.find(Boolean) || null;
+};
+
+const validarLibroPayload = (payload, { requireAll = true } = {}) => {
+    const {
+        titulo,
+        clasificacion,
+        isbn,
+        tipo_material,
+        autor,
+        codigo_barras,
+        numero_ejemplar,
+        anio,
+        estatus_item,
+        Disponible,
+        coleccion
+    } = payload || {};
+
+    if (requireAll) {
+        if (!titulo || !clasificacion || !isbn || !tipo_material || !autor) {
+            return 'Todos los campos son requeridos';
+        }
+
+        if (!numero_ejemplar || !anio || !estatus_item || !coleccion || !codigo_barras) {
+            return 'Todos los campos del ejemplar son requeridos';
+        }
+    }
+
+    if (numero_ejemplar !== undefined) {
+        const numeroEjemplar = Number(numero_ejemplar);
+        if (!Number.isInteger(numeroEjemplar) || numeroEjemplar < 0) {
+            return 'El número de ejemplar debe ser un número entero no negativo';
+        }
+    }
+
+    if (anio !== undefined) {
+        const anioNumero = Number(anio);
+        if (!Number.isInteger(anioNumero)) {
+            return 'El año debe ser un número entero';
+        }
+        if (anioNumero < 1000 || anioNumero > 2100) {
+            return 'El año debe estar entre 1000 y 2100';
+        }
+    }
+
+    const regex = {
+        titulo: /^[\p{L}\p{N}\s\-\.,;:¿?¡!'"()\[\]{}«»–—&@#$%*+=_\\/]*$/u,
+        clasificacion: /^[\p{L}\p{N}\s\.\-]*$/u,
+        isbn: /^(?:\d{3}-)?\d{1,5}-\d{1,7}-\d{1,7}-\d{1}$|^\d{9}[\dX]$/,
+        tipo_material: /^[\p{L}\s]+$/u,
+        autor: /^[\p{L}\s'\-\.]+$/u,
+        codigo_barras: /^[\p{L}\p{N}\-]+$/u,
+        coleccion: /^[\p{L}\p{N}\s\-\.,;:¿?¡!'"()&]*$/u,
+        estatus_item: /^[\p{L}\p{N}\s_\-]+$/u
+    };
+
+    if (titulo && !regex.titulo.test(titulo)) {
+        return 'El título contiene caracteres no permitidos (no se permiten emojis)';
+    }
+    if (clasificacion && !regex.clasificacion.test(clasificacion)) {
+        return 'La clasificación solo puede contener letras, números, espacios, puntos y guiones';
+    }
+    if (isbn && !regex.isbn.test(isbn)) {
+        return 'El ISBN no tiene un formato válido (ejemplo: 978-3-16-148410-0 o 0-306-40615-2)';
+    }
+    if (isbn) {
+        const isbnLimpio = isbn.replace(/-/g, '');
+        if (!(isbnLimpio.length === 10 || isbnLimpio.length === 13)) {
+            return 'El ISBN debe tener 10 o 13 dígitos (sin contar guiones)';
+        }
+    }
+    if (tipo_material && !regex.tipo_material.test(tipo_material)) {
+        return 'El tipo de material solo puede contener letras y espacios';
+    }
+    if (autor && !regex.autor.test(autor)) {
+        return 'El autor solo puede contener letras, espacios, apóstrofes, puntos y guiones';
+    }
+    if (codigo_barras && !regex.codigo_barras.test(codigo_barras)) {
+        return 'El código de barras contiene caracteres no permitidos';
+    }
+    if (codigo_barras && String(codigo_barras).length < 3) {
+        return 'El código de barras debe tener al menos 3 caracteres';
+    }
+    if (coleccion && !regex.coleccion.test(coleccion)) {
+        return 'La colección contiene caracteres no permitidos';
+    }
+    if (estatus_item && !regex.estatus_item.test(estatus_item)) {
+        return 'El estatus del item contiene caracteres no permitidos';
+    }
+
+    if (Disponible !== undefined && typeof Disponible !== 'boolean') {
+        return 'El campo Disponible debe ser un valor booleano (true/false)';
+    }
+
+    const longitudes = {
+        titulo: { min: 1, max: 500 },
+        clasificacion: { min: 1, max: 50 },
+        isbn: { min: 10, max: 17 },
+        tipo_material: { min: 1, max: 50 },
+        autor: { min: 1, max: 200 },
+        codigo_barras: { min: 3, max: 50 },
+        coleccion: { min: 1, max: 200 },
+        estatus_item: { min: 1, max: 50 }
+    };
+
+    for (const [campo, limites] of Object.entries(longitudes)) {
+        if (payload?.[campo] !== undefined && payload?.[campo] !== null) {
+            const valorTexto = String(payload[campo]);
+            if (valorTexto.length < limites.min || valorTexto.length > limites.max) {
+                return `El campo ${campo} debe tener entre ${limites.min} y ${limites.max} caracteres`;
+            }
+        }
+    }
+
+    return null;
+};
+
 // ==================== CREAR MATERIALES ====================
 
 async function crearLibro(req, res) {
@@ -284,11 +470,22 @@ async function crearComputadora(req, res) {
             Disponible, En_funcionamiento, Observacion, 
             no_inventario, no_computadora 
         } = req.body;
-        
-        if (!procesador || !programas || !carrera || !no_inventario || !no_computadora) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Todos los campos requeridos deben estar presentes' 
+
+        const errorValidacion = validarComputadoraPayload({
+            procesador,
+            programas,
+            carrera,
+            Disponible,
+            En_funcionamiento,
+            Observacion,
+            no_inventario,
+            no_computadora
+        }, { requireAll: true });
+
+        if (errorValidacion) {
+            return res.status(400).json({
+                success: false,
+                message: errorValidacion
             });
         }
 
@@ -320,11 +517,19 @@ async function crearRestirador(req, res) {
         } = req.body;
 
         const estadoMaterial = estado_de_material ?? estado_material;
-        
-        if (!no_inventario || !no_restirador) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Los campos no_inventario y no_restirador son requeridos' 
+
+        const errorValidacion = validarRestiradorPayload({
+            Disponible,
+            estado_de_material: estadoMaterial,
+            Observacion,
+            no_inventario,
+            no_restirador
+        }, { requireAll: true });
+
+        if (errorValidacion) {
+            return res.status(400).json({
+                success: false,
+                message: errorValidacion
             });
         }
 
@@ -446,6 +651,27 @@ async function actualizarLibro(req, res) {
             });
         }
 
+        const errorValidacion = validarLibroPayload({
+            titulo,
+            clasificacion,
+            isbn,
+            tipo_material,
+            autor,
+            codigo_barras,
+            numero_ejemplar,
+            anio,
+            estatus_item,
+            Disponible,
+            coleccion
+        }, { requireAll: true });
+
+        if (errorValidacion) {
+            return res.status(400).json({
+                success: false,
+                message: errorValidacion
+            });
+        }
+
         const resultadoLibro = await actualizarDatosLibro(id, titulo, clasificacion, isbn, tipo_material, autor);
 
         if (!resultadoLibro.success) {
@@ -501,6 +727,24 @@ async function actualizarComputadora(req, res) {
             });
         }
 
+        const errorValidacion = validarComputadoraPayload({
+            procesador,
+            programas,
+            carrera,
+            Disponible,
+            En_funcionamiento,
+            Observacion,
+            no_inventario,
+            no_computadora
+        }, { requireAll: true });
+
+        if (errorValidacion) {
+            return res.status(400).json({
+                success: false,
+                message: errorValidacion
+            });
+        }
+
         const resultado = await actualizarDatosComputadora(
             id, procesador, programas, carrera, 
             Disponible, En_funcionamiento, Observacion, 
@@ -534,6 +778,21 @@ async function actualizarRestirador(req, res) {
             return res.status(400).json({ 
                 success: false, 
                 message: 'El id es requerido' 
+            });
+        }
+
+        const errorValidacion = validarRestiradorPayload({
+            Disponible,
+            estado_de_material: estadoMaterial,
+            Observacion,
+            no_inventario,
+            no_restirador
+        }, { requireAll: true });
+
+        if (errorValidacion) {
+            return res.status(400).json({
+                success: false,
+                message: errorValidacion
             });
         }
 
