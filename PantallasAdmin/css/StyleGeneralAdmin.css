@@ -2295,6 +2295,484 @@ tbody td:last-child {
     border-color: #28a745;
 }
 
+/* ========================================
+   ADMIN CARDS SYSTEM - GENÉRICO
+   ======================================== */
+
+/* Contenedor principal de cards */
+.admin-cards-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.admin-cards-container h2 {
+    color: var(--primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: center;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--primary);
+}
+
+/* Header con filtros y búsqueda */
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.admin-filtros {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.admin-filtros label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.admin-filtro-select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 140px;
+}
+
+.admin-filtro-select:hover,
+.admin-filtro-select:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(123, 2, 51, 0.1);
+}
+
+.admin-search-input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    background: var(--surface);
+    color: var(--text);
+    min-width: 200px;
+    transition: all 0.2s ease;
+}
+
+.admin-search-input:hover,
+.admin-search-input:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(123, 2, 51, 0.1);
+}
+
+.admin-search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.admin-contador {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding: 0.25rem 0.5rem;
+    background: var(--surface-alt);
+    border-radius: 12px;
+}
+
+.admin-contador-activo {
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+}
+
+.admin-acciones {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* Carrusel */
+.admin-carousel {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+
+.admin-arrow {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+}
+
+.admin-arrow:hover:not(.disabled) {
+    background: var(--primary);
+    color: white;
+    transform: scale(1.05);
+}
+
+.admin-arrow.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    border-color: var(--text-muted);
+    color: var(--text-muted);
+}
+
+/* Grids de cards - variantes */
+.admin-grid {
+    flex: 1;
+    min-width: 0;
+}
+
+.admin-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.admin-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.875rem;
+}
+
+.admin-grid-6 {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.75rem;
+}
+
+@media (max-width: 1200px) {
+    .admin-grid-6 { grid-template-columns: repeat(4, 1fr); }
+    .admin-grid-4 { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 992px) {
+    .admin-grid-6 { grid-template-columns: repeat(3, 1fr); }
+    .admin-grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .admin-grid-3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .admin-grid-6,
+    .admin-grid-4,
+    .admin-grid-3 { grid-template-columns: 1fr; }
+    
+    .admin-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .admin-filtros {
+        justify-content: center;
+    }
+    
+    .admin-acciones {
+        justify-content: center;
+    }
+    
+    .admin-arrow {
+        width: 32px;
+        height: 32px;
+        font-size: 0.75rem;
+    }
+}
+
+/* Card genérica */
+.admin-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid rgba(123, 2, 51, 0.12);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+.admin-card:hover {
+    box-shadow: 0 4px 16px rgba(123, 2, 51, 0.12);
+    transform: translateY(-2px);
+}
+
+.admin-card-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-card-titulo {
+    color: white;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.admin-card-body {
+    padding: 0.875rem 1rem;
+}
+
+.admin-card-dato {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid rgba(123, 2, 51, 0.06);
+}
+
+.admin-card-dato:last-child {
+    border-bottom: none;
+}
+
+.admin-card-label {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+}
+
+.admin-card-value {
+    color: var(--text);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-align: right;
+    word-break: break-word;
+    max-width: 65%;
+}
+
+.admin-card-value-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-card-footer {
+    padding: 0.75rem 1rem;
+    background: rgba(242, 217, 227, 0.15);
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.admin-card-footer:empty {
+    display: none;
+}
+
+.admin-card-footer .btn-editar,
+.admin-card-footer .btn-eliminar,
+.admin-card-footer .btn-habilitar {
+    flex: 1;
+    min-width: 70px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+/* Badges de estado */
+.badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.badge-disponible {
+    background: #38A169;
+    color: white;
+}
+
+.badge-no-disponible {
+    background: #E53E3E;
+    color: white;
+}
+
+.badge-funcional {
+    background: #3182CE;
+    color: white;
+}
+
+.badge-danado {
+    background: #DD6B20;
+    color: white;
+}
+
+.badge-con-docs {
+    background: #38A169;
+    color: white;
+}
+
+.badge-sin-docs {
+    background: #718096;
+    color: white;
+}
+
+.badge-en-espera {
+    background: #ECC94B;
+    color: #744210;
+}
+
+.badge-recogido {
+    background: #3182CE;
+    color: white;
+}
+
+.badge-devuelto {
+    background: #38A169;
+    color: white;
+}
+
+.badge-perdido {
+    background: #E53E3E;
+    color: white;
+}
+
+/* Paginación */
+.admin-paginacion {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(123, 2, 51, 0.1);
+}
+
+.admin-paginacion-dots {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.admin-paginacion-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(123, 2, 51, 0.2);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.admin-paginacion-dot:hover {
+    background: rgba(123, 2, 51, 0.4);
+    transform: scale(1.2);
+}
+
+.admin-paginacion-dot.active {
+    background: var(--primary);
+    transform: scale(1.3);
+}
+
+.admin-paginacion-contador {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary);
+    background: rgba(123, 2, 51, 0.08);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+}
+
+/* Estados de carga y vacío */
+.admin-loading,
+.admin-vacio,
+.admin-error {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    grid-column: 1 / -1;
+}
+
+.admin-error {
+    color: #E53E3E;
+    background: rgba(229, 62, 62, 0.08);
+    border-radius: var(--radius);
+}
+
+/* Botón alta flotante en header */
+.admin-header .btn-alta {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
+/* Cards compactas para grids 4 y 6 */
+.admin-grid-4 .admin-card-header,
+.admin-grid-6 .admin-card-header {
+    padding: 0.6rem 0.75rem;
+}
+
+.admin-grid-4 .admin-card-titulo,
+.admin-grid-6 .admin-card-titulo {
+    font-size: 0.85rem;
+}
+
+.admin-grid-4 .admin-card-body,
+.admin-grid-6 .admin-card-body {
+    padding: 0.65rem 0.75rem;
+}
+
+.admin-grid-4 .admin-card-dato,
+.admin-grid-6 .admin-card-dato {
+    padding: 0.25rem 0;
+}
+
+.admin-grid-4 .admin-card-label,
+.admin-grid-6 .admin-card-label {
+    font-size: 0.65rem;
+}
+
+.admin-grid-4 .admin-card-value,
+.admin-grid-6 .admin-card-value {
+    font-size: 0.75rem;
+}
+
+.admin-grid-4 .admin-card-footer,
+.admin-grid-6 .admin-card-footer {
+    padding: 0.5rem 0.75rem;
+}
+
+.admin-grid-4 .admin-card-footer .btn-editar,
+.admin-grid-4 .admin-card-footer .btn-eliminar,
+.admin-grid-6 .admin-card-footer .btn-editar,
+.admin-grid-6 .admin-card-footer .btn-eliminar {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.7rem;
+    min-width: 55px;
+}
+
 .solicitud-loading,
 .solicitud-vacia,
 .solicitud-error {

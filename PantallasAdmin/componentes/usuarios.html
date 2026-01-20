@@ -1,38 +1,41 @@
-<div class="container-usuarios">
+<div class="admin-cards-container">
+    <h2>Gestión de Usuarios</h2>
     <div class="mensaje-alerta" id="mensaje-usuarios" hidden></div>
 
-    <div class="layout-dos-columnas">
-        <div class="columna-principal">
-            <div class="tabla-encabezado">
-                <div class="tabla-info">
-                    <span class="tabla-total" data-total="usuarios">Total: 0</span>
-                </div>
-                <div class="tabla-acciones">
-                    <button class="btn-recargar" data-recargar="usuarios">Recargar</button>
-                </div>
-            </div>
-            <div class="container-tabla">
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Boleta</th>
-                                <th>Correo</th>
-                                <th>Rol</th>
-                                <th>Documentación</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-usuarios"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="paginacion" data-paginacion="usuarios">
-                <button class="btn-paginacion" data-prev>Anterior</button>
-                <span class="pagina-actual">Página 1</span>
-                <button class="btn-paginacion" data-next>Siguiente</button>
-            </div>
+    <div class="admin-header">
+        <div class="admin-filtros">
+            <label for="filtro-usuarios">Filtrar:</label>
+            <select id="filtro-usuarios" class="admin-filtro-select" onchange="filtrarUsuarios()">
+                <option value="todos">Todos</option>
+                <option value="con-docs">Con documentación</option>
+                <option value="sin-docs">Sin documentación</option>
+            </select>
+            <input type="text" id="buscar-usuarios" class="admin-search-input" placeholder="Buscar boleta, correo..." oninput="debouncedFiltrarUsuarios()">
+            <span class="admin-contador" id="contador-usuarios"></span>
         </div>
+        <div class="admin-acciones">
+            <button class="btn-recargar" onclick="cargarUsuarios()">
+                <i class="fas fa-sync-alt"></i> Recargar
+            </button>
+        </div>
+    </div>
+
+    <div class="admin-carousel" id="carousel-usuarios">
+        <button class="admin-arrow admin-arrow-prev" onclick="anteriorPaginaUsuarios()" aria-label="Anterior">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <div class="admin-grid admin-grid-6" id="grid-usuarios">
+            <!-- Carga dinámica de cards -->
+        </div>
+        
+        <button class="admin-arrow admin-arrow-next" onclick="siguientePaginaUsuarios()" aria-label="Siguiente">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <div class="admin-paginacion" id="paginacion-usuarios">
+        <div class="admin-paginacion-dots" id="paginacion-dots-usuarios"></div>
+        <div class="admin-paginacion-contador" id="paginacion-contador-usuarios">0 / 0</div>
     </div>
 </div>

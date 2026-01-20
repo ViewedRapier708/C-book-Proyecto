@@ -1,6 +1,51 @@
 const API_BASE = window.API_BASE_URL || '';
 const PAGE_LIMIT = 10;
 
+// ==================== UTILIDADES ====================
+
+// Debounce para búsqueda optimizada
+function debounce(fn, delay) {
+    let timeoutId;
+    return function(...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
+// Maps globales para almacenar datos completos por ID
+const librosMap = new Map();
+const computadorasMap = new Map();
+const restiradoresMap = new Map();
+const usuariosMap = new Map();
+const prestamosMap = new Map();
+
+// Variables de paginación por módulo
+const CARDS_LIBROS = 3;
+const CARDS_COMPUTADORAS = 4;
+const CARDS_RESTIRADORES = 6;
+const CARDS_USUARIOS = 6;
+const CARDS_PRESTAMOS = 3;
+
+let librosDataOriginal = [];
+let librosFiltrados = [];
+let paginaActualLibros = 0;
+
+let computadorasDataOriginal = [];
+let computadorasFiltradas = [];
+let paginaActualComputadoras = 0;
+
+let restiradoresDataOriginal = [];
+let restiradoresFiltrados = [];
+let paginaActualRestiradores = 0;
+
+let usuariosDataOriginal = [];
+let usuariosFiltrados = [];
+let paginaActualUsuarios = 0;
+
+let prestamosDataOriginal = [];
+let prestamosFiltrados = [];
+let paginaActualPrestamos = 0;
+
 const adminState = {
 	libros: { page: 1, total: 0, limit: PAGE_LIMIT },
 	computadoras: { page: 1, total: 0, limit: PAGE_LIMIT },
@@ -237,18 +282,22 @@ function inicializarModalConfirmacion() {
 // ==================== LIBROS ====================
 
 async function cargarLibros() {
+	const grid = document.getElementById('grid-libros');
+	if (!grid) return;
+	
+	grid.innerHTML = '<div class="admin-loading">Cargando libros...</div>';
+	ocultarControlesPaginacionAdmin('libros');
+	
 	const mensaje = document.getElementById('mensaje-libros');
 	ocultarMensaje(mensaje);
+	
 	try {
-		const { page, limit } = adminState.libros;
-		const resultado = await requestJson(`/auth/admin/materiales/libros?page=${page}&limit=${limit}`);
-		const tabla = document.getElementById('tabla-libros');
-
-		if (!tabla) return;
-
-		const filas = (resultado.data || []).map((item) => {
+		const resultado = await requestJson('/auth/admin/materiales/libros?page=1&limit=1000');
+		
+		librosMap.clear();
+		librosDataOriginal = (resultado.data || []).map((item) => {
 			const libro = item.libros || {};
-			return {
+			const obj = {
 				ejemplar_id: item.id,
 				libro_id: item.libro_id ?? libro.id,
 				titulo: libro.titulo || '',
@@ -263,43 +312,187 @@ async function cargarLibros() {
 				Disponible: item.Disponible,
 				coleccion: item.coleccion || ''
 			};
+			librosMap.set(obj.ejemplar_id, obj);
+			return obj;
 		});
 
-		filas.sort((a, b) => a.titulo.localeCompare(b.titulo, 'es', { sensitivity: 'base' }));
-
-		tabla.innerHTML = filas
-			.map(
-				(fila) => `
-				<tr data-libro-id="${fila.libro_id}" data-ejemplar-id="${fila.ejemplar_id}">
-					<td>${fila.ejemplar_id}</td>
-					<td>${fila.titulo}</td>
-					<td>${fila.autor}</td>
-					<td>${fila.clasificacion}</td>
-					<td>${fila.isbn}</td>
-					<td>${fila.tipo_material}</td>
-					<td>${fila.codigo_barras}</td>
-					<td>${fila.numero_ejemplar}</td>
-					<td>${fila.anio}</td>
-					<td>${fila.estatus_item}</td>
-					<td>${formatBoolean(fila.Disponible)}</td>
-					<td>${fila.coleccion}</td>
-					<td>
-						<div class="acciones-botones">
-							<button class="btn-editar" data-action="editar">Editar</button>
-							<button class="btn-eliminar" data-action="eliminar">Eliminar</button>
-						</div>
-					</td>
-				</tr>
-			`
-			)
-			.join('');
-
-		adminState.libros.total = resultado.total || 0;
-		adminState.libros.lastCount = filas.length;
-		actualizarTotal('libros', adminState.libros.total);
-		actualizarPaginacion('libros');
+		librosDataOriginal.sort((a, b) => a.titulo.localeCompare(b.titulo, 'es', { sensitivity: 'base' }));
+		paginaActualLibros = 0;
+		filtrarLibros();
 	} catch (error) {
+		grid.innerHTML = `<div class="admin-error">Error: ${error.message}</div>`;
 		mostrarMensaje(mensaje, 'error', error.message);
+	}
+}
+
+function filtrarLibros() {
+	const filtro = document.getElementById('filtro-libros')?.value || 'todos';
+	const busqueda = (document.getElementById('buscar-libros')?.value || '').toLowerCase().trim();
+	
+	librosFiltrados = librosDataOriginal.filter(libro => {
+		// Filtro por estado
+		let pasaFiltro = true;
+		if (filtro === 'disponible') pasaFiltro = libro.Disponible === true;
+		else if (filtro === 'no-disponible') pasaFiltro = libro.Disponible === false;
+		
+		// Filtro por búsqueda
+		let pasaBusqueda = true;
+		if (busqueda) {
+			pasaBusqueda = libro.titulo.toLowerCase().includes(busqueda) ||
+				libro.autor.toLowerCase().includes(busqueda) ||
+				libro.isbn.toLowerCase().includes(busqueda) ||
+				libro.clasificacion.toLowerCase().includes(busqueda);
+		}
+		
+		return pasaFiltro && pasaBusqueda;
+	});
+	
+	paginaActualLibros = 0;
+	actualizarContadorAdmin('libros', librosFiltrados.length, librosDataOriginal.length);
+	
+	const grid = document.getElementById('grid-libros');
+	if (librosFiltrados.length === 0) {
+		grid.innerHTML = '<div class="admin-vacio">No se encontraron libros.</div>';
+		ocultarControlesPaginacionAdmin('libros');
+		return;
+	}
+	
+	mostrarPaginaLibros();
+	generarDotsAdmin('libros', Math.ceil(librosFiltrados.length / CARDS_LIBROS), paginaActualLibros);
+	mostrarControlesPaginacionAdmin('libros');
+}
+
+const debouncedFiltrarLibros = debounce(filtrarLibros, 300);
+
+function mostrarPaginaLibros() {
+	const grid = document.getElementById('grid-libros');
+	if (!grid || librosFiltrados.length === 0) return;
+	
+	const inicio = paginaActualLibros * CARDS_LIBROS;
+	const fin = Math.min(inicio + CARDS_LIBROS, librosFiltrados.length);
+	const librosPagina = librosFiltrados.slice(inicio, fin);
+	
+	grid.innerHTML = librosPagina.map(libro => crearCardLibro(libro)).join('');
+	
+	actualizarDotsAdmin('libros', paginaActualLibros);
+	actualizarContadorPaginacionAdmin('libros', paginaActualLibros, Math.ceil(librosFiltrados.length / CARDS_LIBROS), librosFiltrados.length);
+	actualizarFlechasAdmin('libros', paginaActualLibros, Math.ceil(librosFiltrados.length / CARDS_LIBROS));
+}
+
+function crearCardLibro(libro) {
+	const badgeClass = libro.Disponible ? 'badge-disponible' : 'badge-no-disponible';
+	const badgeText = libro.Disponible ? 'Disponible' : 'No disponible';
+	
+	return `
+		<div class="admin-card" data-id="${libro.ejemplar_id}">
+			<div class="admin-card-header">
+				<span class="admin-card-titulo" title="${libro.titulo}">${libro.titulo || 'Sin título'}</span>
+				<span class="badge ${badgeClass}">${badgeText}</span>
+			</div>
+			<div class="admin-card-body">
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Autor</span>
+					<span class="admin-card-value">${libro.autor || 'N/A'}</span>
+				</div>
+				<div class="admin-card-dato">
+					<span class="admin-card-label">ISBN</span>
+					<span class="admin-card-value">${libro.isbn || 'N/A'}</span>
+				</div>
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Clasificación</span>
+					<span class="admin-card-value">${libro.clasificacion || 'N/A'}</span>
+				</div>
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Tipo</span>
+					<span class="admin-card-value">${libro.tipo_material || 'N/A'}</span>
+				</div>
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Año</span>
+					<span class="admin-card-value">${libro.anio || 'N/A'}</span>
+				</div>
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Colección</span>
+					<span class="admin-card-value">${libro.coleccion || 'N/A'}</span>
+				</div>
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Código Barras</span>
+					<span class="admin-card-value">${libro.codigo_barras || 'N/A'}</span>
+				</div>
+			</div>
+			<div class="admin-card-footer">
+				<button class="btn-editar" onclick="editarLibroCard(${libro.ejemplar_id})">Editar</button>
+				<button class="btn-eliminar" onclick="eliminarLibroCard(${libro.ejemplar_id})">Eliminar</button>
+			</div>
+		</div>
+	`;
+}
+
+function siguientePaginaLibros() {
+	const totalPaginas = Math.ceil(librosFiltrados.length / CARDS_LIBROS);
+	if (paginaActualLibros < totalPaginas - 1) {
+		paginaActualLibros++;
+		mostrarPaginaLibros();
+	}
+}
+
+function anteriorPaginaLibros() {
+	if (paginaActualLibros > 0) {
+		paginaActualLibros--;
+		mostrarPaginaLibros();
+	}
+}
+
+function irAPaginaLibros(indice) {
+	const totalPaginas = Math.ceil(librosFiltrados.length / CARDS_LIBROS);
+	if (indice >= 0 && indice < totalPaginas) {
+		paginaActualLibros = indice;
+		mostrarPaginaLibros();
+	}
+}
+
+async function editarLibroCard(ejemplarId) {
+	const libro = librosMap.get(ejemplarId);
+	if (!libro) return;
+	
+	const modal = document.getElementById('modalFormulario');
+	document.getElementById('modal-titulo').textContent = 'Editar Libro';
+	document.getElementById('libro_id').value = libro.libro_id;
+	document.getElementById('ejemplar_id').value = libro.ejemplar_id;
+	document.getElementById('titulo').value = libro.titulo;
+	document.getElementById('autor').value = libro.autor;
+	document.getElementById('clasificacion').value = libro.clasificacion;
+	document.getElementById('isbn').value = libro.isbn;
+	document.getElementById('tipo_material').value = libro.tipo_material;
+	document.getElementById('codigo_barras').value = libro.codigo_barras;
+	document.getElementById('numero_ejemplar').value = libro.numero_ejemplar;
+	document.getElementById('anio').value = libro.anio;
+	document.getElementById('estatus_item').value = libro.estatus_item;
+	document.getElementById('disponible').value = libro.Disponible ? 'true' : 'false';
+	document.getElementById('coleccion').value = libro.coleccion;
+	abrirModal(modal);
+}
+
+async function eliminarLibroCard(ejemplarId) {
+	const libro = librosMap.get(ejemplarId);
+	if (!libro) return;
+	
+	const confirmar = await abrirConfirmacion({
+		titulo: 'Eliminar registro',
+		mensaje: '¿Confirma la eliminación de este registro? Esta acción es irreversible.',
+		detalle: `
+			<p><strong>Título:</strong> ${libro.titulo}</p>
+			<p><strong>Código de barras:</strong> ${libro.codigo_barras}</p>
+		`
+	});
+
+	if (!confirmar) return;
+
+	try {
+		await requestJson(`/auth/admin/materiales/libros/${ejemplarId}`, { method: 'DELETE' });
+		mostrarToast('Material eliminado exitosamente.');
+		cargarLibros();
+	} catch (error) {
+		mostrarToast(error.message || 'No se pudo eliminar el material.', 'error');
 	}
 }
 
@@ -333,12 +526,9 @@ function inicializarLibros() {
 	const btnCerrar = modal?.querySelector('.modal-cerrar');
 	const btnLimpiar = document.getElementById('btn-limpiar');
 	const btnGuardar = document.getElementById('btn-guardar');
-	const tbody = document.getElementById('tabla-libros');
 	const mensaje = document.getElementById('mensaje-libros');
 
 	inicializarModalConfirmacion();
-	configurarPaginacion('libros', cargarLibros);
-	configurarRecarga('libros', cargarLibros);
 
 	btnAgregar?.addEventListener('click', () => {
 		document.getElementById('modal-titulo').textContent = 'Nuevo Libro';
@@ -391,112 +581,207 @@ function inicializarLibros() {
 		}
 	});
 
-	tbody?.addEventListener('click', async (event) => {
-		const action = event.target.getAttribute('data-action');
-		const fila = event.target.closest('tr');
-		if (!action || !fila) return;
-
-		const libroId = fila.getAttribute('data-libro-id');
-		const ejemplarId = fila.getAttribute('data-ejemplar-id');
-
-		if (action === 'editar') {
-			document.getElementById('modal-titulo').textContent = 'Editar Libro';
-			document.getElementById('libro_id').value = libroId;
-			document.getElementById('ejemplar_id').value = ejemplarId;
-			document.getElementById('titulo').value = fila.cells[1].textContent;
-			document.getElementById('autor').value = fila.cells[2].textContent;
-			document.getElementById('clasificacion').value = fila.cells[3].textContent;
-			document.getElementById('isbn').value = fila.cells[4].textContent;
-			document.getElementById('tipo_material').value = fila.cells[5].textContent;
-			document.getElementById('codigo_barras').value = fila.cells[6].textContent;
-			document.getElementById('numero_ejemplar').value = fila.cells[7].textContent;
-			document.getElementById('anio').value = fila.cells[8].textContent;
-			document.getElementById('estatus_item').value = fila.cells[9].textContent;
-			document.getElementById('disponible').value = fila.cells[10].textContent.trim() === 'Sí' ? 'true' : 'false';
-			document.getElementById('coleccion').value = fila.cells[11].textContent;
-			abrirModal(modal);
-		}
-
-		if (action === 'eliminar') {
-			const confirmar = await abrirConfirmacion({
-				titulo: 'Eliminar registro',
-				mensaje: '¿Confirma la eliminación de este registro? Esta acción es irreversible.',
-				detalle: `
-					<p><strong>Título:</strong> ${fila.cells[1].textContent}</p>
-					<p><strong>Código de barras:</strong> ${fila.cells[6].textContent}</p>
-				`
-			});
-
-			if (!confirmar) return;
-
-			try {
-				await requestJson(`/auth/admin/materiales/libros/${ejemplarId}`, { method: 'DELETE' });
-				mostrarToast('Material eliminado exitosamente.');
-				cargarLibros();
-			} catch (error) {
-				mostrarToast(error.message || 'No se pudo eliminar el material.', 'error');
-			}
-		}
-	});
-
 	cargarLibros();
 }
 
 // ==================== COMPUTADORAS ====================
 
 async function cargarComputadoras() {
+	const grid = document.getElementById('grid-computadoras');
+	if (!grid) return;
+	
+	grid.innerHTML = '<div class="admin-loading">Cargando computadoras...</div>';
+	ocultarControlesPaginacionAdmin('computadoras');
+	
 	const mensaje = document.getElementById('mensaje-computadoras');
 	ocultarMensaje(mensaje);
+	
 	try {
-		const { page, limit } = adminState.computadoras;
-		const resultado = await requestJson(`/auth/admin/materiales/computadoras?page=${page}&limit=${limit}`);
-		const tabla = document.getElementById('tabla-computadoras');
+		const resultado = await requestJson('/auth/admin/materiales/computadoras?page=1&limit=1000');
+		
+		computadorasMap.clear();
+		computadorasDataOriginal = (resultado.data || []).map((item) => {
+			const obj = {
+				id: item.id,
+				no_computadora: item.no_computadora,
+				procesador: item.procesador || '',
+				programas: item.programas || '',
+				carrera: item.carrera || '',
+				Disponible: item.Disponible,
+				En_funcionamiento: item.En_funcionamiento,
+				Observacion: item.Observacion || '',
+				no_inventario: item.no_inventario || ''
+			};
+			computadorasMap.set(obj.id, obj);
+			return obj;
+		});
 
-		if (!tabla) return;
-
-		const filas = (resultado.data || []).map((item) => ({
-			id: item.id,
-			no_computadora: item.no_computadora,
-			procesador: item.procesador || '',
-			programas: item.programas || '',
-			carrera: item.carrera || '',
-			Disponible: item.Disponible,
-			En_funcionamiento: item.En_funcionamiento,
-			Observacion: item.Observacion || '',
-			no_inventario: item.no_inventario || ''
-		}));
-
-		filas.sort((a, b) => Number(a.no_computadora) - Number(b.no_computadora));
-
-		tabla.innerHTML = filas
-			.map(
-				(fila) => `
-				<tr data-id="${fila.id}">
-					<td>${fila.no_computadora}</td>
-					<td>${fila.procesador}</td>
-					<td>${fila.programas}</td>
-					<td>${fila.carrera}</td>
-					<td>${formatBoolean(fila.Disponible)}</td>
-					<td>${formatBoolean(fila.En_funcionamiento)}</td>
-					<td>${fila.Observacion}</td>
-					<td>${fila.no_inventario}</td>
-					<td>
-						<div class="acciones-botones">
-							<button class="btn-editar" data-action="editar">Editar</button>
-							<button class="btn-eliminar" data-action="eliminar">Eliminar</button>
-						</div>
-					</td>
-				</tr>
-			`
-			)
-			.join('');
-
-		adminState.computadoras.total = resultado.total || 0;
-		adminState.computadoras.lastCount = filas.length;
-		actualizarTotal('computadoras', adminState.computadoras.total);
-		actualizarPaginacion('computadoras');
+		computadorasDataOriginal.sort((a, b) => Number(a.no_computadora) - Number(b.no_computadora));
+		paginaActualComputadoras = 0;
+		filtrarComputadoras();
 	} catch (error) {
+		grid.innerHTML = `<div class="admin-error">Error: ${error.message}</div>`;
 		mostrarMensaje(mensaje, 'error', error.message);
+	}
+}
+
+function filtrarComputadoras() {
+	const filtro = document.getElementById('filtro-computadoras')?.value || 'todos';
+	const busqueda = (document.getElementById('buscar-computadoras')?.value || '').toLowerCase().trim();
+	
+	computadorasFiltradas = computadorasDataOriginal.filter(comp => {
+		let pasaFiltro = true;
+		if (filtro === 'disponible') pasaFiltro = comp.Disponible === true;
+		else if (filtro === 'no-disponible') pasaFiltro = comp.Disponible === false;
+		else if (filtro === 'funcionando') pasaFiltro = comp.En_funcionamiento === true;
+		else if (filtro === 'fuera-servicio') pasaFiltro = comp.En_funcionamiento === false;
+		
+		let pasaBusqueda = true;
+		if (busqueda) {
+			pasaBusqueda = comp.procesador.toLowerCase().includes(busqueda) ||
+				comp.carrera.toLowerCase().includes(busqueda) ||
+				comp.programas.toLowerCase().includes(busqueda) ||
+				String(comp.no_computadora).includes(busqueda) ||
+				comp.no_inventario.toLowerCase().includes(busqueda);
+		}
+		
+		return pasaFiltro && pasaBusqueda;
+	});
+	
+	paginaActualComputadoras = 0;
+	actualizarContadorAdmin('computadoras', computadorasFiltradas.length, computadorasDataOriginal.length);
+	
+	const grid = document.getElementById('grid-computadoras');
+	if (computadorasFiltradas.length === 0) {
+		grid.innerHTML = '<div class="admin-vacio">No se encontraron computadoras.</div>';
+		ocultarControlesPaginacionAdmin('computadoras');
+		return;
+	}
+	
+	mostrarPaginaComputadoras();
+	generarDotsAdmin('computadoras', Math.ceil(computadorasFiltradas.length / CARDS_COMPUTADORAS), paginaActualComputadoras);
+	mostrarControlesPaginacionAdmin('computadoras');
+}
+
+const debouncedFiltrarComputadoras = debounce(filtrarComputadoras, 300);
+
+function mostrarPaginaComputadoras() {
+	const grid = document.getElementById('grid-computadoras');
+	if (!grid || computadorasFiltradas.length === 0) return;
+	
+	const inicio = paginaActualComputadoras * CARDS_COMPUTADORAS;
+	const fin = Math.min(inicio + CARDS_COMPUTADORAS, computadorasFiltradas.length);
+	const compsPagina = computadorasFiltradas.slice(inicio, fin);
+	
+	grid.innerHTML = compsPagina.map(comp => crearCardComputadora(comp)).join('');
+	
+	actualizarDotsAdmin('computadoras', paginaActualComputadoras);
+	actualizarContadorPaginacionAdmin('computadoras', paginaActualComputadoras, Math.ceil(computadorasFiltradas.length / CARDS_COMPUTADORAS), computadorasFiltradas.length);
+	actualizarFlechasAdmin('computadoras', paginaActualComputadoras, Math.ceil(computadorasFiltradas.length / CARDS_COMPUTADORAS));
+}
+
+function crearCardComputadora(comp) {
+	const badgeDisp = comp.Disponible ? 'badge-disponible' : 'badge-no-disponible';
+	const textDisp = comp.Disponible ? 'Disp.' : 'No disp.';
+	const badgeFunc = comp.En_funcionamiento ? 'badge-funcional' : 'badge-danado';
+	const textFunc = comp.En_funcionamiento ? 'Func.' : 'Fuera';
+	
+	return `
+		<div class="admin-card" data-id="${comp.id}">
+			<div class="admin-card-header">
+				<span class="admin-card-titulo">PC #${comp.no_computadora}</span>
+				<span class="badge ${badgeDisp}">${textDisp}</span>
+				<span class="badge ${badgeFunc}">${textFunc}</span>
+			</div>
+			<div class="admin-card-body">
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Procesador</span>
+					<span class="admin-card-value admin-card-value-truncate" title="${comp.procesador}">${comp.procesador || 'N/A'}</span>
+				</div>
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Carrera</span>
+					<span class="admin-card-value">${comp.carrera || 'N/A'}</span>
+				</div>
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Inventario</span>
+					<span class="admin-card-value">${comp.no_inventario || 'N/A'}</span>
+				</div>
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Observación</span>
+					<span class="admin-card-value admin-card-value-truncate" title="${comp.Observacion}">${comp.Observacion || 'N/A'}</span>
+				</div>
+			</div>
+			<div class="admin-card-footer">
+				<button class="btn-editar" onclick="editarComputadoraCard(${comp.id})">Editar</button>
+				<button class="btn-eliminar" onclick="eliminarComputadoraCard(${comp.id})">Eliminar</button>
+			</div>
+		</div>
+	`;
+}
+
+function siguientePaginaComputadoras() {
+	const totalPaginas = Math.ceil(computadorasFiltradas.length / CARDS_COMPUTADORAS);
+	if (paginaActualComputadoras < totalPaginas - 1) {
+		paginaActualComputadoras++;
+		mostrarPaginaComputadoras();
+	}
+}
+
+function anteriorPaginaComputadoras() {
+	if (paginaActualComputadoras > 0) {
+		paginaActualComputadoras--;
+		mostrarPaginaComputadoras();
+	}
+}
+
+function irAPaginaComputadoras(indice) {
+	const totalPaginas = Math.ceil(computadorasFiltradas.length / CARDS_COMPUTADORAS);
+	if (indice >= 0 && indice < totalPaginas) {
+		paginaActualComputadoras = indice;
+		mostrarPaginaComputadoras();
+	}
+}
+
+async function editarComputadoraCard(id) {
+	const comp = computadorasMap.get(id);
+	if (!comp) return;
+	
+	const modal = document.getElementById('modalFormulario');
+	document.getElementById('modal-titulo').textContent = 'Editar Computadora';
+	document.getElementById('computadora_id').value = comp.id;
+	document.getElementById('no_computadora').value = comp.no_computadora;
+	document.getElementById('procesador').value = comp.procesador;
+	document.getElementById('programas').value = comp.programas;
+	document.getElementById('carrera').value = comp.carrera;
+	document.getElementById('disponible').value = comp.Disponible ? 'true' : 'false';
+	document.getElementById('en_funcionamiento').value = comp.En_funcionamiento ? 'true' : 'false';
+	document.getElementById('observacion').value = comp.Observacion;
+	document.getElementById('no_inventario').value = comp.no_inventario;
+	abrirModal(modal);
+}
+
+async function eliminarComputadoraCard(id) {
+	const comp = computadorasMap.get(id);
+	if (!comp) return;
+	
+	const confirmar = await abrirConfirmacion({
+		titulo: 'Eliminar registro',
+		mensaje: '¿Confirma la eliminación de este registro? Esta acción es irreversible.',
+		detalle: `<p><strong>No. Inventario:</strong> ${comp.no_inventario}</p>`
+	});
+
+	if (!confirmar) return;
+
+	try {
+		await requestJson(`/auth/admin/materiales/computadoras/${id}`, { method: 'DELETE' });
+		mostrarToast('Material eliminado exitosamente.');
+		cargarComputadoras();
+	} catch (error) {
+		if (error.message?.includes('fk_solicitudes_computadora_equipo')) {
+			mostrarToast('No se puede eliminar el material porque hay solicitudes relacionadas.', 'error');
+		} else {
+			mostrarToast(error.message || 'No se pudo eliminar el material.', 'error');
+		}
 	}
 }
 
@@ -518,12 +803,9 @@ function inicializarComputadoras() {
 	const btnCerrar = modal?.querySelector('.modal-cerrar');
 	const btnLimpiar = document.getElementById('btn-limpiar');
 	const btnGuardar = document.getElementById('btn-guardar');
-	const tbody = document.getElementById('tabla-computadoras');
 	const mensaje = document.getElementById('mensaje-computadoras');
 
 	inicializarModalConfirmacion();
-	configurarPaginacion('computadoras', cargarComputadoras);
-	configurarRecarga('computadoras', cargarComputadoras);
 
 	btnAgregar?.addEventListener('click', () => {
 		document.getElementById('modal-titulo').textContent = 'Nueva Computadora';
@@ -571,105 +853,186 @@ function inicializarComputadoras() {
 		}
 	});
 
-	tbody?.addEventListener('click', async (event) => {
-		const action = event.target.getAttribute('data-action');
-		const fila = event.target.closest('tr');
-		if (!action || !fila) return;
-
-		const id = fila.getAttribute('data-id');
-
-		if (action === 'editar') {
-			document.getElementById('modal-titulo').textContent = 'Editar Computadora';
-			document.getElementById('computadora_id').value = id;
-			document.getElementById('no_computadora').value = fila.cells[0].textContent;
-			document.getElementById('procesador').value = fila.cells[1].textContent;
-			document.getElementById('programas').value = fila.cells[2].textContent;
-			document.getElementById('carrera').value = fila.cells[3].textContent;
-			document.getElementById('disponible').value = fila.cells[4].textContent.trim() === 'Sí' ? 'true' : 'false';
-			document.getElementById('en_funcionamiento').value = fila.cells[5].textContent.trim() === 'Sí' ? 'true' : 'false';
-			document.getElementById('observacion').value = fila.cells[6].textContent;
-			document.getElementById('no_inventario').value = fila.cells[7].textContent;
-			abrirModal(modal);
-		}
-
-		if (action === 'eliminar') {
-			const confirmar = await abrirConfirmacion({
-				titulo: 'Eliminar registro',
-				mensaje: '¿Confirma la eliminación de este registro? Esta acción es irreversible.',
-				detalle: `<p><strong>No. Inventario:</strong> ${fila.cells[7].textContent}</p>`
-			});
-
-			if (!confirmar) return;
-
-			try {
-				await requestJson(`/auth/admin/materiales/computadoras/${id}`, { method: 'DELETE' });
-				mostrarToast('Material eliminado exitosamente.');
-				cargarComputadoras();
-			} catch (error) {
-				if (error.message?.includes('fk_solicitudes_computadora_equipo')) {
-					mostrarToast(
-						'No se puede eliminar el material porque hay solicitudes relacionadas con ese material.',
-						'error'
-					);
-				} else {
-					mostrarToast(error.message || 'No se pudo eliminar el material.', 'error');
-				}
-			}
-		}
-	});
-
 	cargarComputadoras();
 }
 
 // ==================== RESTIRADORES ====================
 
 async function cargarRestiradores() {
+	const grid = document.getElementById('grid-restiradores');
+	if (!grid) return;
+	
+	grid.innerHTML = '<div class="admin-loading">Cargando restiradores...</div>';
+	ocultarControlesPaginacionAdmin('restiradores');
+	
 	const mensaje = document.getElementById('mensaje-restiradores');
 	ocultarMensaje(mensaje);
+	
 	try {
-		const { page, limit } = adminState.restiradores;
-		const resultado = await requestJson(`/auth/admin/materiales/restiradores?page=${page}&limit=${limit}`);
-		const tabla = document.getElementById('tabla-restiradores');
+		const resultado = await requestJson('/auth/admin/materiales/restiradores?page=1&limit=1000');
+		
+		restiradoresMap.clear();
+		restiradoresDataOriginal = (resultado.data || []).map((item) => {
+			const obj = {
+				id: item.id,
+				no_restirador: item.no_restirador,
+				no_inventario: item.no_inventario || '',
+				Disponible: item.Disponible,
+				estado_de_material: item.estado_de_material,
+				Observacion: item.Observacion || ''
+			};
+			restiradoresMap.set(obj.id, obj);
+			return obj;
+		});
 
-		if (!tabla) return;
-
-		const filas = (resultado.data || []).map((item) => ({
-			id: item.id,
-			no_restirador: item.no_restirador,
-			no_inventario: item.no_inventario || '',
-			Disponible: item.Disponible,
-			estado_de_material: item.estado_de_material,
-			Observacion: item.Observacion || ''
-		}));
-
-		filas.sort((a, b) => Number(a.no_restirador) - Number(b.no_restirador));
-
-		tabla.innerHTML = filas
-			.map(
-				(fila) => `
-				<tr data-id="${fila.id}">
-					<td>${fila.no_restirador}</td>
-					<td>${fila.no_inventario}</td>
-					<td>${formatBoolean(fila.Disponible)}</td>
-					<td>${formatEstadoMaterial(fila.estado_de_material)}</td>
-					<td>${fila.Observacion}</td>
-					<td>
-						<div class="acciones-botones">
-							<button class="btn-editar" data-action="editar">Editar</button>
-							<button class="btn-eliminar" data-action="eliminar">Eliminar</button>
-						</div>
-					</td>
-				</tr>
-			`
-			)
-			.join('');
-
-		adminState.restiradores.total = resultado.total || 0;
-		adminState.restiradores.lastCount = filas.length;
-		actualizarTotal('restiradores', adminState.restiradores.total);
-		actualizarPaginacion('restiradores');
+		restiradoresDataOriginal.sort((a, b) => Number(a.no_restirador) - Number(b.no_restirador));
+		paginaActualRestiradores = 0;
+		filtrarRestiradores();
 	} catch (error) {
+		grid.innerHTML = `<div class="admin-error">Error: ${error.message}</div>`;
 		mostrarMensaje(mensaje, 'error', error.message);
+	}
+}
+
+function filtrarRestiradores() {
+	const filtro = document.getElementById('filtro-restiradores')?.value || 'todos';
+	const busqueda = (document.getElementById('buscar-restiradores')?.value || '').toLowerCase().trim();
+	
+	restiradoresFiltrados = restiradoresDataOriginal.filter(rest => {
+		let pasaFiltro = true;
+		if (filtro === 'disponible') pasaFiltro = rest.Disponible === true;
+		else if (filtro === 'no-disponible') pasaFiltro = rest.Disponible === false;
+		else if (filtro === 'funcional') pasaFiltro = rest.estado_de_material === true;
+		else if (filtro === 'danado') pasaFiltro = rest.estado_de_material === false;
+		
+		let pasaBusqueda = true;
+		if (busqueda) {
+			pasaBusqueda = rest.no_inventario.toLowerCase().includes(busqueda) ||
+				String(rest.no_restirador).includes(busqueda) ||
+				rest.Observacion.toLowerCase().includes(busqueda);
+		}
+		
+		return pasaFiltro && pasaBusqueda;
+	});
+	
+	paginaActualRestiradores = 0;
+	actualizarContadorAdmin('restiradores', restiradoresFiltrados.length, restiradoresDataOriginal.length);
+	
+	const grid = document.getElementById('grid-restiradores');
+	if (restiradoresFiltrados.length === 0) {
+		grid.innerHTML = '<div class="admin-vacio">No se encontraron restiradores.</div>';
+		ocultarControlesPaginacionAdmin('restiradores');
+		return;
+	}
+	
+	mostrarPaginaRestiradores();
+	generarDotsAdmin('restiradores', Math.ceil(restiradoresFiltrados.length / CARDS_RESTIRADORES), paginaActualRestiradores);
+	mostrarControlesPaginacionAdmin('restiradores');
+}
+
+const debouncedFiltrarRestiradores = debounce(filtrarRestiradores, 300);
+
+function mostrarPaginaRestiradores() {
+	const grid = document.getElementById('grid-restiradores');
+	if (!grid || restiradoresFiltrados.length === 0) return;
+	
+	const inicio = paginaActualRestiradores * CARDS_RESTIRADORES;
+	const fin = Math.min(inicio + CARDS_RESTIRADORES, restiradoresFiltrados.length);
+	const restsPagina = restiradoresFiltrados.slice(inicio, fin);
+	
+	grid.innerHTML = restsPagina.map(rest => crearCardRestirador(rest)).join('');
+	
+	actualizarDotsAdmin('restiradores', paginaActualRestiradores);
+	actualizarContadorPaginacionAdmin('restiradores', paginaActualRestiradores, Math.ceil(restiradoresFiltrados.length / CARDS_RESTIRADORES), restiradoresFiltrados.length);
+	actualizarFlechasAdmin('restiradores', paginaActualRestiradores, Math.ceil(restiradoresFiltrados.length / CARDS_RESTIRADORES));
+}
+
+function crearCardRestirador(rest) {
+	const badgeDisp = rest.Disponible ? 'badge-disponible' : 'badge-no-disponible';
+	const textDisp = rest.Disponible ? 'Disp.' : 'No disp.';
+	const badgeEstado = rest.estado_de_material ? 'badge-funcional' : 'badge-danado';
+	const textEstado = rest.estado_de_material ? 'Funcional' : 'Dañado';
+	
+	return `
+		<div class="admin-card" data-id="${rest.id}">
+			<div class="admin-card-header">
+				<span class="admin-card-titulo">Rest. #${rest.no_restirador}</span>
+				<span class="badge ${badgeDisp}">${textDisp}</span>
+			</div>
+			<div class="admin-card-body">
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Inventario</span>
+					<span class="admin-card-value">${rest.no_inventario || 'N/A'}</span>
+				</div>
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Estado</span>
+					<span class="badge ${badgeEstado}">${textEstado}</span>
+				</div>
+			</div>
+			<div class="admin-card-footer">
+				<button class="btn-editar" onclick="editarRestiradorCard(${rest.id})">Editar</button>
+				<button class="btn-eliminar" onclick="eliminarRestiradorCard(${rest.id})">Eliminar</button>
+			</div>
+		</div>
+	`;
+}
+
+function siguientePaginaRestiradores() {
+	const totalPaginas = Math.ceil(restiradoresFiltrados.length / CARDS_RESTIRADORES);
+	if (paginaActualRestiradores < totalPaginas - 1) {
+		paginaActualRestiradores++;
+		mostrarPaginaRestiradores();
+	}
+}
+
+function anteriorPaginaRestiradores() {
+	if (paginaActualRestiradores > 0) {
+		paginaActualRestiradores--;
+		mostrarPaginaRestiradores();
+	}
+}
+
+function irAPaginaRestiradores(indice) {
+	const totalPaginas = Math.ceil(restiradoresFiltrados.length / CARDS_RESTIRADORES);
+	if (indice >= 0 && indice < totalPaginas) {
+		paginaActualRestiradores = indice;
+		mostrarPaginaRestiradores();
+	}
+}
+
+async function editarRestiradorCard(id) {
+	const rest = restiradoresMap.get(id);
+	if (!rest) return;
+	
+	const modal = document.getElementById('modalFormulario');
+	document.getElementById('modal-titulo').textContent = 'Editar Restirador';
+	document.getElementById('restirador_id').value = rest.id;
+	document.getElementById('no_restirador').value = rest.no_restirador;
+	document.getElementById('no_inventario').value = rest.no_inventario;
+	document.getElementById('disponible').value = rest.Disponible ? 'true' : 'false';
+	document.getElementById('estado_material').value = rest.estado_de_material ? 'true' : 'false';
+	document.getElementById('observacion').value = rest.Observacion;
+	abrirModal(modal);
+}
+
+async function eliminarRestiradorCard(id) {
+	const rest = restiradoresMap.get(id);
+	if (!rest) return;
+	
+	const confirmar = await abrirConfirmacion({
+		titulo: 'Eliminar registro',
+		mensaje: '¿Confirma la eliminación de este registro? Esta acción es irreversible.',
+		detalle: `<p><strong>No. Inventario:</strong> ${rest.no_inventario}</p>`
+	});
+
+	if (!confirmar) return;
+
+	try {
+		await requestJson(`/auth/admin/materiales/restiradores/${id}`, { method: 'DELETE' });
+		mostrarToast('Material eliminado exitosamente.');
+		cargarRestiradores();
+	} catch (error) {
+		mostrarToast(error.message || 'No se pudo eliminar el material.', 'error');
 	}
 }
 
@@ -688,12 +1051,9 @@ function inicializarRestiradores() {
 	const btnCerrar = modal?.querySelector('.modal-cerrar');
 	const btnLimpiar = document.getElementById('btn-limpiar');
 	const btnGuardar = document.getElementById('btn-guardar');
-	const tbody = document.getElementById('tabla-restiradores');
 	const mensaje = document.getElementById('mensaje-restiradores');
 
 	inicializarModalConfirmacion();
-	configurarPaginacion('restiradores', cargarRestiradores);
-	configurarRecarga('restiradores', cargarRestiradores);
 
 	btnAgregar?.addEventListener('click', () => {
 		document.getElementById('modal-titulo').textContent = 'Nuevo Restirador';
@@ -738,128 +1098,171 @@ function inicializarRestiradores() {
 		}
 	});
 
-	tbody?.addEventListener('click', async (event) => {
-		const action = event.target.getAttribute('data-action');
-		const fila = event.target.closest('tr');
-		if (!action || !fila) return;
-
-		const id = fila.getAttribute('data-id');
-
-		if (action === 'editar') {
-			document.getElementById('modal-titulo').textContent = 'Editar Restirador';
-			document.getElementById('restirador_id').value = id;
-			document.getElementById('no_restirador').value = fila.cells[0].textContent;
-			document.getElementById('no_inventario').value = fila.cells[1].textContent;
-			document.getElementById('disponible').value = fila.cells[2].textContent.trim() === 'Sí' ? 'true' : 'false';
-			document.getElementById('estado_material').value = fila.cells[3].textContent.trim() === 'Funcional' ? 'true' : 'false';
-			document.getElementById('observacion').value = fila.cells[4].textContent;
-			abrirModal(modal);
-		}
-
-		if (action === 'eliminar') {
-			const confirmar = await abrirConfirmacion({
-				titulo: 'Eliminar registro',
-				mensaje: '¿Confirma la eliminación de este registro? Esta acción es irreversible.',
-				detalle: `<p><strong>No. Inventario:</strong> ${fila.cells[1].textContent}</p>`
-			});
-
-			if (!confirmar) return;
-
-			try {
-				await requestJson(`/auth/admin/materiales/restiradores/${id}`, { method: 'DELETE' });
-				mostrarToast('Material eliminado exitosamente.');
-				cargarRestiradores();
-			} catch (error) {
-				mostrarToast(error.message || 'No se pudo eliminar el material.', 'error');
-			}
-		}
-	});
-
 	cargarRestiradores();
 }
 
 // ==================== USUARIOS ====================
 
 async function cargarUsuarios() {
+	const grid = document.getElementById('grid-usuarios');
+	if (!grid) return;
+	
+	grid.innerHTML = '<div class="admin-loading">Cargando usuarios...</div>';
+	ocultarControlesPaginacionAdmin('usuarios');
+	
 	const mensaje = document.getElementById('mensaje-usuarios');
 	ocultarMensaje(mensaje);
+	
 	try {
-		const { page, limit } = adminState.usuarios;
-		const resultado = await requestJson(`/auth/admin/usuarios?page=${page}&limit=${limit}`);
-		const tabla = document.getElementById('tabla-usuarios');
+		const resultado = await requestJson('/auth/admin/usuarios?page=1&limit=1000');
+		
+		usuariosMap.clear();
+		usuariosDataOriginal = (resultado.data || []).map((usuario) => {
+			const obj = {
+				id: usuario.id,
+				boleta: usuario.boleta,
+				correo: usuario.correo,
+				rol: usuario.rol,
+				tiene_documentos: usuario.tiene_documentos
+			};
+			usuariosMap.set(obj.id, obj);
+			return obj;
+		});
 
-		if (!tabla) return;
-
-		tabla.innerHTML = (resultado.data || [])
-			.map(
-				(usuario) => `
-				<tr data-id="${usuario.id}" data-habilitado="${usuario.tiene_documentos}">
-					<td>${usuario.boleta}</td>
-					<td>${usuario.correo}</td>
-					<td>${usuario.rol}</td>
-					<td>${formatBoolean(usuario.tiene_documentos)}</td>
-					<td>
-						${
-							usuario.tiene_documentos
-								? ''
-								: '<button class="btn-habilitar" data-action="habilitar">Habilitar documentación</button>'
-						}
-					</td>
-				</tr>
-			`
-			)
-			.join('');
-
-		adminState.usuarios.total = resultado.total || 0;
-		adminState.usuarios.lastCount = (resultado.data || []).length;
-		actualizarTotal('usuarios', adminState.usuarios.total);
-		actualizarPaginacion('usuarios');
+		paginaActualUsuarios = 0;
+		filtrarUsuarios();
 	} catch (error) {
+		grid.innerHTML = `<div class="admin-error">Error: ${error.message}</div>`;
 		mostrarMensaje(mensaje, 'error', error.message);
 	}
 }
 
-function inicializarUsuarios() {
-	const tbody = document.getElementById('tabla-usuarios');
-	const mensaje = document.getElementById('mensaje-usuarios');
-
-	inicializarModalConfirmacion();
-	configurarPaginacion('usuarios', cargarUsuarios);
-	configurarRecarga('usuarios', cargarUsuarios);
-
-	tbody?.addEventListener('click', async (event) => {
-		const action = event.target.getAttribute('data-action');
-		const fila = event.target.closest('tr');
-		if (!action || !fila) return;
-
-		if (action === 'habilitar') {
-			const usuario = {
-				id: fila.getAttribute('data-id'),
-				boleta: fila.cells[0].textContent,
-				correo: fila.cells[1].textContent,
-				rol: fila.cells[2].textContent,
-				tiene_documentos: fila.getAttribute('data-habilitado') === 'true'
-			};
-
-			const confirmar = await abrirConfirmacion({
-				titulo: 'Habilitar documentación',
-				mensaje: '¿Confirma la habilitación de la documentación de este usuario? Esta acción es irreversible.',
-				detalle: obtenerDetalleUsuario(usuario)
-			});
-
-			if (!confirmar) return;
-
-			try {
-				await requestJson(`/auth/admin/usuarios/${usuario.id}/habilitar`, { method: 'PUT' });
-				mostrarMensaje(mensaje, 'success', 'Documentación habilitada correctamente.');
-				cargarUsuarios();
-			} catch (error) {
-				mostrarMensaje(mensaje, 'error', error.message);
-			}
+function filtrarUsuarios() {
+	const filtro = document.getElementById('filtro-usuarios')?.value || 'todos';
+	const busqueda = (document.getElementById('buscar-usuarios')?.value || '').toLowerCase().trim();
+	
+	usuariosFiltrados = usuariosDataOriginal.filter(usuario => {
+		let pasaFiltro = true;
+		if (filtro === 'con-docs') pasaFiltro = usuario.tiene_documentos === true;
+		else if (filtro === 'sin-docs') pasaFiltro = usuario.tiene_documentos === false;
+		
+		let pasaBusqueda = true;
+		if (busqueda) {
+			pasaBusqueda = usuario.boleta.toLowerCase().includes(busqueda) ||
+				usuario.correo.toLowerCase().includes(busqueda) ||
+				usuario.rol.toLowerCase().includes(busqueda);
 		}
+		
+		return pasaFiltro && pasaBusqueda;
+	});
+	
+	paginaActualUsuarios = 0;
+	actualizarContadorAdmin('usuarios', usuariosFiltrados.length, usuariosDataOriginal.length);
+	
+	const grid = document.getElementById('grid-usuarios');
+	if (usuariosFiltrados.length === 0) {
+		grid.innerHTML = '<div class="admin-vacio">No se encontraron usuarios.</div>';
+		ocultarControlesPaginacionAdmin('usuarios');
+		return;
+	}
+	
+	mostrarPaginaUsuarios();
+	generarDotsAdmin('usuarios', Math.ceil(usuariosFiltrados.length / CARDS_USUARIOS), paginaActualUsuarios);
+	mostrarControlesPaginacionAdmin('usuarios');
+}
 
+const debouncedFiltrarUsuarios = debounce(filtrarUsuarios, 300);
+
+function mostrarPaginaUsuarios() {
+	const grid = document.getElementById('grid-usuarios');
+	if (!grid || usuariosFiltrados.length === 0) return;
+	
+	const inicio = paginaActualUsuarios * CARDS_USUARIOS;
+	const fin = Math.min(inicio + CARDS_USUARIOS, usuariosFiltrados.length);
+	const usuariosPagina = usuariosFiltrados.slice(inicio, fin);
+	
+	grid.innerHTML = usuariosPagina.map(usuario => crearCardUsuario(usuario)).join('');
+	
+	actualizarDotsAdmin('usuarios', paginaActualUsuarios);
+	actualizarContadorPaginacionAdmin('usuarios', paginaActualUsuarios, Math.ceil(usuariosFiltrados.length / CARDS_USUARIOS), usuariosFiltrados.length);
+	actualizarFlechasAdmin('usuarios', paginaActualUsuarios, Math.ceil(usuariosFiltrados.length / CARDS_USUARIOS));
+}
+
+function crearCardUsuario(usuario) {
+	const badgeClass = usuario.tiene_documentos ? 'badge-con-docs' : 'badge-sin-docs';
+	const badgeText = usuario.tiene_documentos ? 'Con docs' : 'Sin docs';
+	const botonHabilitar = usuario.tiene_documentos ? '' : 
+		`<button class="btn-habilitar btn-aprobar" onclick="habilitarUsuarioCard(${usuario.id})">Habilitar</button>`;
+	
+	return `
+		<div class="admin-card" data-id="${usuario.id}">
+			<div class="admin-card-header">
+				<span class="admin-card-titulo">${usuario.boleta}</span>
+				<span class="badge ${badgeClass}">${badgeText}</span>
+			</div>
+			<div class="admin-card-body">
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Correo</span>
+					<span class="admin-card-value admin-card-value-truncate" title="${usuario.correo}">${usuario.correo}</span>
+				</div>
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Rol</span>
+					<span class="admin-card-value">${usuario.rol}</span>
+				</div>
+			</div>
+			<div class="admin-card-footer">
+				${botonHabilitar}
+			</div>
+		</div>
+	`;
+}
+
+function siguientePaginaUsuarios() {
+	const totalPaginas = Math.ceil(usuariosFiltrados.length / CARDS_USUARIOS);
+	if (paginaActualUsuarios < totalPaginas - 1) {
+		paginaActualUsuarios++;
+		mostrarPaginaUsuarios();
+	}
+}
+
+function anteriorPaginaUsuarios() {
+	if (paginaActualUsuarios > 0) {
+		paginaActualUsuarios--;
+		mostrarPaginaUsuarios();
+	}
+}
+
+function irAPaginaUsuarios(indice) {
+	const totalPaginas = Math.ceil(usuariosFiltrados.length / CARDS_USUARIOS);
+	if (indice >= 0 && indice < totalPaginas) {
+		paginaActualUsuarios = indice;
+		mostrarPaginaUsuarios();
+	}
+}
+
+async function habilitarUsuarioCard(id) {
+	const usuario = usuariosMap.get(id);
+	if (!usuario) return;
+	
+	const confirmar = await abrirConfirmacion({
+		titulo: 'Habilitar documentación',
+		mensaje: '¿Confirma la habilitación de la documentación de este usuario? Esta acción es irreversible.',
+		detalle: obtenerDetalleUsuario(usuario)
 	});
 
+	if (!confirmar) return;
+
+	try {
+		await requestJson(`/auth/admin/usuarios/${id}/habilitar`, { method: 'PUT' });
+		mostrarToast('Documentación habilitada correctamente.');
+		cargarUsuarios();
+	} catch (error) {
+		mostrarToast(error.message || 'No se pudo habilitar la documentación.', 'error');
+	}
+}
+
+function inicializarUsuarios() {
+	inicializarModalConfirmacion();
 	cargarUsuarios();
 }
 
@@ -1182,66 +1585,180 @@ async function entregarLibro(idSolicitud, boleta, idEjemplar) {
 // ==================== PRÉSTAMOS LIBROS ====================
 
 async function cargarPrestamosLibros() {
-    const tbody = document.getElementById('tabla-prestamos-libros');
-    if (!tbody) return;
-    
-	tbody.innerHTML = '<tr><td colspan="13" class="loading">Cargando préstamos...</td></tr>';
+	const grid = document.getElementById('grid-prestamos');
+	if (!grid) return;
+	
+	grid.innerHTML = '<div class="admin-loading">Cargando préstamos...</div>';
+	ocultarControlesPaginacionAdmin('prestamos');
 
-    try {
-        const respuesta = await requestJson('/auth/admin/prestamos/libros');
-        if (respuesta.success) {
-            tbody.innerHTML = '';
-            
-            if (respuesta.data.length === 0) {
-				 tbody.innerHTML = '<tr><td colspan="13">No hay préstamos registrados.</td></tr>';
-                 return;
-            }
-
-            respuesta.data.forEach(prestamo => {
-                const tr = document.createElement('tr');
-                const usuario = prestamo.solicitudes_libros?.usuarios_web_movil;
+	try {
+		const respuesta = await requestJson('/auth/admin/prestamos/libros');
+		if (respuesta.success) {
+			prestamosMap.clear();
+			prestamosDataOriginal = respuesta.data.map(prestamo => {
+				const usuario = prestamo.solicitudes_libros?.usuarios_web_movil;
 				const alumno = usuario?.boletas;
-                const libro = prestamo.solicitudes_libros?.ejemplares?.libros;
-                const ejemplar = prestamo.solicitudes_libros?.ejemplares;
+				const libro = prestamo.solicitudes_libros?.ejemplares?.libros;
+				const ejemplar = prestamo.solicitudes_libros?.ejemplares;
 				const estadoId = Number(prestamo.estado_prestamo_id);
-				const estado = estadoId === 1
-					? 'En espera'
-					: estadoId === 2
-						? 'Recogido'
-						: estadoId === 3
-							? 'Devuelto'
-							: 'Perdido';
-				const devuelto = estadoId === 3 ? 'Sí' : 'No';
-				let acciones = '';
-				if (estadoId === 2) {
-					acciones = `
-						<button class="btn-guardar" style="background: #2f855a; color: white; border-color: #2f855a;" onclick="devolverPrestamo(${prestamo.id})">
-							<i class="fas fa-undo"></i> Marcar Devuelto
-						</button>
-					`;
-				}
+				
+				const obj = {
+					id: prestamo.id,
+					estado_prestamo_id: estadoId,
+					boleta: usuario?.boleta || 'N/A',
+					nombre: alumno?.nombre || 'N/A',
+					grupo: alumno?.Grupo || 'N/A',
+					correo: usuario?.correo || 'N/A',
+					libro_titulo: libro?.titulo || 'N/A',
+					numero_ejemplar: ejemplar?.numero_ejemplar || 'N/A',
+					fecha_inicio: prestamo.fecha_inicio_prestamo,
+					fecha_limite: prestamo.fecha_limite_devolucion,
+					fecha_devolucion: prestamo.fecha_devolucion_real
+				};
+				prestamosMap.set(obj.id, obj);
+				return obj;
+			});
+			
+			paginaActualPrestamos = 0;
+			filtrarPrestamos();
+		}
+	} catch (error) {
+		grid.innerHTML = `<div class="admin-error">Error: ${error.message}</div>`;
+	}
+}
 
-                tr.innerHTML = `
-                    <td>${prestamo.id}</td>
-                    <td>${usuario?.boleta || 'N/A'}</td>
-					<td>${alumno?.nombre || 'N/A'}</td>
-					<td>${alumno?.Grupo || 'N/A'}</td>
-					<td>${usuario?.correo || 'N/A'}</td>
-                    <td>${libro?.titulo || 'N/A'}</td>
-                    <td>${ejemplar?.numero_ejemplar || 'N/A'}</td>
-					<td>${formatFechaMexico(prestamo.fecha_inicio_prestamo)}</td>
-					<td>${formatFechaMexico(prestamo.fecha_limite_devolucion)}</td>
-					<td>${formatFechaMexico(prestamo.fecha_devolucion_real)}</td>
-					<td>${estado}</td>
-					<td>${devuelto}</td>
-					<td class="acciones-botones">${acciones}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-    } catch (error) {
-		tbody.innerHTML = `<tr><td colspan="12" class="error">Error: ${error.message}</td></tr>`;
-    }
+function filtrarPrestamos() {
+	const filtro = document.getElementById('filtro-prestamos')?.value || 'todos';
+	const busqueda = (document.getElementById('buscar-prestamos')?.value || '').toLowerCase().trim();
+	
+	prestamosFiltrados = prestamosDataOriginal.filter(prestamo => {
+		let pasaFiltro = true;
+		if (filtro !== 'todos') {
+			pasaFiltro = prestamo.estado_prestamo_id === Number(filtro);
+		}
+		
+		let pasaBusqueda = true;
+		if (busqueda) {
+			pasaBusqueda = prestamo.boleta.toLowerCase().includes(busqueda) ||
+				prestamo.nombre.toLowerCase().includes(busqueda) ||
+				prestamo.libro_titulo.toLowerCase().includes(busqueda) ||
+				String(prestamo.id).includes(busqueda);
+		}
+		
+		return pasaFiltro && pasaBusqueda;
+	});
+	
+	paginaActualPrestamos = 0;
+	actualizarContadorAdmin('prestamos', prestamosFiltrados.length, prestamosDataOriginal.length);
+	
+	const grid = document.getElementById('grid-prestamos');
+	if (prestamosFiltrados.length === 0) {
+		grid.innerHTML = '<div class="admin-vacio">No se encontraron préstamos.</div>';
+		ocultarControlesPaginacionAdmin('prestamos');
+		return;
+	}
+	
+	mostrarPaginaPrestamos();
+	generarDotsAdmin('prestamos', Math.ceil(prestamosFiltrados.length / CARDS_PRESTAMOS), paginaActualPrestamos);
+	mostrarControlesPaginacionAdmin('prestamos');
+}
+
+const debouncedFiltrarPrestamos = debounce(filtrarPrestamos, 300);
+
+function mostrarPaginaPrestamos() {
+	const grid = document.getElementById('grid-prestamos');
+	if (!grid || prestamosFiltrados.length === 0) return;
+	
+	const inicio = paginaActualPrestamos * CARDS_PRESTAMOS;
+	const fin = Math.min(inicio + CARDS_PRESTAMOS, prestamosFiltrados.length);
+	const prestamosPagina = prestamosFiltrados.slice(inicio, fin);
+	
+	grid.innerHTML = prestamosPagina.map(prestamo => crearCardPrestamo(prestamo)).join('');
+	
+	actualizarDotsAdmin('prestamos', paginaActualPrestamos);
+	actualizarContadorPaginacionAdmin('prestamos', paginaActualPrestamos, Math.ceil(prestamosFiltrados.length / CARDS_PRESTAMOS), prestamosFiltrados.length);
+	actualizarFlechasAdmin('prestamos', paginaActualPrestamos, Math.ceil(prestamosFiltrados.length / CARDS_PRESTAMOS));
+}
+
+function crearCardPrestamo(prestamo) {
+	const estadoId = prestamo.estado_prestamo_id;
+	let estado, badgeClass;
+	
+	switch(estadoId) {
+		case 1: estado = 'En espera'; badgeClass = 'badge-en-espera'; break;
+		case 2: estado = 'Recogido'; badgeClass = 'badge-recogido'; break;
+		case 3: estado = 'Devuelto'; badgeClass = 'badge-devuelto'; break;
+		case 4: estado = 'Perdido'; badgeClass = 'badge-perdido'; break;
+		default: estado = 'Desconocido'; badgeClass = 'badge-warning';
+	}
+	
+	const botonDevolver = estadoId === 2 ? 
+		`<button class="btn-aprobar" onclick="devolverPrestamo(${prestamo.id})"><i class="fas fa-undo"></i> Devolver</button>` : '';
+	
+	return `
+		<div class="admin-card" data-id="${prestamo.id}">
+			<div class="admin-card-header">
+				<span class="admin-card-titulo">Préstamo #${prestamo.id}</span>
+				<span class="badge ${badgeClass}">${estado}</span>
+			</div>
+			<div class="admin-card-body">
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Boleta</span>
+					<span class="admin-card-value">${prestamo.boleta}</span>
+				</div>
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Nombre</span>
+					<span class="admin-card-value admin-card-value-truncate" title="${prestamo.nombre}">${prestamo.nombre}</span>
+				</div>
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Libro</span>
+					<span class="admin-card-value admin-card-value-truncate" title="${prestamo.libro_titulo}">${prestamo.libro_titulo}</span>
+				</div>
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Ejemplar</span>
+					<span class="admin-card-value">${prestamo.numero_ejemplar}</span>
+				</div>
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Inicio</span>
+					<span class="admin-card-value">${formatFechaMexico(prestamo.fecha_inicio)}</span>
+				</div>
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Límite</span>
+					<span class="admin-card-value">${formatFechaMexico(prestamo.fecha_limite)}</span>
+				</div>
+				<div class="admin-card-dato">
+					<span class="admin-card-label">Devolución</span>
+					<span class="admin-card-value">${prestamo.fecha_devolucion ? formatFechaMexico(prestamo.fecha_devolucion) : 'Pendiente'}</span>
+				</div>
+			</div>
+			<div class="admin-card-footer">
+				${botonDevolver}
+			</div>
+		</div>
+	`;
+}
+
+function siguientePaginaPrestamos() {
+	const totalPaginas = Math.ceil(prestamosFiltrados.length / CARDS_PRESTAMOS);
+	if (paginaActualPrestamos < totalPaginas - 1) {
+		paginaActualPrestamos++;
+		mostrarPaginaPrestamos();
+	}
+}
+
+function anteriorPaginaPrestamos() {
+	if (paginaActualPrestamos > 0) {
+		paginaActualPrestamos--;
+		mostrarPaginaPrestamos();
+	}
+}
+
+function irAPaginaPrestamos(indice) {
+	const totalPaginas = Math.ceil(prestamosFiltrados.length / CARDS_PRESTAMOS);
+	if (indice >= 0 && indice < totalPaginas) {
+		paginaActualPrestamos = indice;
+		mostrarPaginaPrestamos();
+	}
 }
 
 async function devolverPrestamo(idPrestamo) {
@@ -1269,12 +1786,124 @@ function inicializarPrestamosLibros() {
     cargarPrestamosLibros();
 }
 
+// ==================== FUNCIONES UTILITARIAS ADMIN ====================
+
+function actualizarContadorAdmin(tipo, filtrados, total) {
+	const contador = document.getElementById(`contador-${tipo}`);
+	if (contador) {
+		contador.textContent = `Mostrando ${filtrados} de ${total}`;
+	}
+}
+
+function generarDotsAdmin(tipo, totalPaginas, paginaActual) {
+	const dotsContainer = document.getElementById(`paginacion-dots-${tipo}`);
+	if (!dotsContainer) return;
+	
+	let html = '';
+	for (let i = 0; i < totalPaginas; i++) {
+		html += `<span class="admin-paginacion-dot${i === paginaActual ? ' active' : ''}" onclick="irAPagina${tipo.charAt(0).toUpperCase() + tipo.slice(1)}(${i})"></span>`;
+	}
+	dotsContainer.innerHTML = html;
+}
+
+function actualizarDotsAdmin(tipo, paginaActual) {
+	const dots = document.querySelectorAll(`#paginacion-dots-${tipo} .admin-paginacion-dot`);
+	dots.forEach((dot, i) => {
+		dot.classList.toggle('active', i === paginaActual);
+	});
+}
+
+function actualizarContadorPaginacionAdmin(tipo, paginaActual, totalPaginas, totalItems) {
+	const contador = document.getElementById(`paginacion-contador-${tipo}`);
+	if (contador) {
+		contador.textContent = `Página ${paginaActual + 1} de ${totalPaginas} (${totalItems} items)`;
+	}
+}
+
+function actualizarFlechasAdmin(tipo, paginaActual, totalPaginas) {
+	const btnAnterior = document.querySelector(`#arrow-prev-${tipo}, [onclick="anteriorPagina${tipo.charAt(0).toUpperCase() + tipo.slice(1)}()"]`);
+	const btnSiguiente = document.querySelector(`#arrow-next-${tipo}, [onclick="siguientePagina${tipo.charAt(0).toUpperCase() + tipo.slice(1)}()"]`);
+	
+	if (btnAnterior) {
+		btnAnterior.disabled = paginaActual === 0;
+		btnAnterior.style.opacity = paginaActual === 0 ? '0.5' : '1';
+	}
+	if (btnSiguiente) {
+		btnSiguiente.disabled = paginaActual >= totalPaginas - 1;
+		btnSiguiente.style.opacity = paginaActual >= totalPaginas - 1 ? '0.5' : '1';
+	}
+}
+
+function mostrarControlesPaginacionAdmin(tipo) {
+	const carousel = document.querySelector(`#carousel-${tipo}`);
+	const paginacion = document.querySelector(`#paginacion-${tipo}`);
+	if (carousel) {
+		carousel.style.display = 'flex';
+		const arrows = carousel.querySelectorAll('.admin-arrow');
+		arrows.forEach(a => a.style.visibility = 'visible');
+	}
+	if (paginacion) paginacion.style.display = 'flex';
+}
+
+function ocultarControlesPaginacionAdmin(tipo) {
+	const carousel = document.querySelector(`#carousel-${tipo}`);
+	const paginacion = document.querySelector(`#paginacion-${tipo}`);
+	if (carousel) {
+		const arrows = carousel.querySelectorAll('.admin-arrow');
+		arrows.forEach(a => a.style.visibility = 'hidden');
+	}
+	if (paginacion) paginacion.style.display = 'none';
+}
+
+// ==================== EXPORTS ====================
+
 window.inicializarLibros = inicializarLibros;
 window.inicializarComputadoras = inicializarComputadoras;
 window.inicializarRestiradores = inicializarRestiradores;
 window.inicializarUsuarios = inicializarUsuarios;
 window.inicializarSolicitudesLibros = inicializarSolicitudesLibros;
 window.inicializarPrestamosLibros = inicializarPrestamosLibros;
+
+// Libros
+window.cargarLibros = cargarLibros;
+window.filtrarLibros = filtrarLibros;
+window.debouncedFiltrarLibros = debouncedFiltrarLibros;
+window.siguientePaginaLibros = siguientePaginaLibros;
+window.anteriorPaginaLibros = anteriorPaginaLibros;
+window.irAPaginaLibros = irAPaginaLibros;
+window.editarLibroCard = editarLibroCard;
+window.eliminarLibroCard = eliminarLibroCard;
+
+// Computadoras
+window.cargarComputadoras = cargarComputadoras;
+window.filtrarComputadoras = filtrarComputadoras;
+window.debouncedFiltrarComputadoras = debouncedFiltrarComputadoras;
+window.siguientePaginaComputadoras = siguientePaginaComputadoras;
+window.anteriorPaginaComputadoras = anteriorPaginaComputadoras;
+window.irAPaginaComputadoras = irAPaginaComputadoras;
+window.editarComputadoraCard = editarComputadoraCard;
+window.eliminarComputadoraCard = eliminarComputadoraCard;
+
+// Restiradores
+window.cargarRestiradores = cargarRestiradores;
+window.filtrarRestiradores = filtrarRestiradores;
+window.debouncedFiltrarRestiradores = debouncedFiltrarRestiradores;
+window.siguientePaginaRestiradores = siguientePaginaRestiradores;
+window.anteriorPaginaRestiradores = anteriorPaginaRestiradores;
+window.irAPaginaRestiradores = irAPaginaRestiradores;
+window.editarRestiradorCard = editarRestiradorCard;
+window.eliminarRestiradorCard = eliminarRestiradorCard;
+
+// Usuarios
+window.cargarUsuarios = cargarUsuarios;
+window.filtrarUsuarios = filtrarUsuarios;
+window.debouncedFiltrarUsuarios = debouncedFiltrarUsuarios;
+window.siguientePaginaUsuarios = siguientePaginaUsuarios;
+window.anteriorPaginaUsuarios = anteriorPaginaUsuarios;
+window.irAPaginaUsuarios = irAPaginaUsuarios;
+window.habilitarUsuarioCard = habilitarUsuarioCard;
+
+// Solicitudes
 window.cargarSolicitudesLibros = cargarSolicitudesLibros;
 window.filtrarSolicitudes = filtrarSolicitudes;
 window.siguientePaginaSolicitud = siguientePaginaSolicitud;
@@ -1282,5 +1911,12 @@ window.anteriorPaginaSolicitud = anteriorPaginaSolicitud;
 window.irAPaginaSolicitud = irAPaginaSolicitud;
 window.gestionarSolicitud = gestionarSolicitud;
 window.entregarLibro = entregarLibro;
+
+// Préstamos
 window.cargarPrestamosLibros = cargarPrestamosLibros;
+window.filtrarPrestamos = filtrarPrestamos;
+window.debouncedFiltrarPrestamos = debouncedFiltrarPrestamos;
+window.siguientePaginaPrestamos = siguientePaginaPrestamos;
+window.anteriorPaginaPrestamos = anteriorPaginaPrestamos;
+window.irAPaginaPrestamos = irAPaginaPrestamos;
 window.devolverPrestamo = devolverPrestamo;
