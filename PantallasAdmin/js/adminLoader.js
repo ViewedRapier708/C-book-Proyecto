@@ -62,7 +62,6 @@ document.addEventListener('DOMContentLoaded', function() {
               
             })
             .catch(err => {
-                console.error('Error cargando componente:', err);
                 contentLoader.innerHTML = `
                     <div style="padding: 20px; color: #d32f2f; background: #ffebee; border-radius: 4px; animation: fadeInUp 0.5s ease-out;">
                         <h3>Error al cargar componente</h3>
@@ -226,7 +225,6 @@ function inicializarModalComputadoras() {
             
             // Aquí iría la lógica para enviar al servidor
             
-            alert('Computadora guardada correctamente');
             cerrarModal();
         });
     }
@@ -317,7 +315,6 @@ function inicializarModalLibros() {
                 carrera: document.getElementById('carrera').value,
                 cantidad: document.getElementById('cantidad').value
             };
-            alert('Libro guardado correctamente');
             cerrarModal();
         });
     }
@@ -393,7 +390,6 @@ function inicializarModalRestiradores() {
                 tamano: document.getElementById('tamano').value,
                 estado: document.getElementById('estado').value
             };
-            alert('Restirador guardado correctamente');
             cerrarModal();
         });
     }
@@ -467,7 +463,6 @@ function inicializarModalGuardaropas() {
                 cantidad: document.getElementById('cantidad').value,
                 estado: document.getElementById('estado').value
             };
-            alert('Guardaropa guardado correctamente');
             cerrarModal();
         });
     }

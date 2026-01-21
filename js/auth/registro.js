@@ -9,7 +9,6 @@ async function registro(event) {
     const mensajeDiv = form.querySelector('.messaje') || document.querySelector('.messaje');
 
     if (!boletaInput || !correoInput || !passwordInput || !confirmInput) {
-        console.error('Formulario de registro incompleto: faltan campos esperados');
         return false;
     }
 
@@ -79,7 +78,7 @@ async function registro(event) {
         try {
             localStorage.setItem('datosRegistro', JSON.stringify({ boleta, correo }));
         } catch (e) {
-            console.warn('No se pudo guardar datos de registro en localStorage', e);
+            // Error al guardar en localStorage
         }
 
         mensajeDiv.textContent = data.message || '¡Registro exitoso! Revisa tu correo.';
@@ -91,7 +90,6 @@ async function registro(event) {
 
         return false;
     } catch (err) {
-        console.error('Error en registro:', err);
         mensajeDiv.textContent = 'Error de conexión al servidor';
         mensajeDiv.style.color = 'red';
         return false;

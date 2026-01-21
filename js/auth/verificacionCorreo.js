@@ -10,7 +10,6 @@ function obtenerDatosRegistro() {
         try {
             return JSON.parse(almacenados);
         } catch (e) {
-            console.warn('datosRegistro en localStorage no es válido, se limpiará', e);
             localStorage.removeItem('datosRegistro');
         }
     }
@@ -24,7 +23,7 @@ function obtenerDatosRegistro() {
         try {
             localStorage.setItem('datosRegistro', JSON.stringify(datos));
         } catch (e) {
-            console.warn('No se pudo guardar datosRegistro desde query params', e);
+            // Error al guardar en localStorage
         }
         return datos;
     }
@@ -117,8 +116,6 @@ async function verificarUsuario() {
         }
 
     } catch (err) {
-        console.error('Error en verificación:', err);
-        
         if (intentos >= MAX_INTENTOS) {
             detenerVerificacion();
             mostrarEstadoError('Error de conexión. Intenta más tarde.');

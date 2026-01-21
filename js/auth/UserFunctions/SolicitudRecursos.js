@@ -17,7 +17,6 @@ window.SolicitudRecursos = async function SolicitudRecursos(tipo, boleta, idRecu
 
 		return { success: true, data: json };
 	} catch (err) {
-		console.error('Error en SolicitudRecursos:', err);
 		return { success: false, message: 'Error de conexión' };
 	}
 };

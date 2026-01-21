@@ -38,7 +38,7 @@
                 });
 
                 if (!respuesta.ok) {
-                    console.warn('SessionGuard - /auth/session no OK, intento', intento, 'status:', respuesta.status);
+                    // Intento fallido
                 } else {
                     const datos = await respuesta.json();
                     return {
@@ -48,7 +48,7 @@
                     };
                 }
             } catch (error) {
-                console.error('SessionGuard - Error al verificar sesión (intento', intento, '):', error);
+                // Error en la verificación
             }
 
             intento++;

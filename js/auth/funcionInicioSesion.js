@@ -67,7 +67,6 @@ async function iniciarSesion(event) {
         return false;
 
     } catch (err) {
-        console.error('Error en iniciarSesion:', err);
         mensajeDiv.textContent = 'Error de conexión al servidor';
         mensajeDiv.style.color = 'red';
         return false;

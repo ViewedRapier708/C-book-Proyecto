@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     }
                                 })
                                 .catch(err => {
-                                    console.error('Error al cargar datos:', err);
+                                    // Error al cargar datos
                                 });
                         }
                         // Configurar botón Solicitar
@@ -126,7 +126,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(err => {
-                console.error('Error cargando componente:', err);
                 contentLoader.innerHTML = `
                     <div style="padding: 20px; color: #d32f2f; background: #ffebee; border-radius: 4px;">
                         <h3>Error al cargar componente</h3>

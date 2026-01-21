@@ -715,7 +715,6 @@ async function cancelarSolicitudCard(solicitudId, event) {
             mostrarNotificacion(`❌ ${resultado.error || 'No se pudo cancelar'}`, 'error');
         }
     } catch (error) {
-        console.error('Error al cancelar:', error);
         mostrarNotificacion('❌ Error de conexión', 'error');
     }
 }
@@ -746,7 +745,6 @@ async function cancelarSolicitudLibroCard(solicitudId, event) {
             mostrarNotificacion(`❌ ${resultado.error || 'No se pudo cancelar'}`, 'error');
         }
     } catch (error) {
-        console.error('Error al cancelar:', error);
         mostrarNotificacion('❌ Error de conexión', 'error');
     }
 }

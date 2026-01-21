@@ -1299,7 +1299,6 @@ async function cargarSolicitudesLibros() {
             filtrarSolicitudes();
         }
     } catch (error) {
-        console.error("Error cargando solicitudes:", error);
         container.innerHTML = `<div class="solicitud-error">Error: ${error.message}</div>`;
         ocultarControlesPaginacion();
     }

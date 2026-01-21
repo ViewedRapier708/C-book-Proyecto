@@ -323,7 +323,6 @@ async function inicializarTiempoRealSupabase(tipoInterfaz, callbackCambio) {
 
         return canalesTiempoReal;
     } catch (error) {
-        console.error('❌ Error al conectar con Supabase Realtime:', error);
         return null;
     }
 }
@@ -349,13 +348,11 @@ async function cargarDatosEnTabla() {
     const cuerpoTabla = document.getElementById('Tbody');
 
     if (!tipoRecurso) {
-        console.error('❌ Error: No se encontró el tipo de recurso.');
-        return;
+
     }
     
     // Si usa cards pero no hay Tbody, está bien - usaremos cards
     if (!usaCards && !cuerpoTabla) {
-        console.error('❌ Error: No se encontró el contenedor de la tabla.');
         return;
     }
 
@@ -458,7 +455,6 @@ async function cargarDatosEnTabla() {
             });
             if (!respuesta.ok) {
                 const msg = await respuesta.text().catch(() => '');
-                console.warn(`No se pudieron cargar solicitudes (${respuesta.status}):`, msg);
                 datosFinales = [];
             } else {
                 const dataObtenida = await respuesta.json();
@@ -481,7 +477,6 @@ async function cargarDatosEnTabla() {
             const boleta = sesionData?.user?.boleta;
             
             if (!boleta) {
-                console.error('❌ NO SE ENCONTRÓ BOLETA DEL USUARIO');
                 datosFinales = [];
             } else {
                 const { data, error } = await clienteSupabase
@@ -502,8 +497,6 @@ async function cargarDatosEnTabla() {
                     .order('fecha_solicitud', { ascending: false });
                 
                 if (error) {
-                    console.error('❌ ERROR SUPABASE:', error);
-                    console.error('Error completo:', JSON.stringify(error, null, 2));
                     datosFinales = [];
                 } else {
                     datosFinales = data || [];
@@ -515,7 +508,6 @@ async function cargarDatosEnTabla() {
                 headers: { 'Accept': 'application/json' }
             });
             const dataObtenida = await respuesta.json();
-            alert('Datos obtenidos de la API:', dataObtenida); //debug    
             datosFinales = Array.isArray(dataObtenida?.data) ? dataObtenida.data : (Array.isArray(dataObtenida) ? dataObtenida : []);
         }
 
@@ -525,7 +517,7 @@ async function cargarDatosEnTabla() {
             inicializarEventosTabla();
         }
     } catch (error) {
-        console.error('❌ Error al obtener datos de la API:', error);
+        // Error al cargar datos
     }
 }
 
@@ -536,7 +528,6 @@ async function cancelarSolicitudDesdeTabla(tipo, idSolicitud, boton) {
     const tipoSeguro = String(tipo || '').trim();
 
     if (!tipoSeguro || !id) {
-        console.warn('No se pudo cancelar: faltan tipo o id');
         return;
     }
 
@@ -554,7 +545,6 @@ async function cancelarSolicitudDesdeTabla(tipo, idSolicitud, boton) {
 
         const data = await resp.json().catch(() => ({}));
         if (!resp.ok || !data?.success) {
-            console.error('Error cancelando solicitud:', data);
             if (boton) {
                 boton.disabled = false;
                 boton.textContent = 'Cancelar Solicitud';
@@ -565,7 +555,6 @@ async function cancelarSolicitudDesdeTabla(tipo, idSolicitud, boton) {
 
         await cargarDatosEnTabla();
     } catch (err) {
-        console.error('Error cancelando solicitud:', err);
         if (boton) {
             boton.disabled = false;
             boton.textContent = 'Cancelar Solicitud';
@@ -616,7 +605,6 @@ const actualizarFilaEnTabla = (datosAntiguos, datosNuevos) => {
         });
 
     if (!filaDestino) {
-        console.warn('⚠️ No se encontró la fila para actualizar');
         return;
     }
 

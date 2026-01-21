@@ -42,7 +42,6 @@ function abrirModal() {
 
   
   if (!modal) {
-    console.error('No se encontró el modal de confirmación');
     return;
   }
 
@@ -183,7 +182,6 @@ async function confirmarSolicitud() {
     const resultado = await response.json();
     if (response.ok && resultado.success) {
       // Éxito
-      alert('¡Solicitud realizada con éxito!');
       mostrarNotificacion('✅ ¡Solicitud confirmada exitosamente!', 'success');
       cerrarModal();
       
@@ -207,7 +205,6 @@ async function confirmarSolicitud() {
     }
 
   } catch (error) {
-    console.error('Error al enviar solicitud:', error);
     mostrarNotificacion('❌ Error de conexión. Intenta de nuevo.', 'error');
     
     // Restaurar botón

@@ -104,7 +104,6 @@ async function cargarLibros() {
         renderizarLibros(librosOriginales);
         
     } catch (error) {
-        console.error('Error al cargar libros:', error);
         mostrarMensajeError('Error al cargar los libros de la base de datos');
     }
 }
