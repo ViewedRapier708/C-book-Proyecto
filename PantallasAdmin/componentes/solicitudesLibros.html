@@ -1,18 +1,7 @@
 <div class="container-solicitudes-libros-vertical container-solicitudes-wide">
-    <h2>Alumnos Solicitantes de Libros</h2>
+    <h2>Solicitudes de Libros</h2>
     
     <div class="solicitudes-header">
-        <div class="filtro-estado-container">
-            <label for="filtro-estado">Filtrar por estado:</label>
-            <select id="filtro-estado" class="filtro-estado" onchange="filtrarSolicitudes()">
-                <option value="todos">Todos</option>
-                <option value="1" selected>Pendientes</option>
-                <option value="2">Aprobadas</option>
-                <option value="3">Rechazadas</option>
-                <option value="4">Canceladas</option>
-            </select>
-            <span class="filtro-contador" id="filtro-contador"></span>
-        </div>
         <button class="btn-recargar" onclick="cargarSolicitudesLibros()">
             <i class="fas fa-sync-alt"></i> Recargar
         </button>
