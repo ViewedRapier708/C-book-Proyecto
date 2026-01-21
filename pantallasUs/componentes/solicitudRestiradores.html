@@ -1,27 +1,37 @@
 <div class="container-solicitud-restiradores">
-
-    <div class="layout">
-        <!-- Filtros se insertan aquí dinámicamente -->
+    <div class="user-cards-container" data-tipo="restirador" data-usa-cards="true">
         
-        <div class="container-tabla">
-            <table id="tabla" data-tipo="restirador">
-                <thead>
-                    <tr>
-                        <th>No. restirador</th>
-                        <th>Observaciones</th>
-                        <th>Disponible</th>
-                        <th>En funcionamiento</th>
-                    </tr>
-                </thead>
-                <tbody id="Tbody">
-                
-                </tbody>
-            </table>
+        <!-- Filtros personalizados para restiradores -->
+        <div class="user-filtros">
+            <div class="user-filtros-grupo">
+                <div class="user-filtro-item">
+                    <label>Disponibilidad</label>
+                    <select class="user-filtro-select" data-campo="Disponible">
+                        <option value="">Todos</option>
+                        <option value="true">Disponible</option>
+                        <option value="false">Ocupado</option>
+                    </select>
+                </div>
+            </div>
+            <div class="user-acciones">
+                <span class="user-contador" id="user-contador">0 elementos</span>
+                <button class="user-btn-limpiar" onclick="limpiarFiltrosCards()">
+                    <i class="fas fa-times"></i> Limpiar
+                </button>
+            </div>
         </div>
-
-        <!-- Botón de solicitud (aparece al seleccionar) -->
+        
+        <!-- Grid de cards -->
+        <div class="user-grid user-grid-compact" id="user-cards-grid">
+            <div class="user-cards-loading"></div>
+        </div>
+        
+        <!-- Paginación -->
+        <div class="user-paginacion" id="user-paginacion"></div>
+        
+        <!-- Botón de solicitud -->
         <div class="container-btn-apartar">
-            <button class="btn-apartar" onclick="window.abrirModal()">Solicitar recurso</button>
+            <button class="btn-apartar" style="display: none;" onclick="window.abrirModal()">Solicitar recurso</button>
         </div>
     </div>
 </div>
@@ -33,9 +43,7 @@
         <h3>Detalles del Recurso</h3>
         <div id="detalles-recurso" class="detalles-recurso">
             <table class="tabla-detalles">
-                <tbody id="tabla-detalles-body">
-                    <!-- Los detalles se llenarán dinámicamente -->
-                </tbody>
+                <tbody id="tabla-detalles-body"></tbody>
             </table>
         </div>
         <div class="modal-acciones">
@@ -44,5 +52,3 @@
         </div>
     </div>
 </div>
-
-<script src="./js/funcionsRecursos.js"></script>

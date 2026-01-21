@@ -27,6 +27,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 contentLoader.classList.remove('component-enter');
                 contentLoader.innerHTML = html;
                 
+                // Cambiar vista según el componente (inicio vs tablas)
+                const containerInfo = document.querySelector('.container-informacion');
+                if (containerInfo) {
+                    if (componentName === 'inicio') {
+                        containerInfo.classList.add('vista-inicio');
+                        containerInfo.classList.remove('vista-tablas');
+                    } else {
+                        containerInfo.classList.add('vista-tablas');
+                        containerInfo.classList.remove('vista-inicio');
+                    }
+                }
+                
                 // Forzar reflow para que la animación se ejecute
                 void contentLoader.offsetWidth;
                 contentLoader.classList.add('component-enter');

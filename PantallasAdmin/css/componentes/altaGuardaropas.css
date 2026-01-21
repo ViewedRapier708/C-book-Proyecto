@@ -218,72 +218,87 @@ select:focus {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(123, 2, 51, 0.3);
 }
-
 /* ========================================
    ESTILOS PARA LA COLUMNA DE ESTADÍSTICAS
    ======================================== */
 
 .layout-dos-columnas {
     display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: 2rem;
-    /* align-items: start; Eliminado para simetría de altura */
+    grid-template-columns: 1fr 200px;
+    gap: 1.5rem;
+    width: 100%;
 }
 
 .columna-principal {
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .columna-estadisticas {
     background: #FFFFFF;
-    border-radius: 15px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    border: 1px solid #E8E8E8;
+    padding: 1rem;
     position: sticky;
-    top: 2rem;
+    top: 1.5rem;
+    align-self: flex-start;
+    height: fit-content;
 }
 
 .container-datos-sistema h3 {
     color: #7B0233;
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-    text-align: center;
-    border-bottom: 2px solid #7B0233;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
     padding-bottom: 0.5rem;
+    border-bottom: 2px solid #7B0233;
+    text-align: left;
 }
 
 .dato-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.6rem 0;
-    border-bottom: 1px solid #eee;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #F0F0F0;
 }
 
 .dato-item:last-child {
     border-bottom: none;
+    padding-bottom: 0;
 }
 
 .dato-label {
-    font-weight: 600;
-    color: #333;
-    font-size: 0.9rem;
+    font-weight: 500;
+    color: #6B6B6B;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .dato-value {
-    font-weight: 700;
-    color: #7B0233;
-    font-size: 1rem;
+    font-weight: 600;
+    color: #1A1A1A;
+    font-size: 0.9rem;
 }
 
 /* Responsive */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
+    .layout-dos-columnas {
+        grid-template-columns: 1fr 180px;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
     .layout-dos-columnas {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
     
     .columna-estadisticas {
         position: static;
+        order: -1;
     }
 }

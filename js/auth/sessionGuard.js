@@ -67,7 +67,7 @@
         if (autenticado) {
             // Si el usuario ya inició sesión y está en login/registro, mandarlo a su panel
             if (esPaginaPublica) {
-                alert (usuario.rol)
+                
               if (usuario && usuario.rol === 'Admin') {
                     window.location.href = './pantallasAdmin/administrador.html';
                     return;

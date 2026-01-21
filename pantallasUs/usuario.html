@@ -11,6 +11,7 @@
     <script src="../js/auth/funcionCerrarSesion.js"></script>  
     <link rel="stylesheet" href="css/EstiloAside.css">
     <link rel="stylesheet" href="css/StyleGeneral.css">
+    <link rel="stylesheet" href="css/user-cards.css">
     <link rel="stylesheet" href="css/componentes-base.css">
     <link rel="stylesheet" href="css/componentes/inicio.css">
     <link rel="stylesheet" href="css/componentes/solicitudLibros.css">
@@ -54,9 +55,10 @@
     
     <div class="container-main">
         <div id="notificacion-solicitud toast"></div>
-        <div class="container-informacion">
+        <div class="container-wrapper vista-inicio" id="container-wrapper">
 
-            <div class="container-titulo">
+            <div class="container-titulo" id="container-titulo">
+                <h1 id="titulo-seccion">BIENVENIDO USUARIO</h1>
             </div>
             
             <div class="container-contenido" id="content-loader">
@@ -71,6 +73,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
        <script src="../js/utils/funcionsRecursos.js"></script>
     <script src="./funcionesHtml/userLoader.js"></script>
+    <script src="./funcionesHtml/userCards.js"></script>
     <script src="./funcionesHtml/RealTime.js"></script>
     <script src="./funcionesHtml/filtrosTabla.js"></script>
     <script>
