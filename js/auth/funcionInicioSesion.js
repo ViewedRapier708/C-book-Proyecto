@@ -47,6 +47,14 @@ async function iniciarSesion(event) {
             localStorage.setItem('user_data', JSON.stringify(data.user));
         }
 
+        // Guardar rol para validación/UX (no reemplaza la cookie de sesión)
+        const rol = (data.user && data.user.rol) ? data.user.rol : (data.rol || null);
+        if (rol) {
+            localStorage.setItem('user_role', rol);
+        } else {
+            localStorage.removeItem('user_role');
+        }
+
         mensajeDiv.textContent = '¡Inicio de sesión exitoso!';
         mensajeDiv.style.color = 'green';
 

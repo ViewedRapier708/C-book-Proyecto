@@ -5,6 +5,9 @@
     // Usamos rutas relativas, no necesitamos API_BASE.
 
     const paginaActual = window.location.pathname;
+
+    // Soporte cuando el proyecto se sirve bajo subcarpeta (ej: /C-book-Proyecto/)
+    const basePrefix = paginaActual.includes('/C-book-Proyecto/') ? '/C-book-Proyecto' : '';
    
 
     // Páginas públicas: se puede entrar sin iniciar sesión
@@ -61,29 +64,77 @@
         return { autenticado: false, usuario: null };
     }
 
+    function esAdminRole(rol) {
+        return rol === 'Admin' || rol === 'ADMIN' || rol === 'Administrador' || rol === 'administrador';
+    }
+
+    function persistirUsuarioLocal(usuario) {
+        try {
+            if (usuario) {
+                localStorage.setItem('user_data', JSON.stringify(usuario));
+                if (usuario.rol) localStorage.setItem('user_role', usuario.rol);
+            }
+        } catch (e) {
+            // ignorar errores de storage
+        }
+    }
+
+    function limpiarUsuarioLocal() {
+        try {
+            localStorage.removeItem('user_data');
+            localStorage.removeItem('user_role');
+        } catch (e) {
+            // ignorar
+        }
+    }
+
     async function aplicarLogicaRedireccion() {
         const { autenticado, usuario } = await verificarSesionEnBackendConReintentos();
 
         if (autenticado) {
+            // Mantener el rol sincronizado localmente
+            persistirUsuarioLocal(usuario);
+
+            const rolActual = usuario?.rol || localStorage.getItem('user_role');
+            const esAdmin = esAdminRole(rolActual);
+
             // Si el usuario ya inició sesión y está en login/registro, mandarlo a su panel
             if (esPaginaPublica) {
                 
-              if (usuario && usuario.rol === 'Admin') {
-                    window.location.href = './pantallasAdmin/admin.html';
+              if (usuario && esAdmin) {
+                    window.location.href = `${basePrefix}/PantallasAdmin/admin.html`;
                     return;
                 }
                 if (usuario && usuario.rol === 'alumno') {
-                     window.location.href = './pantallasUs/usuario.html';
+                     window.location.href = `${basePrefix}/pantallasUs/usuario.html`;
                 return;
                 }
               
             }
+
+            // Validación constante: no permitir Admin en pantallas de usuario, ni usuario normal en Admin
+            const esPantallaAdmin = paginaActual.includes('/PantallasAdmin/') || paginaActual.includes('/pantallasAdmin/');
+            const esPantallaUsuario = paginaActual.includes('/pantallasUs/');
+
+            if (esPantallaAdmin && !esAdmin) {
+                // Está autenticado pero no es admin -> lo mandamos al panel usuario
+                window.location.href = `${basePrefix}/pantallasUs/usuario.html`;
+                return;
+            }
+
+            if (esPantallaUsuario && esAdmin) {
+                // Admin no debería navegar en pantallas de usuario
+                window.location.href = `${basePrefix}/PantallasAdmin/admin.html`;
+                return;
+            }
+
             return;
         }
 
         // No autenticado
+        limpiarUsuarioLocal();
         if (!esPaginaPublica) {
-            window.location.href = '../index.html';
+            window.location.href = `${basePrefix}/index.html`;
             return;
         }
     }

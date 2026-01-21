@@ -14,6 +14,9 @@
     <link rel="stylesheet" href="css/componentes/altaUsuarios.css">
     <link rel="shortcut icon" href="../img/logo_C_Book.jpg" type="image/x-icon">
     <script src="../js/config/apiConfig.js"></script>
+    <script src="../js/auth/sessionGuard.js"></script>
+    <script src="../js/auth/funcionCerrarSesion.js"></script>
+   
 </head>
 <body>
     <aside class="container-aside">
@@ -39,7 +42,7 @@
                     <a href="#" class="link-secciones nav-link" data-component="prestamosLibros" data-title="PRÉSTAMOS DE LIBROS">Préstamos Libros</a>
                 </div>
                 <div class="btn-cerrar-sesion">
-                    <a href="../index.html" class="link-secciones">Cerrar Sesión</a>
+                    <a href="#" class="link-secciones" id="btnCerrarSesion">Cerrar Sesión</a>
                 </div>
             </div>
         </div>
@@ -79,5 +82,20 @@
     <!-- Scripts -->
     <script src="js/apiAdmin.js"></script>
     <script src="js/adminLoader.js"></script>
+    <script>
+        (function () {
+            const btn = document.getElementById('btnCerrarSesion');
+            if (!btn) return;
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (typeof window.cerrarSesion === 'function') {
+                    window.cerrarSesion();
+                } else {
+                    // fallback
+                    window.location.href = '../index.html';
+                }
+            });
+        })();
+    </script>
 </body>
 </html>
