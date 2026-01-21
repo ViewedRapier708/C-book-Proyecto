@@ -138,6 +138,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         inicializarUsuarios();
                     }
                     break;
+                case 'documentos':
+                    if (typeof inicializarDocumentos === 'function') {
+                        inicializarDocumentos();
+                    }
+                    break;
                 default:
             }
         }, 100);

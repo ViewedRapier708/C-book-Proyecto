@@ -18,6 +18,7 @@ const computadorasMap = new Map();
 const restiradoresMap = new Map();
 const usuariosMap = new Map();
 const prestamosMap = new Map();
+const documentosMap = new Map();
 
 // Variables de paginación por módulo
 const CARDS_LIBROS = 3;
@@ -25,6 +26,7 @@ const CARDS_COMPUTADORAS = 4;
 const CARDS_RESTIRADORES = 6;
 const CARDS_USUARIOS = 6;
 const CARDS_PRESTAMOS = 3;
+const CARDS_DOCUMENTOS = 6;
 
 let librosDataOriginal = [];
 let librosFiltrados = [];
@@ -45,6 +47,10 @@ let paginaActualUsuarios = 0;
 let prestamosDataOriginal = [];
 let prestamosFiltrados = [];
 let paginaActualPrestamos = 0;
+
+let documentosDataOriginal = [];
+let documentosFiltrados = [];
+let paginaActualDocumentos = 0;
 
 const adminState = {
 	libros: { page: 1, total: 0, limit: PAGE_LIMIT },
@@ -1266,6 +1272,202 @@ function inicializarUsuarios() {
 	cargarUsuarios();
 }
 
+// ==================== DOCUMENTOS ====================
+
+async function cargarDocumentos() {
+	const grid = document.getElementById('grid-documentos');
+	if (!grid) return;
+	
+	grid.innerHTML = '<div class="admin-loading">Cargando documentación...</div>';
+	ocultarControlesPaginacionAdmin('documentos');
+	
+	const mensaje = document.getElementById('mensaje-documentos');
+	ocultarMensaje(mensaje);
+	
+	try {
+		const resultado = await requestJson('/auth/admin/usuarios?page=1&limit=1000');
+		
+		documentosMap.clear();
+		documentosDataOriginal = (resultado.data || []).map((usuario) => {
+			const obj = {
+				id: usuario.id,
+				boleta: usuario.boleta,
+				correo: usuario.correo,
+				rol: usuario.rol,
+				tiene_documentos: usuario.tiene_documentos
+			};
+			documentosMap.set(obj.id, obj);
+			return obj;
+		});
+
+		paginaActualDocumentos = 0;
+		filtrarDocumentos();
+		actualizarEstadisticasDocumentos();
+	} catch (error) {
+		grid.innerHTML = `<div class="admin-error">Error: ${error.message}</div>`;
+		mostrarMensaje(mensaje, 'error', error.message);
+	}
+}
+
+function actualizarEstadisticasDocumentos() {
+	const pendientes = documentosDataOriginal.filter(d => !d.tiene_documentos).length;
+	const aprobados = documentosDataOriginal.filter(d => d.tiene_documentos).length;
+	const total = documentosDataOriginal.length;
+	
+	const elPendientes = document.getElementById('total-pendientes');
+	const elAprobados = document.getElementById('total-aprobados');
+	const elTotal = document.getElementById('total-documentos');
+	
+	if (elPendientes) elPendientes.textContent = pendientes;
+	if (elAprobados) elAprobados.textContent = aprobados;
+	if (elTotal) elTotal.textContent = total;
+}
+
+function filtrarDocumentos() {
+	const filtro = document.getElementById('filtro-documentos')?.value || 'sin-docs';
+	const busqueda = (document.getElementById('buscar-documentos')?.value || '').toLowerCase().trim();
+	
+	documentosFiltrados = documentosDataOriginal.filter(usuario => {
+		let pasaFiltro = true;
+		if (filtro === 'con-docs') pasaFiltro = usuario.tiene_documentos === true;
+		else if (filtro === 'sin-docs') pasaFiltro = usuario.tiene_documentos === false;
+		
+		let pasaBusqueda = true;
+		if (busqueda) {
+			pasaBusqueda = usuario.boleta.toLowerCase().includes(busqueda) ||
+				usuario.correo.toLowerCase().includes(busqueda) ||
+				usuario.rol.toLowerCase().includes(busqueda);
+		}
+		
+		return pasaFiltro && pasaBusqueda;
+	});
+	
+	paginaActualDocumentos = 0;
+	actualizarContadorAdmin('documentos', documentosFiltrados.length, documentosDataOriginal.length);
+	
+	const grid = document.getElementById('grid-documentos');
+	if (documentosFiltrados.length === 0) {
+		grid.innerHTML = '<div class="admin-vacio">No se encontraron usuarios.</div>';
+		ocultarControlesPaginacionAdmin('documentos');
+		return;
+	}
+	
+	mostrarPaginaDocumentos();
+	generarDotsAdmin('documentos', Math.ceil(documentosFiltrados.length / CARDS_DOCUMENTOS), paginaActualDocumentos);
+	mostrarControlesPaginacionAdmin('documentos');
+}
+
+const debouncedFiltrarDocumentos = debounce(filtrarDocumentos, 300);
+
+function mostrarPaginaDocumentos() {
+	const grid = document.getElementById('grid-documentos');
+	if (!grid || documentosFiltrados.length === 0) return;
+	
+	const inicio = paginaActualDocumentos * CARDS_DOCUMENTOS;
+	const fin = Math.min(inicio + CARDS_DOCUMENTOS, documentosFiltrados.length);
+	const documentosPagina = documentosFiltrados.slice(inicio, fin);
+	
+	grid.innerHTML = documentosPagina.map(usuario => crearCardDocumento(usuario)).join('');
+	
+	actualizarDotsAdmin('documentos', paginaActualDocumentos);
+	actualizarContadorPaginacionAdmin('documentos', paginaActualDocumentos, Math.ceil(documentosFiltrados.length / CARDS_DOCUMENTOS), documentosFiltrados.length);
+	actualizarFlechasAdmin('documentos', paginaActualDocumentos, Math.ceil(documentosFiltrados.length / CARDS_DOCUMENTOS));
+}
+
+function crearCardDocumento(usuario) {
+	const badgeClass = usuario.tiene_documentos ? 'badge-con-docs' : 'badge-sin-docs';
+	const badgeText = usuario.tiene_documentos ? 'Aprobado' : 'Pendiente';
+	const botonesAccion = usuario.tiene_documentos ? 
+		`<button class="btn-ver btn-secundario" onclick="verDetalleDocumento(${usuario.id})">Ver detalle</button>` :
+		`<button class="btn-aprobar" onclick="aprobarDocumento(${usuario.id})">Aprobar</button>`;
+	
+	return `
+		<div class="admin-card" data-id="${usuario.id}">
+			<div class="admin-card-header">
+				<span class="admin-card-titulo">${usuario.boleta}</span>
+				<span class="admin-badge ${badgeClass}">${badgeText}</span>
+			</div>
+			<div class="admin-card-body">
+				<p><strong>Correo:</strong> ${usuario.correo}</p>
+				<p><strong>Rol:</strong> ${usuario.rol}</p>
+				<p><strong>Estado:</strong> ${badgeText}</p>
+			</div>
+			<div class="admin-card-footer">
+				${botonesAccion}
+			</div>
+		</div>
+	`;
+}
+
+function siguientePaginaDocumentos() {
+	const totalPaginas = Math.ceil(documentosFiltrados.length / CARDS_DOCUMENTOS);
+	if (paginaActualDocumentos < totalPaginas - 1) {
+		paginaActualDocumentos++;
+		mostrarPaginaDocumentos();
+	}
+}
+
+function anteriorPaginaDocumentos() {
+	if (paginaActualDocumentos > 0) {
+		paginaActualDocumentos--;
+		mostrarPaginaDocumentos();
+	}
+}
+
+function irAPaginaDocumentos(indice) {
+	const totalPaginas = Math.ceil(documentosFiltrados.length / CARDS_DOCUMENTOS);
+	if (indice >= 0 && indice < totalPaginas) {
+		paginaActualDocumentos = indice;
+		mostrarPaginaDocumentos();
+	}
+}
+
+async function aprobarDocumento(id) {
+	const usuario = documentosMap.get(id);
+	if (!usuario) return;
+	
+	const confirmar = await abrirConfirmacion({
+		titulo: 'Aprobar documentación',
+		mensaje: '¿Confirma la aprobación de la documentación de este usuario?',
+		detalle: obtenerDetalleDocumento(usuario)
+	});
+
+	if (!confirmar) return;
+
+	try {
+		await requestJson(`/auth/admin/usuarios/${id}/habilitar`, { method: 'PUT' });
+		mostrarToast('Documentación aprobada correctamente.');
+		cargarDocumentos();
+	} catch (error) {
+		mostrarToast(error.message || 'No se pudo aprobar la documentación.', 'error');
+	}
+}
+
+function obtenerDetalleDocumento(usuario) {
+	return `
+		<p><strong>Boleta:</strong> ${usuario.boleta}</p>
+		<p><strong>Correo:</strong> ${usuario.correo}</p>
+		<p><strong>Rol:</strong> ${usuario.rol}</p>
+	`;
+}
+
+function verDetalleDocumento(id) {
+	const usuario = documentosMap.get(id);
+	if (!usuario) return;
+	
+	abrirConfirmacion({
+		titulo: 'Detalle del Usuario',
+		mensaje: 'Información de documentación:',
+		detalle: obtenerDetalleDocumento(usuario),
+		soloInfo: true
+	});
+}
+
+function inicializarDocumentos() {
+	inicializarModalConfirmacion();
+	cargarDocumentos();
+}
+
 // ==================== SOLICITUDES LIBROS ====================
 
 // Variables globales para paginación de solicitudes
@@ -1863,6 +2065,7 @@ window.inicializarRestiradores = inicializarRestiradores;
 window.inicializarUsuarios = inicializarUsuarios;
 window.inicializarSolicitudesLibros = inicializarSolicitudesLibros;
 window.inicializarPrestamosLibros = inicializarPrestamosLibros;
+window.inicializarDocumentos = inicializarDocumentos;
 
 // Libros
 window.cargarLibros = cargarLibros;
@@ -1920,3 +2123,13 @@ window.siguientePaginaPrestamos = siguientePaginaPrestamos;
 window.anteriorPaginaPrestamos = anteriorPaginaPrestamos;
 window.irAPaginaPrestamos = irAPaginaPrestamos;
 window.devolverPrestamo = devolverPrestamo;
+
+// Documentos
+window.cargarDocumentos = cargarDocumentos;
+window.filtrarDocumentos = filtrarDocumentos;
+window.debouncedFiltrarDocumentos = debouncedFiltrarDocumentos;
+window.siguientePaginaDocumentos = siguientePaginaDocumentos;
+window.anteriorPaginaDocumentos = anteriorPaginaDocumentos;
+window.irAPaginaDocumentos = irAPaginaDocumentos;
+window.aprobarDocumento = aprobarDocumento;
+window.verDetalleDocumento = verDetalleDocumento;
