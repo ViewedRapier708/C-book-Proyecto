@@ -29,6 +29,23 @@ const {
 } = require('../utils/fechaUtils.js');
 const { getClient } = require("../config/db");
 
+function validarEnteroSinDecimales(valor, campo) {
+    if (valor === undefined || valor === null || valor === '') {
+        return { ok: true, value: undefined };
+    }
+
+    if (typeof valor === 'string' && /[.,]/.test(valor)) {
+        return { ok: false, message: `El campo ${campo} no permite decimales` };
+    }
+
+    const numero = Number(valor);
+    if (!Number.isFinite(numero) || !Number.isInteger(numero)) {
+        return { ok: false, message: `El campo ${campo} debe ser un número entero (sin decimales)` };
+    }
+
+    return { ok: true, value: numero };
+}
+
 // ==================== CREAR MATERIALES ====================
 
 async function crearLibro(req, res) {
@@ -62,38 +79,43 @@ if (!numero_ejemplar || !anio || !estatus_item || !coleccion || !codigo_barras) 
     });
 }
 
+const validacionNumeroEjemplar = validarEnteroSinDecimales(numero_ejemplar, 'numero_ejemplar');
+if (!validacionNumeroEjemplar.ok) {
+    return res.status(400).json({
+        success: false,
+        message: validacionNumeroEjemplar.message
+    });
+}
+
+const validacionAnio = validarEnteroSinDecimales(anio, 'anio');
+if (!validacionAnio.ok) {
+    return res.status(400).json({
+        success: false,
+        message: validacionAnio.message
+    });
+}
+
+const numeroEjemplar = validacionNumeroEjemplar.value;
+const anioNumero = validacionAnio.value;
+
 // Validaciones numéricas
-if (numero_ejemplar < 0) {
+if (numeroEjemplar < 0) {
     return res.status(400).json({
         success: false,
         message: 'El número de ejemplar no puede ser negativo'
     });
 }
 
-if (anio < 0) {
+if (anioNumero < 0) {
     return res.status(400).json({
         success: false,
         message: 'El año no puede ser negativo'
     });
 }
 
-if (!Number.isInteger(numero_ejemplar)) {
-    return res.status(400).json({
-        success: false,
-        message: 'El número de ejemplar debe ser un número entero'
-    });
-}
-
-if (!Number.isInteger(anio)) { 
-    return res.status(400).json({
-        success: false,
-        message: 'El año debe ser un número entero'
-    });
-}
-
 // Validación del año (rango razonable: 1000-2100)
 const anioActual = new Date().getFullYear();
-if (anio < 1000 || anio > 2100) {
+if (anioNumero < 1000 || anioNumero > 2100) {
     return res.status(400).json({
         success: false,
         message: 'El año debe estar entre 1000 y 2100'
@@ -252,8 +274,8 @@ for (const [campo, limites] of Object.entries(longitudes)) {
         const resultadoEjemplar = await CrearEjemplar(
             libroId,
             codigo_barras,
-            numero_ejemplar,
-            anio,
+            numeroEjemplar,
+            anioNumero,
             estatus_item,
             Disponible,
             coleccion
@@ -294,10 +316,20 @@ async function crearComputadora(req, res) {
             });
         }
 
+        const validacionNoComputadora = validarEnteroSinDecimales(no_computadora, 'no_computadora');
+        if (!validacionNoComputadora.ok) {
+            return res.status(400).json({
+                success: false,
+                message: validacionNoComputadora.message
+            });
+        }
+
+        const noComputadoraNumero = validacionNoComputadora.value;
+
         const resultado = await CrearComputadora(
             procesador, programas, carrera, 
             Disponible, En_funcionamiento, Observacion, 
-            no_inventario, no_computadora
+            no_inventario, noComputadoraNumero
         );
         
         if (resultado.success) {
@@ -330,9 +362,19 @@ async function crearRestirador(req, res) {
             });
         }
 
+        const validacionNoRestirador = validarEnteroSinDecimales(no_restirador, 'no_restirador');
+        if (!validacionNoRestirador.ok) {
+            return res.status(400).json({
+                success: false,
+                message: validacionNoRestirador.message
+            });
+        }
+
+        const noRestiradorNumero = validacionNoRestirador.value;
+
         const resultado = await CrearRestirador(
             Disponible, estadoMaterial, 
-            Observacion, no_inventario, no_restirador
+            Observacion, no_inventario, noRestiradorNumero
         );
         
         if (resultado.success) {
@@ -448,6 +490,30 @@ async function actualizarLibro(req, res) {
             });
         }
 
+        let numeroEjemplarActualizado = numero_ejemplar;
+        if (numero_ejemplar !== undefined) {
+            const validacionNumeroEjemplar = validarEnteroSinDecimales(numero_ejemplar, 'numero_ejemplar');
+            if (!validacionNumeroEjemplar.ok) {
+                return res.status(400).json({
+                    success: false,
+                    message: validacionNumeroEjemplar.message
+                });
+            }
+            numeroEjemplarActualizado = validacionNumeroEjemplar.value;
+        }
+
+        let anioActualizado = anio;
+        if (anio !== undefined) {
+            const validacionAnio = validarEnteroSinDecimales(anio, 'anio');
+            if (!validacionAnio.ok) {
+                return res.status(400).json({
+                    success: false,
+                    message: validacionAnio.message
+                });
+            }
+            anioActualizado = validacionAnio.value;
+        }
+
         const resultadoLibro = await actualizarDatosLibro(id, titulo, clasificacion, isbn, tipo_material, autor);
 
         if (!resultadoLibro.success) {
@@ -458,8 +524,8 @@ async function actualizarLibro(req, res) {
             const resultadoEjemplar = await actualizarDatosEjemplar(
                 ejemplar_id,
                 codigo_barras,
-                numero_ejemplar,
-                anio,
+                numeroEjemplarActualizado,
+                anioActualizado,
                 estatus_item,
                 Disponible,
                 coleccion
@@ -503,10 +569,22 @@ async function actualizarComputadora(req, res) {
             });
         }
 
+        let noComputadoraActualizada = no_computadora;
+        if (no_computadora !== undefined) {
+            const validacionNoComputadora = validarEnteroSinDecimales(no_computadora, 'no_computadora');
+            if (!validacionNoComputadora.ok) {
+                return res.status(400).json({
+                    success: false,
+                    message: validacionNoComputadora.message
+                });
+            }
+            noComputadoraActualizada = validacionNoComputadora.value;
+        }
+
         const resultado = await actualizarDatosComputadora(
             id, procesador, programas, carrera, 
             Disponible, En_funcionamiento, Observacion, 
-            no_inventario, no_computadora
+            no_inventario, noComputadoraActualizada
         );
         
         if (resultado.success) {
@@ -539,9 +617,21 @@ async function actualizarRestirador(req, res) {
             });
         }
 
+        let noRestiradorActualizado = no_restirador;
+        if (no_restirador !== undefined) {
+            const validacionNoRestirador = validarEnteroSinDecimales(no_restirador, 'no_restirador');
+            if (!validacionNoRestirador.ok) {
+                return res.status(400).json({
+                    success: false,
+                    message: validacionNoRestirador.message
+                });
+            }
+            noRestiradorActualizado = validacionNoRestirador.value;
+        }
+
         const resultado = await actualizarDatosRestirador(
             id, Disponible, estadoMaterial, 
-            Observacion, no_inventario, no_restirador
+            Observacion, no_inventario, noRestiradorActualizado
         );
         
         if (resultado.success) {
