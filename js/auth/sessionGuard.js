@@ -72,7 +72,7 @@
                     window.location.href = './pantallasAdmin/administrador.html';
                     return;
                 }
-                if (usuario && usuario.rol === 'Alumno') {
+                if (usuario && usuario.rol === 'alumno') {
                      window.location.href = './pantallasUs/usuario.html';
                 return;
                 }
