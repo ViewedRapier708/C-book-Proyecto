@@ -452,6 +452,20 @@ function irAPaginaCards(pagina) {
  * Selecciona una card
  */
 function seleccionarCard(card) {
+    // Si la card ya está seleccionada, desseleccionarla
+    if (card.classList.contains('selected')) {
+        card.classList.remove('selected');
+        UserCards.cardSeleccionada = null;
+        window.recursoSeleccionado = null;
+        
+        // Ocultar botón de solicitar
+        const btnApartar = document.querySelector('.container-btn-apartar .btn-apartar');
+        if (btnApartar) {
+            btnApartar.style.display = 'none';
+        }
+        return;
+    }
+    
     // Remover selección previa
     document.querySelectorAll('.user-card.selected').forEach(c => c.classList.remove('selected'));
     

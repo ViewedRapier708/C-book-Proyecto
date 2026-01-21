@@ -229,6 +229,9 @@ const validarLibroPayload = (payload, { requireAll = true } = {}) => {
 
 const validarDuplicado = async ({ tabla, columna, valor, mensaje, excluirId = null }) => {
     const supabase = getClient();
+    if  (typeof valor ==float){}
+    
+    
     let query = supabase
         .from(tabla)
         .select('id')
@@ -240,7 +243,7 @@ const validarDuplicado = async ({ tabla, columna, valor, mensaje, excluirId = nu
     }
 
     const { data, error } = await query.maybeSingle();
-
+    
     if (error) {
         console.error(`Error validando duplicado en ${tabla}.${columna}:`, error);
         return { success: false, message: 'Error interno al validar duplicados' };
