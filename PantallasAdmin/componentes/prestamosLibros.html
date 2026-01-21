@@ -1,20 +1,8 @@
 <div class="admin-cards-container">
-    <h2>Préstamos de Libros</h2>
+    <h2>Prestamos de Libros</h2>
     <div class="mensaje-alerta" id="mensaje-prestamos" hidden></div>
 
     <div class="admin-header">
-        <div class="admin-filtros">
-            <label for="filtro-prestamos">Filtrar:</label>
-            <select id="filtro-prestamos" class="admin-filtro-select" onchange="filtrarPrestamos()">
-                <option value="todos">Todos</option>
-                <option value="1">En espera</option>
-                <option value="2" selected>Recogido</option>
-                <option value="3">Devuelto</option>
-                <option value="4">Perdido</option>
-            </select>
-            <input type="text" id="buscar-prestamos" class="admin-search-input" placeholder="Buscar boleta, libro..." oninput="debouncedFiltrarPrestamos()">
-            <span class="admin-contador" id="contador-prestamos"></span>
-        </div>
         <div class="admin-acciones">
             <button class="btn-recargar" onclick="cargarPrestamosLibros()">
                 <i class="fas fa-sync-alt"></i> Recargar
