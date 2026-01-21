@@ -79,6 +79,11 @@ const obtenerBoletaLocal = () => {
 const obtenerIdRecursoSolicitud = (solicitud) => {
     if (!solicitud || typeof solicitud !== 'object') return '-';
     return (
+        solicitud.numero_material ??
+        solicitud.numero_ejemplar ??
+        solicitud.no_computadora ??
+        solicitud.no_restirador ??
+        solicitud.no_inventario ??
         solicitud.recurso_id ??
         solicitud.id_recurso ??
         solicitud.computadora_id ??
@@ -86,6 +91,23 @@ const obtenerIdRecursoSolicitud = (solicitud) => {
         solicitud.ejemplar_id ??
         solicitud.recurso?.id ??
         solicitud.recurso ??
+        '-'
+    );
+};
+
+const obtenerNumeroMaterialSolicitud = (solicitud) => {
+    if (!solicitud || typeof solicitud !== 'object') return '-';
+    return (
+        solicitud.numero_material ??
+        solicitud.numero_ejemplar ??
+        solicitud.no_computadora ??
+        solicitud.no_restirador ??
+        solicitud.no_inventario ??
+        solicitud.recurso_id ??
+        solicitud.id_recurso ??
+        solicitud.computadora_id ??
+        solicitud.restirador_id ??
+        solicitud.ejemplar_id ??
         '-'
     );
 };
@@ -175,10 +197,11 @@ const mapearValoresFila = (tipoRecurso, datos) => {
 
     if (tipoRecurso === 'solicitudes') {
         const estadoCrudo = recurso.estado ?? recurso.estado_asistencia ?? recurso.estado_asistencia_id;
+        const numeroMaterial = obtenerNumeroMaterialSolicitud(recurso);
         return [
             recurso.id ?? '-',
             recurso.tipo ?? '-',
-            recurso.recurso_id ?? '-',
+            numeroMaterial ?? '-',
             recurso.fecha_solicitud ?? '-',
             formatearHoraAMPM(recurso.hora_solicitud),
             formatearHoraAMPM(recurso.hora_limite),
