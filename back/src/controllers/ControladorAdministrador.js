@@ -3,6 +3,7 @@ const {
     CrearEjemplar,
     CrearComputadora,
     CrearRestirador,
+    CrearGuardarropa,
     eliminarComputadora,
     eliminarRestirador,
     eliminarLibro,
@@ -29,135 +30,24 @@ const {
 const { getClient } = require("../config/db");
 
 function validarEnteroSinDecimales(valor, campo) {
-    // Si el valor está vacío, retornar undefined
     if (valor === undefined || valor === null || valor === '') {
         return { ok: true, value: undefined };
     }
 
-    // Convertir a string para validación
-    const valorStr = String(valor).trim();
-
-    // Detectar si contiene punto decimal o coma
-    if (/[.,]/.test(valorStr)) {
-        return { 
-            ok: false, 
-            message: `El campo ${campo} no puede contener decimales. Debe ser un número entero positivo.` 
-        };
+    if (typeof valor === 'string' && /[.,]/.test(valor)) {
+        return { ok: false, message: `El campo ${campo} no puede contener decimales. Solo números enteros positivos.` };
     }
 
-    // Convertir a número
-    const numero = Number(valorStr);
-
-    // Validar que sea un número válido
-    if (isNaN(numero) || !Number.isFinite(numero)) {
-        return { 
-            ok: false, 
-            message: `El campo ${campo} debe ser un número válido.` 
-        };
+    const numero = Number(valor);
+    if (!Number.isFinite(numero) || !Number.isInteger(numero)) {
+        return { ok: false, message: `El campo ${campo} debe ser un número entero (sin decimales).` };
     }
 
-    // Validar que sea entero
-    if (!Number.isInteger(numero)) {
-        return { 
-            ok: false, 
-            message: `El campo ${campo} debe ser un número entero (sin decimales).` 
-        };
-    }
-
-    // Validar que sea positivo
     if (numero < 0) {
-        return { 
-            ok: false, 
-            message: `El campo ${campo} debe ser un número positivo.` 
-        };
+        return { ok: false, message: `El campo ${campo} no puede ser negativo.` };
     }
 
     return { ok: true, value: numero };
-}
-
-function normalizarMensajeErrorDb(mensaje) {
-    if (!mensaje) return mensaje;
-    const texto = String(mensaje).toLowerCase();
-    if (
-        texto.includes('invalid type') ||
-        texto.includes('invalid input syntax') ||
-        texto.includes('invalid input') ||
-        texto.includes('invalid input syntax for type integer')
-    ) {
-        return 'Tipo de número inválido. Debe ser un entero positivo (sin decimales).';
-    }
-    return mensaje;
-}
-
-function esVacio(valor) {
-    if (valor === undefined || valor === null) return true;
-    if (typeof valor === 'string') return valor.trim() === '';
-    return false;
-}
-
-async function validarDuplicado({ tabla, columna, valor, mensaje }) {
-    if (esVacio(valor)) {
-        return { success: true };
-    }
-
-    try {
-        const supabase = getClient();
-        const { data, error } = await supabase
-            .from(tabla)
-            .select(columna)
-            .eq(columna, valor)
-            .maybeSingle();
-
-        if (error) {
-            return { success: false, message: error.message };
-        }
-
-        if (data) {
-            return { success: false, message };
-        }
-
-        return { success: true };
-    } catch (error) {
-        return { success: false, message: 'Error interno del servidor' };
-    }
-}
-
-function validarLibroPayload(payload, { requireAll } = {}) {
-    if (!requireAll) return null;
-    const requeridos = [
-        'titulo',
-        'clasificacion',
-        'isbn',
-        'tipo_material',
-        'autor',
-        'codigo_barras',
-        'numero_ejemplar',
-        'anio',
-        'estatus_item',
-        'coleccion'
-    ];
-    const falta = requeridos.some((campo) => esVacio(payload?.[campo]));
-    return falta ? 'Todos los campos son requeridos' : null;
-}
-
-function validarComputadoraPayload(payload, { requireAll } = {}) {
-    if (!requireAll) return null;
-    const requeridos = [
-        'procesador',
-        'programas',
-        'carrera',
-        'no_inventario',
-        'no_computadora'
-    ];
-    const falta = requeridos.some((campo) => esVacio(payload?.[campo]));
-    return falta ? 'Todos los campos requeridos deben estar presentes' : null;
-}
-
-function validarRestiradorPayload(payload, { requireAll } = {}) {
-    if (!requireAll) return null;
-    const requeridos = ['no_inventario', 'no_restirador'];
-    const falta = requeridos.some((campo) => esVacio(payload?.[campo]));
-    return falta ? 'Los campos no_inventario y no_restirador son requeridos' : null;
 }
 
 // ==================== CREAR MATERIALES ====================
@@ -178,19 +68,13 @@ async function crearLibro(req, res) {
     coleccion
 } = req.body;
 
-    const errorValidacion = validarLibroPayload({
-        titulo,
-        clasificacion,
-        isbn,
-        tipo_material,
-        autor,
-        codigo_barras,
-        numero_ejemplar,
-        anio,
-        estatus_item,
-        Disponible,
-        coleccion
-    }, { requireAll: true });
+// Validación de campos requeridos
+if (!titulo || !clasificacion || !isbn || !tipo_material || !autor) {
+    return res.status(400).json({ 
+        success: false, 
+        message: 'Todos los campos son requeridos' 
+    });
+}
 
 if (!numero_ejemplar || !anio || !estatus_item || !coleccion || !codigo_barras) {
     return res.status(400).json({
@@ -217,6 +101,21 @@ if (!validacionAnio.ok) {
 
 const numeroEjemplar = validacionNumeroEjemplar.value;
 const anioNumero = validacionAnio.value;
+
+// Validaciones numéricas
+if (numeroEjemplar < 0) {
+    return res.status(400).json({
+        success: false,
+        message: 'El número de ejemplar no puede ser negativo'
+    });
+}
+
+if (anioNumero < 0) {
+    return res.status(400).json({
+        success: false,
+        message: 'El año no puede ser negativo'
+    });
+}
 
 // Validación del año (rango razonable: 1000-2100)
 const anioActual = new Date().getFullYear();
@@ -352,34 +251,46 @@ for (const [campo, limites] of Object.entries(longitudes)) {
     if (req.body[campo].length < limites.min || req.body[campo].length > limites.max) {
         return res.status(400).json({
             success: false,
-            message: errorValidacion
+            message: `El campo ${campo} debe tener entre ${limites.min} y ${limites.max} caracteres`
         });
     }
+}
 
-    if (!esVacio(numero_ejemplar)) {
-        const duplicadoEjemplar = await validarDuplicado({
-            tabla: 'ejemplares',
-            columna: 'numero_ejemplar',
-            valor: numero_ejemplar,
-            mensaje: 'El número de ejemplar ya existe'
-        });
-        if (!duplicadoEjemplar.success) {
+// Si todas las validaciones pasan, continuar con el procesamiento
+
+        // Validar duplicados de ISBN
+        const supabase = getClient();
+        const { data: isbnDuplicado } = await supabase
+            .from('libros')
+            .select('id')
+            .eq('isbn', isbn)
+            .maybeSingle();
+
+        if (isbnDuplicado) {
             return res.status(409).json({
                 success: false,
-                message: duplicadoEjemplar.message
+                message: 'Ya existe un libro con este ISBN'
             });
         }
-    }
 
-}
+        // Validar duplicado de código de barras
+        const { data: codigoBarrasDuplicado } = await supabase
+            .from('ejemplares')
+            .select('id')
+            .eq('codigo_barras', codigo_barras)
+            .maybeSingle();
+
+        if (codigoBarrasDuplicado) {
+            return res.status(409).json({
+                success: false,
+                message: 'Ya existe un ejemplar con este código de barras'
+            });
+        }
 
         const resultadoLibro = await CrearLibro(titulo, clasificacion, isbn, tipo_material, autor);
 
         if (!resultadoLibro.success) {
-            return res.status(400).json({
-                success: false,
-                message: 'No se pudo crear el libro. Verifica que los datos sean correctos.'
-            });
+            return res.status(400).json(resultadoLibro);
         }
 
         const libroCreado = Array.isArray(resultadoLibro.data) ? resultadoLibro.data[0] : null;
@@ -403,10 +314,7 @@ for (const [campo, limites] of Object.entries(longitudes)) {
         );
 
         if (!resultadoEjemplar.success) {
-            return res.status(400).json({
-                success: false,
-                message: 'No se pudo crear el ejemplar. Verifica que los datos sean correctos.'
-            });
+            return res.status(400).json(resultadoEjemplar);
         }
 
         return res.status(201).json({
@@ -432,48 +340,11 @@ async function crearComputadora(req, res) {
             Disponible, En_funcionamiento, Observacion, 
             no_inventario, no_computadora 
         } = req.body;
-
-        const errorValidacion = validarComputadoraPayload({
-            procesador,
-            programas,
-            carrera,
-            Disponible,
-            En_funcionamiento,
-            Observacion,
-            no_inventario,
-            no_computadora
-        }, { requireAll: true });
-
-        if (errorValidacion) {
-            return res.status(400).json({
-                success: false,
-                message: errorValidacion
-            });
-        }
-
-        const duplicadoInventario = await validarDuplicado({
-            tabla: 'computadoras',
-            columna: 'no_inventario',
-            valor: no_inventario,
-            mensaje: 'El número de inventario ya existe'
-        });
-        if (!duplicadoInventario.success) {
-            return res.status(409).json({
-                success: false,
-                message: duplicadoInventario.message
-            });
-        }
-
-        const duplicadoNumero = await validarDuplicado({
-            tabla: 'computadoras',
-            columna: 'no_computadora',
-            valor: no_computadora,
-            mensaje: 'El número de computadora ya existe'
-        });
-        if (!duplicadoNumero.success) {
-            return res.status(409).json({
-                success: false,
-                message: duplicadoNumero.message
+        
+        if (!procesador || !programas || !carrera || !no_inventario || !no_computadora) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Todos los campos requeridos deben estar presentes' 
             });
         }
 
@@ -487,6 +358,34 @@ async function crearComputadora(req, res) {
 
         const noComputadoraNumero = validacionNoComputadora.value;
 
+        // Validar duplicados
+        const supabase = getClient();
+        const { data: inventarioDuplicado } = await supabase
+            .from('computadoras')
+            .select('id')
+            .eq('no_inventario', no_inventario)
+            .maybeSingle();
+
+        if (inventarioDuplicado) {
+            return res.status(409).json({
+                success: false,
+                message: 'Ya existe una computadora con este número de inventario'
+            });
+        }
+
+        const { data: computadoraDuplicada } = await supabase
+            .from('computadoras')
+            .select('id')
+            .eq('no_computadora', noComputadoraNumero)
+            .maybeSingle();
+
+        if (computadoraDuplicada) {
+            return res.status(409).json({
+                success: false,
+                message: 'Ya existe una computadora con este número'
+            });
+        }
+
         const resultado = await CrearComputadora(
             procesador, programas, carrera, 
             Disponible, En_funcionamiento, Observacion, 
@@ -496,10 +395,7 @@ async function crearComputadora(req, res) {
         if (resultado.success) {
             return res.status(201).json(resultado);
         } else {
-            return res.status(400).json({
-                success: false,
-                message: 'No se pudo crear la computadora. Verifica que los datos sean correctos y que no estén duplicados.'
-            });
+            return res.status(400).json(resultado);
         }
     } catch (error) {
         console.error('Error en crearComputadora:', error);
@@ -518,45 +414,11 @@ async function crearRestirador(req, res) {
         } = req.body;
 
         const estadoMaterial = estado_de_material ?? estado_material;
-
-        const duplicadoInventario = await validarDuplicado({
-            tabla: 'restiradores',
-            columna: 'no_inventario',
-            valor: no_inventario,
-            mensaje: 'El número de inventario ya existe'
-        });
-        if (!duplicadoInventario.success) {
-            return res.status(409).json({
-                success: false,
-                message: duplicadoInventario.message
-            });
-        }
-
-        const duplicadoNumero = await validarDuplicado({
-            tabla: 'restiradores',
-            columna: 'no_restirador',
-            valor: no_restirador,
-            mensaje: 'El número de restirador ya existe'
-        });
-        if (!duplicadoNumero.success) {
-            return res.status(409).json({
-                success: false,
-                message: duplicadoNumero.message
-            });
-        }
-
-        const errorValidacion = validarRestiradorPayload({
-            Disponible,
-            estado_de_material: estadoMaterial,
-            Observacion,
-            no_inventario,
-            no_restirador
-        }, { requireAll: true });
-
-        if (errorValidacion) {
-            return res.status(400).json({
-                success: false,
-                message: errorValidacion
+        
+        if (!no_inventario || !no_restirador) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Los campos no_inventario y no_restirador son requeridos' 
             });
         }
 
@@ -570,6 +432,34 @@ async function crearRestirador(req, res) {
 
         const noRestiradorNumero = validacionNoRestirador.value;
 
+        // Validar duplicados
+        const supabase = getClient();
+        const { data: inventarioDuplicado } = await supabase
+            .from('restiradores')
+            .select('id')
+            .eq('no_inventario', no_inventario)
+            .maybeSingle();
+
+        if (inventarioDuplicado) {
+            return res.status(409).json({
+                success: false,
+                message: 'Ya existe un restirador con este número de inventario'
+            });
+        }
+
+        const { data: restiradorDuplicado } = await supabase
+            .from('restiradores')
+            .select('id')
+            .eq('no_restirador', noRestiradorNumero)
+            .maybeSingle();
+
+        if (restiradorDuplicado) {
+            return res.status(409).json({
+                success: false,
+                message: 'Ya existe un restirador con este número'
+            });
+        }
+
         const resultado = await CrearRestirador(
             Disponible, estadoMaterial, 
             Observacion, no_inventario, noRestiradorNumero
@@ -578,10 +468,7 @@ async function crearRestirador(req, res) {
         if (resultado.success) {
             return res.status(201).json(resultado);
         } else {
-            return res.status(400).json({
-                success: false,
-                message: 'No se pudo crear el restirador. Verifica que los datos sean correctos y que no estén duplicados.'
-            });
+            return res.status(400).json(resultado);
         }
     } catch (error) {
         console.error('Error en crearRestirador:', error);
@@ -592,7 +479,7 @@ async function crearRestirador(req, res) {
     }
 }
 
-/*async function crearGuardarropa(req, res) {
+async function crearGuardarropa(req, res) {
     try {
         const { ocupado, estado } = req.body;
 
@@ -611,7 +498,7 @@ async function crearRestirador(req, res) {
         });
     }
 }
-*/
+
 // ==================== ELIMINAR MATERIALES ====================
 
 async function eliminarMaterial(req, res) {
@@ -718,10 +605,7 @@ async function actualizarLibro(req, res) {
         const resultadoLibro = await actualizarDatosLibro(id, titulo, clasificacion, isbn, tipo_material, autor);
 
         if (!resultadoLibro.success) {
-            return res.status(400).json({
-                success: false,
-                message: 'No se pudo actualizar el libro. Verifica que los datos sean correctos.'
-            });
+            return res.status(400).json(resultadoLibro);
         }
 
         if (ejemplar_id) {
@@ -736,10 +620,7 @@ async function actualizarLibro(req, res) {
             );
 
             if (!resultadoEjemplar.success) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'No se pudo actualizar el ejemplar. Verifica que los datos sean correctos.'
-                });
+                return res.status(400).json(resultadoEjemplar);
             }
 
             return res.status(200).json({
@@ -797,10 +678,7 @@ async function actualizarComputadora(req, res) {
         if (resultado.success) {
             return res.status(200).json(resultado);
         } else {
-            return res.status(400).json({
-                success: false,
-                message: 'No se pudo actualizar la computadora. Verifica que los datos sean correctos.'
-            });
+            return res.status(400).json(resultado);
         }
     } catch (error) {
         console.error('Error en actualizarComputadora:', error);
@@ -847,10 +725,7 @@ async function actualizarRestirador(req, res) {
         if (resultado.success) {
             return res.status(200).json(resultado);
         } else {
-            return res.status(400).json({
-                success: false,
-                message: 'No se pudo actualizar el restirador. Verifica que los datos sean correctos.'
-            });
+            return res.status(400).json(resultado);
         }
     } catch (error) {
         console.error('Error en actualizarRestirador:', error);
@@ -1110,7 +985,6 @@ module.exports = {
     crearLibro,
     crearComputadora,
     crearRestirador,
- 
     eliminarMaterial,
     actualizarLibro,
     actualizarComputadora,
