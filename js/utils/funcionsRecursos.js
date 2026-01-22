@@ -134,8 +134,19 @@ async function confirmarSolicitud() {
     alert('No hay recurso seleccionado');
     return;
   }
-  // Obtener el tipo de recurso de la tabla  const tabla = document.getElementById('tabla');
-  const tipoRecurso = tabla?.getAttribute('data-tipo') ;
+  // Obtener el tipo de recurso de la tabla o del contenedor de cards
+  const tabla = document.getElementById('tabla');
+  const cardsContainer = document.querySelector('[data-usa-cards="true"][data-tipo]') ||
+    document.querySelector('.user-cards-container[data-tipo]');
+  const tipoRecurso = tabla?.getAttribute('data-tipo') ||
+    cardsContainer?.getAttribute('data-tipo') ||
+    window.recursoSeleccionado?.tipo ||
+    null;
+
+  if (!tipoRecurso) {
+    mostrarNotificacion('❌ No se pudo identificar el tipo de recurso', 'error');
+    return;
+  }
   // Obtener datos del usuario de localStorage (donde se guarda en el login)
   const usuarioData = localStorage.getItem('user_data');
   const usuario = usuarioData ? JSON.parse(usuarioData) : null;

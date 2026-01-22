@@ -693,18 +693,27 @@ function formatearValorCard(value) {
  */
 async function cancelarSolicitudCard(solicitudId, event) {
     event.stopPropagation();
-    
+
     if (!confirm('¿Estás seguro de cancelar esta solicitud?')) return;
-    
+
     try {
         const API_BASE = window.API_BASE_URL;
-        const response = await fetch(`${API_BASE}/auth/cancelar-solicitud/${solicitudId}`, {
+        const card = event.currentTarget?.closest('.user-card');
+        const recursoData = card?.dataset?.recurso ? JSON.parse(card.dataset.recurso) : null;
+        const tipo = recursoData?.tipo || recursoData?.tipo_recurso || recursoData?.tipoSolicitud || null;
+
+        if (!tipo) {
+            mostrarNotificacion('❌ No se pudo identificar el tipo de solicitud', 'error');
+            return;
+        }
+
+        const response = await fetch(`${API_BASE}/auth/solicitud/${encodeURIComponent(tipo)}/${encodeURIComponent(solicitudId)}`, {
             method: 'DELETE',
             credentials: 'include'
         });
-        
+
         const resultado = await response.json();
-        
+
         if (response.ok && resultado.success) {
             mostrarNotificacion('✅ Solicitud cancelada exitosamente', 'success');
             // Recargar datos
@@ -725,18 +734,18 @@ async function cancelarSolicitudCard(solicitudId, event) {
  */
 async function cancelarSolicitudLibroCard(solicitudId, event) {
     event.stopPropagation();
-    
+
     if (!confirm('¿Estás seguro de cancelar esta solicitud de libro?')) return;
-    
+
     try {
         const API_BASE = window.API_BASE_URL;
-        const response = await fetch(`${API_BASE}/auth/cancelar-solicitud-libro/${solicitudId}`, {
+        const response = await fetch(`${API_BASE}/auth/solicitud/libro/${encodeURIComponent(solicitudId)}`, {
             method: 'DELETE',
             credentials: 'include'
         });
-        
+
         const resultado = await response.json();
-        
+
         if (response.ok && resultado.success) {
             mostrarNotificacion('✅ Solicitud de libro cancelada', 'success');
             if (typeof cargarDatosEnTabla === 'function') {

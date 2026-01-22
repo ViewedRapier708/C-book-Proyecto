@@ -3,6 +3,16 @@
     <div class="mensaje-alerta" id="mensaje-prestamos" hidden></div>
 
     <div class="admin-header">
+        <div class="admin-filtros">
+            <label for="filtro-prestamos">Filtrar por estado:</label>
+            <select id="filtro-prestamos" class="admin-filtro-select" onchange="filtrarPrestamos()">
+                <option value="todos">Todos</option>
+                <option value="1">En espera</option>
+                <option value="2">Recogido</option>
+                <option value="3">Devuelto</option>
+                <option value="4">Perdido</option>
+            </select>
+        </div>
         <div class="admin-acciones">
             <button class="btn-recargar" onclick="cargarPrestamosLibros()">
                 <i class="fas fa-sync-alt"></i> Recargar

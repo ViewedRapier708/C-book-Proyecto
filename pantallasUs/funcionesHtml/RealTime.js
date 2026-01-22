@@ -515,7 +515,7 @@ async function cargarDatosEnTabla() {
                 headers: { 'Accept': 'application/json' }
             });
             const dataObtenida = await respuesta.json();
-            alert('Datos obtenidos de la API:', dataObtenida); //debug    
+             
             datosFinales = Array.isArray(dataObtenida?.data) ? dataObtenida.data : (Array.isArray(dataObtenida) ? dataObtenida : []);
         }
 

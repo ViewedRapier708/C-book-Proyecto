@@ -2,6 +2,17 @@
     <h2>Solicitudes de Libros</h2>
     
     <div class="solicitudes-header">
+        <div class="admin-filtros">
+            <label for="filtro-estado">Filtrar por estado:</label>
+            <select id="filtro-estado" class="admin-filtro-select" onchange="filtrarSolicitudes()">
+                <option value="todos">Todos</option>
+                <option value="1">Pendiente</option>
+                <option value="2">Aprobada (Por Recoger)</option>
+                <option value="3">Rechazada</option>
+                <option value="4">Cancelada</option>
+            </select>
+            <span class="filtro-contador" id="filtro-contador"></span>
+        </div>
         <button class="btn-recargar" onclick="cargarSolicitudesLibros()">
             <i class="fas fa-sync-alt"></i> Recargar
         </button>

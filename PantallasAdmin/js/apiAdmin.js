@@ -550,6 +550,12 @@ function inicializarLibros() {
 		try {
 			const libroId = document.getElementById('libro_id').value;
 			const ejemplarId = document.getElementById('ejemplar_id').value;
+			const numeroEjemplarRaw = document.getElementById('numero_ejemplar').value.trim();
+
+			if (!/^[0-9]{1,3}$/.test(numeroEjemplarRaw)) {
+				mostrarToast('El número de ejemplar debe contener solo números y máximo 3 dígitos.', 'error');
+				return;
+			}
 			const payload = {
 				id: libroId || undefined,
 				ejemplar_id: ejemplarId || undefined,
@@ -559,7 +565,7 @@ function inicializarLibros() {
 				isbn: document.getElementById('isbn').value,
 				tipo_material: document.getElementById('tipo_material').value,
 				codigo_barras: document.getElementById('codigo_barras').value,
-				numero_ejemplar: document.getElementById('numero_ejemplar').value,
+				numero_ejemplar: numeroEjemplarRaw,
 				anio: Number(document.getElementById('anio').value),
 				estatus_item: document.getElementById('estatus_item').value,
 				Disponible: document.getElementById('disponible').value === 'true',
@@ -826,6 +832,11 @@ function inicializarComputadoras() {
 		ocultarMensaje(mensaje);
 		try {
 			const id = document.getElementById('computadora_id').value;
+			const noComputadoraRaw = document.getElementById('no_computadora').value.trim();
+			if (!/^[0-9]{1,3}$/.test(noComputadoraRaw)) {
+				mostrarToast('El número de computadora debe contener solo números y máximo 3 dígitos, sin decimales y de valor positivo', 'error');
+				return;
+			}
 			const payload = {
 				id: id || undefined,
 				procesador: document.getElementById('procesador').value,
@@ -835,7 +846,7 @@ function inicializarComputadoras() {
 				En_funcionamiento: document.getElementById('en_funcionamiento').value === 'true',
 				Observacion: document.getElementById('observacion').value,
 				no_inventario: document.getElementById('no_inventario').value,
-				no_computadora: Number(document.getElementById('no_computadora').value)
+				no_computadora: Number(noComputadoraRaw)
 			};
 
 			if (id) {
@@ -1074,13 +1085,20 @@ function inicializarRestiradores() {
 		ocultarMensaje(mensaje);
 		try {
 			const id = document.getElementById('restirador_id').value;
+			const noRestiradorRaw = document.getElementById('no_restirador').value.trim();
+
+			if (!/^[0-9]{1,4}$/.test(noRestiradorRaw)) {
+				mostrarToast('El número de restirador debe contener solo números, máximo 4 dígitos y no puede ser negativo.', 'error');
+				return;
+			}
+
 			const payload = {
 				id: id || undefined,
 				Disponible: document.getElementById('disponible').value === 'true',
 				estado_de_material: document.getElementById('estado_material').value === 'true',
 				Observacion: document.getElementById('observacion').value,
 				no_inventario: document.getElementById('no_inventario').value,
-				no_restirador: Number(document.getElementById('no_restirador').value)
+				no_restirador: Number(noRestiradorRaw)
 			};
 
 			if (id) {
@@ -1154,9 +1172,16 @@ function filtrarUsuarios() {
 		
 		let pasaBusqueda = true;
 		if (busqueda) {
-			pasaBusqueda = usuario.boleta.toLowerCase().includes(busqueda) ||
-				usuario.correo.toLowerCase().includes(busqueda) ||
-				usuario.rol.toLowerCase().includes(busqueda);
+			const esCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(busqueda);
+			const esBoleta = /^\d+$/.test(busqueda);
+
+			if (esCorreo) {
+				pasaBusqueda = String(usuario.correo || '').toLowerCase().includes(busqueda);
+			} else if (esBoleta) {
+				pasaBusqueda = String(usuario.boleta || '').toLowerCase().includes(busqueda);
+			} else {
+				pasaBusqueda = false;
+			}
 		}
 		
 		return pasaFiltro && pasaBusqueda;
@@ -1838,16 +1863,8 @@ function filtrarPrestamos() {
 		if (filtro !== 'todos') {
 			pasaFiltro = prestamo.estado_prestamo_id === Number(filtro);
 		}
-		
-		let pasaBusqueda = true;
-		if (busqueda) {
-			pasaBusqueda = prestamo.boleta.toLowerCase().includes(busqueda) ||
-				prestamo.nombre.toLowerCase().includes(busqueda) ||
-				prestamo.libro_titulo.toLowerCase().includes(busqueda) ||
-				String(prestamo.id).includes(busqueda);
-		}
-		
-		return pasaFiltro && pasaBusqueda;
+
+		return pasaFiltro;
 	});
 	
 	paginaActualPrestamos = 0;
