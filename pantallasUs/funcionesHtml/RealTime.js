@@ -362,6 +362,33 @@ async function cargarDatosEnTabla() {
     const renderizarLista = (listaDatos) => {
         // Si usa sistema de cards, inicializar cards en lugar de tabla
         if (usaCards && typeof window.inicializarCards === 'function') {
+            if (tipoRecurso === 'solicitudes') {
+                const normalizados = (listaDatos || []).map((item) => {
+                    const numeroRecurso = obtenerNumeroMaterialSolicitud(item);
+                    return {
+                        ...item,
+                        id_recurso: item.id_recurso ?? item.idRecurso ?? numeroRecurso,
+                        numero_material: item.numero_material ?? numeroRecurso
+                    };
+                });
+                window.inicializarCards(normalizados, tipoRecurso);
+                return;
+            }
+            if (tipoRecurso === 'solicitudes-libros') {
+                const normalizados = (listaDatos || []).map((item) => {
+                    const titulo = item.titulo || item.ejemplares?.libros?.titulo || item.libro?.titulo || 'Sin título';
+                    const numeroEjemplar = item.numero_ejemplar || item.ejemplares?.numero_ejemplar || item.ejemplar || null;
+                    const fechaLimite = item.fecha_limite || item.fecha_limite_recoleccion || item.fecha_limite_respuesta || item.fechaLimite || null;
+                    return {
+                        ...item,
+                        titulo,
+                        numero_ejemplar: numeroEjemplar,
+                        fecha_limite: fechaLimite
+                    };
+                });
+                window.inicializarCards(normalizados, tipoRecurso);
+                return;
+            }
             window.inicializarCards(listaDatos, tipoRecurso);
             return;
         }

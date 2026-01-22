@@ -45,7 +45,7 @@ function abrirModal() {
 
   
   if (!window.recursoSeleccionado) {
-    alert('Por favor selecciona un recurso primero');
+    // alert('Por favor selecciona un recurso primero');
     return;
   }
 
@@ -131,7 +131,7 @@ function cerrarModal() {
 /** Confirma la solicitud del recurso */
 async function confirmarSolicitud() {
   if (!window.recursoSeleccionado) {
-    alert('No hay recurso seleccionado');
+    // alert('No hay recurso seleccionado');
     return;
   }
   // Obtener el tipo de recurso de la tabla o del contenedor de cards
@@ -205,7 +205,7 @@ async function confirmarSolicitud() {
     const resultado = await response.json();
     if (response.ok && resultado.success) {
       // Éxito
-      alert('¡Solicitud realizada con éxito!');
+      // alert('¡Solicitud realizada con éxito!');
       mostrarNotificacion('✅ ¡Solicitud confirmada exitosamente!', 'success');
       cerrarModal();
       
