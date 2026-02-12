@@ -69,10 +69,10 @@
             if (esPaginaPublica) {
                 
               if (usuario && usuario.rol === 'Admin') {
-                    window.location.href = './pantallasAdmin/administrador.html';
+                    window.location.href = './pantallasAdmin/admin.html';
                     return;
                 }
-                if (usuario && usuario.rol === 'Alumno') {
+                if (usuario && usuario.rol === 'alumno') {
                      window.location.href = './pantallasUs/usuario.html';
                 return;
                 }

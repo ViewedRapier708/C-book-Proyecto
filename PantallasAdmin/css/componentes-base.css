@@ -128,6 +128,8 @@ table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
+    table-layout: auto;
+    min-width: 800px;
 }
 
 thead {
@@ -138,10 +140,12 @@ thead th {
     color: #FFFFFF;
     font-weight: 600;
     text-align: left;
-    padding: 1rem;
+    padding: 1.2rem 1.5rem;
     font-size: 0.95rem;
     letter-spacing: 0.5px;
     text-transform: uppercase;
+    min-width: 120px;
+    white-space: nowrap;
 }
 
 thead th:first-child {
@@ -173,9 +177,13 @@ tbody tr:last-child td:last-child {
 }
 
 tbody td {
-    padding: 1rem;
+    padding: 1rem 1.5rem;
     color: #333;
     font-size: 0.95rem;
+    min-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Botones de acción */
@@ -394,5 +402,70 @@ tbody td {
     
     .layout-dos-columnas .container-formulario {
         max-height: none;
+    }
+}
+
+/* ========================================
+   ESTADÍSTICAS DE DOCUMENTOS
+   ======================================== */
+
+.admin-estadisticas {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(123, 2, 51, 0.1);
+    margin-top: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.estadistica-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(123, 2, 51, 0.08);
+    min-width: 120px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.estadistica-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(123, 2, 51, 0.15);
+}
+
+.estadistica-valor {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #7B0233;
+    line-height: 1;
+}
+
+.estadistica-label {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+    .admin-estadisticas {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .estadistica-item {
+        flex: 1 1 calc(33% - 1rem);
+        min-width: 100px;
+        padding: 0.75rem 1rem;
+    }
+    
+    .estadistica-valor {
+        font-size: 1.5rem;
     }
 }
