@@ -134,8 +134,11 @@ async function confirmarSolicitud() {
     alert('No hay recurso seleccionado');
     return;
   }
-  // Obtener el tipo de recurso de la tabla  const tabla = document.getElementById('tabla');
-  const tipoRecurso = tabla?.getAttribute('data-tipo') ;
+  // Obtener el tipo de recurso del contenedor de cards O de la tabla
+  const cardsContainer = document.querySelector('[data-usa-cards="true"]');
+  const tabla = document.getElementById('tabla');
+  const tipoRecurso = cardsContainer?.getAttribute('data-tipo') || tabla?.getAttribute('data-tipo');
+  console.log('Tipo de recurso:', tipoRecurso);
   // Obtener datos del usuario de localStorage (donde se guarda en el login)
   const usuarioData = localStorage.getItem('user_data');
   const usuario = usuarioData ? JSON.parse(usuarioData) : null;

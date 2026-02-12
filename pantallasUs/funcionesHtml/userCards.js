@@ -238,7 +238,7 @@ function templateCardSolicitud(item, index) {
             </div>
             ${estado === 'pendiente' ? `
             <div class="user-card-footer">
-                <button class="btn-accion btn-accion-danger" onclick="cancelarSolicitudCard(${item.id || item.solicitud_id}, event)">
+                <button class="btn-accion btn-accion-danger" onclick="cancelarSolicitudCard('${item.tipo || 'computadora'}', ${item.id || item.solicitud_id}, event)">
                     Cancelar
                 </button>
             </div>
@@ -691,14 +691,14 @@ function formatearValorCard(value) {
 /**
  * Cancela una solicitud de recurso desde la card
  */
-async function cancelarSolicitudCard(solicitudId, event) {
+async function cancelarSolicitudCard(tipo, solicitudId, event) {
     event.stopPropagation();
     
     if (!confirm('¿Estás seguro de cancelar esta solicitud?')) return;
     
     try {
         const API_BASE = window.API_BASE_URL;
-        const response = await fetch(`${API_BASE}/auth/cancelar-solicitud/${solicitudId}`, {
+        const response = await fetch(`${API_BASE}/auth/solicitud/${tipo}/${solicitudId}`, {
             method: 'DELETE',
             credentials: 'include'
         });
@@ -730,7 +730,7 @@ async function cancelarSolicitudLibroCard(solicitudId, event) {
     
     try {
         const API_BASE = window.API_BASE_URL;
-        const response = await fetch(`${API_BASE}/auth/cancelar-solicitud-libro/${solicitudId}`, {
+        const response = await fetch(`${API_BASE}/auth/solicitud/libro/${solicitudId}`, {
             method: 'DELETE',
             credentials: 'include'
         });
