@@ -79,7 +79,7 @@ input[type="number"],
 select {
     width: 100%;
     padding: 0.9rem 1rem;
-    border: 2px solid #7B0233;
+    border: 2px solid #3a415a;
     border-radius: 10px;
     font-size: 1rem;
     color: #333;
@@ -91,9 +91,9 @@ select {
 input[type="text"]:focus,
 input[type="number"]:focus,
 select:focus {
-    border-color: #9D306C;
+    border-color: #566981;
     background: #FFFFFF;
-    box-shadow: 0 0 0 3px rgba(157, 48, 108, 0.15);
+    box-shadow: 0 0 0 3px rgba(86, 105, 129, 0.15);
 }
 
 /* ========================================
@@ -144,23 +144,23 @@ select:focus {
     top: 15px;
     right: 20px;
     font-size: 2rem;
-    color: #7B0233;
+    color: #3a415a;
     cursor: pointer;
     line-height: 1;
     transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .modal-cerrar:hover {
-    color: #9D306C;
+    color: #566981;
     transform: rotate(90deg);
 }
 
 .modal-contenido h3 {
-    color: #7B0233;
+    color: #3a415a;
     font-size: 1.4rem;
     margin-bottom: 1.5rem;
     text-align: center;
-    border-bottom: 2px solid #7B0233;
+    border-bottom: 2px solid #3a415a;
     padding-bottom: 0.8rem;
 }
 
@@ -177,7 +177,7 @@ select:focus {
 .modal-contenido textarea {
     width: 100%;
     padding: 0.9rem 1rem;
-    border: 2px solid #7B0233;
+    border: 2px solid #3a415a;
     border-radius: 10px;
     font-size: 1rem;
     color: #333;
@@ -189,8 +189,8 @@ select:focus {
 }
 
 .modal-contenido textarea:focus {
-    border-color: #9D306C;
-    box-shadow: 0 0 0 3px rgba(157, 48, 108, 0.15);
+    border-color: #566981;
+    box-shadow: 0 0 0 3px rgba(86, 105, 129, 0.15);
 }
 
 .modal-botones {
@@ -204,9 +204,9 @@ select:focus {
 
 .modal-botones .btn-limpiar {
     padding: 0.8rem 1.5rem;
-    border: 2px solid #7B0233;
+    border: 2px solid #3a415a;
     background: transparent;
-    color: #7B0233;
+    color: #3a415a;
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
@@ -214,14 +214,14 @@ select:focus {
 }
 
 .modal-botones .btn-limpiar:hover {
-    background: #7B0233;
+    background: #3a415a;
     color: white;
 }
 
 .modal-botones .btn-guardar {
     padding: 0.8rem 1.5rem;
     border: none;
-    background: linear-gradient(135deg, #7B0233, #9D306C);
+    background: #3a415a;
     color: white;
     border-radius: 8px;
     font-weight: 600;
@@ -230,9 +230,9 @@ select:focus {
 }
 
 .modal-botones .btn-guardar:hover {
-    background: linear-gradient(135deg, #9D306C, #7B0233);
+    background: #566981;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.3);
+    box-shadow: 0 4px 12px rgba(58, 65, 90, 0.3);
 }
 
 /* ========================================
@@ -264,12 +264,12 @@ select:focus {
 }
 
 .container-datos-sistema h3 {
-    color: #7B0233;
+    color: #3a415a;
     font-size: 0.85rem;
     font-weight: 600;
     margin-bottom: 0.75rem;
     padding-bottom: 0.5rem;
-    border-bottom: 2px solid #7B0233;
+    border-bottom: 2px solid #3a415a;
     text-align: left;
 }
 

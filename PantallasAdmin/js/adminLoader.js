@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const contentLoader = document.getElementById('content-loader');
     const pageTitle = document.getElementById('page-title');
     const navLinks = document.querySelectorAll('.nav-link');
-    const aside = document.querySelector('aside');
+    const aside = document.querySelector('nav');
     const overlay = document.querySelector('.menu-overlay');
     const toggle = document.querySelector('.menu-toggle');
 

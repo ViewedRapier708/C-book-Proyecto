@@ -40,8 +40,8 @@
 .vista-tablas .container-tabla {
     background: var(--surface, #FFFFFF);
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(123, 2, 51, 0.08);
-    border: 1px solid rgba(123, 2, 51, 0.1);
+    box-shadow: 0 4px 20px rgba(58, 65, 90, 0.08);
+    border: 1px solid rgba(58, 65, 90, 0.1);
 }
 
 .vista-tablas .table-responsive {
@@ -54,12 +54,12 @@
 .container-restiradores > h2,
 .container-guardaropas > h2,
 .container-solicitud > h2 {
-    color: #7B0233;
+    color: #3a415a;
     font-size: 1.6rem;
     font-weight: 700;
     margin-bottom: 2rem;
     padding-bottom: 1rem;
-    border-bottom: 3px solid #9D306C;
+    border-bottom: 3px solid #566981;
     position: relative;
 }
 
@@ -118,7 +118,7 @@
     background: #FFFFFF;
     padding: 1.5rem;
     border-radius: 15px;
-    border: 2px solid #E8E8E8;
+    border: 2px solid #cccccc;
     overflow-x: auto;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
@@ -133,7 +133,7 @@ table {
 }
 
 thead {
-    background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
+    background: #3a415a;
 }
 
 thead th {
@@ -159,13 +159,13 @@ thead th:last-child {
 tbody tr {
     background: #FFFFFF;
     transition: all 0.3s ease;
-    border-bottom: 1px solid #E8E8E8;
+    border-bottom: 1px solid #cccccc;
 }
 
 tbody tr:hover {
-    background: #F2D9E3;
+    background: #cbdad5;
     transform: scale(1.01);
-    box-shadow: 0 2px 8px rgba(123, 2, 51, 0.1);
+    box-shadow: 0 2px 8px rgba(58, 65, 90, 0.1);
 }
 
 tbody tr:last-child td:first-child {
@@ -202,7 +202,7 @@ tbody td {
     font-weight: 700;
     letter-spacing: 1px;
     padding: 0.8rem 2rem;
-    border: 2px solid #E8E8E8;
+    border: 2px solid #cccccc;
     border-radius: 50px;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -229,36 +229,36 @@ tbody td {
 }
 
 .btn-editar {
-    color: #2F855A;
-    border: 1px solid rgba(56, 161, 105, 0.3);
-    background: rgba(56, 161, 105, 0.08);
+    color: #456b57;
+    border: 1px solid rgba(82, 122, 101, 0.3);
+    background: rgba(82, 122, 101, 0.08);
 }
 
 .btn-eliminar {
-    color: #C53030;
-    border: 1px solid rgba(229, 62, 62, 0.3);
-    background: rgba(229, 62, 62, 0.08);
+    color: #6b4040;
+    border: 1px solid rgba(122, 78, 78, 0.3);
+    background: rgba(122, 78, 78, 0.08);
 }
 
 .btn-agregar:hover,
 .btn-alta:hover {
-    background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
+    background: #3a415a;
     color: #FFFFFF;
-    border-color: #7B0233;
-    box-shadow: 0 8px 25px rgba(123, 2, 51, 0.5);
+    border-color: #3a415a;
+    box-shadow: 0 8px 25px rgba(58, 65, 90, 0.5);
     transform: translateY(-2px) scale(1.02);
 }
 
 .btn-editar:hover {
-    background: #38A169;
+    background: #527a65;
     color: white;
-    border-color: #38A169;
+    border-color: #527a65;
 }
 
 .btn-eliminar:hover {
-    background: #E53E3E;
+    background: #7a4e4e;
     color: white;
-    border-color: #E53E3E;
+    border-color: #7a4e4e;
 }
 
 .btn-agregar:active,
@@ -266,7 +266,7 @@ tbody td {
 .btn-editar:active,
 .btn-eliminar:active {
     transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(123, 2, 51, 0.4);
+    box-shadow: 0 4px 15px rgba(58, 65, 90, 0.4);
 }
 
 /* Contenedor de datos del sistema */
@@ -275,8 +275,8 @@ tbody td {
     background: #FFFFFF;
     padding: 1.5rem;
     border-radius: 15px;
-    border: 2px solid #E8E8E8;
-    box-shadow: 0 4px 15px rgba(123, 2, 51, 0.1);
+    border: 2px solid #cccccc;
+    box-shadow: 0 4px 15px rgba(58, 65, 90, 0.1);
     margin-bottom: 2rem;
     height: fit-content;
     max-height: 100%;
@@ -285,13 +285,13 @@ tbody td {
 
 .container-datos-sistema h3,
 .container-datos-restiradores h3 {
-    color: #7B0233;
+    color: #3a415a;
     font-size: 1.2rem;
     font-weight: 700;
     margin-bottom: 1.5rem;
     text-align: center;
     padding-bottom: 0.75rem;
-    border-bottom: 2px solid #7B0233;
+    border-bottom: 2px solid #3a415a;
 }
 
 .dato-item {
@@ -308,8 +308,8 @@ tbody td {
 
 .dato-item:hover {
     transform: translateX(5px);
-    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.15);
-    background: #F2D9E3;
+    box-shadow: 0 4px 12px rgba(58, 65, 90, 0.15);
+    background: #cbdad5;
 }
 
 .dato-item:last-child {
@@ -317,20 +317,16 @@ tbody td {
 }
 
 .dato-label {
-    color: #7B0233;
+    color: #3a415a;
     font-weight: 600;
     font-size: 0.9rem;
     letter-spacing: 0.3px;
 }
 
 .dato-value {
-    color: #333;
+    color: #3a415a;
     font-size: 1.1rem;
     font-weight: 700;
-    background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
 }
 
 /* Animaciones de componentes */
@@ -386,20 +382,20 @@ tbody td {
         grid-template-columns: 1fr;
         height: auto;
     }
-    
+
     .columna-principal {
         order: 1;
     }
-    
+
     .columna-estadisticas {
         order: 2;
         margin-top: 1rem;
     }
-    
+
     .layout-dos-columnas .container-tabla {
         max-height: 300px;
     }
-    
+
     .layout-dos-columnas .container-formulario {
         max-height: none;
     }
@@ -414,9 +410,9 @@ tbody td {
     justify-content: center;
     gap: 2rem;
     padding: 1.5rem;
-    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    background: #f5f8f7;
     border-radius: 12px;
-    border: 1px solid rgba(123, 2, 51, 0.1);
+    border: 1px solid rgba(58, 65, 90, 0.1);
     margin-top: 1.5rem;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
@@ -428,20 +424,20 @@ tbody td {
     padding: 1rem 2rem;
     background: white;
     border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(123, 2, 51, 0.08);
+    box-shadow: 0 2px 8px rgba(58, 65, 90, 0.08);
     min-width: 120px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .estadistica-item:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(123, 2, 51, 0.15);
+    box-shadow: 0 6px 20px rgba(58, 65, 90, 0.15);
 }
 
 .estadistica-valor {
     font-size: 2rem;
     font-weight: 700;
-    color: #7B0233;
+    color: #3a415a;
     line-height: 1;
 }
 
@@ -458,13 +454,13 @@ tbody td {
         flex-wrap: wrap;
         gap: 1rem;
     }
-    
+
     .estadistica-item {
         flex: 1 1 calc(33% - 1rem);
         min-width: 100px;
         padding: 0.75rem 1rem;
     }
-    
+
     .estadistica-valor {
         font-size: 1.5rem;
     }

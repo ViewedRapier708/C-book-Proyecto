@@ -7,12 +7,12 @@
 
 :root {
     /* Paleta de colores */
-    --primary-dark: #7B0233;
-    --primary-medium: #9D306C;
-    --primary-light: #B0387A;
-    --accent-pink: #F2D9E3;
-    --accent-rose: #F8D7E8;
-    --accent-mauve: #F0C1DA;
+    --primary-dark: #3a415a;
+    --primary-medium: #566981;
+    --primary-light: #6b809a;
+    --accent-pink: #cbdad5;
+    --accent-rose: #d5e2dd;
+    --accent-mauve: #b8cec7;
     
     /* Neutrales */
     --white: #FFFFFF;
@@ -30,8 +30,8 @@
     --spacing-3xl: 3rem;
     
     /* Sombras */
-    --shadow-sm: 0 4px 12px rgba(123, 2, 51, 0.15);
-    --shadow-md: 0 8px 24px rgba(123, 2, 51, 0.25);
+    --shadow-sm: 0 4px 12px rgba(58, 65, 90, 0.15);
+    --shadow-md: 0 8px 24px rgba(58, 65, 90, 0.25);
     --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.3);
     
     /* Bordes */
@@ -52,7 +52,7 @@
 body {
     margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-medium) 50%, var(--primary-light) 100%);
+    background: var(--primary-dark);
     background-attachment: fixed;
     min-height: 100vh;
     display: flex;
@@ -166,7 +166,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, var(--accent-pink) 0%, var(--accent-rose) 100%);
+    background: var(--accent-pink);
     border-radius: var(--radius-full);
     animation: pulse 2s infinite ease-in-out;
 }
@@ -187,7 +187,7 @@ body {
     z-index: 2;
     width: 100px;
     height: 100px;
-    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-medium) 100%);
+    background: var(--primary-dark);
     border-radius: var(--radius-full);
     display: flex;
     align-items: center;
@@ -237,7 +237,7 @@ h1 {
    COMPONENTE: DETALLES DE EMAIL
    ========================================== */
 .email-details {
-    background: linear-gradient(135deg, var(--accent-pink) 0%, var(--accent-rose) 100%);
+    background: var(--accent-pink);
     border-radius: var(--radius-md);
     padding: var(--spacing-lg);
     margin: var(--spacing-xl) 0;
@@ -285,7 +285,7 @@ h1 {
 
 .detail-item svg {
     flex-shrink: 0;
-    filter: drop-shadow(0 1px 2px rgba(123, 2, 51, 0.1));
+    filter: drop-shadow(0 1px 2px rgba(58, 65, 90, 0.1));
 }
 
 .detail-item span {

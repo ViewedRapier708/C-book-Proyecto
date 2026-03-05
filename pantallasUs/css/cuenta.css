@@ -5,7 +5,7 @@
 }
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #D0D0D0;
+    background: #dce8e4;
     color: #333;
     min-height: 100vh;
     overflow-x: hidden;
@@ -13,22 +13,18 @@ body {
     padding: 0;
 }
 .container-main {
-    display: flex;
-    min-height: 100vh;
-    position: relative;
-}
-.container-aside {
-    flex: 0 0 280px;
-    min-height: 100%;
+    margin-top: 60px;
+    min-height: calc(100vh - 60px);
+    width: 100%;
     position: relative;
 }
 .container-informacion {
     flex: 1;
-    background: #D0D0D0;
+    background: #dce8e4;
     overflow-x: hidden;
 }
 .container-titulo {
-    background: #7B0233;
+    background: #3a415a;
     padding: 1.5rem 2rem;
 }
 .container-titulo h1 {
@@ -75,12 +71,12 @@ body {
     width: 200px;
     height: 200px;
     margin: 0 auto 1.5rem;
-    background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
+    background: #3a415a;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 8px 20px rgba(123, 2, 51, 0.3);
+    box-shadow: 0 8px 20px rgba(58, 65, 90, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -92,8 +88,8 @@ body {
 }
 .rol-usuario {
     display: inline-block;
-    background: #F0C1DA;
-    color: #7B0233;
+    background: #b8cec7;
+    color: #3a415a;
     padding: 0.6rem 2rem;
     border-radius: 25px;
     font-size: 0.95rem;
@@ -130,7 +126,7 @@ body {
     display: block;
     width: 100%;
     padding: 0.9rem 1.2rem;
-    border: 2px solid #7B0233;
+    border: 2px solid #3a415a;
     border-radius: 8px;
     font-size: 1rem;
     color: #333;
@@ -139,15 +135,15 @@ body {
     font-weight: 500;
 }
 .dato-value:hover {
-    border-color: #9D306C;
-    box-shadow: 0 0 0 3px rgba(157, 48, 108, 0.1);
+    border-color: #566981;
+    box-shadow: 0 0 0 3px rgba(86, 105, 129, 0.1);
 }
 input.dato-value {
     outline: none;
 }
 input.dato-value:focus {
-    border-color: #9D306C;
-    box-shadow: 0 0 0 3px rgba(157, 48, 108, 0.15);
+    border-color: #566981;
+    box-shadow: 0 0 0 3px rgba(86, 105, 129, 0.15);
 }
 .container-btn-acciones {
     display: flex;
@@ -181,14 +177,14 @@ input.dato-value:focus {
     transform: translateY(0);
 }
 .btn-cambiar-password {
-    background: #7B0233;
+    background: #3a415a;
     color: #FFFFFF;
-    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.3);
+    box-shadow: 0 4px 12px rgba(58, 65, 90, 0.3);
 }
 .btn-cambiar-password:hover {
-    background: #9D306C;
+    background: #566981;
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(157, 48, 108, 0.4);
+    box-shadow: 0 6px 16px rgba(86, 105, 129, 0.4);
 }
 .btn-cambiar-password:active {
     transform: translateY(0);
@@ -216,12 +212,6 @@ input.dato-value:focus {
     .logo-containerBTZ img,
     .logo-containerIPN img {
         height: 50px;
-    }
-    .container-main {
-        flex-direction: column;
-    }
-    .container-aside {
-        flex: none;
     }
     .container-contenido {
         padding: 1.5rem;
@@ -297,9 +287,9 @@ input.dato-value:focus {
 }
 .container-datos-usuario {
     position: relative;
-    border-left: 4px solid #7B0233;
+    border-left: 4px solid #3a415a;
 }
 .container-foto-perfil {
     position: relative;
-    border-top: 4px solid #F0C1DA;
+    border-top: 4px solid #b8cec7;
 }

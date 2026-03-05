@@ -11,15 +11,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --primary: #7B0233;
-    --primary-light: #9D306C;
-    --accent: #F2D9E3;
+    --primary: #3a415a;
+    --primary-light: #566981;
+    --accent: #cbdad5;
     --surface: #FFFFFF;
     --surface-alt: #FAFAFA;
     --border: #E8E8E8;
     --text: #1A1A1A;
     --text-muted: #6B6B6B;
-    --aside-width: 280px;
+    --navbar-height: 60px;
     --radius: 8px;
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
@@ -30,7 +30,7 @@ html {
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: #F5F5F7;
+    background: #dce8e4;
     min-height: 100vh;
     color: var(--text);
     line-height: 1.5;
@@ -41,10 +41,10 @@ body {
    ======================================== */
 
 .container-main {
-    margin-left: var(--aside-width);
-    min-height: 100vh;
+    margin-top: var(--navbar-height);
+    min-height: calc(100vh - var(--navbar-height));
     padding: 1.5rem;
-    width: calc(100% - var(--aside-width));
+    width: 100%;
 }
 
 .container-informacion {
@@ -156,7 +156,7 @@ body {
     background: var(--surface);
     padding: 1.25rem;
     border-radius: var(--radius);
-    border: 1px solid rgba(123, 2, 51, 0.1);
+    border: 1px solid rgba(58, 65, 90, 0.1);
     box-shadow: var(--shadow);
     transition: all 0.2s ease;
     min-height: auto;
@@ -176,7 +176,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 0 0.25rem 1rem 0.25rem;
-    border-bottom: 2px solid rgba(123, 2, 51, 0.08);
+    border-bottom: 2px solid rgba(58, 65, 90, 0.08);
     margin-bottom: 0.75rem;
     flex-shrink: 0;
 }
@@ -204,7 +204,7 @@ body {
 .table-responsive {
     flex: 1;
     border-radius: var(--radius);
-    border: 1px solid rgba(123, 2, 51, 0.08);
+    border: 1px solid rgba(58, 65, 90, 0.08);
     min-height: 0;
     width: 70%;
     overflow: auto;
@@ -227,7 +227,7 @@ thead {
 }
 
 thead tr {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    background: var(--primary);
 }
 
 thead th {
@@ -258,19 +258,19 @@ thead th:last-child {
 tbody tr {
     background: var(--surface);
     transition: background 0.15s ease;
-    border-bottom: 1px solid rgba(123, 2, 51, 0.05);
+    border-bottom: 1px solid rgba(58, 65, 90, 0.05);
 }
 
 tbody tr:hover {
-    background: rgba(242, 217, 227, 0.15);
+    background: rgba(203, 218, 213, 0.15);
 }
 
 tbody tr:nth-child(even) {
-    background: rgba(242, 217, 227, 0.04);
+    background: rgba(203, 218, 213, 0.04);
 }
 
 tbody tr:nth-child(even):hover {
-    background: rgba(242, 217, 227, 0.15);
+    background: rgba(203, 218, 213, 0.15);
 }
 
 tbody td {
@@ -278,7 +278,7 @@ tbody td {
     color: var(--text);
     font-size: 0.875rem;
     font-weight: 400;
-    border-bottom: 1px solid rgba(123, 2, 51, 0.05);
+    border-bottom: 1px solid rgba(58, 65, 90, 0.05);
     vertical-align: middle;
     line-height: 1.4;
     text-align: left;
@@ -499,7 +499,7 @@ tbody td:last-child {
     background: var(--white);
     padding: 1.5rem;
     border-radius: var(--radius-lg);
-    border: 1px solid rgba(123, 2, 51, 0.1);
+    border: 1px solid rgba(58, 65, 90, 0.1);
     box-shadow: var(--shadow-md);
     transition: var(--transition-smooth);
     height: fit-content;
@@ -524,7 +524,7 @@ tbody td:last-child {
     font-weight: 600;
     margin-bottom: 1.25rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(123, 2, 51, 0.1);
+    border-bottom: 1px solid rgba(58, 65, 90, 0.1);
 }
 
 .dato-item {
@@ -533,14 +533,14 @@ tbody td:last-child {
     gap: 0.15rem;
     padding: 0.75rem;
     margin-bottom: 0.5rem;
-    background: rgba(242, 217, 227, 0.05);
+    background: rgba(203, 218, 213, 0.05);
     border-radius: var(--radius-sm);
     border-left: 2px solid var(--primary-2);
     transition: var(--transition-smooth);
 }
 
 .dato-item:hover {
-    background: rgba(242, 217, 227, 0.1);
+    background: rgba(203, 218, 213, 0.1);
     transform: translateX(3px);
 }
 
@@ -608,7 +608,7 @@ tbody td:last-child {
 }
 
 .table-responsive::-webkit-scrollbar-track {
-    background: rgba(242, 217, 227, 0.1);
+    background: rgba(203, 218, 213, 0.1);
     border-radius: 3px;
 }
 
@@ -628,7 +628,7 @@ tbody td:last-child {
 
 .table-responsive {
     scrollbar-width: thin;
-    scrollbar-color: var(--primary-2) rgba(242, 217, 227, 0.1);
+    scrollbar-color: var(--primary-2) rgba(203, 218, 213, 0.1);
 }
 
 /* Estados de carga compactos */
@@ -748,7 +748,7 @@ tbody td:last-child {
 
 @media (max-width: 768px) {
     .container-main {
-        margin-left: 0;
+        margin-top: var(--navbar-height);
         width: 100%;
         padding: 0.75rem;
     }
@@ -931,7 +931,7 @@ tbody td:last-child {
     justify-content: center;
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    background: var(--primary);
     color: white;
     border: none;
     border-radius: var(--radius-md);
@@ -940,12 +940,12 @@ tbody td:last-child {
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.25s ease;
-    box-shadow: 0 2px 8px rgba(123, 2, 51, 0.25);
+    box-shadow: 0 2px 8px rgba(58, 65, 90, 0.25);
 }
 
 .btn-alta:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(123, 2, 51, 0.35);
+    box-shadow: 0 4px 16px rgba(58, 65, 90, 0.35);
     filter: brightness(1.1);
 }
 
@@ -1034,7 +1034,7 @@ tbody td:last-child {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(123, 2, 51, 0.08);
+    background: rgba(58, 65, 90, 0.08);
     color: var(--primary);
     border: none;
     border-radius: 50%;
@@ -1088,7 +1088,7 @@ tbody td:last-child {
 .container-formulario textarea:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(123, 2, 51, 0.1);
+    box-shadow: 0 0 0 3px rgba(58, 65, 90, 0.1);
 }
 
 .container-formulario input::placeholder,
@@ -1137,7 +1137,7 @@ tbody td:last-child {
     font-weight: 600;
     margin-bottom: 1.25rem;
     padding-bottom: 0.5rem;
-    border-bottom: 2px solid rgba(123, 2, 51, 0.1);
+    border-bottom: 2px solid rgba(58, 65, 90, 0.1);
 }
 
 /* Contenedor inicio admin */
@@ -1449,7 +1449,7 @@ tbody td:last-child {
 .filtro-estado:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(123, 2, 51, 0.1);
+    box-shadow: 0 0 0 3px rgba(58, 65, 90, 0.1);
 }
 
 .filtro-contador {
@@ -1511,19 +1511,19 @@ tbody td:last-child {
 .solicitud-card {
     background: var(--surface);
     border-radius: var(--radius);
-    border: 1px solid rgba(123, 2, 51, 0.12);
+    border: 1px solid rgba(58, 65, 90, 0.12);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     overflow: hidden;
     transition: all 0.2s ease;
 }
 
 .solicitud-card:hover {
-    box-shadow: 0 4px 16px rgba(123, 2, 51, 0.12);
+    box-shadow: 0 4px 16px rgba(58, 65, 90, 0.12);
     transform: translateY(-2px);
 }
 
 .solicitud-card-header {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    background: var(--primary);
     padding: 0.875rem 1rem;
     display: flex;
     justify-content: space-between;
@@ -1569,7 +1569,7 @@ tbody td:last-child {
     justify-content: space-between;
     align-items: flex-start;
     padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(123, 2, 51, 0.06);
+    border-bottom: 1px solid rgba(58, 65, 90, 0.06);
 }
 
 .solicitud-dato:last-child {
@@ -1605,7 +1605,7 @@ tbody td:last-child {
 
 .solicitud-card-footer {
     padding: 0.875rem 1rem;
-    background: rgba(242, 217, 227, 0.15);
+    background: rgba(203, 218, 213, 0.15);
     display: flex;
     gap: 0.5rem;
     justify-content: center;
@@ -1693,7 +1693,7 @@ tbody td:last-child {
 .admin-filtro-select:focus {
     border-color: var(--primary);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(123, 2, 51, 0.1);
+    box-shadow: 0 0 0 3px rgba(58, 65, 90, 0.1);
 }
 
 .admin-search-input {
@@ -1711,7 +1711,7 @@ tbody td:last-child {
 .admin-search-input:focus {
     border-color: var(--primary);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(123, 2, 51, 0.1);
+    box-shadow: 0 0 0 3px rgba(58, 65, 90, 0.1);
 }
 
 .admin-search-input::placeholder {
@@ -1839,7 +1839,7 @@ tbody td:last-child {
 .admin-card {
     background: var(--surface);
     border-radius: var(--radius);
-    border: 1px solid rgba(123, 2, 51, 0.12);
+    border: 1px solid rgba(58, 65, 90, 0.12);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     overflow: hidden;
     transition: box-shadow 0.2s ease, transform 0.2s ease;
@@ -1848,12 +1848,12 @@ tbody td:last-child {
 }
 
 .admin-card:hover {
-    box-shadow: 0 4px 16px rgba(123, 2, 51, 0.12);
+    box-shadow: 0 4px 16px rgba(58, 65, 90, 0.12);
     transform: translateY(-2px);
 }
 
 .admin-card-header {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    background: var(--primary);
     padding: 0.75rem 1rem;
     display: flex;
     justify-content: space-between;
@@ -1881,7 +1881,7 @@ tbody td:last-child {
     justify-content: space-between;
     align-items: flex-start;
     padding: 0.35rem 0;
-    border-bottom: 1px solid rgba(123, 2, 51, 0.06);
+    border-bottom: 1px solid rgba(58, 65, 90, 0.06);
 }
 
 .admin-card-dato:last-child {
@@ -1914,7 +1914,7 @@ tbody td:last-child {
 
 .admin-card-footer {
     padding: 0.75rem 1rem;
-    background: rgba(242, 217, 227, 0.15);
+    background: rgba(203, 218, 213, 0.15);
     display: flex;
     gap: 0.5rem;
     justify-content: center;
@@ -2002,7 +2002,7 @@ tbody td:last-child {
     gap: 0.75rem;
     margin-top: 1.25rem;
     padding-top: 1rem;
-    border-top: 1px solid rgba(123, 2, 51, 0.1);
+    border-top: 1px solid rgba(58, 65, 90, 0.1);
 }
 
 .admin-paginacion-dots {
@@ -2016,7 +2016,7 @@ tbody td:last-child {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: rgba(123, 2, 51, 0.2);
+    background: rgba(58, 65, 90, 0.2);
     border: none;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -2024,7 +2024,7 @@ tbody td:last-child {
 }
 
 .admin-paginacion-dot:hover {
-    background: rgba(123, 2, 51, 0.4);
+    background: rgba(58, 65, 90, 0.4);
     transform: scale(1.2);
 }
 
@@ -2037,7 +2037,7 @@ tbody td:last-child {
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--primary);
-    background: rgba(123, 2, 51, 0.08);
+    background: rgba(58, 65, 90, 0.08);
     padding: 0.4rem 1rem;
     border-radius: 20px;
 }
@@ -2194,7 +2194,7 @@ tbody td:last-child {
     gap: 0.75rem;
     margin-top: 1.25rem;
     padding-top: 1rem;
-    border-top: 1px solid rgba(123, 2, 51, 0.1);
+    border-top: 1px solid rgba(58, 65, 90, 0.1);
 }
 
 .paginacion-dots {
@@ -2208,7 +2208,7 @@ tbody td:last-child {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: rgba(123, 2, 51, 0.2);
+    background: rgba(58, 65, 90, 0.2);
     border: none;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -2216,7 +2216,7 @@ tbody td:last-child {
 }
 
 .paginacion-dot:hover {
-    background: rgba(123, 2, 51, 0.4);
+    background: rgba(58, 65, 90, 0.4);
     transform: scale(1.2);
 }
 
@@ -2229,7 +2229,7 @@ tbody td:last-child {
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--primary);
-    background: rgba(123, 2, 51, 0.08);
+    background: rgba(58, 65, 90, 0.08);
     padding: 0.4rem 1rem;
     border-radius: 20px;
 }

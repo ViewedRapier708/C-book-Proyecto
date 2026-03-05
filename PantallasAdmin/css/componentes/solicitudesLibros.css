@@ -102,20 +102,20 @@
     padding: 1.5rem;
     border-radius: 15px;
     border: 2px solid #E8E8E8;
-    box-shadow: 0 4px 15px rgba(123, 2, 51, 0.1);
+    box-shadow: 0 4px 15px rgba(58, 65, 90, 0.1);
     height: fit-content;
     max-height: 100%;
     overflow-y: auto;
 }
 
 .container-datos-estadisticas h3 {
-    color: #7B0233;
+    color: #3a415a;
     font-size: 1.2rem;
     font-weight: 700;
     margin-bottom: 1.5rem;
     text-align: center;
     padding-bottom: 0.75rem;
-    border-bottom: 2px solid #7B0233;
+    border-bottom: 2px solid #3a415a;
 }
 
 .container-datos-estadisticas .dato-item {
@@ -132,8 +132,8 @@
 
 .container-datos-estadisticas .dato-item:hover {
     transform: translateX(5px);
-    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.15);
-    background: #F2D9E3;
+    box-shadow: 0 4px 12px rgba(58, 65, 90, 0.15);
+    background: #cbdad5;
 }
 
 .container-datos-estadisticas .dato-item:last-child {
@@ -141,20 +141,16 @@
 }
 
 .container-datos-estadisticas .dato-label {
-    color: #7B0233;
+    color: #3a415a;
     font-weight: 600;
     font-size: 0.9rem;
     letter-spacing: 0.3px;
 }
 
 .container-datos-estadisticas .dato-value {
-    color: #333;
+    color: #3a415a;
     font-size: 1.1rem;
     font-weight: 700;
-    background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
 }
 
 /* Columnas con anchos mínimos compactos */
@@ -241,10 +237,10 @@
 }
 
 .btn-exportar:hover {
-    background: linear-gradient(135deg, #7B0233 0%, #9D306C 100%);
+    background: #3a415a;
     color: #FFFFFF;
-    border-color: #7B0233;
-    box-shadow: 0 6px 20px rgba(123, 2, 51, 0.5);
+    border-color: #3a415a;
+    box-shadow: 0 6px 20px rgba(58, 65, 90, 0.5);
     transform: translateY(-2px) scale(1.05);
 }
 

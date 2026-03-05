@@ -14,41 +14,38 @@
     <link rel="stylesheet" href="css/componentes/altaUsuarios.css">
     <link rel="shortcut icon" href="../img/logo_C_Book.jpg" type="image/x-icon">
     <script src="../js/config/apiConfig.js"></script>
+    <script src="../js/auth/funcionCerrarSesion.js"></script>
 </head>
 <body>
-    <aside class="container-aside">
-        <div class="container-logos">
+    <nav class="navbar-top">
+        <div class="navbar-brand">
             <a href="../pantallasUs/cuenta.html" id="linkCuenta">
-                <div class="logo-containerBTZ"><img src="../img/logo-BTZ.png" alt="Logo BTZ"></div>
+                <img src="../img/logo-BTZ.png" alt="Logo BTZ" class="navbar-logo">
             </a>
+            <span class="navbar-title">C-BOOK ADMIN</span>
         </div>
-        <div class="container-entrada">
-            <hr class="linea-aside">
-            <h2>ADMINISTRADOR</h2>
-            <hr class="linea-aside">
-            <div class="menu-interactivo">
-                <div class="btn-secciones">
-                    
-                    <h3>Altas</h3>
-                    <a href="#" class="link-secciones nav-link" data-component="altaComputadoras" data-title="ALTA DE COMPUTADORAS">Computadoras</a>
-                    <a href="#" class="link-secciones nav-link" data-component="altaLibros" data-title="ALTA DE LIBROS">Libros</a>
-                    <a href="#" class="link-secciones nav-link" data-component="altaRestiradores" data-title="ALTA DE RESTIRADORES">Restiradores</a>
-                    <a href="#" class="link-secciones nav-link" data-component="usuarios" data-title="USUARIOS DEL SISTEMA">Usuarios</a>
-                    <h3>Solicitudes</h3>
-<<<<<<< HEAD
-                    <a href="#" class="link-secciones nav-link" data-component="solicitudesLibros" data-title="SOLICITUDES DE LIBROS">Solicitudes de Libros</a>
-                    <a href="#" class="link-secciones nav-link" data-component="documentos" data-title="SOLICITUDES DE DOCUMENTOS">Prestamos</a>
-=======
-                    <a href="#" class="link-secciones nav-link" data-component="solicitudesLibros" data-title="SOLICITUDES DE LIBROS">Solicitudes Libros</a>
-                    <a href="#" class="link-secciones nav-link" data-component="prestamosLibros" data-title="PRÉSTAMOS DE LIBROS">Préstamos Libros</a>
->>>>>>> 61db26a1b97a671df1ce5d4ec2e5806494aa6ecc
+        <div class="navbar-links">
+            <div class="navbar-dropdown">
+                <button class="navbar-dropdown-toggle">Altas</button>
+                <div class="navbar-dropdown-menu">
+                    <a href="#" class="nav-link" data-component="altaComputadoras" data-title="ALTA DE COMPUTADORAS">Computadoras</a>
+                    <a href="#" class="nav-link" data-component="altaLibros" data-title="ALTA DE LIBROS">Libros</a>
+                    <a href="#" class="nav-link" data-component="altaRestiradores" data-title="ALTA DE RESTIRADORES">Restiradores</a>
+                    <a href="#" class="nav-link" data-component="usuarios" data-title="USUARIOS DEL SISTEMA">Usuarios</a>
                 </div>
-                <div class="btn-cerrar-sesion">
-                    <a href="../index.html" class="link-secciones">Cerrar Sesión</a>
+            </div>
+            <div class="navbar-dropdown">
+                <button class="navbar-dropdown-toggle">Solicitudes</button>
+                <div class="navbar-dropdown-menu">
+                    <a href="#" class="nav-link" data-component="solicitudesLibros" data-title="SOLICITUDES DE LIBROS">Solicitudes Libros</a>
+                    <a href="#" class="nav-link" data-component="prestamosLibros" data-title="PRÉSTAMOS DE LIBROS">Préstamos Libros</a>
                 </div>
             </div>
         </div>
-    </aside>
+        <div class="navbar-actions">
+            <a href="#" class="navbar-logout" onclick="cerrarSesion(); return false;">Cerrar Sesion</a>
+        </div>
+    </nav>
 
     <div class="container-main">
         <!-- Contenedor dinámico -->
@@ -84,5 +81,24 @@
     <!-- Scripts -->
     <script src="js/apiAdmin.js"></script>
     <script src="js/adminLoader.js"></script>
+    <script>
+        (function() {
+            document.querySelectorAll('.navbar-dropdown-toggle').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var dropdown = btn.closest('.navbar-dropdown');
+                    document.querySelectorAll('.navbar-dropdown.open').forEach(function(d) {
+                        if (d !== dropdown) d.classList.remove('open');
+                    });
+                    dropdown.classList.toggle('open');
+                });
+            });
+            document.addEventListener('click', function() {
+                document.querySelectorAll('.navbar-dropdown.open').forEach(function(d) {
+                    d.classList.remove('open');
+                });
+            });
+        })();
+    </script>
 </body>
 </html>

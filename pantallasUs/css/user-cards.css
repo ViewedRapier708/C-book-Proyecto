@@ -102,7 +102,7 @@
 
 /* Botón Limpiar Filtros */
 .user-btn-limpiar {
-    background: linear-gradient(135deg, var(--surface) 0%, var(--surface-alt) 100%);
+    background: var(--surface);
     border: 2px solid var(--primary-1);
     color: var(--primary-1);
     padding: 0.5rem 1.2rem;
@@ -121,12 +121,12 @@
     background: var(--primary-1);
     color: white;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(146, 43, 73, 0.25);
+    box-shadow: 0 4px 12px rgba(58, 65, 90, 0.25);
 }
 
 .user-btn-limpiar:active {
     transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(146, 43, 73, 0.2);
+    box-shadow: 0 2px 6px rgba(58, 65, 90, 0.2);
 }
 
 .user-btn-limpiar i {
@@ -181,7 +181,7 @@
 .user-card {
     background: var(--surface);
     border-radius: var(--radius);
-    border: 1px solid rgba(123, 2, 51, 0.1);
+    border: 1px solid rgba(58, 65, 90, 0.1);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     overflow: hidden;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -191,12 +191,12 @@
 
 .user-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.12);
+    box-shadow: 0 4px 12px rgba(58, 65, 90, 0.12);
 }
 
 .user-card.selected {
     border: 2px solid var(--primary-1);
-    box-shadow: 0 4px 16px rgba(123, 2, 51, 0.2);
+    box-shadow: 0 4px 16px rgba(58, 65, 90, 0.2);
 }
 
 .user-card.selected::before {
@@ -221,7 +221,7 @@
    CARD HEADER
    ============================================= */
 .user-card-header {
-    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+    background: var(--primary-1);
     padding: 0.7rem 0.9rem;
     display: flex;
     justify-content: space-between;
@@ -258,7 +258,7 @@
     justify-content: space-between;
     align-items: flex-start;
     padding: 0.3rem 0;
-    border-bottom: 1px solid rgba(123, 2, 51, 0.06);
+    border-bottom: 1px solid rgba(58, 65, 90, 0.06);
 }
 
 .user-card-dato:last-child {
@@ -294,7 +294,7 @@
    ============================================= */
 .user-card-footer {
     padding: 0.6rem 0.9rem;
-    background: rgba(242, 217, 227, 0.2);
+    background: rgba(203, 218, 213, 0.2);
     display: flex;
     gap: 0.5rem;
     justify-content: center;
@@ -319,7 +319,7 @@
 }
 
 .btn-accion-primary {
-    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+    background: var(--primary-1);
     color: white;
     border: none;
 }
@@ -499,28 +499,28 @@
 
 /* Cards de Restiradores - Header verde */
 .card-restirador .user-card-header {
-    background: linear-gradient(135deg, #2D7D46 0%, #48A868 100%);
+    background: #527a65;
 }
 
 /* Cards de Área de Consulta - Header azul */
 .card-consulta .user-card-header {
-    background: linear-gradient(135deg, #2B6CB0 0%, #4299E1 100%);
+    background: #527a8c;
 }
 
 /* Cards de Solicitudes pendientes - Header naranja */
 .card-solicitud.pendiente .user-card-header {
-    background: linear-gradient(135deg, #C05621 0%, #DD6B20 100%);
+    background: #8a7a52;
 }
 
 /* Cards de Solicitudes aprobadas */
 .card-solicitud.aprobado .user-card-header {
-    background: linear-gradient(135deg, #276749 0%, #38A169 100%);
+    background: #527a65;
 }
 
 /* Cards de Solicitudes rechazadas/canceladas */
 .card-solicitud.rechazado .user-card-header,
 .card-solicitud.cancelado .user-card-header {
-    background: linear-gradient(135deg, #9B2C2C 0%, #C53030 100%);
+    background: #7a4e4e;
 }
 
 /* =============================================
@@ -532,7 +532,7 @@
 }
 
 .card-libro .user-card-header {
-    background: linear-gradient(135deg, #553C9A 0%, #805AD5 100%);
+    background: #3a415a;
 }
 
 /* Contenedor de imagen para portada del libro */
@@ -564,7 +564,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #F7FAFC 0%, #EDF2F7 100%);
+    background: #F7FAFC;
     color: var(--text-muted);
 }
 
@@ -609,8 +609,8 @@
     gap: 0.25rem;
     font-size: 0.7rem;
     font-weight: 600;
-    color: #553C9A;
-    background: rgba(85, 60, 154, 0.1);
+    color: #3a415a;
+    background: rgba(58, 65, 90, 0.1);
     padding: 0.25rem 0.6rem;
     border-radius: 4px;
     margin-top: auto;

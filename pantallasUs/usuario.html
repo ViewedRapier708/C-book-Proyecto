@@ -25,33 +25,35 @@
 </head>
 <body>
     
-    <aside class="container-aside">
-        <div class="container-logos">
+    <nav class="navbar-top">
+        <div class="navbar-brand">
             <a href="./cuenta.html" id="linkCuenta">
-                <div class="logo-containerBTZ"><img src="../img/logo-BTZ.png" alt="Logo BTZ"></div>
+                <img src="../img/logo-BTZ.png" alt="Logo BTZ" class="navbar-logo">
             </a>
+            <span class="navbar-title">C-BOOK</span>
         </div>
-        <div class="container-entrada">
-            <hr class="linea-aside">
-            <h2>SERVICIOS DE LA BIBLIOTECA</h2>
-            <hr class="linea-aside">
-            <div class="menu-interactivo">
-                <h3>Solicitudes de Servicios y Libros</h3>
-                <div class="btn-secciones">
-                    <a href="#" class="link-secciones nav-link" data-component="inicio" data-title="BIENVENIDO USUARIO">Inicio</a>
-                    <a href="#" class="link-secciones nav-link" data-component="solicitudComputadoras" data-title="SOLICITUD DE COMPUTADORAS">Computadoras</a>
-                    <a href="#" class="link-secciones nav-link" data-component="solicitudRestiradores" data-title="SOLICITUD DE RESTIRADORES">Restiradores</a>
-                    
-                    <a href="#" class="link-secciones nav-link" data-component="solicitudLibros" data-title="LIBROS">Solicitar Préstamo de Libros</a>
-                    <a href="#" class="link-secciones nav-link" data-component="cancelarSolicitudes" data-title="VISUALIZAR MIS SOLICITUDES">Mis Solicitudes de Recursos</a>
-                    <a href="#" class="link-secciones nav-link" data-component="misSolicitudesLibros" data-title="MIS SOLICITUDES DE LIBROS">Mis Solicitudes de Libros</a>
+        <div class="navbar-links">
+            <a href="#" class="nav-link" data-component="inicio" data-title="BIENVENIDO USUARIO">Inicio</a>
+            <div class="navbar-dropdown">
+                <button class="navbar-dropdown-toggle">Servicios</button>
+                <div class="navbar-dropdown-menu">
+                    <a href="#" class="nav-link" data-component="solicitudComputadoras" data-title="SOLICITUD DE COMPUTADORAS">Computadoras</a>
+                    <a href="#" class="nav-link" data-component="solicitudRestiradores" data-title="SOLICITUD DE RESTIRADORES">Restiradores</a>
+                    <a href="#" class="nav-link" data-component="solicitudLibros" data-title="LIBROS">Prestamo de Libros</a>
                 </div>
-                <div class="btn-cerrar-sesion">
-                    <a href="#" class="link-secciones" onclick="cerrarSesion(); return false;">Cerrar Sesión</a>
+            </div>
+            <div class="navbar-dropdown">
+                <button class="navbar-dropdown-toggle">Mis Solicitudes</button>
+                <div class="navbar-dropdown-menu">
+                    <a href="#" class="nav-link" data-component="cancelarSolicitudes" data-title="VISUALIZAR MIS SOLICITUDES">Solicitudes de Recursos</a>
+                    <a href="#" class="nav-link" data-component="misSolicitudesLibros" data-title="MIS SOLICITUDES DE LIBROS">Solicitudes de Libros</a>
                 </div>
             </div>
         </div>
-    </aside>
+        <div class="navbar-actions">
+            <a href="#" class="navbar-logout" onclick="cerrarSesion(); return false;">Cerrar Sesion</a>
+        </div>
+    </nav>
     
     <div class="container-main">
         <div id="notificacion-solicitud toast"></div>
@@ -114,6 +116,25 @@
             });
         })();
     </script>
-   
+    <script>
+        (function() {
+            document.querySelectorAll('.navbar-dropdown-toggle').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var dropdown = btn.closest('.navbar-dropdown');
+                    document.querySelectorAll('.navbar-dropdown.open').forEach(function(d) {
+                        if (d !== dropdown) d.classList.remove('open');
+                    });
+                    dropdown.classList.toggle('open');
+                });
+            });
+            document.addEventListener('click', function() {
+                document.querySelectorAll('.navbar-dropdown.open').forEach(function(d) {
+                    d.classList.remove('open');
+                });
+            });
+        })();
+    </script>
+
 </body>
 </html>

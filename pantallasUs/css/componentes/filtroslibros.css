@@ -9,21 +9,21 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.85rem 1.5rem;
-    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+    background: var(--primary-1);
     color: #FFFFFF;
     border: none;
     border-radius: 10px;
     font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.2);
+    box-shadow: 0 4px 12px rgba(58, 65, 90, 0.2);
     transition: all 0.3s ease;
     letter-spacing: 0.5px;
 }
 
 .btn-toggle-filtros:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(123, 2, 51, 0.35);
+    box-shadow: 0 6px 20px rgba(58, 65, 90, 0.35);
 }
 
 .btn-toggle-filtros:active {
@@ -41,11 +41,11 @@
 .panel-filtros {
     margin-top: 1rem;
     padding: 1.5rem;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(249, 249, 249, 0.95) 100%);
+    background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(10px);
     border-radius: 12px;
     border: 2px solid var(--accent);
-    box-shadow: 0 8px 24px rgba(123, 2, 51, 0.12);
+    box-shadow: 0 8px 24px rgba(58, 65, 90, 0.12);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     transform-origin: top;
     overflow: hidden;
@@ -87,7 +87,7 @@
 .input-filtro {
     width: 100%;
     padding: 0.75rem 1rem;
-    border: 2px solid #E8E8E8;
+    border: 2px solid #d0d8d5;
     border-radius: 8px;
     font-size: 0.9rem;
     color: #333;
@@ -100,7 +100,7 @@
 .input-filtro:focus {
     border-color: var(--primary-2);
     background: #FAFAFA;
-    box-shadow: 0 0 0 3px rgba(157, 48, 108, 0.1);
+    box-shadow: 0 0 0 3px rgba(86, 105, 129, 0.1);
 }
 
 .input-filtro::placeholder {
@@ -128,14 +128,14 @@
 }
 
 .btn-aplicar {
-    background: linear-gradient(135deg, var(--primary-2) 0%, var(--primary-1) 100%);
+    background: var(--primary-2);
     color: #FFFFFF;
-    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.2);
+    box-shadow: 0 4px 12px rgba(58, 65, 90, 0.2);
 }
 
 .btn-aplicar:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(123, 2, 51, 0.3);
+    box-shadow: 0 6px 18px rgba(58, 65, 90, 0.3);
 }
 
 .btn-limpiar {
@@ -151,10 +151,10 @@
 
 .contador-resultados {
     padding: 0.75rem 1rem;
-    background: linear-gradient(135deg, var(--bg-a) 0%, var(--bg-b) 100%);
+    background: var(--bg-a);
     border-radius: 8px;
     text-align: center;
-    border: 1px solid rgba(123, 2, 51, 0.1);
+    border: 1px solid rgba(58, 65, 90, 0.1);
 }
 
 .contador-resultados span {
@@ -211,7 +211,7 @@
 .btn-resetear {
     margin-top: 0.5rem;
     padding: 0.65rem 1.5rem;
-    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+    background: var(--primary-1);
     color: #FFFFFF;
     border: none;
     border-radius: 8px;
@@ -223,7 +223,7 @@
 
 .btn-resetear:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(123, 2, 51, 0.3);
+    box-shadow: 0 4px 12px rgba(58, 65, 90, 0.3);
 }
 
 /* Animación de fila filtrada */
