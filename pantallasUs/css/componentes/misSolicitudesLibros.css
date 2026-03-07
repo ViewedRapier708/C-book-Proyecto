@@ -1,0 +1,67 @@
+/* ========================================
+   ESTILOS PARA COMPONENTE: MIS SOLICITUDES DE LIBROS
+   ======================================== */
+
+.container-solicitudes-libros-usuario {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.container-solicitudes-libros-usuario > h2 {
+    margin-bottom: 1.5rem;
+}
+
+.container-solicitudes-libros-usuario .container-tabla {
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+.container-solicitudes-libros-usuario table {
+    min-width: 1200px;
+}
+
+.container-solicitudes-libros-usuario table th:nth-child(1) { width: 5%; }
+.container-solicitudes-libros-usuario table th:nth-child(2) { width: 25%; }
+.container-solicitudes-libros-usuario table th:nth-child(3) { width: 10%; }
+.container-solicitudes-libros-usuario table th:nth-child(4) { width: 12%; }
+.container-solicitudes-libros-usuario table th:nth-child(5) { width: 15%; }
+.container-solicitudes-libros-usuario table th:nth-child(6) { width: 15%; }
+.container-solicitudes-libros-usuario table th:nth-child(7) { width: 10%; }
+.container-solicitudes-libros-usuario table th:nth-child(8) { width: 8%; }
+
+.container-solicitudes-libros-usuario table th,
+.container-solicitudes-libros-usuario table td {
+    white-space: nowrap;
+    padding: 0.75rem;
+}
+
+.btn-cancelar-solicitud-libro {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: #7a4e4e;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(122, 78, 78, 0.3);
+}
+
+.btn-cancelar-solicitud-libro:hover:not(:disabled) {
+    background: #6b4040;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(122, 78, 78, 0.4);
+}
+
+.btn-cancelar-solicitud-libro:disabled {
+    background: #b0b0b0;
+    color: #757575;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+    transform: none;
+}

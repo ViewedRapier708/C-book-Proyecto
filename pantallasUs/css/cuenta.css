@@ -1,0 +1,295 @@
+﻿* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #dce8e4;
+    color: #333;
+    min-height: 100vh;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+}
+.container-main {
+    margin-top: 60px;
+    min-height: calc(100vh - 60px);
+    width: 100%;
+    position: relative;
+}
+.container-informacion {
+    flex: 1;
+    background: #dce8e4;
+    overflow-x: hidden;
+}
+.container-titulo {
+    background: #3a415a;
+    padding: 1.5rem 2rem;
+}
+.container-titulo h1 {
+    color: #FFFFFF;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin: 0;
+}
+.container-contenido {
+    padding: 2.5rem 3rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+.container-cuenta {
+    background: #ECECEC;
+    border-radius: 12px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.container-cuenta h2 {
+    color: #333;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 2.5rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.layout-perfil {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+.container-foto-perfil {
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 2.5rem;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.logo-cuenta {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 1.5rem;
+    background: #3a415a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(58, 65, 90, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+.nombre-usuario {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 1rem;
+}
+.rol-usuario {
+    display: inline-block;
+    background: #b8cec7;
+    color: #3a415a;
+    padding: 0.6rem 2rem;
+    border-radius: 25px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+.container-datos-usuario {
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.container-datos-usuario h3 {
+    color: #333;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.dato-item {
+    margin-bottom: 1.5rem;
+}
+.dato-label {
+    display: block;
+    font-weight: 700;
+    color: #333;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.dato-value {
+    display: block;
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    border: 2px solid #3a415a;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #333;
+    background: #FFFFFF;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+.dato-value:hover {
+    border-color: #566981;
+    box-shadow: 0 0 0 3px rgba(86, 105, 129, 0.1);
+}
+input.dato-value {
+    outline: none;
+}
+input.dato-value:focus {
+    border-color: #566981;
+    box-shadow: 0 0 0 3px rgba(86, 105, 129, 0.15);
+}
+.container-btn-acciones {
+    display: flex;
+    gap: 1.2rem;
+    margin-top: 2.5rem;
+}
+.btn-editar,
+.btn-cambiar-password {
+    flex: 1;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 25px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.btn-editar {
+    background: #2C3E50;
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3);
+}
+.btn-editar:hover {
+    background: #34495E;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(44, 62, 80, 0.4);
+}
+.btn-editar:active {
+    transform: translateY(0);
+}
+.btn-cambiar-password {
+    background: #3a415a;
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(58, 65, 90, 0.3);
+}
+.btn-cambiar-password:hover {
+    background: #566981;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(86, 105, 129, 0.4);
+}
+.btn-cambiar-password:active {
+    transform: translateY(0);
+}
+@media (max-width: 1024px) {
+    .layout-perfil {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    .container-foto-perfil {
+        max-width: 450px;
+        margin: 0 auto;
+    }
+}
+@media (max-width: 768px) {
+    .header-container {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    .title-container {
+        font-size: 0.85rem;
+        margin: 0;
+    }
+    .logo-containerBTZ img,
+    .logo-containerIPN img {
+        height: 50px;
+    }
+    .container-contenido {
+        padding: 1.5rem;
+    }
+    .container-cuenta {
+        padding: 1.5rem;
+    }
+    .container-titulo h1 {
+        font-size: 1.5rem;
+    }
+    .container-btn-acciones {
+        flex-direction: column;
+    }
+}
+@media (max-width: 480px) {
+    .container-titulo h1 {
+        font-size: 1.3rem;
+        letter-spacing: 1px;
+    }
+    .container-cuenta h2 {
+        font-size: 1.3rem;
+    }
+    .logo-cuenta {
+        width: 150px;
+        height: 150px;
+    }
+    .logo-cuenta::before {
+        font-size: 70px;
+    }
+    .nombre-usuario {
+        font-size: 1.2rem;
+    }
+}
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.container-cuenta {
+    animation: slideInUp 0.5s ease-out;
+}
+.dato-item {
+    animation: slideInUp 0.4s ease-out backwards;
+}
+.dato-item:nth-child(1) { animation-delay: 0.05s; }
+.dato-item:nth-child(2) { animation-delay: 0.1s; }
+.dato-item:nth-child(3) { animation-delay: 0.15s; }
+.dato-item:nth-child(4) { animation-delay: 0.2s; }
+.dato-item:nth-child(5) { animation-delay: 0.25s; }
+.logo-cuenta::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    transform: rotate(45deg);
+    animation: shine 3s infinite;
+}
+@keyframes shine {
+    0%, 100% {
+        transform: rotate(45deg) translateX(-100%);
+    }
+    50% {
+        transform: rotate(45deg) translateX(100%);
+    }
+}
+.container-datos-usuario {
+    position: relative;
+    border-left: 4px solid #3a415a;
+}
+.container-foto-perfil {
+    position: relative;
+    border-top: 4px solid #b8cec7;
+}
