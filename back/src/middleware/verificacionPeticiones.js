@@ -39,19 +39,48 @@ async function verificarDisponibilidad(req, res, next) {
             });
         }
 
-        if (pendientes.total > 0 && (tipo === 'computadora' || tipo === 'restirador')) {
+        if (pendientes.total > 0) {
             return res.status(400).json({
                 success: false,
                 error: 'Ya tienes una solicitud activa pendiente. Debes concluirla antes de generar otra.'
             });
-        } else if (pendientes.total < 0) {
+        }
+    } else if (tipo === 'libro') {
+        const numeroBoleta = Number(boleta);
+        if (!Number.isInteger(numeroBoleta)) {
+            return res.status(400).json({
+                success: false,
+                error: 'La boleta del usuario es inválida'
+            });
+        }
+        // Ejecutar ambas verificaciones en paralelo para libros
+        const [pendientes, disponibilidad] = await Promise.all([
+            ObtenerSolicitudesActivasPorBoleta(tipo, numeroBoleta),
+            VerificarDisponibilidadRecurso(tipo, idRecurso),
+        ]);
+
+        if (!pendientes.success) {
             return res.status(500).json({
                 success: false,
-                error: 'Error al verificar las solicitudes activas'
+                error: pendientes.error || 'No se pudo validar las solicitudes activas'
             });
-        } else if (pendientes.total === 2 && tipo === 'libro') {
-
         }
+
+        if (pendientes.total >= 3) {
+            return res.status(400).json({
+                success: false,
+                error: 'Ya tienes 3 solicitudes de libros activas. Debes concluir alguna antes de solicitar otro.'
+            });
+        }
+
+        if (!disponibilidad.success) {
+            return res.status(400).json({
+                success: false,
+                error: disponibilidad.message || 'Recurso no disponible'
+            });
+        }
+
+        return next();
     }
 
     
