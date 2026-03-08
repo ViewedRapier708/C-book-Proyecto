@@ -1,0 +1,179 @@
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { recursosApi, solicitudesApi } from '../../api/recursos';
+import { useAuth } from '../../context/AuthContext';
+import { Spinner, EmptyState } from '../../components/ui/Feedback';
+import Pagination from '../../components/ui/Pagination';
+import Modal from '../../components/ui/Modal';
+import toast from 'react-hot-toast';
+import { Search } from 'lucide-react';
+import AnimatedPage from '../../components/layout/AnimatedPage';
+
+const MAX_LIBROS = 3;
+
+export default function SolicitudLibros() {
+  const { user } = useAuth();
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [filterTipo, setFilterTipo] = useState('');
+  const [filterDisp, setFilterDisp] = useState('');
+  const [page, setPage] = useState(1);
+  const [confirm, setConfirm] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [activasCount, setActivasCount] = useState(0);
+  const PER_PAGE = 12;
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [catData, solData] = await Promise.all([
+        recursosApi.getByType('libro'),
+        solicitudesApi.getUserSolicitudes(),
+      ]);
+      setItems(catData.data || []);
+      const sols = solData.data || [];
+      const activas = sols.filter(s => s.tipo_solicitud === 'libro' && s.estado_asistencia_id === 1).length;
+      setActivasCount(activas);
+    } catch { toast.error('Error al cargar libros'); }
+    finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const tipos = useMemo(() => [...new Set(items.map((b) => b.libros?.tipo_material || b.tipo_material).filter(Boolean))], [items]);
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return items.filter((b) => {
+      const titulo = b.libros?.titulo || b.titulo || '';
+      const autor = b.libros?.autor || b.autor || '';
+      const isbn = b.libros?.isbn || b.isbn || '';
+      const clasificacion = b.libros?.clasificacion || b.clasificacion || '';
+      const tipo = b.libros?.tipo_material || b.tipo_material || '';
+      const disp = b.Disponible ?? b.disponible;
+      if (q && !(
+        titulo.toLowerCase().includes(q) ||
+        autor.toLowerCase().includes(q) ||
+        isbn.toLowerCase().includes(q) ||
+        clasificacion.toLowerCase().includes(q)
+      )) return false;
+      if (filterTipo && tipo !== filterTipo) return false;
+      if (filterDisp === 'si' && !disp) return false;
+      if (filterDisp === 'no' && disp) return false;
+      return true;
+    });
+  }, [items, search, filterTipo, filterDisp]);
+
+  const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  const handleSolicitar = async () => {
+    setSubmitting(true);
+    try {
+      await solicitudesApi.create('libro', user.boleta, confirm.id);
+      toast.success('Solicitud de libro creada exitosamente');
+      // Actualizar estado local sin recargar todo el catálogo
+      setItems(prev => prev.map(b => b.id === confirm.id ? { ...b, Disponible: false, disponible: false } : b));
+      setActivasCount(prev => prev + 1);
+      setConfirm(null);
+    } catch (err) {
+      toast.error(err.message);
+    } finally { setSubmitting(false); }
+  };
+
+  if (loading) return <Spinner />;
+
+  return (
+    <AnimatedPage>
+      <div className="page-header">
+        <h1>Catálogo de Libros</h1>
+        <p>Busca y solicita libros del acervo bibliográfico</p>
+      </div>
+
+      {activasCount >= MAX_LIBROS && (
+        <div style={{ padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', background: '#f59e0b18', border: '1px solid #f59e0b44', marginBottom: '1rem', fontSize: '0.85rem', color: '#f59e0b' }}>
+          Ya tienes {activasCount} solicitudes de libros activas (máximo {MAX_LIBROS}). Debes concluir alguna antes de solicitar otro.
+        </div>
+      )}
+
+      <div className="toolbar">
+        <div style={{ position: 'relative', flex: 1, maxWidth: 350 }}>
+          <Search size={16} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
+          <input
+            className="search-input"
+            style={{ paddingLeft: 34 }}
+            placeholder="Buscar por título, autor, ISBN..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          />
+        </div>
+        <select value={filterTipo} onChange={(e) => { setFilterTipo(e.target.value); setPage(1); }} style={{ maxWidth: 180 }}>
+          <option value="">Todos los tipos</option>
+          {tipos.map((t) => <option key={t} value={t}>{t}</option>)}
+        </select>
+        <select value={filterDisp} onChange={(e) => { setFilterDisp(e.target.value); setPage(1); }} style={{ maxWidth: 160 }}>
+          <option value="">Disponibilidad</option>
+          <option value="si">Disponible</option>
+          <option value="no">No disponible</option>
+        </select>
+      </div>
+
+      {paged.length === 0 ? (
+        <EmptyState message="No se encontraron libros" />
+      ) : (
+        <div className="resource-grid">
+          {paged.map((b) => (
+            <div key={b.id} className="resource-card">
+              <div className="resource-card-title">
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>
+                  {b.libros?.titulo || b.titulo || 'Sin título'}
+                </span>
+                <span className={`badge ${(b.Disponible ?? b.disponible) ? 'badge-success' : 'badge-danger'}`}>
+                  {(b.Disponible ?? b.disponible) ? 'Disponible' : 'No disponible'}
+                </span>
+              </div>
+              <div className="resource-card-body">
+                <div className="resource-card-row"><span className="resource-card-label">Autor</span><span className="resource-card-value">{b.libros?.autor || b.autor || '-'}</span></div>
+                <div className="resource-card-row"><span className="resource-card-label">Clasificación</span><span className="resource-card-value">{b.libros?.clasificacion || b.clasificacion || '-'}</span></div>
+                <div className="resource-card-row"><span className="resource-card-label">ISBN</span><span className="resource-card-value">{b.libros?.isbn || b.isbn || '-'}</span></div>
+                <div className="resource-card-row"><span className="resource-card-label">Tipo</span><span className="resource-card-value">{b.libros?.tipo_material || b.tipo_material || '-'}</span></div>
+                <div className="resource-card-row"><span className="resource-card-label">Año</span><span className="resource-card-value">{b.anio || '-'}</span></div>
+                <div className="resource-card-row"><span className="resource-card-label">Ejemplar #</span><span className="resource-card-value">{b.numero_ejemplar || '-'}</span></div>
+              </div>
+              <div className="resource-card-actions">
+                <button
+                  className="btn btn-primary btn-sm"
+                  style={{ flex: 1 }}
+                  disabled={!(b.Disponible ?? b.disponible) || activasCount >= MAX_LIBROS}
+                  onClick={() => setConfirm(b)}
+                >
+                  {activasCount >= MAX_LIBROS ? 'Límite alcanzado' : 'Solicitar'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Pagination page={page} total={filtered.length} perPage={PER_PAGE} onChange={setPage} />
+
+      <Modal
+        open={!!confirm}
+        onClose={() => setConfirm(null)}
+        title="Confirmar Solicitud de Libro"
+        footer={
+          <>
+            <button className="btn btn-ghost" onClick={() => setConfirm(null)}>Cancelar</button>
+            <button className="btn btn-primary" disabled={submitting} onClick={handleSolicitar}>
+              {submitting ? 'Enviando...' : 'Confirmar'}
+            </button>
+          </>
+        }
+      >
+        <p>¿Deseas solicitar el libro <strong>{confirm?.libros?.titulo || confirm?.titulo}</strong>?</p>
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-light)', marginTop: '0.5rem' }}>
+          Autor: {confirm?.libros?.autor || confirm?.autor} | ISBN: {confirm?.libros?.isbn || confirm?.isbn}
+        </p>
+      </Modal>
+    </AnimatedPage>
+  );
+}

@@ -470,6 +470,7 @@ async function ObtenerSolicitudesLibros() {
             .select(`
                 id,
                 fecha_solicitud,
+                fecha_limite_respuesta,
                 fecha_limite_recoleccion,
                 usuario_boleta,
                 estado_asistencia_id,

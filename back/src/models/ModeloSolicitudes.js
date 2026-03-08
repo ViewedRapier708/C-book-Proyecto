@@ -285,15 +285,51 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
 async function getSolicitudes(boleta) {
   const supabase = getClient();
   try {
-    const { data, error } = await supabase//Retorna todas las solicitudes hechas por un alumno
-      .from('v_solicitudes_alumno')
-      .select('*')
-      .eq('registro_id', boleta);
-    if (error) {
-      console.error("Error obteniendo solicitudes:", error);
-      return { success: false, error: error.message };
-    }
-    const solicitudes = Array.isArray(data) ? data : [];
+    // Consultar las tres tablas directamente para tener control de los nombres de columna
+    const [compRes, restRes, libRes] = await Promise.all([
+      supabase
+        .from('solicitudes_computadora')
+        .select('id, usuario_boleta, computadora_id, fecha_solicitud, fecha_limite_llegada, estado_asistencia_id')
+        .eq('usuario_boleta', boleta),
+      supabase
+        .from('solicitudes_restirador')
+        .select('id, usuario_boleta, restirador_id, fecha_solicitud, fecha_limite_llegada, estado_asistencia_id')
+        .eq('usuario_boleta', boleta),
+      supabase
+        .from('solicitudes_libros')
+        .select(`id, usuario_boleta, ejemplar_id, fecha_solicitud, fecha_limite_respuesta, fecha_aprobacion, fecha_limite_recoleccion, motivo_rechazo, fecha_rechazo, estado_asistencia_id,
+          ejemplares ( id, numero_ejemplar, libros ( titulo, autor ) ),
+          prestamos_libros ( fecha_inicio_prestamo, fecha_limite_devolucion, fecha_devolucion_real )`)
+        .eq('usuario_boleta', boleta),
+    ]);
+
+    if (compRes.error) console.error("Error solicitudes_computadora:", compRes.error);
+    if (restRes.error) console.error("Error solicitudes_restirador:", restRes.error);
+    if (libRes.error) console.error("Error solicitudes_libros:", libRes.error);
+
+    const computadoras = (compRes.data || []).map(s => ({
+      ...s, tipo_solicitud: 'computadora', recurso_id: s.computadora_id
+    }));
+    const restiradores = (restRes.data || []).map(s => ({
+      ...s, tipo_solicitud: 'restirador', recurso_id: s.restirador_id
+    }));
+    const libros = (libRes.data || []).map(s => {
+      const prestamo = Array.isArray(s.prestamos_libros) ? s.prestamos_libros[0] : s.prestamos_libros;
+      return {
+        ...s,
+        tipo_solicitud: 'libro',
+        recurso_id: s.ejemplar_id,
+        titulo: s.ejemplares?.libros?.titulo || null,
+        autor: s.ejemplares?.libros?.autor || null,
+        fecha_inicio_prestamo: prestamo?.fecha_inicio_prestamo || null,
+        fecha_limite_devolucion: prestamo?.fecha_limite_devolucion || null,
+        fecha_devolucion_real: prestamo?.fecha_devolucion_real || null,
+      };
+    });
+
+    const solicitudes = [...computadoras, ...restiradores, ...libros]
+      .sort((a, b) => new Date(b.fecha_solicitud) - new Date(a.fecha_solicitud));
+
     const solicitudesEnriquecidas = await anexarNumeroMaterialSolicitudes(supabase, solicitudes);
 
     return { success: true, data: solicitudesEnriquecidas };
@@ -421,9 +457,12 @@ async function CancelarSolicitud(tipoSolicitud, solicitudId, boleta) {
     }
 
     try {
+        // estados_asistencia: 3=cancelada | estados_solicitud (libros): 4=cancelada
+        const estadoCancelado = tipoSolicitud === 'libro' ? 4 : 3;
+
         let query = supabase
             .from(tabla)
-            .update({ estado_asistencia_id: 3 }) // 3 = cancelada
+            .update({ estado_asistencia_id: estadoCancelado })
             .eq('id', id)
             .eq('estado_asistencia_id', 1); // solo cancelar si está pendiente
 
@@ -456,5 +495,4 @@ module.exports = {
     CancelarSolicitud,
     getSolicitudes
 };
-
 

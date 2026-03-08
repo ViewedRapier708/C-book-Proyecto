@@ -5,6 +5,7 @@ const { obtenerRecursosPorTipo} = require('../controllers/ControladorRecursos.js
 const middlewareAutenticacion = require('../middleware/verificacionPeticiones.js');
 const controladorSolicitudes = require('../controllers/ControladorSolicitudes.js');
 const controladorAdministrador = require('../controllers/ControladorAdministrador.js');
+const controladorAnalytics = require('../controllers/ControladorAnalytics.js');
 const sessionGuard = require('../middleware/sessionGuard.js');
 
 
@@ -46,5 +47,10 @@ router.post('/admin/solicitudes/libros/:id/gestionar', sessionGuard, controlador
 router.post('/admin/solicitudes/libros/:id/entregar', sessionGuard, controladorAdministrador.registrarEntrega);
 router.get('/admin/prestamos/libros', sessionGuard, controladorAdministrador.obtenerPrestamosLibros);
 router.post('/admin/prestamos/libros/:id/devolver', sessionGuard, controladorAdministrador.marcarPrestamoDevuelto);
+
+// ==================== RUTAS DE ANALYTICS ====================
+router.get('/admin/stats', sessionGuard, controladorAnalytics.obtenerEstadisticas);
+router.get('/admin/tendencias', sessionGuard, controladorAnalytics.obtenerTendencias);
+router.get('/admin/actividad', sessionGuard, controladorAnalytics.obtenerActividad);
 
 module.exports = router;

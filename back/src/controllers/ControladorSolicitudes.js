@@ -1,5 +1,5 @@
 const { CrearSolicitud, CancelarSolicitud, getSolicitudes } = require("../models/ModeloSolicitudes");
-const { enviarCorreo } = require("../utils/servicioCorreo");
+const { enviarCorreo, plantillaCorreo } = require("../utils/servicioCorreo");
 const { getClient } = require("../config/db");
 
 const tipos = ['computadora', 'restirador', 'libro'];
@@ -33,25 +33,75 @@ async function crearSolicitud(req,res) {
     await CrearSolicitud(tipo, boleta, idRecurso)
         .then(async (resultado) => {
             if (resultado.success) {
-                // Enviar correo de confirmación
-                try {
-                    const supabase = getClient();
-                    const { data: usuario } = await supabase
-                        .from('usuarios_web_movil')
-                        .select('correo')
-                        .eq('boleta', boleta)
-                        .single();
+                // Enviar correo en segundo plano (no bloquea la respuesta)
+                const supabase = getClient();
+                (async () => {
+                    try {
+                        // Obtener datos del alumno (correo + nombre + grupo)
+                        const { data: alumno } = await supabase
+                            .from('usuarios_web_movil')
+                            .select('correo, boletas(nombre, Grupo)')
+                            .eq('boleta', boleta)
+                            .single();
 
-                    if (usuario && usuario.correo) {
-                        await enviarCorreo(
-                            usuario.correo,
-                            'Solicitud Recibida - C-Book',
-                            `<p>Tu solicitud de <b>${tipo}</b> ha sido creada correctamente. Estado: <b>Pendiente</b>.</p>`
-                        );
+                        if (!alumno?.correo) return;
+
+                        const nombre = alumno.boletas?.nombre || '-';
+                        const grupo = alumno.boletas?.Grupo || '-';
+
+                        // Obtener detalles del recurso según tipo
+                        let detalles = [];
+                        if (tipo === 'libro') {
+                            const { data: ej } = await supabase
+                                .from('ejemplares')
+                                .select('numero_ejemplar, codigo_barras, libros(titulo, autor, clasificacion)')
+                                .eq('id', idRecurso)
+                                .single();
+                            if (ej) {
+                                detalles = [
+                                    { label: 'Título', value: ej.libros?.titulo || '-' },
+                                    { label: 'Autor', value: ej.libros?.autor || '-' },
+                                    { label: 'Clasificación', value: ej.libros?.clasificacion || '-' },
+                                    { label: 'Ejemplar #', value: String(ej.numero_ejemplar ?? '-') },
+                                ];
+                            }
+                        } else if (tipo === 'computadora') {
+                            const { data: pc } = await supabase
+                                .from('computadoras')
+                                .select('no_computadora')
+                                .eq('id', idRecurso)
+                                .single();
+                            if (pc) {
+                                detalles = [{ label: 'Computadora #', value: String(pc.no_computadora) }];
+                            }
+                        } else if (tipo === 'restirador') {
+                            const { data: rest } = await supabase
+                                .from('restiradores')
+                                .select('no_restirador')
+                                .eq('id', idRecurso)
+                                .single();
+                            if (rest) {
+                                detalles = [{ label: 'Restirador #', value: String(rest.no_restirador) }];
+                            }
+                        }
+
+                        const tipoLabel = tipo === 'libro' ? 'Libro' : tipo === 'computadora' ? 'Computadora' : 'Restirador';
+                        const html = plantillaCorreo({
+                            titulo: `Solicitud de ${tipoLabel} Recibida`,
+                            mensaje: `Tu solicitud de <b>${tipoLabel}</b> ha sido registrada correctamente y se encuentra en estado pendiente.`,
+                            nombre,
+                            boleta: String(boleta),
+                            grupo,
+                            detalles,
+                            estado: 'Pendiente',
+                            estadoColor: '#f59e0b',
+                        });
+
+                        await enviarCorreo(alumno.correo, `Solicitud de ${tipoLabel} Recibida - C-Book`, html);
+                    } catch (e) {
+                        console.error('Error al enviar correo de solicitud:', e);
                     }
-                } catch (emailError) {
-                    console.error('Error al enviar correo de solicitud:', emailError);
-                }
+                })();
 
                 return res.status(201).json({ success: true, message: 'Solicitud creada exitosamente' });
             } else {

@@ -18,7 +18,7 @@ const restiradores = async () => {
     try {
       const { data, error } = await supabase
         .from('restiradores')
-        .select('no_restirador,Observacion,Disponible,estado_de_material,estado_de_material')
+        .select('id,no_restirador,Observacion,Disponible,estado_de_material')
 
       if (error) {
         console.error("Error obteniendo restiradores:", error);
@@ -64,7 +64,7 @@ const computadoras = async () => {
   try {
     const { data, error } = await supabase
       .from('computadoras')
-      .select('no_computadora,Observacion,procesador,programas,carrera,Disponible,En_funcionamiento')
+      .select('id,no_computadora,Observacion,procesador,programas,carrera,Disponible,En_funcionamiento')
     if (error) {
       console.error("Error obteniendo computadoras:", error);
       return { error: 'Error al obtener las computadoras' };

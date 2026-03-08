@@ -1,14 +1,28 @@
 {
   "version": 2,
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
   "functions": {
     "api/index.js": {
       "includeFiles": "back/**"
     }
   },
-  "routes": [
-    { "src": "/auth/(.*)", "dest": "/api/index.js" },
-    { "src": "/debug/(.*)", "dest": "/api/index.js" },
-    { "src": "/api/(.*)", "dest": "/api/index.js" },
-    { "handle": "filesystem" }
+  "rewrites": [
+    {
+      "source": "/auth/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/debug/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }

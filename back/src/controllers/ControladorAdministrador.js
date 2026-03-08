@@ -21,7 +21,7 @@ const {
     ObtenerPrestamosLibros,
     MarcarPrestamoDevuelto
 } = require('../models/ModeloAdministrador.js');
-const { enviarCorreo } = require('../utils/servicioCorreo.js');
+const { enviarCorreo, plantillaCorreo } = require('../utils/servicioCorreo.js');
 const {
     agregarDiasHabiles,
     formatearFechaMexico,
@@ -867,25 +867,65 @@ async function gestionarSolicitud(req, res) {
             // Enviar correo
             try {
                 const supabase = getClient();
-                const { data: usuario } = await supabase
+                // Obtener datos del alumno
+                const { data: alumno } = await supabase
                     .from('usuarios_web_movil')
-                    .select('correo')
+                    .select('correo, boletas(nombre, Grupo)')
                     .eq('boleta', boletaUser)
                     .single();
 
-                if (usuario && usuario.correo) {
-                    const estatusTexto = estadoNumero === 2 ? "Aprobada" : "Rechazada";
+                if (alumno && alumno.correo) {
+                    const nombre = alumno.boletas?.nombre || '-';
+                    const grupo = alumno.boletas?.Grupo || '-';
+
+                    // Obtener datos del libro de la solicitud
+                    const { data: sol } = await supabase
+                        .from('solicitudes_libros')
+                        .select('ejemplar_id, ejemplares(numero_ejemplar, libros(titulo, autor, clasificacion))')
+                        .eq('id', id)
+                        .single();
+
+                    const libro = sol?.ejemplares?.libros;
+                    const detalles = [];
+                    if (libro) {
+                        detalles.push({ label: 'Título', value: libro.titulo || '-' });
+                        detalles.push({ label: 'Autor', value: libro.autor || '-' });
+                        detalles.push({ label: 'Clasificación', value: libro.clasificacion || '-' });
+                    }
+                    if (sol?.ejemplares?.numero_ejemplar) {
+                        detalles.push({ label: 'Ejemplar #', value: String(sol.ejemplares.numero_ejemplar) });
+                    }
+
+                    const esAprobada = estadoNumero === 2;
+                    const estatusTexto = esAprobada ? 'Aprobada' : 'Rechazada';
                     const fechaLimiteTexto = fechaLimiteRecoleccion
                         ? formatearFechaMexico(fechaLimiteRecoleccion)
                         : '-';
-                    const mensaje = estadoNumero === 2
-                        ? `Tu solicitud ha sido aprobada. Tienes 1 día hábil para pasar a biblioteca a recoger el libro. Fecha límite de recolección: <b>${fechaLimiteTexto}</b>.`
-                        : `Lamentablemente tu solicitud ha sido rechazada. Motivo: ${motivo || 'No especificado'}`;
+
+                    if (esAprobada) {
+                        detalles.push({ label: 'Fecha límite', value: fechaLimiteTexto });
+                    } else if (motivo) {
+                        detalles.push({ label: 'Motivo rechazo', value: motivo });
+                    }
+
+                    const html = plantillaCorreo({
+                        titulo: `Solicitud ${estatusTexto}`,
+                        mensaje: esAprobada
+                            ? 'Tu solicitud de libro ha sido <b>aprobada</b>. Tienes 1 día hábil para pasar a biblioteca a recoger el libro.'
+                            : `Tu solicitud de libro ha sido <b>rechazada</b>. ${motivo ? `Motivo: ${motivo}` : ''}`,
+                        nombre,
+                        boleta: String(boletaUser),
+                        grupo,
+                        detalles,
+                        estado: estatusTexto,
+                        estadoColor: esAprobada ? '#22c55e' : '#ef4444',
+                        color: esAprobada ? '#22c55e' : '#ef4444',
+                    });
 
                     await enviarCorreo(
-                        usuario.correo, 
-                        `Actualización de Solicitud: ${estatusTexto}`, 
-                        `<p>${mensaje}</p>`
+                        alumno.correo,
+                        `Solicitud ${estatusTexto} - C-Book`,
+                        html
                     );
                 }
             } catch (emailErr) {
@@ -936,6 +976,72 @@ async function registrarEntrega(req, res) {
         const resultado = await EntregarLibro(id, boleta, idEjemplar);
 
         if (resultado.success) {
+            // Enviar correo con fecha límite de devolución
+            try {
+                const supabase = getClient();
+                // Obtener solicitud para saber la boleta real
+                const { data: sol } = await supabase
+                    .from('solicitudes_libros')
+                    .select('usuario_boleta, ejemplares(numero_ejemplar, libros(titulo, autor, clasificacion))')
+                    .eq('id', id)
+                    .single();
+
+                const boletaReal = sol?.usuario_boleta || boletaValidacion || boleta;
+
+                if (boletaReal) {
+                    const { data: alumno } = await supabase
+                        .from('usuarios_web_movil')
+                        .select('correo, boletas(nombre, Grupo)')
+                        .eq('boleta', boletaReal)
+                        .single();
+
+                    if (alumno?.correo) {
+                        const nombre = alumno.boletas?.nombre || '-';
+                        const grupo = alumno.boletas?.Grupo || '-';
+
+                        // Obtener préstamo recién creado
+                        const { data: prestamo } = await supabase
+                            .from('prestamos_libros')
+                            .select('fecha_inicio_prestamo, fecha_limite_devolucion')
+                            .eq('solicitud_id', id)
+                            .single();
+
+                        const libroData = sol?.ejemplares?.libros;
+                        const detalles = [];
+                        if (libroData) {
+                            detalles.push({ label: 'Título', value: libroData.titulo || '-' });
+                            detalles.push({ label: 'Autor', value: libroData.autor || '-' });
+                        }
+                        if (sol?.ejemplares?.numero_ejemplar) {
+                            detalles.push({ label: 'Ejemplar #', value: String(sol.ejemplares.numero_ejemplar) });
+                        }
+                        if (prestamo?.fecha_inicio_prestamo) {
+                            detalles.push({ label: 'Fecha de entrega', value: formatearFechaMexico(prestamo.fecha_inicio_prestamo) });
+                        }
+                        if (prestamo?.fecha_limite_devolucion) {
+                            detalles.push({ label: 'Fecha límite devolución', value: formatearFechaMexico(prestamo.fecha_limite_devolucion) });
+                        }
+
+                        const html = plantillaCorreo({
+                            titulo: 'Libro Entregado',
+                            mensaje: 'Tu libro ha sido entregado exitosamente. Recuerda devolverlo antes de la fecha límite para evitar sanciones.',
+                            nombre,
+                            boleta: String(boletaReal),
+                            grupo,
+                            detalles,
+                            estado: 'Entregado',
+                            estadoColor: '#22c55e',
+                            color: '#6366f1',
+                        });
+
+                        enviarCorreo(alumno.correo, 'Libro Entregado - C-Book', html)
+                            .catch(e => console.error('Error al enviar correo de entrega:', e));
+                    }
+                }
+            } catch (emailErr) {
+                console.error('Error enviando correo de entrega:', emailErr);
+            }
+
              return res.status(200).json({ success: true, message: "Libro entregado, préstamo activo." });
         }
         return res.status(400).json(resultado);
@@ -968,6 +1074,62 @@ async function marcarPrestamoDevuelto(req, res) {
         const fechaDevolucionReal = obtenerFechaMexico();
         const resultado = await MarcarPrestamoDevuelto(id, fechaDevolucionReal, observaciones);
         if (resultado.success) {
+            // Enviar correo de devolución
+            try {
+                const supabase = getClient();
+                const { data: prestamo } = await supabase
+                    .from('prestamos_libros')
+                    .select(`fecha_inicio_prestamo, fecha_limite_devolucion, fecha_devolucion_real,
+                        solicitudes_libros (
+                            usuario_boleta,
+                            ejemplares ( numero_ejemplar, libros ( titulo, autor ) )
+                        )`)
+                    .eq('id', id)
+                    .single();
+
+                const boletaPrestamo = prestamo?.solicitudes_libros?.usuario_boleta;
+                if (boletaPrestamo) {
+                    const { data: alumno } = await supabase
+                        .from('usuarios_web_movil')
+                        .select('correo, boletas(nombre, Grupo)')
+                        .eq('boleta', boletaPrestamo)
+                        .single();
+
+                    if (alumno?.correo) {
+                        const libroData = prestamo?.solicitudes_libros?.ejemplares?.libros;
+                        const detalles = [];
+                        if (libroData) {
+                            detalles.push({ label: 'Título', value: libroData.titulo || '-' });
+                            detalles.push({ label: 'Autor', value: libroData.autor || '-' });
+                        }
+                        if (prestamo?.solicitudes_libros?.ejemplares?.numero_ejemplar) {
+                            detalles.push({ label: 'Ejemplar #', value: String(prestamo.solicitudes_libros.ejemplares.numero_ejemplar) });
+                        }
+                        if (prestamo?.fecha_inicio_prestamo) {
+                            detalles.push({ label: 'Fecha préstamo', value: formatearFechaMexico(prestamo.fecha_inicio_prestamo) });
+                        }
+                        detalles.push({ label: 'Fecha devolución', value: formatearFechaMexico(fechaDevolucionReal) });
+
+                        const html = plantillaCorreo({
+                            titulo: 'Libro Devuelto',
+                            mensaje: 'Tu libro ha sido devuelto correctamente. ¡Gracias por cumplir con la devolución!',
+                            nombre: alumno.boletas?.nombre || '-',
+                            boleta: String(boletaPrestamo),
+                            grupo: alumno.boletas?.Grupo || '-',
+                            detalles,
+                            estado: 'Devuelto',
+                            estadoColor: '#8b5cf6',
+                            color: '#8b5cf6',
+                        });
+
+                        enviarCorreo(alumno.correo, 'Libro Devuelto - C-Book', html)
+                            .catch(e => console.error('Error al enviar correo de devolución:', e));
+                    }
+                }
+            } catch (emailErr) {
+                console.error('Error enviando correo de devolución:', emailErr);
+            }
+
             return res.status(200).json({ success: true, message: 'Préstamo marcado como devuelto.' });
         }
 
