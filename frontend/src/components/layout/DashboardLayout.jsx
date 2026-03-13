@@ -12,37 +12,51 @@ export default function DashboardLayout() {
   const location = useLocation();
 
   return (
-    <div className="page-layout">
-      <div className="mobile-header">
-        <h2>📚 C-Book</h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+    <div className="flex min-h-screen">
+      {/* Mobile Header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-[var(--bg-sidebar)] backdrop-blur-xl border-b border-[var(--border-color)] z-[98] px-4 flex items-center justify-between">
+        <h2 className="text-lg font-bold bg-gradient-to-r from-primary-500 via-purple-500 to-accent-500 bg-clip-text text-transparent">
+          📚 C-Book
+        </h2>
+        <div className="flex items-center gap-2">
           <ThemeToggle />
-          <button className="btn btn-icon" style={{ color: 'var(--text-primary)' }} onClick={() => setCmdOpen(true)} title="Ctrl+K">
+          <button
+            className="p-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-glass)] text-[var(--text-primary)] hover:bg-[var(--bg-glass-strong)] transition-colors"
+            onClick={() => setCmdOpen(true)}
+            title="Ctrl+K"
+          >
             <Command size={18} />
           </button>
-          <button className="btn btn-icon" style={{ color: 'var(--text-primary)' }} onClick={() => setOpen(true)}>
+          <button
+            className="p-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-glass)] text-[var(--text-primary)] hover:bg-[var(--bg-glass-strong)] transition-colors"
+            onClick={() => setOpen(true)}
+          >
             <Menu size={22} />
           </button>
         </div>
       </div>
+
       <Sidebar open={open} onClose={() => setOpen(false)} />
-      <main className="main-content">
-        <div className="main-topbar">
+
+      {/* Main Content */}
+      <main className="flex-1 ml-0 md:ml-[260px] min-h-screen max-w-full md:max-w-[calc(100%-260px)] px-4 md:px-8 pb-8 pt-[calc(3.5rem+1rem)] md:pt-0">
+        {/* Desktop topbar */}
+        <div className="hidden md:flex justify-between items-center py-4 mb-2">
           <div />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div className="flex items-center gap-2">
             <button
-              className="btn btn-outline btn-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--border-glow)] transition-all text-xs font-mono opacity-70"
               onClick={() => setCmdOpen(true)}
-              style={{ gap: '0.4rem', opacity: 0.7, fontFamily: 'monospace', fontSize: '0.75rem' }}
             >
               <Command size={13} /> Ctrl+K
             </button>
             <ThemeToggle />
           </div>
         </div>
+
         <Suspense fallback={
-          <div className="spinner-container" style={{ minHeight: '40vh' }}>
-            <div className="spinner" />
+          <div className="flex items-center justify-center min-h-[40vh]">
+            <div className="w-9 h-9 border-3 border-[var(--border-color)] border-t-primary-500 rounded-full animate-spin" />
           </div>
         }>
           <AnimatePresence mode="wait">
@@ -50,6 +64,7 @@ export default function DashboardLayout() {
           </AnimatePresence>
         </Suspense>
       </main>
+
       <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
     </div>
   );
