@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { verificarSesion,registro, verificarCorreo, login, cerrarSesion } = require('../controllers/ControladorUsuario.js');
+const { verificarSesion,registro, verificarCorreo, login, cerrarSesion,CambioDatos } = require('../controllers/ControladorUsuario.js');
 const { obtenerRecursosPorTipo} = require('../controllers/ControladorRecursos.js');
 const middlewareAutenticacion = require('../middleware/verificacionPeticiones.js');
 const controladorSolicitudes = require('../controllers/ControladorSolicitudes.js');
@@ -18,7 +18,7 @@ router.get('/recursos', obtenerRecursosPorTipo);
 router.get('/recursos/usuario', controladorSolicitudes.obtencionSolicitudesUsuario);
 router.post('/solicitud', sessionGuard,middlewareAutenticacion.verificarDisponibilidad,controladorSolicitudes.crearSolicitud);
 router.delete('/solicitud/:tipo/:id', sessionGuard, controladorSolicitudes.cancelarSolicitud);
-
+router.patch('/CuentaUpdate', sessionGuard, CambioDatos);
 // ==================== RUTAS DE ADMINISTRADOR ====================
 
 // Crear materiales

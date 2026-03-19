@@ -279,7 +279,43 @@ async function revocarSesionesSupabase(accessToken) {
     return { success: false, error: 'Error interno' };
   }
 }
-//===================Obtener solicitudes de un usuario=================== 
+//Cambio de contraseña y recuperación de contraseña 
+async function CambiarContraseña(correo) {
+  const supabase = getClient();
+  try {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(correo, {
+      options: {
+        emailRedirectTo: "https://viewedrapier708.github.io/C-book-Proyecto/PantallaParaRecuperarContraseña.html"
+      }
+    });
+
+    if (error) {
+      console.error('Error enviando correo de recuperación:', error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, data };
+  } catch (err) {
+    console.error('Error en CambiarContraseña:', err);
+    return { success: false, error: 'Error interno' };
+  }
+}
+async function CambioCorreo(nuevoCorreo) {
+  const supabase=getClient();
+  try {
+    const { data, error } = await supabase.auth.updateUser({
+      email: nuevoCorreo
+    });
+    if (error) {
+      console.error('Error cambiando correo:', error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error en CambioCorreo:', error);
+    return { success: false, error: 'Error interno' };
+  }
+}
+
 
 
 module.exports = { 
@@ -292,5 +328,7 @@ module.exports = {
   loginConAuth,
   traerUsuarioInfo,
   refrescarSesionSupabase,
-  revocarSesionesSupabase
+  revocarSesionesSupabase,
+  CambiarContraseña,
+  CambioCorreo
 };

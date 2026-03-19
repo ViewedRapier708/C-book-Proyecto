@@ -7,7 +7,9 @@ const {
   buscarCorreoPorBoleta,
   loginConAuth,
   traerUsuarioInfo,
-  revocarSesionesSupabase
+  revocarSesionesSupabase,
+  CambiarContraseña,
+  CambioCorreo
 } = require('../models/ModeloUsuario.js');
 
 const SESSION_SAFETY_WINDOW_MS = Number(process.env.SESSION_REFRESH_THRESHOLD_MS) || 60000; // 1 min por defecto
@@ -271,11 +273,39 @@ function destroySession(req, res) {
   });
 }
 
-
-
+//Modificacion de datos del usuario (correo y contraseña)
+async function CambioDatos(req , res) {
+    const { boleta, nuevoCorreo, nuevaContraseña,TipoDatoACambiar } = req.body;
+    if (!boleta || (!nuevoCorreo && !nuevaContraseña)) {
+      return res.status(400).json({ error: 'Faltan datos para actualizar' });
+    }
+    switch (TipoDatoACambiar) {
+      case 'correo':
+        if (!boleta || !nuevoCorreo) {
+          return res.status(400).json({ error: 'Faltan datos para actualizar correo' });
+        } 
+        const resultadoCorreo = await CambioCorreo(boleta, nuevoCorreo);
+        if (!resultadoCorreo.success) {
+          return res.status(400).json({ error: resultadoCorreo.error || 'Error al cambiar correo' });
+        }
+        return res.status(200).json({ success: true, message: 'Correo actualizado exitosamente' });
+      case 'contraseña':
+        if (!boleta || !nuevaContraseña) {
+          return res.status(400).json({ error: 'Faltan datos para actualizar contraseña' });
+        }
+        const resultadoContraseña = await CambiarContraseña(boleta, nuevaContraseña);
+        if (!resultadoContraseña.success) {
+          return res.status(400).json({ error: resultadoContraseña.error || 'Error al cambiar contraseña' });
+        } 
+        return res.status(200).json({ success: true, message: 'Contraseña actualizada exitosamente' });
+      default:
+        return res.status(400).json({ error: 'Tipo de dato a cambiar no válido' });
+    }
+    
+}
 
 
 
 //=======================Eliminacion de la cuenta
 
-module.exports = { registro, verificarCorreo, login, cerrarSesion ,verificarSesion};
+module.exports = { registro, verificarCorreo, login, cerrarSesion ,verificarSesion,CambioDatos };
