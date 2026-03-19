@@ -18,16 +18,16 @@ import StatCard from '../../components/ui/StatCard';
 import { SkeletonGrid } from '../../components/ui/Skeleton';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 
-const COLORS = ['#6366f1', '#0ea5e9', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
+const COLORS = ['#1f8a70', '#0ea5e9', '#1f9d74', '#d97706', '#d4654a', '#c46f21'];
 
 const quickLinks = [
-  { icon: BookOpen, label: 'Libros', to: '/admin/libros', color: '#6366f1' },
+  { icon: BookOpen, label: 'Libros', to: '/admin/libros', color: '#1f8a70' },
   { icon: Monitor, label: 'Computadoras', to: '/admin/computadoras', color: '#0ea5e9' },
-  { icon: PenTool, label: 'Restiradores', to: '/admin/restiradores', color: '#10b981' },
-  { icon: Users, label: 'Usuarios', to: '/admin/usuarios', color: '#8b5cf6' },
-  { icon: FileText, label: 'Documentos', to: '/admin/documentos', color: '#f59e0b' },
-  { icon: ClipboardList, label: 'Solicitudes', to: '/admin/solicitudes-libros', color: '#ec4899' },
-  { icon: BookCheck, label: 'Préstamos', to: '/admin/prestamos-libros', color: '#14b8a6' },
+  { icon: PenTool, label: 'Restiradores', to: '/admin/restiradores', color: '#1f9d74' },
+  { icon: Users, label: 'Usuarios', to: '/admin/usuarios', color: '#c46f21' },
+  { icon: FileText, label: 'Documentos', to: '/admin/documentos', color: '#d97706' },
+  { icon: ClipboardList, label: 'Solicitudes', to: '/admin/solicitudes-libros', color: '#d4654a' },
+  { icon: BookCheck, label: 'Préstamos', to: '/admin/prestamos-libros', color: '#176d5a' },
 ];
 
 export default function AdminHome() {
@@ -61,12 +61,12 @@ export default function AdminHome() {
   ].filter(d => d.value > 0) : [];
 
   const statCards = stats ? [
-    { icon: Users, label: 'Usuarios', value: stats.totales?.usuarios || 0, color: '#8b5cf6' },
-    { icon: BookOpen, label: 'Libros', value: stats.totales?.libros || 0, subtitle: `${stats.disponibilidad?.libros?.disponibles || 0} disponibles`, color: '#6366f1' },
+    { icon: Users, label: 'Usuarios', value: stats.totales?.usuarios || 0, color: '#c46f21' },
+    { icon: BookOpen, label: 'Libros', value: stats.totales?.libros || 0, subtitle: `${stats.disponibilidad?.libros?.disponibles || 0} disponibles`, color: '#1f8a70' },
     { icon: Monitor, label: 'Computadoras', value: stats.totales?.computadoras || 0, subtitle: `${stats.disponibilidad?.computadoras?.disponibles || 0} disponibles`, color: '#0ea5e9' },
-    { icon: PenTool, label: 'Restiradores', value: stats.totales?.restiradores || 0, subtitle: `${stats.disponibilidad?.restiradores?.disponibles || 0} disponibles`, color: '#10b981' },
-    { icon: ClipboardList, label: 'Solicitudes Pendientes', value: stats.solicitudesPorEstado?.pendientes || 0, color: '#f59e0b' },
-    { icon: BookCheck, label: 'Préstamos Activos', value: stats.totales?.prestamosActivos || 0, color: '#ec4899' },
+    { icon: PenTool, label: 'Restiradores', value: stats.totales?.restiradores || 0, subtitle: `${stats.disponibilidad?.restiradores?.disponibles || 0} disponibles`, color: '#1f9d74' },
+    { icon: ClipboardList, label: 'Solicitudes Pendientes', value: stats.solicitudesPorEstado?.pendientes || 0, color: '#d97706' },
+    { icon: BookCheck, label: 'Préstamos Activos', value: stats.totales?.prestamosActivos || 0, color: '#d4654a' },
   ] : [];
 
   return (
@@ -106,8 +106,8 @@ export default function AdminHome() {
                 <AreaChart data={trends}>
                   <defs>
                     <linearGradient id="colorSol" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#1f8a70" stopOpacity={0.28} />
+                      <stop offset="95%" stopColor="#1f8a70" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="fecha" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickLine={false} axisLine={false} />
@@ -116,7 +116,7 @@ export default function AdminHome() {
                     contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '0.8rem' }}
                     labelStyle={{ color: 'var(--text-primary)' }}
                   />
-                  <Area type="monotone" dataKey="total" stroke="#6366f1" strokeWidth={2} fill="url(#colorSol)" />
+                  <Area type="monotone" dataKey="total" stroke="#1f8a70" strokeWidth={2} fill="url(#colorSol)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>

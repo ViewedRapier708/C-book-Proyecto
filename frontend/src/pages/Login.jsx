@@ -81,8 +81,10 @@ export default function Login() {
   return (
     <div className="auth-page">
       <div className="auth-left">
-        <h1>C-Book</h1>
-        <p>Plataforma digital creada para facilitar el acceso a recursos educativos. Solicita computadoras, libros y restiradores de forma rápida.</p>
+        <div className="auth-hero">
+          <h1>C-Book</h1>
+          <p>Plataforma digital creada para facilitar el acceso a recursos educativos. Solicita computadoras, libros y restiradores de forma rápida.</p>
+        </div>
       </div>
       <div className="auth-right">
         <div className="auth-form">

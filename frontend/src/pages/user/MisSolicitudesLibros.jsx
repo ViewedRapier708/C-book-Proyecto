@@ -13,7 +13,7 @@ const ESTADO_MAP = {
   3: { label: 'Rechazada', badge: 'badge-danger', icon: XCircle, accent: '#ef4444' },
   4: { label: 'Cancelada', badge: 'badge-danger', icon: XCircle, accent: '#ef4444' },
   5: { label: 'Entregado', badge: 'badge-success', icon: BookOpen, accent: '#22c55e' },
-  6: { label: 'Devuelto', badge: 'badge-neutral', icon: BookCheck, accent: '#8b5cf6' },
+  6: { label: 'Devuelto', badge: 'badge-neutral', icon: BookCheck, accent: '#c46f21' },
 };
 
 function getEstado(id) {

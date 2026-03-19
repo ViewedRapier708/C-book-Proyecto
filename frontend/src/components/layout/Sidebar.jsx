@@ -58,7 +58,7 @@ export default function Sidebar({ open, onClose }) {
       <aside className={`fixed top-0 left-0 bottom-0 w-[260px] bg-[var(--bg-sidebar)] backdrop-blur-xl border-r border-[var(--border-color)] flex flex-col z-[100] transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-y-auto md:translate-x-0 ${open ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}`}>
         {/* Brand */}
         <div className="px-5 pt-6 pb-4 border-b border-[var(--border-color)]">
-          <h2 className="text-xl font-bold bg-gradient-to-r from-primary-500 via-purple-500 to-accent-500 bg-clip-text text-transparent">
+          <h2 className="text-xl font-bold text-[var(--accent-primary)]">
             📚 C-Book
           </h2>
           <small className="text-[0.7rem] text-[var(--text-muted)] uppercase tracking-widest mt-1 block">
@@ -81,7 +81,7 @@ export default function Sidebar({ open, onClose }) {
                 className={({ isActive }) =>
                   `flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 relative overflow-hidden ${
                     isActive
-                      ? 'bg-gradient-to-r from-primary-500 to-purple-500 text-white shadow-lg shadow-primary-500/25'
+                      ? 'bg-[var(--button-primary-bg)] text-white shadow-lg shadow-black/10'
                       : 'text-[var(--text-secondary)] hover:bg-[var(--bg-glass-strong)] hover:text-[var(--text-primary)]'
                   }`
                 }
@@ -97,7 +97,7 @@ export default function Sidebar({ open, onClose }) {
         {/* Footer */}
         <div className="p-5 border-t border-[var(--border-color)]">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-xs font-bold text-white shrink-0">
+            <div className="w-9 h-9 rounded-full bg-[image:var(--gradient-primary)] flex items-center justify-center text-xs font-bold text-white shrink-0">
               {user?.boleta?.slice(0, 2) || '??'}
             </div>
             <div className="overflow-hidden">
@@ -106,7 +106,7 @@ export default function Sidebar({ open, onClose }) {
             </div>
           </div>
           <button
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/20 text-white/80 hover:text-white hover:bg-white/10 transition-all text-sm font-medium"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--button-ghost-hover)] transition-all text-sm font-medium"
             onClick={handleLogout}
           >
             <LogOut size={16} /> Cerrar Sesión

@@ -15,7 +15,7 @@ import StatCard from '../../components/ui/StatCard';
 import { SkeletonGrid } from '../../components/ui/Skeleton';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 
-const COLORS = ['#6366f1', '#0ea5e9', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#14b8a6'];
+const COLORS = ['#1f8a70', '#0ea5e9', '#1f9d74', '#d97706', '#d4654a', '#c46f21', '#176d5a'];
 
 const tooltipStyle = {
   background: 'var(--bg-card)',
@@ -68,12 +68,12 @@ export default function Analytics() {
   ] : [];
 
   const statCards = stats ? [
-    { icon: Users, label: 'Total Usuarios', value: totales.usuarios || 0, color: '#8b5cf6' },
-    { icon: BookOpen, label: 'Total Libros', value: totales.libros || 0, color: '#6366f1' },
+    { icon: Users, label: 'Total Usuarios', value: totales.usuarios || 0, color: '#c46f21' },
+    { icon: BookOpen, label: 'Total Libros', value: totales.libros || 0, color: '#1f8a70' },
     { icon: Monitor, label: 'Total Computadoras', value: totales.computadoras || 0, color: '#0ea5e9' },
-    { icon: PenTool, label: 'Total Restiradores', value: totales.restiradores || 0, color: '#10b981' },
-    { icon: Activity, label: 'Total Solicitudes', value: totales.solicitudes || 0, color: '#f59e0b' },
-    { icon: BarChart3, label: 'Préstamos Activos', value: totales.prestamosActivos || 0, color: '#ec4899' },
+    { icon: PenTool, label: 'Total Restiradores', value: totales.restiradores || 0, color: '#1f9d74' },
+    { icon: Activity, label: 'Total Solicitudes', value: totales.solicitudes || 0, color: '#d97706' },
+    { icon: BarChart3, label: 'Préstamos Activos', value: totales.prestamosActivos || 0, color: '#d4654a' },
   ] : [];
 
   return (
@@ -163,15 +163,15 @@ export default function Analytics() {
                     <AreaChart data={trends}>
                       <defs>
                         <linearGradient id="gradTrend" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#6366f1" stopOpacity={0.35} />
-                          <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#1f8a70" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#1f8a70" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                       <XAxis dataKey="fecha" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickLine={false} />
                       <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickLine={false} />
                       <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: 'var(--text-primary)' }} />
-                      <Area type="monotone" dataKey="total" stroke="#6366f1" strokeWidth={2.5} fill="url(#gradTrend)" />
+                      <Area type="monotone" dataKey="total" stroke="#1f8a70" strokeWidth={2.5} fill="url(#gradTrend)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 ) : <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '3rem' }}>Sin datos de tendencias</p>}

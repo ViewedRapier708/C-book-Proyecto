@@ -48,7 +48,7 @@ function getTipoLabel(s) {
 
 export default function UserProfile() {
   const { user } = useAuth();
-  const { theme, toggle } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const [solicitudes, setSolicitudes] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -79,7 +79,7 @@ export default function UserProfile() {
           <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
             <div style={{
               width: 80, height: 80, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+              background: 'var(--gradient-primary)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 1rem', fontSize: '2rem', color: '#fff', fontWeight: 700
             }}>
@@ -118,14 +118,14 @@ export default function UserProfile() {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '0.75rem', borderRadius: 'var(--radius-sm)', background: 'var(--bg-hover)', cursor: 'pointer'
             }}
-            onClick={toggle}
+            onClick={toggleTheme}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
               {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
               Tema {theme === 'dark' ? 'Oscuro' : 'Claro'}
             </div>
             <div style={{
-              width: 40, height: 22, borderRadius: 999, background: theme === 'dark' ? '#6366f1' : '#cbd5e1',
+              width: 40, height: 22, borderRadius: 999, background: theme === 'dark' ? 'var(--button-primary-bg)' : 'var(--bg-glass-strong)',
               position: 'relative', transition: 'background 0.2s'
             }}>
               <motion.div
@@ -144,10 +144,10 @@ export default function UserProfile() {
         <div>
           {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0.75rem', marginBottom: '1.5rem' }}>
-            <StatCard icon={Activity} label="Total Solicitudes" value={solicitudes.length} color="#6366f1" delay={0} />
+            <StatCard icon={Activity} label="Total Solicitudes" value={solicitudes.length} color="#1f8a70" delay={0} />
             <StatCard icon={Monitor} label="Computadoras" value={countByType('computadora')} color="#0ea5e9" delay={0.08} />
-            <StatCard icon={BookOpen} label="Libros" value={countByType('libro')} color="#8b5cf6" delay={0.16} />
-            <StatCard icon={PenTool} label="Restiradores" value={countByType('restirador')} color="#10b981" delay={0.24} />
+            <StatCard icon={BookOpen} label="Libros" value={countByType('libro')} color="#c46f21" delay={0.16} />
+            <StatCard icon={PenTool} label="Restiradores" value={countByType('restirador')} color="#1f9d74" delay={0.24} />
           </div>
 
           {/* Status Breakdown */}

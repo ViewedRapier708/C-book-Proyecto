@@ -63,9 +63,9 @@ export default function UserHome() {
 
   const services = [
     { icon: Monitor, label: 'Computadoras', desc: 'Solicita una computadora disponible', to: '/user/computadoras', color: '#0ea5e9' },
-    { icon: BookOpen, label: 'Libros', desc: 'Busca y solicita libros del acervo', to: '/user/libros', color: '#6366f1' },
-    { icon: PenTool, label: 'Restiradores', desc: 'Reserva un restirador de trabajo', to: '/user/restiradores', color: '#10b981' },
-    { icon: Package, label: 'Mis Solicitudes', desc: 'Revisa el estado de tus solicitudes', to: '/user/mis-solicitudes', color: '#f59e0b' },
+    { icon: BookOpen, label: 'Libros', desc: 'Busca y solicita libros del acervo', to: '/user/libros', color: '#1f8a70' },
+    { icon: PenTool, label: 'Restiradores', desc: 'Reserva un restirador de trabajo', to: '/user/restiradores', color: '#1f9d74' },
+    { icon: Package, label: 'Mis Solicitudes', desc: 'Revisa el estado de tus solicitudes', to: '/user/mis-solicitudes', color: '#d97706' },
   ];
 
   return (
@@ -77,9 +77,9 @@ export default function UserHome() {
 
       {/* Quick Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-        <StatCard icon={Activity} label="Total Solicitudes" value={solicitudes.length} color="#6366f1" delay={0} />
-        <StatCard icon={Clock} label="Pendientes" value={pendientes} color="#f59e0b" delay={0.08} />
-        <StatCard icon={Package} label="Activas" value={activas} color="#10b981" delay={0.16} />
+        <StatCard icon={Activity} label="Total Solicitudes" value={solicitudes.length} color="#1f8a70" delay={0} />
+        <StatCard icon={Clock} label="Pendientes" value={pendientes} color="#d97706" delay={0.08} />
+        <StatCard icon={Package} label="Activas" value={activas} color="#1f9d74" delay={0.16} />
       </div>
 
       {/* Services */}

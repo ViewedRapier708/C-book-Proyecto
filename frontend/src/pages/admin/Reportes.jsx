@@ -13,11 +13,11 @@ import { Spinner } from '../../components/ui/Feedback';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 
 const reportTypes = [
-  { id: 'usuarios', label: 'Usuarios', icon: Users, color: '#8b5cf6' },
-  { id: 'libros', label: 'Libros', icon: BookOpen, color: '#6366f1' },
+  { id: 'usuarios', label: 'Usuarios', icon: Users, color: '#c46f21' },
+  { id: 'libros', label: 'Libros', icon: BookOpen, color: '#1f8a70' },
   { id: 'computadoras', label: 'Computadoras', icon: Monitor, color: '#0ea5e9' },
-  { id: 'restiradores', label: 'Restiradores', icon: PenTool, color: '#10b981' },
-  { id: 'completo', label: 'Reporte Completo', icon: FileBarChart, color: '#f59e0b' },
+  { id: 'restiradores', label: 'Restiradores', icon: PenTool, color: '#1f9d74' },
+  { id: 'completo', label: 'Reporte Completo', icon: FileBarChart, color: '#d97706' },
 ];
 
 const columnMap = {
@@ -272,10 +272,10 @@ export default function Reportes() {
           <h4 style={{ margin: '0 0 1rem' }}>Resumen del Reporte Completo</h4>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem' }}>
             {[
-              { label: 'Usuarios', count: (data.usuarios || []).length, color: '#8b5cf6' },
-              { label: 'Libros', count: (data.libros || []).length, color: '#6366f1' },
+              { label: 'Usuarios', count: (data.usuarios || []).length, color: '#c46f21' },
+              { label: 'Libros', count: (data.libros || []).length, color: '#1f8a70' },
               { label: 'Computadoras', count: (data.computadoras || []).length, color: '#0ea5e9' },
-              { label: 'Restiradores', count: (data.restiradores || []).length, color: '#10b981' },
+              { label: 'Restiradores', count: (data.restiradores || []).length, color: '#1f9d74' },
             ].map(item => (
               <div key={item.label} style={{ textAlign: 'center', padding: '1rem', borderRadius: 'var(--radius)', background: item.color + '10' }}>
                 <div style={{ fontSize: '1.8rem', fontWeight: 700, color: item.color }}>{item.count}</div>

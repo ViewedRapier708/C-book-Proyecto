@@ -15,7 +15,7 @@ export default function DashboardLayout() {
     <div className="flex min-h-screen">
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-[var(--bg-sidebar)] backdrop-blur-xl border-b border-[var(--border-color)] z-[98] px-4 flex items-center justify-between">
-        <h2 className="text-lg font-bold bg-gradient-to-r from-primary-500 via-purple-500 to-accent-500 bg-clip-text text-transparent">
+        <h2 className="text-lg font-bold text-[var(--accent-primary)]">
           📚 C-Book
         </h2>
         <div className="flex items-center gap-2">
