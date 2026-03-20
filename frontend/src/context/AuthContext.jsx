@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authApi } from '../api/auth';
+import { AUTH_UNAUTHORIZED_EVENT } from '../api/client';
 
 const AuthContext = createContext(null);
 
@@ -25,6 +26,16 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     checkSession();
   }, [checkSession]);
+
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      setUser(null);
+      setLoading(false);
+    };
+
+    window.addEventListener(AUTH_UNAUTHORIZED_EVENT, handleUnauthorized);
+    return () => window.removeEventListener(AUTH_UNAUTHORIZED_EVENT, handleUnauthorized);
+  }, []);
 
   const login = async (boleta, password) => {
     const data = await authApi.login(boleta, password);

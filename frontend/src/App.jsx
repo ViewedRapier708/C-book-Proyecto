@@ -21,6 +21,9 @@ const SolicitudRestiradores = lazy(() => import('./pages/user/SolicitudRestirado
 const MisSolicitudes       = lazy(() => import('./pages/user/MisSolicitudes'));
 const MisSolicitudesLibros = lazy(() => import('./pages/user/MisSolicitudesLibros'));
 const UserProfile          = lazy(() => import('./pages/user/UserProfile'));
+const EditarPerfil         = lazy(() => import('./pages/user/EditarPerfil'));
+const CambiarCorreo        = lazy(() => import('./pages/user/CambiarCorreo'));
+const ModificarCuenta      = lazy(() => import('./pages/user/ModificarCuenta'));
 
 // Admin
 const AdminHome       = lazy(() => import('./pages/admin/AdminHome'));
@@ -71,6 +74,9 @@ export default function App() {
             <Route path="mis-solicitudes" element={<MisSolicitudes />} />
             <Route path="mis-solicitudes-libros" element={<MisSolicitudesLibros />} />
             <Route path="perfil" element={<UserProfile />} />
+            <Route path="perfil/editar" element={<EditarPerfil />} />
+            <Route path="cambiar-correo" element={<CambiarCorreo />} />
+            <Route path="cuenta" element={<ModificarCuenta />} />
           </Route>
 
           {/* Admin */}

@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, BookOpen, Monitor, PenTool, Users,
   FileText, ClipboardList, LogOut, BookCheck, Package,
-  BarChart3, FileBarChart, UserCircle
+  BarChart3, FileBarChart, UserCircle, Settings, Mail
 } from 'lucide-react';
 
 const adminLinks = [
@@ -34,6 +34,8 @@ const userLinks = [
   { to: '/user/mis-solicitudes-libros', icon: BookOpen, label: 'Solicitudes Libros' },
   { section: 'Cuenta' },
   { to: '/user/perfil', icon: UserCircle, label: 'Mi Perfil' },
+  { to: '/user/cambiar-correo', icon: Mail, label: 'Cambiar Correo' },
+  { to: '/user/cuenta', icon: Settings, label: 'Modificar Cuenta' },
 ];
 
 export default function Sidebar({ open, onClose }) {

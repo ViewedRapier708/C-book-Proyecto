@@ -1,4 +1,5 @@
 const API_BASE = import.meta.env.VITE_API_URL || '';
+export const AUTH_UNAUTHORIZED_EVENT = 'auth:unauthorized';
 
 async function request(endpoint, options = {}) {
   const url = `${API_BASE}/auth${endpoint}`;
@@ -11,8 +12,7 @@ async function request(endpoint, options = {}) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     if (res.status === 401 && !endpoint.startsWith('/login')) {
-      window.location.replace('/');
-      return;
+      window.dispatchEvent(new CustomEvent(AUTH_UNAUTHORIZED_EVENT));
     }
     const msg = data.error || data.message || `Error ${res.status}`;
     const err = new Error(msg);
@@ -27,5 +27,6 @@ export const api = {
   get: (endpoint) => request(endpoint, { method: 'GET' }),
   post: (endpoint, body) => request(endpoint, { method: 'POST', body: JSON.stringify(body) }),
   put: (endpoint, body) => request(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
+  patch: (endpoint, body) => request(endpoint, { method: 'PATCH', body: JSON.stringify(body) }),
   delete: (endpoint) => request(endpoint, { method: 'DELETE' }),
 };

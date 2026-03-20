@@ -9,6 +9,14 @@ const authRoutes = require('./src/routes/Rutas.js');
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const isProduction = NODE_ENV === 'production';
 const sessionSecret = process.env.SESSION_SECRET || 'dev_session_secret_change_me';
+const rawSameSite = (process.env.SESSION_COOKIE_SAME_SITE || 'lax').toLowerCase();
+const configuredSameSite = ['lax', 'strict', 'none'].includes(rawSameSite) ? rawSameSite : 'lax';
+const configuredSecure = process.env.SESSION_COOKIE_SECURE
+  ? process.env.SESSION_COOKIE_SECURE === 'true'
+  : isProduction;
+
+// If SameSite=None is used, Secure must be enabled by browsers.
+const cookieSecure = configuredSameSite === 'none' ? true : configuredSecure;
 
 if (isProduction) {
   // Necesario para cookies secure detrás de proxy (Vercel)
@@ -65,6 +73,10 @@ function buildSessionStore() {
     });
   }
 
+  if (isProduction) {
+    console.warn('[session] DATABASE_URL no esta configurada. En entornos serverless la sesion en memoria puede perderse entre peticiones.');
+  }
+
   const MemoryStore = session.MemoryStore;
   return new MemoryStore();
 }
@@ -79,8 +91,8 @@ app.use(session({
   store: sessionStore,
   cookie: {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: 'lax',
+    secure: cookieSecure,
+    sameSite: configuredSameSite,
     maxAge: 1000 * 60 * 60 * 2 // 2h por defecto
   }
 }));

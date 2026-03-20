@@ -10,4 +10,10 @@ export const authApi = {
   forgotPassword: (boleta) => api.post('/forgot-password', { boleta }),
   resetPassword: (access_token, newPassword, confPassword) =>
     api.post('/reset-password', { access_token, newPassword, confPassword }),
+  updateAccount: (boleta, TipoDatoACambiar, value) =>
+    api.patch('/CuentaUpdate', {
+      boleta,
+      TipoDatoACambiar,
+      ...(TipoDatoACambiar === 'correo' ? { nuevoCorreo: value } : { nuevaContraseña: value }),
+    }),
 };

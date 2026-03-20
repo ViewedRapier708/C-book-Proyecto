@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   UserCircle, Mail, Hash, Shield, Sun, Moon,
-  Calendar, Activity, BookOpen, Monitor, PenTool
+  Activity, BookOpen, Monitor, PenTool, Edit2, Key, ChevronRight
 } from 'lucide-react';
 import { solicitudesApi } from '../../api/recursos';
 import AnimatedPage from '../../components/layout/AnimatedPage';
@@ -49,6 +50,7 @@ function getTipoLabel(s) {
 export default function UserProfile() {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const [solicitudes, setSolicitudes] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -111,8 +113,39 @@ export default function UserProfile() {
 
           <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '1.25rem 0' }} />
 
+          {/* Quick actions */}
+          <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Acciones</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '1rem' }}>
+            {[
+              { icon: Edit2, label: 'Editar perfil', to: '/user/perfil/editar' },
+              { icon: Mail, label: 'Cambiar correo', to: '/user/cambiar-correo' },
+              { icon: Key, label: 'Modificar cuenta', to: '/user/cuenta' },
+            ].map(({ icon: Icon, label, to }) => (
+              <button
+                key={to}
+                onClick={() => navigate(to)}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '0.6rem 0.75rem', borderRadius: 'var(--radius-sm)',
+                  background: 'var(--bg-glass)', border: '1px solid var(--border)',
+                  color: 'var(--text-secondary)', cursor: 'pointer', transition: 'all 0.2s',
+                  fontSize: '0.83rem',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-glass-strong)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-glass)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Icon size={14} /> {label}
+                </span>
+                <ChevronRight size={13} style={{ color: 'var(--text-muted)' }} />
+              </button>
+            ))}
+          </div>
+
+          <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '0 0 1rem' }} />
+
           {/* Preferences */}
-          <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.9rem' }}>Preferencias</h4>
+          <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Preferencias</h4>
           <div
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
