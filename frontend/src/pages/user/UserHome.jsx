@@ -1,19 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { BookOpen, Monitor, PenTool, Package, Activity, Clock, ArrowRight } from 'lucide-react';
+import { BookOpen, Monitor, PenTool, Package, Activity, ArrowRight, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { solicitudesApi } from '../../api/recursos';
 import StatCard from '../../components/ui/StatCard';
 import AnimatedPage from '../../components/layout/AnimatedPage';
+import { Spinner } from '../../components/ui/Feedback';
 
 const ESTADO_ASISTENCIA = {
   1: 'pendiente',
-  2: 'asistió',
+  2: 'asistio',
   3: 'cancelada',
-  4: 'no asistió',
+  4: 'no_asistio',
 };
 
 const ESTADO_SOLICITUD = {
@@ -24,19 +25,66 @@ const ESTADO_SOLICITUD = {
   5: 'entregado',
 };
 
+const ESTADO_PRESTAMO = {
+  1: 'en_espera_recoleccion',
+  2: 'recogido',
+  3: 'devuelto',
+  4: 'perdido',
+};
+
 const TIPO_MAP = {
   computadora: 'Computadora',
   restirador: 'Restirador',
   libro: 'Libro',
 };
 
+function getTipoSolicitud(s) {
+  if (s.tipo_solicitud) return s.tipo_solicitud.toLowerCase();
+  if (s.ejemplar_id) return 'libro';
+  if (s.computadora_id) return 'computadora';
+  if (s.restirador_id) return 'restirador';
+  return 'desconocido';
+}
+
 function getEstadoStr(s) {
-  const map = s.tipo_solicitud === 'libro' ? ESTADO_SOLICITUD : ESTADO_ASISTENCIA;
-  return map[s.estado_asistencia_id] || 'pendiente';
+  const tipo = getTipoSolicitud(s);
+
+  // Para libros
+  if (tipo === 'libro') {
+    // Primero verificar estado de préstamo si existe
+    if (s.estado_prestamo_id) {
+      return ESTADO_PRESTAMO[s.estado_prestamo_id] || 'sin_estado';
+    }
+    // Luego estado de solicitud (puede venir como estado_solicitud_id o estado_asistencia_id)
+    const estadoSolicitud = s.estado_solicitud_id ?? s.estado_asistencia_id;
+    if (estadoSolicitud) {
+      return ESTADO_SOLICITUD[estadoSolicitud] || 'sin_estado';
+    }
+    return 'sin_estado';
+  }
+
+  // Para computadoras y restiradores
+  if (s.estado_asistencia_id) {
+    return ESTADO_ASISTENCIA[s.estado_asistencia_id] || 'sin_estado';
+  }
+  return 'sin_estado';
+}
+
+// Solicitud activa = está en uso actualmente
+function isActiva(s) {
+  const estado = getEstadoStr(s);
+  // Activa = usando computadora/restirador (asistio) o tiene libro (aprobada, entregado, en_espera_recoleccion, recogido)
+  return ['asistio', 'aprobada', 'entregado', 'en_espera_recoleccion', 'recogido'].includes(estado);
+}
+
+// Solicitud pendiente = esperando respuesta/acción
+function isPendiente(s) {
+  const estado = getEstadoStr(s);
+  return estado === 'pendiente';
 }
 
 function getTipoLabel(s) {
-  const tipo = (s.tipo_solicitud || s.tipo_recurso || '').toLowerCase();
+  const tipo = getTipoSolicitud(s);
   return TIPO_MAP[tipo] || tipo || 'Solicitud';
 }
 
@@ -45,20 +93,45 @@ export default function UserHome() {
   const navigate = useNavigate();
   const [solicitudes, setSolicitudes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await solicitudesApi.getUserSolicitudes();
-        setSolicitudes(res.data || []);
-      } catch { /* ignore */ }
-      finally { setLoading(false); }
-    };
-    load();
+  const loadSolicitudes = useCallback(async (showRefresh = false) => {
+    if (showRefresh) setRefreshing(true);
+    try {
+      const res = await solicitudesApi.getUserSolicitudes();
+      setSolicitudes(res.data || []);
+    } catch { /* ignore */ }
+    finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
 
-  const pendientes = solicitudes.filter(s => getEstadoStr(s) === 'pendiente').length;
-  const activas = solicitudes.filter(s => ['aprobada', 'asistió', 'entregado'].includes(getEstadoStr(s))).length;
+  useEffect(() => {
+    loadSolicitudes();
+
+    // Polling cada 15 segundos para mantener datos actualizados en tiempo real
+    const interval = setInterval(() => loadSolicitudes(), 15000);
+
+    // Refrescar cuando la pestaña vuelve a tener foco
+    const handleFocus = () => loadSolicitudes();
+    window.addEventListener('focus', handleFocus);
+
+    // Refrescar cuando el usuario vuelve de otra página
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadSolicitudes();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [loadSolicitudes]);
+
   const recientes = solicitudes.slice(0, 5);
 
   const services = [
@@ -70,17 +143,30 @@ export default function UserHome() {
 
   return (
     <AnimatedPage>
-      <div className="page-header">
-        <h1>¡Bienvenido, {user?.boleta}!</h1>
-        <p>¿Qué vamos a hacer hoy?</p>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1>¡Bienvenido, {user?.boleta}!</h1>
+          <p>¿Qué vamos a hacer hoy?</p>
+        </div>
+        <button
+          className="btn btn-outline"
+          onClick={() => loadSolicitudes(true)}
+          disabled={refreshing || loading}
+          title="Actualizar datos"
+        >
+          <RefreshCw size={16} className={refreshing ? 'spin' : ''} />
+          {refreshing ? 'Actualizando...' : 'Actualizar'}
+        </button>
       </div>
 
       {/* Quick Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-        <StatCard icon={Activity} label="Total Solicitudes" value={solicitudes.length} color="#1f8a70" delay={0} />
-        <StatCard icon={Clock} label="Pendientes" value={pendientes} color="#d97706" delay={0.08} />
-        <StatCard icon={Package} label="Activas" value={activas} color="#1f9d74" delay={0.16} />
-      </div>
+      {loading && solicitudes.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '2rem' }}><Spinner /></div>
+      ) : (
+        <>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+            <StatCard icon={Activity} label="Total Solicitudes" value={solicitudes.length} color="#1f8a70" delay={0} />
+          </div>
 
       {/* Services */}
       <h3 style={{ marginBottom: '0.75rem' }}>Servicios Disponibles</h3>
@@ -139,6 +225,8 @@ export default function UserHome() {
           </div>
         )}
       </motion.div>
+        </>
+      )}
     </AnimatedPage>
   );
 }

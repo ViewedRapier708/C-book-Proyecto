@@ -4,8 +4,17 @@ import { Spinner, EmptyState } from '../../components/ui/Feedback';
 import Pagination from '../../components/ui/Pagination';
 import Modal from '../../components/ui/Modal';
 import toast from 'react-hot-toast';
-import { Search, RotateCcw } from 'lucide-react';
+import { Search, RotateCcw, AlertTriangle } from 'lucide-react';
 import AnimatedPage from '../../components/layout/AnimatedPage';
+
+// Estados de préstamo según la base de datos
+const ESTADO_PRESTAMO_MAP = {
+  1: { label: 'En espera de recolección', badge: 'badge-warning' },
+  2: { label: 'Recogido', badge: 'badge-info' },
+  3: { label: 'Devuelto', badge: 'badge-success' },
+  4: { label: 'Perdido', badge: 'badge-danger' },
+};
+function getEstadoPrestamo(id) { return ESTADO_PRESTAMO_MAP[id] || { label: `Estado ${id}`, badge: 'badge-neutral' }; }
 
 export default function PrestamosLibros() {
   const [items, setItems] = useState([]);
@@ -51,7 +60,12 @@ export default function PrestamosLibros() {
 
   if (loading) return <Spinner />;
 
-  const activos = items.filter((p) => p.estado_prestamo_id !== 3).length;
+  // Contadores por estado
+  const enEspera = items.filter((p) => p.estado_prestamo_id === 1).length;
+  const recogidos = items.filter((p) => p.estado_prestamo_id === 2).length;
+  const devueltos = items.filter((p) => p.estado_prestamo_id === 3).length;
+  const perdidos = items.filter((p) => p.estado_prestamo_id === 4).length;
+  const activos = enEspera + recogidos; // Préstamos activos = no devueltos ni perdidos
 
   return (
     <AnimatedPage>
@@ -62,6 +76,10 @@ export default function PrestamosLibros() {
 
       <div className="stats-grid">
         <div className="stat-card"><div className="stat-card-label">Préstamos activos</div><div className="stat-card-value" style={{ color: 'var(--primary)' }}>{activos}</div></div>
+        <div className="stat-card"><div className="stat-card-label">En espera</div><div className="stat-card-value" style={{ color: 'var(--warning)' }}>{enEspera}</div></div>
+        <div className="stat-card"><div className="stat-card-label">Recogidos</div><div className="stat-card-value" style={{ color: 'var(--secondary)' }}>{recogidos}</div></div>
+        <div className="stat-card"><div className="stat-card-label">Devueltos</div><div className="stat-card-value" style={{ color: 'var(--success)' }}>{devueltos}</div></div>
+        {perdidos > 0 && <div className="stat-card"><div className="stat-card-label">Perdidos</div><div className="stat-card-value" style={{ color: 'var(--danger)' }}>{perdidos}</div></div>}
         <div className="stat-card"><div className="stat-card-label">Total</div><div className="stat-card-value">{items.length}</div></div>
       </div>
 
@@ -77,14 +95,15 @@ export default function PrestamosLibros() {
       ) : (
         <div className="resource-grid">
           {paged.map((p) => {
-            const devuelto = p.estado_prestamo_id === 3;
+            const est = getEstadoPrestamo(p.estado_prestamo_id);
+            const puedeDevolver = p.estado_prestamo_id === 1 || p.estado_prestamo_id === 2; // En espera o recogido
             const titulo = p.solicitudes_libros?.ejemplares?.libros?.titulo;
             const boleta = p.solicitudes_libros?.usuario_boleta;
             return (
             <div key={p.id} className="resource-card">
               <div className="resource-card-title">
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '65%' }}>{titulo || `Préstamo #${p.id}`}</span>
-                <span className={`badge ${devuelto ? 'badge-success' : 'badge-info'}`}>{devuelto ? 'Devuelto' : 'Activo'}</span>
+                <span className={`badge ${est.badge}`}>{est.label}</span>
               </div>
               <div className="resource-card-body">
                 <div className="resource-card-row"><span className="resource-card-label">Boleta</span><span className="resource-card-value">{boleta || '-'}</span></div>
@@ -93,11 +112,18 @@ export default function PrestamosLibros() {
                 {p.fecha_devolucion_real && <div className="resource-card-row"><span className="resource-card-label">Fecha Devolución</span><span className="resource-card-value">{new Date(p.fecha_devolucion_real).toLocaleString('es-MX')}</span></div>}
                 {p.fecha_limite_devolucion && <div className="resource-card-row"><span className="resource-card-label">Lím. Devolución</span><span className="resource-card-value">{new Date(p.fecha_limite_devolucion).toLocaleString('es-MX')}</span></div>}
               </div>
-              {!devuelto && (
+              {puedeDevolver && (
                 <div className="resource-card-actions">
                   <button className="btn btn-primary btn-sm" style={{ flex: 1 }} onClick={() => setReturnModal(p)}>
                     <RotateCcw size={14} /> Marcar Devuelto
                   </button>
+                </div>
+              )}
+              {p.estado_prestamo_id === 4 && (
+                <div className="resource-card-actions">
+                  <span style={{ color: 'var(--danger)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <AlertTriangle size={14} /> Libro marcado como perdido
+                  </span>
                 </div>
               )}
             </div>

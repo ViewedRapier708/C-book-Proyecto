@@ -14,7 +14,12 @@ const ESTADO_MAP = {
   4: { label: 'Cancelada', badge: 'badge-danger' },
   5: { label: 'Entregado', badge: 'badge-success' },
 };
-function getEstado(id) { return ESTADO_MAP[id] || { label: `Estado ${id}`, badge: 'badge-neutral' }; }
+function getEstado(s) {
+  // Primero intentar con estado_solicitud_id (correcto para solicitudes)
+  // Si no existe, usar estado_asistencia_id como fallback
+  const id = s.estado_solicitud_id ?? s.estado_asistencia_id;
+  return ESTADO_MAP[id] || { label: `Estado ${id}`, badge: 'badge-neutral' };
+}
 
 export default function SolicitudesLibros() {
   const [items, setItems] = useState([]);
@@ -69,8 +74,8 @@ export default function SolicitudesLibros() {
 
   if (loading) return <Spinner />;
 
-  const pendientes = items.filter((s) => s.estado_asistencia_id === 1).length;
-  const aprobados = items.filter((s) => s.estado_asistencia_id === 2).length;
+  const pendientes = items.filter((s) => (s.estado_solicitud_id ?? s.estado_asistencia_id) === 1).length;
+  const aprobados = items.filter((s) => (s.estado_solicitud_id ?? s.estado_asistencia_id) === 2).length;
 
   return (
     <AnimatedPage>
@@ -97,7 +102,8 @@ export default function SolicitudesLibros() {
       ) : (
         <div className="resource-grid">
           {paged.map((s) => {
-            const est = getEstado(s.estado_asistencia_id);
+            const est = getEstado(s);
+            const estadoId = s.estado_solicitud_id ?? s.estado_asistencia_id;
             return (
               <div key={s.id} className="resource-card">
                 <div className="resource-card-title">
@@ -111,7 +117,7 @@ export default function SolicitudesLibros() {
                   {s.fecha_limite_respuesta && <div className="resource-card-row"><span className="resource-card-label">Lím. Respuesta</span><span className="resource-card-value">{new Date(s.fecha_limite_respuesta).toLocaleString('es-MX')}</span></div>}
                 </div>
                 <div className="resource-card-actions">
-                  {s.estado_asistencia_id === 1 && (
+                  {estadoId === 1 && (
                     <>
                       <button className="btn btn-success btn-sm" onClick={() => setActionModal({ item: s, action: 'aprobar' })}>
                         <CheckCircle size={14} /> Aprobar
@@ -121,7 +127,7 @@ export default function SolicitudesLibros() {
                       </button>
                     </>
                   )}
-                  {s.estado_asistencia_id === 2 && (
+                  {estadoId === 2 && (
                     <button className="btn btn-primary btn-sm" onClick={() => setActionModal({ item: s, action: 'entregar' })}>
                       <Package size={14} /> Registrar Entrega
                     </button>

@@ -53,11 +53,12 @@ export default function AltaLibros() {
   const openNew = () => { setEditing(null); setForm(EMPTY); setModalOpen(true); };
   const openEdit = (b) => {
     setEditing(b);
+    const disponibleValue = b.Disponible ?? b.disponible ?? true;
     setForm({
       titulo: b.libros?.titulo || b.titulo || '', autor: b.libros?.autor || b.autor || '', clasificacion: b.libros?.clasificacion || b.clasificacion || '',
       isbn: b.libros?.isbn || b.isbn || '', tipo_material: b.libros?.tipo_material || b.tipo_material || '', codigo_barras: b.codigo_barras || '',
       numero_ejemplar: b.numero_ejemplar || '', anio: b.anio || '', estatus_item: b.estatus_item || '',
-      disponible: b.Disponible ?? b.disponible ?? true, coleccion: b.coleccion || '',
+      disponible: Boolean(disponibleValue), coleccion: b.coleccion || '',
     });
     setModalOpen(true);
   };
@@ -171,9 +172,32 @@ export default function AltaLibros() {
             <div className="form-group"><label>Estatus Item *</label><input value={form.estatus_item} onChange={set('estatus_item')} required /></div>
             <div className="form-group"><label>Colección *</label><input value={form.coleccion} onChange={set('coleccion')} required /></div>
           </div>
-          <div className="form-group" style={{ marginTop: '0.5rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-              <input type="checkbox" checked={form.disponible} onChange={set('disponible')} /> Disponible
+          <div className="form-group" style={{ marginTop: '0.75rem' }}>
+            <label
+              style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', userSelect: 'none' }}
+              onClick={() => setForm({ ...form, disponible: !form.disponible })}
+            >
+              <div
+                style={{
+                  width: '22px',
+                  height: '22px',
+                  borderRadius: '4px',
+                  border: form.disponible ? '2px solid #22c55e' : '2px solid #ccc',
+                  backgroundColor: form.disponible ? '#22c55e' : '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  flexShrink: 0
+                }}
+              >
+                {form.disponible && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                )}
+              </div>
+              <span style={{ fontSize: '0.95rem' }}>Disponible</span>
             </label>
           </div>
         </form>
