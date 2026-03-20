@@ -27,16 +27,15 @@ const defaultOrigins = [
   'http://127.0.0.1:5173',
   'http://localhost:5500',
   'http://127.0.0.1:5500',
-  'https://viewedrapier708.github.io/C-book-Proyecto/'
+  'https://c-book-proyecto.vercel.app'
 ];
 
 const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
   ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
-  : null;
+  : defaultOrigins;
 
 app.use(cors({
-  // Si no se define CORS_ALLOWED_ORIGINS, permitir (útil para deploy donde front+api comparten origen)
-  origin: allowedOrigins || true,
+  origin: allowedOrigins,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']

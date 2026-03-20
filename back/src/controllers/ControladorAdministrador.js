@@ -68,22 +68,33 @@ async function crearLibro(req, res) {
     coleccion
 } = req.body;
 
+const tituloTrim = String(titulo ?? '').trim();
+const clasificacionTrim = String(clasificacion ?? '').trim();
+const isbnTrim = String(isbn ?? '').trim();
+const tipoMaterialTrim = String(tipo_material ?? '').trim();
+const autorTrim = String(autor ?? '').trim();
+const codigoBarrasTrim = String(codigo_barras ?? '').trim();
+const numeroEjemplarStr = String(numero_ejemplar ?? '').trim();
+const anioStr = String(anio ?? '').trim();
+const estatusItemTrim = String(estatus_item ?? '').trim();
+const coleccionTrim = String(coleccion ?? '').trim();
+
 // Validación de campos requeridos
-if (!titulo || !clasificacion || !isbn || !tipo_material || !autor) {
+if (!tituloTrim || !clasificacionTrim || !isbnTrim || !tipoMaterialTrim || !autorTrim) {
     return res.status(400).json({ 
         success: false, 
         message: 'Todos los campos son requeridos' 
     });
 }
 
-if (!numero_ejemplar || !anio || !estatus_item || !coleccion || !codigo_barras) {
+if (!numeroEjemplarStr || !anioStr || !estatusItemTrim || !coleccionTrim || !codigoBarrasTrim) {
     return res.status(400).json({
         success: false,
         message: 'Todos los campos del ejemplar son requeridos'
     });
 }
 
-const validacionNumeroEjemplar = validarEnteroSinDecimales(numero_ejemplar, 'numero_ejemplar');
+const validacionNumeroEjemplar = validarEnteroSinDecimales(numeroEjemplarStr, 'numero_ejemplar');
 if (!validacionNumeroEjemplar.ok) {
     return res.status(400).json({
         success: false,
@@ -91,7 +102,7 @@ if (!validacionNumeroEjemplar.ok) {
     });
 }
 
-const validacionAnio = validarEnteroSinDecimales(anio, 'anio');
+const validacionAnio = validarEnteroSinDecimales(anioStr, 'anio');
 if (!validacionAnio.ok) {
     return res.status(400).json({
         success: false,
@@ -134,9 +145,6 @@ const regex = {
     // Clasificación: letras, números, espacios y puntos (ej: "823.5 M123")
     clasificacion: /^[\p{L}\p{N}\s\.\-]*$/u,
     
-    // ISBN-13 o ISBN-10: formato estándar con guiones
-    isbn: /^(?:\d{3}-)?\d{1,5}-\d{1,7}-\d{1,7}-\d{1}$|^\d{9}[\dX]$/,
-    
     // Tipo de material: solo letras (incluyendo acentos) y espacios
     tipo_material: /^[\p{L}\s]+$/u,
     
@@ -154,51 +162,35 @@ const regex = {
 };
 
 // Aplicar validaciones con expresiones regulares
-if (!regex.titulo.test(titulo)) {
+if (!regex.titulo.test(tituloTrim)) {
     return res.status(400).json({
         success: false,
         message: 'El título contiene caracteres no permitidos (no se permiten emojis)'
     });
 }
 
-if (!regex.clasificacion.test(clasificacion)) {
+if (!regex.clasificacion.test(clasificacionTrim)) {
     return res.status(400).json({
         success: false,
         message: 'La clasificación solo puede contener letras, números, espacios, puntos y guiones'
     });
 }
 
-if (!regex.isbn.test(isbn)) {
-    return res.status(400).json({
-        success: false,
-        message: 'El ISBN no tiene un formato válido (ejemplo: 978-3-16-148410-0 o 0-306-40615-2)'
-    });
-}
-
-// Validación adicional para ISBN: eliminar guiones y verificar longitud
-const isbnLimpio = isbn.replace(/-/g, '');
-if (!(isbnLimpio.length === 10 || isbnLimpio.length === 13)) {
-    return res.status(400).json({
-        success: false,
-        message: 'El ISBN debe tener 10 o 13 dígitos (sin contar guiones)'
-    });
-}
-
-if (!regex.tipo_material.test(tipo_material)) {
+if (!regex.tipo_material.test(tipoMaterialTrim)) {
     return res.status(400).json({
         success: false,
         message: 'El tipo de material solo puede contener letras y espacios'
     });
 }
 
-if (!regex.autor.test(autor)) {
+if (!regex.autor.test(autorTrim)) {
     return res.status(400).json({
         success: false,
         message: 'El autor solo puede contener letras, espacios, apóstrofes, puntos y guiones'
     });
 }
 
-if (!regex.codigo_barras.test(codigo_barras)) {
+if (!regex.codigo_barras.test(codigoBarrasTrim)) {
     return res.status(400).json({
         success: false,
         message: 'El código de barras contiene caracteres no permitidos'
@@ -206,21 +198,21 @@ if (!regex.codigo_barras.test(codigo_barras)) {
 }
 
 // Validación adicional: longitud mínima para código de barras
-if (codigo_barras.length < 3) {
+if (codigoBarrasTrim.length < 3) {
     return res.status(400).json({
         success: false,
         message: 'El código de barras debe tener al menos 3 caracteres'
     });
 }
 
-if (!regex.coleccion.test(coleccion)) {
+if (!regex.coleccion.test(coleccionTrim)) {
     return res.status(400).json({
         success: false,
         message: 'La colección contiene caracteres no permitidos'
     });
 }
 
-if (!regex.estatus_item.test(estatus_item)) {
+if (!regex.estatus_item.test(estatusItemTrim)) {
     return res.status(400).json({
         success: false,
         message: 'El estatus del item contiene caracteres no permitidos'
@@ -239,7 +231,6 @@ if (Disponible !== undefined && typeof Disponible !== 'boolean') {
 const longitudes = {
     titulo: { min: 1, max: 500 },
     clasificacion: { min: 1, max: 50 },
-    isbn: { min: 10, max: 17 }, // Con guiones puede ser más largo
     tipo_material: { min: 1, max: 50 },
     autor: { min: 1, max: 200 },
     codigo_barras: { min: 3, max: 50 },
@@ -248,7 +239,8 @@ const longitudes = {
 };
 
 for (const [campo, limites] of Object.entries(longitudes)) {
-    if (req.body[campo].length < limites.min || req.body[campo].length > limites.max) {
+    const valor = String(req.body[campo] ?? '').trim();
+    if (valor.length < limites.min || valor.length > limites.max) {
         return res.status(400).json({
             success: false,
             message: `El campo ${campo} debe tener entre ${limites.min} y ${limites.max} caracteres`
@@ -263,7 +255,7 @@ for (const [campo, limites] of Object.entries(longitudes)) {
         const { data: isbnDuplicado } = await supabase
             .from('libros')
             .select('id')
-            .eq('isbn', isbn)
+            .eq('isbn', isbnTrim)
             .maybeSingle();
 
         if (isbnDuplicado) {
@@ -277,7 +269,7 @@ for (const [campo, limites] of Object.entries(longitudes)) {
         const { data: codigoBarrasDuplicado } = await supabase
             .from('ejemplares')
             .select('id')
-            .eq('codigo_barras', codigo_barras)
+            .eq('codigo_barras', codigoBarrasTrim)
             .maybeSingle();
 
         if (codigoBarrasDuplicado) {
@@ -287,7 +279,7 @@ for (const [campo, limites] of Object.entries(longitudes)) {
             });
         }
 
-        const resultadoLibro = await CrearLibro(titulo, clasificacion, isbn, tipo_material, autor);
+        const resultadoLibro = await CrearLibro(tituloTrim, clasificacionTrim, isbnTrim, tipoMaterialTrim, autorTrim);
 
         if (!resultadoLibro.success) {
             return res.status(400).json(resultadoLibro);
@@ -305,12 +297,12 @@ for (const [campo, limites] of Object.entries(longitudes)) {
 
         const resultadoEjemplar = await CrearEjemplar(
             libroId,
-            codigo_barras,
+            codigoBarrasTrim,
             numeroEjemplar,
             anioNumero,
-            estatus_item,
+            estatusItemTrim,
             Disponible,
-            coleccion
+            coleccionTrim
         );
 
         if (!resultadoEjemplar.success) {
@@ -340,8 +332,13 @@ async function crearComputadora(req, res) {
             Disponible, En_funcionamiento, Observacion, 
             no_inventario, no_computadora 
         } = req.body;
+
+        const procesadorTrim = String(procesador ?? '').trim();
+        const programasTrim = String(programas ?? '').trim();
+        const carreraTrim = String(carrera ?? '').trim();
+        const noInventarioTrim = String(no_inventario ?? '').trim();
         
-        if (!procesador || !programas || !carrera || !no_inventario || !no_computadora) {
+        if (!procesadorTrim || !programasTrim || !carreraTrim || !noInventarioTrim || no_computadora === undefined || no_computadora === null || String(no_computadora).trim() === '') {
             return res.status(400).json({ 
                 success: false, 
                 message: 'Todos los campos requeridos deben estar presentes' 
@@ -363,7 +360,7 @@ async function crearComputadora(req, res) {
         const { data: inventarioDuplicado } = await supabase
             .from('computadoras')
             .select('id')
-            .eq('no_inventario', no_inventario)
+            .eq('no_inventario', noInventarioTrim)
             .maybeSingle();
 
         if (inventarioDuplicado) {
@@ -387,9 +384,9 @@ async function crearComputadora(req, res) {
         }
 
         const resultado = await CrearComputadora(
-            procesador, programas, carrera, 
+            procesadorTrim, programasTrim, carreraTrim, 
             Disponible, En_funcionamiento, Observacion, 
-            no_inventario, noComputadoraNumero
+            noInventarioTrim, noComputadoraNumero
         );
         
         if (resultado.success) {
@@ -414,8 +411,9 @@ async function crearRestirador(req, res) {
         } = req.body;
 
         const estadoMaterial = estado_de_material ?? estado_material;
+        const noInventarioTrim = String(no_inventario ?? '').trim();
         
-        if (!no_inventario || !no_restirador) {
+        if (!noInventarioTrim || no_restirador === undefined || no_restirador === null || String(no_restirador).trim() === '') {
             return res.status(400).json({ 
                 success: false, 
                 message: 'Los campos no_inventario y no_restirador son requeridos' 
@@ -437,7 +435,7 @@ async function crearRestirador(req, res) {
         const { data: inventarioDuplicado } = await supabase
             .from('restiradores')
             .select('id')
-            .eq('no_inventario', no_inventario)
+            .eq('no_inventario', noInventarioTrim)
             .maybeSingle();
 
         if (inventarioDuplicado) {
@@ -462,7 +460,7 @@ async function crearRestirador(req, res) {
 
         const resultado = await CrearRestirador(
             Disponible, estadoMaterial, 
-            Observacion, no_inventario, noRestiradorNumero
+            Observacion, noInventarioTrim, noRestiradorNumero
         );
         
         if (resultado.success) {

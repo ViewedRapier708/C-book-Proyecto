@@ -1,16 +1,30 @@
 {
   "version": 2,
+  "installCommand": "npm install",
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "functions": {
     "api/index.js": {
-      "includeFiles": "back/**"
+      "includeFiles": "back/**",
+      "maxDuration": 10
     }
   },
   "rewrites": [
-    { "source": "/auth/(.*)", "destination": "/api/index.js" },
-    { "source": "/debug/(.*)", "destination": "/api/index.js" },
-    { "source": "/api/(.*)", "destination": "/api/index.js" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/auth/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/debug/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }

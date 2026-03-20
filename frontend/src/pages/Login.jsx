@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -157,6 +157,12 @@ export default function Login() {
               {loading ? 'Procesando...' : mode === 'login' ? 'ACCEDER' : 'REGISTRAR'}
             </button>
           </form>
+
+          {mode === 'login' && (
+            <p className="toggle-link" style={{ marginTop: '0.5rem' }}>
+              <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
+            </p>
+          )}
 
           <div className="auth-divider">o</div>
 

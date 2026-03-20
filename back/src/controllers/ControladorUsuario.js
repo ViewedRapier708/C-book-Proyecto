@@ -1,13 +1,16 @@
-const { 
-  validarBoletaEnTabla, 
-  validarCorreoEnTabla, 
-  registrarEnAuth, 
+const {
+  validarBoletaEnTabla,
+  validarCorreoEnTabla,
+  registrarEnAuth,
   crearUsuarioEnTabla,
   verificarConfirmacionPorBoleta,
   buscarCorreoPorBoleta,
   loginConAuth,
   traerUsuarioInfo,
-  revocarSesionesSupabase
+  revocarSesionesSupabase,
+  CambiarContraseña,
+  CambioCorreo,
+  ActualizarContraseñaConToken
 } = require('../models/ModeloUsuario.js');
 
 const SESSION_SAFETY_WINDOW_MS = Number(process.env.SESSION_REFRESH_THRESHOLD_MS) || 60000; // 1 min por defecto
@@ -271,11 +274,99 @@ function destroySession(req, res) {
   });
 }
 
-
-
+//Modificacion de datos del usuario (correo y contraseña)
+async function CambioDatos(req , res) {
+    const { boleta, nuevoCorreo, nuevaContraseña,TipoDatoACambiar } = req.body;
+    if (!boleta || (!nuevoCorreo && !nuevaContraseña)) {
+      return res.status(400).json({ error: 'Faltan datos para actualizar' });
+    }
+    switch (TipoDatoACambiar) {
+      case 'correo':
+        if (!boleta || !nuevoCorreo) {
+          return res.status(400).json({ error: 'Faltan datos para actualizar correo' });
+        } 
+        const resultadoCorreo = await CambioCorreo(boleta, nuevoCorreo);
+        if (!resultadoCorreo.success) {
+          return res.status(400).json({ error: resultadoCorreo.error || 'Error al cambiar correo' });
+        }
+        return res.status(200).json({ success: true, message: 'Correo actualizado exitosamente' });
+      case 'contraseña':
+        if (!boleta || !nuevaContraseña) {
+          return res.status(400).json({ error: 'Faltan datos para actualizar contraseña' });
+        }
+        const resultadoContraseña = await CambiarContraseña(boleta, nuevaContraseña);
+        if (!resultadoContraseña.success) {
+          return res.status(400).json({ error: resultadoContraseña.error || 'Error al cambiar contraseña' });
+        } 
+        return res.status(200).json({ success: true, message: 'Contraseña actualizada exitosamente' });
+      default:
+        return res.status(400).json({ error: 'Tipo de dato a cambiar no válido' });
+    }
+    
+}
 
 
 
 //=======================Eliminacion de la cuenta
 
-module.exports = { registro, verificarCorreo, login, cerrarSesion ,verificarSesion};
+// ==================== RECUPERACIÓN DE CONTRASEÑA ====================
+
+async function solicitarRecuperacion(req, res) {
+  try {
+    const { boleta } = req.body;
+
+    if (!boleta) {
+      return res.status(400).json({ error: 'Ingresa tu número de boleta' });
+    }
+
+    if (!/^\d{10}$/.test(boleta)) {
+      return res.status(400).json({ error: 'La boleta debe tener 10 dígitos' });
+    }
+
+    const busqueda = await buscarCorreoPorBoleta(boleta);
+    if (!busqueda.success) {
+      // Respuesta genérica para no revelar si la boleta existe
+      return res.status(200).json({ success: true, message: 'Si la boleta está registrada, recibirás un correo con las instrucciones.' });
+    }
+
+    const resultado = await CambiarContraseña(busqueda.correo);
+    if (!resultado.success) {
+      return res.status(500).json({ error: 'No se pudo enviar el correo de recuperación' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Si la boleta está registrada, recibirás un correo con las instrucciones.' });
+  } catch (err) {
+    console.error('Error en solicitarRecuperacion:', err);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+async function actualizarContraseña(req, res) {
+  try {
+    const { access_token, newPassword, confPassword } = req.body;
+
+    if (!access_token || !newPassword || !confPassword) {
+      return res.status(400).json({ error: 'Faltan datos obligatorios' });
+    }
+
+    if (newPassword.length < 6 || newPassword.length > 16) {
+      return res.status(400).json({ error: 'La contraseña debe tener entre 6 y 16 caracteres' });
+    }
+
+    if (newPassword !== confPassword) {
+      return res.status(400).json({ error: 'Las contraseñas no coinciden' });
+    }
+
+    const resultado = await ActualizarContraseñaConToken(access_token, newPassword);
+    if (!resultado.success) {
+      return res.status(400).json({ error: resultado.error || 'No se pudo actualizar la contraseña' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Contraseña actualizada exitosamente' });
+  } catch (err) {
+    console.error('Error en actualizarContraseña:', err);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+module.exports = { registro, verificarCorreo, login, cerrarSesion, verificarSesion, CambioDatos, solicitarRecuperacion, actualizarContraseña };

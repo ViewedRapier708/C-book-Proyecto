@@ -10,6 +10,8 @@ import ErrorBoundary from './components/ui/ErrorBoundary';
 // ── Lazy-loaded pages (code-split) ──────────────────────
 const Login              = lazy(() => import('./pages/Login'));
 const EmailVerification  = lazy(() => import('./pages/EmailVerification'));
+const ForgotPassword     = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword      = lazy(() => import('./pages/ResetPassword'));
 
 // User
 const UserHome             = lazy(() => import('./pages/user/UserHome'));
@@ -50,6 +52,8 @@ export default function App() {
           {/* Public */}
           <Route path="/" element={<Login />} />
           <Route path="/verificar" element={<EmailVerification />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* User */}
           <Route
