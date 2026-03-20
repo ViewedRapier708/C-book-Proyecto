@@ -69,8 +69,17 @@ export default function AltaLibros() {
     setSubmitting(true);
     try {
       const payload = { ...form, Disponible: form.disponible };
+      
+      // Convertir explícitamente a número para evitar problemas con la API
+      payload.numero_ejemplar = Number(payload.numero_ejemplar);
+      payload.anio = Number(payload.anio);
+
       if (editing) {
-        await adminApi.updateBook({ id: editing.id, ...payload });
+        await adminApi.updateBook({ 
+          id: editing.libro_id || editing.libros?.id, 
+          ejemplar_id: editing.id, 
+          ...payload 
+        });
         toast.success('Libro actualizado');
       } else {
         await adminApi.createBook(payload);
@@ -151,19 +160,19 @@ export default function AltaLibros() {
       >
         <form id="form-libro" onSubmit={handleSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-            <div className="form-group"><label>Título</label><input value={form.titulo} onChange={set('titulo')} required /></div>
-            <div className="form-group"><label>Autor</label><input value={form.autor} onChange={set('autor')} /></div>
-            <div className="form-group"><label>Clasificación</label><input value={form.clasificacion} onChange={set('clasificacion')} /></div>
-            <div className="form-group"><label>ISBN</label><input value={form.isbn} onChange={set('isbn')} /></div>
-            <div className="form-group"><label>Tipo Material</label><input value={form.tipo_material} onChange={set('tipo_material')} /></div>
-            <div className="form-group"><label>Código Barras</label><input value={form.codigo_barras} onChange={set('codigo_barras')} /></div>
-            <div className="form-group"><label>No. Ejemplar</label><input value={form.numero_ejemplar} onChange={set('numero_ejemplar')} /></div>
-            <div className="form-group"><label>Año</label><input value={form.anio} onChange={set('anio')} /></div>
-            <div className="form-group"><label>Estatus Item</label><input value={form.estatus_item} onChange={set('estatus_item')} /></div>
-            <div className="form-group"><label>Colección</label><input value={form.coleccion} onChange={set('coleccion')} /></div>
+            <div className="form-group"><label>Título *</label><input value={form.titulo} onChange={set('titulo')} required /></div>
+            <div className="form-group"><label>Autor *</label><input value={form.autor} onChange={set('autor')} required /></div>
+            <div className="form-group"><label>Clasificación *</label><input value={form.clasificacion} onChange={set('clasificacion')} required /></div>
+            <div className="form-group"><label>ISBN *</label><input value={form.isbn} onChange={set('isbn')} required /></div>
+            <div className="form-group"><label>Tipo Material *</label><input value={form.tipo_material} onChange={set('tipo_material')} required /></div>
+            <div className="form-group"><label>Código Barras *</label><input value={form.codigo_barras} onChange={set('codigo_barras')} required /></div>
+            <div className="form-group"><label>No. Ejemplar *</label><input type="number" min="0" value={form.numero_ejemplar} onChange={set('numero_ejemplar')} required /></div>
+            <div className="form-group"><label>Año *</label><input type="number" min="1000" max="2100" value={form.anio} onChange={set('anio')} required /></div>
+            <div className="form-group"><label>Estatus Item *</label><input value={form.estatus_item} onChange={set('estatus_item')} required /></div>
+            <div className="form-group"><label>Colección *</label><input value={form.coleccion} onChange={set('coleccion')} required /></div>
           </div>
           <div className="form-group" style={{ marginTop: '0.5rem' }}>
-            <label className="show-password">
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
               <input type="checkbox" checked={form.disponible} onChange={set('disponible')} /> Disponible
             </label>
           </div>

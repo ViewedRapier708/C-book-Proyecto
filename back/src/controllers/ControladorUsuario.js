@@ -12,6 +12,7 @@ const {
   CambioCorreo,
   ActualizarContraseñaConToken
 } = require('../models/ModeloUsuario.js');
+const jwt = require('jsonwebtoken');
 
 const SESSION_SAFETY_WINDOW_MS = Number(process.env.SESSION_REFRESH_THRESHOLD_MS) || 60000; // 1 min por defecto
 
@@ -66,12 +67,6 @@ async function registro(req, res) {
      // console.error("Error en Auth:", resultadoAuth.error);
       return res.status(400).json({ error: resultadoAuth.error || 'Error al registrar usuario' });
     }
-
-    // Guardar datos en sesión para la verificación
-    req.session.registro = {
-      boleta,
-      correo
-    };
 
     return res.status(200).json({
       success: true,
@@ -171,9 +166,7 @@ async function login(req, res) {
       return res.status(500).json({ error: 'No se pudo crear la sesión en Supabase' });
     }
 
-    await regenerateSession(req);
-
-    req.session.user = {
+    const sessionUser = {
       supabaseUserId: loginResult.user.id,
       nombre,
       email: loginResult.user.email,
@@ -188,13 +181,17 @@ async function login(req, res) {
       }
     };
 
-    await saveSession(req);
+    // Crear JWT propio con la info de sesión
+    const token = jwt.sign(sessionUser, req.app.locals.sessionSecret || process.env.SESSION_SECRET || 'dev_session_secret_change_me', { expiresIn: '2h' });
+    
+    // Guardar token en cookie
+    res.cookie('app_session', token, req.app.locals.cookieSettings);
 
     return res.status(200).json({
       success: true,
       mensaje: 'Inicio de sesión exitoso',
-      user: sanitizeSessionUser(req.session.user),
-      rol:rol
+      user: sanitizeSessionUser(sessionUser),
+      rol: rol
     });
   } catch (err) {
   //  console.error("Error en login:", err);
@@ -204,9 +201,17 @@ async function login(req, res) {
 
 async function verificarSesion(req, res) {
   try {
-    const sessionUser = req.session.user;
-    if (!sessionUser) {
-      // Siempre 200 para que el frontend maneje el estado con simplicidad
+    const token = req.cookies.app_session;
+    if (!token) {
+      return res.status(200).json({ autenticado: false, user: null });
+    }
+
+    const secret = req.app.locals.sessionSecret || process.env.SESSION_SECRET || 'dev_session_secret_change_me';
+    let sessionUser;
+    
+    try {
+      sessionUser = jwt.verify(token, secret);
+    } catch (e) {
       return res.status(200).json({ autenticado: false, user: null });
     }
 
@@ -224,17 +229,25 @@ async function verificarSesion(req, res) {
 
 async function cerrarSesion(req, res) {
   try {
-    const accessToken = req.session?.user?.tokens?.accessToken;
-
-    if (accessToken) {
-      const revocado = await revocarSesionesSupabase(accessToken);
-      if (!revocado.success) {
-       // console.warn('No se pudo revocar la sesión en Supabase:', revocado.error);
+    const token = req.cookies.app_session;
+    if (token) {
+      try {
+        const secret = req.app.locals.sessionSecret || process.env.SESSION_SECRET || 'dev_session_secret_change_me';
+        const sessionUser = jwt.verify(token, secret);
+        const accessToken = sessionUser?.tokens?.accessToken;
+        
+        if (accessToken) {
+          const revocado = await revocarSesionesSupabase(accessToken);
+          if (!revocado.success) {
+           // console.warn('No se pudo revocar la sesión en Supabase:', revocado.error);
+          }
+        }
+      } catch (e) {
+        // Ignorar error si el token ya expiró
       }
     }
 
-    await destroySession(req, res);
-
+    res.clearCookie('app_session', req.app.locals.cookieSettings);
     return res.status(200).json({ mensaje: 'Sesión cerrada correctamente' });
   } catch (err) {
     //console.error('Error al cerrar sesión:', err);
@@ -244,34 +257,8 @@ async function cerrarSesion(req, res) {
 
 function sanitizeSessionUser(sessionUser = {}) {
   if (!sessionUser) return null;
-  const { tokens, ...publicData } = sessionUser;
+  const { tokens, iat, exp, ...publicData } = sessionUser;
   return publicData;
-}
-
-function regenerateSession(req) {
-  return new Promise((resolve, reject) => {
-    req.session.regenerate(err => err ? reject(err) : resolve());
-  });
-}
-
-function saveSession(req) {//Garantiza el envio de la sesion actualizada y la cookie
-  return new Promise((resolve, reject) => {
-    req.session.save(err => err ? reject(err) : resolve());
-  });
-}
-
-function destroySession(req, res) {
-  return new Promise((resolve, reject) => {
-    if (!req.session) {
-      res.clearCookie('connect.sid');
-      return resolve();
-    }
-
-    req.session.destroy(err => {
-      res.clearCookie('connect.sid');
-      return err ? reject(err) : resolve();
-    });
-  });
 }
 
 //Modificacion de datos del usuario (correo y contraseña)

@@ -17,7 +17,7 @@ router.post('/login', login);
 router.get('/session', verificarSesion);
 router.post('/logout', sessionGuard, cerrarSesion);
 router.get('/recursos', obtenerRecursosPorTipo);
-router.get('/recursos/usuario', controladorSolicitudes.obtencionSolicitudesUsuario);
+router.get('/recursos/usuario', sessionGuard, controladorSolicitudes.obtencionSolicitudesUsuario);
 router.post('/solicitud', sessionGuard,middlewareAutenticacion.verificarDisponibilidad,controladorSolicitudes.crearSolicitud);
 router.delete('/solicitud/:tipo/:id', sessionGuard, controladorSolicitudes.cancelarSolicitud);
 router.patch('/CuentaUpdate', sessionGuard, CambioDatos);

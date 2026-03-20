@@ -1,6 +1,6 @@
 const cors = require('cors');
 const express = require('express');
-const session = require('express-session');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const app = express();
@@ -26,6 +26,7 @@ if (isProduction) {
 // Middleware para leer JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser(sessionSecret));
 
 // Configuración de CORS - localhost
 const defaultOrigins = [
@@ -49,53 +50,14 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// ===============================
-//  STORE PARA SESIONES
-// ===============================
-let sessionStore;
-
-function buildSessionStore() {
-  // En Serverless (Vercel) MemoryStore se pierde entre invocaciones.
-  // Si se proporciona DATABASE_URL, usar Postgres.
-  const databaseUrl = process.env.DATABASE_URL;
-  if (databaseUrl) {
-    const PgSession = require('connect-pg-simple')(session);
-    const { Pool } = require('pg');
-    const pool = new Pool({
-      connectionString: databaseUrl,
-      ssl: isProduction ? { rejectUnauthorized: false } : undefined
-    });
-
-    return new PgSession({
-      pool,
-      tableName: process.env.SESSION_TABLE || 'session',
-      createTableIfMissing: true
-    });
-  }
-
-  if (isProduction) {
-    console.warn('[session] DATABASE_URL no esta configurada. En entornos serverless la sesion en memoria puede perderse entre peticiones.');
-  }
-
-  const MemoryStore = session.MemoryStore;
-  return new MemoryStore();
-}
-
-sessionStore = buildSessionStore();
-
-// Configuración de sesión
-app.use(session({
-  secret: sessionSecret,
-  resave: false,
-  saveUninitialized: false,
-  store: sessionStore,
-  cookie: {
-    httpOnly: true,
-    secure: cookieSecure,
-    sameSite: configuredSameSite,
-    maxAge: 1000 * 60 * 60 * 2 // 2h por defecto
-  }
-}));
+// Set session config variables for other modules
+app.locals.cookieSettings = {
+  httpOnly: true,
+  secure: cookieSecure,
+  sameSite: configuredSameSite,
+  maxAge: 1000 * 60 * 60 * 2 // 2h por defecto
+};
+app.locals.sessionSecret = sessionSecret;
 
 // ===============================
 //   ARCHIVOS ESTÁTICOS
@@ -105,18 +67,6 @@ app.get('/', (req, res) => {
   res.status(200).json({ mensaje: 'API de C-Book funcionando' });
 }
 );
-
-// ===============================
-//   RUTA PARA VER SESIONES ACTIVAS
-// ===============================
-app.get('/debug/sesiones', (req, res) => {//Quitar en produccion
-  sessionStore.all((err, sesiones) => {
-    if (err) {
-      return res.status(500).json({ error: 'Error al obtener sesiones' });
-    }
-    res.json(sesiones);
-  });
-});
 
 // Rutas de autenticación
 app.use('/auth', authRoutes);
