@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pandoc --version)",
+      "Bash(npm --version)",
+      "Bash(python -c \"import docx; print\\('OK'\\)\")",
+      "Bash(pip install *)",
+      "Bash(python *)",
+      "Bash(pip show *)",
+      "PowerShell(pip *)",
+      "Bash(where python *)",
+      "Bash(where pip *)",
+      "Bash(C:/Python314/python.exe *)",
+      "Bash(npm install *)",
+      "Bash(npm list *)",
+      "Bash(node md_to_docx.mjs)",
+      "Bash(Get-ChildItem *)"
+    ]
+  }
+}
