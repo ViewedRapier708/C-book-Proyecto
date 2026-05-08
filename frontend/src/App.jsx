@@ -27,6 +27,7 @@ const ModificarCuenta      = lazy(() => import('./pages/user/ModificarCuenta'));
 
 // Admin
 const AdminHome       = lazy(() => import('./pages/admin/AdminHome'));
+const AltaAlumnos     = lazy(() => import('./pages/admin/AltaAlumnos'));
 const AltaLibros      = lazy(() => import('./pages/admin/AltaLibros'));
 const AltaComputadoras = lazy(() => import('./pages/admin/AltaComputadoras'));
 const AltaRestiradores = lazy(() => import('./pages/admin/AltaRestiradores'));
@@ -89,6 +90,7 @@ export default function App() {
             }
           >
             <Route index element={<AdminHome />} />
+            <Route path="alumnos" element={<AltaAlumnos />} />
             <Route path="libros" element={<AltaLibros />} />
             <Route path="computadoras" element={<AltaComputadoras />} />
             <Route path="restiradores" element={<AltaRestiradores />} />
