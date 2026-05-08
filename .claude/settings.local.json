@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Figma__use_figma",
+      "Bash(python \"c:\\\\Users\\\\mantm\\\\Downloads\\\\t1 \\(1\\).py\")",
+      "Bash(git worktree *)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "figma-local"
+  ]
+}
