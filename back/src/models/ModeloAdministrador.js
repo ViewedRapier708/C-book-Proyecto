@@ -650,6 +650,151 @@ async function MarcarPrestamoDevuelto(idPrestamo, fechaDevolucionReal = null, ob
     }
 }
 
+// ==================== BOLETAS (CATÁLOGO DE ALUMNOS) ====================
+
+async function ObtenerBoletas() {
+    try {
+        const { data: boletas, error: boletasError } = await supabase
+            .from('boletas')
+            .select('boleta, nombre, Grupo')
+            .order('boleta', { ascending: true });
+
+        if (boletasError) {
+            console.error('Error obteniendo boletas:', boletasError);
+            return { success: false, message: boletasError.message };
+        }
+
+        const { data: usuarios, error: usersError } = await supabase
+            .from('usuarios_web_movil')
+            .select('boleta');
+
+        if (usersError) {
+            console.error('Error obteniendo usuarios para boletas:', usersError);
+            return { success: false, message: usersError.message };
+        }
+
+        const registradas = new Set((usuarios || []).map(u => u.boleta));
+
+        const data = (boletas || []).map(b => ({
+            ...b,
+            registrado: registradas.has(b.boleta),
+        }));
+
+        return { success: true, data, total: data.length };
+    } catch (error) {
+        console.error('Error interno en ObtenerBoletas:', error);
+        return { success: false, message: 'Error interno del servidor' };
+    }
+}
+
+async function CrearBoleta({ boleta, nombre, Grupo }) {
+    try {
+        const { data, error } = await supabase
+            .from('boletas')
+            .insert([{ boleta, nombre, Grupo }])
+            .select();
+
+        if (error) {
+            console.error('Error creando boleta:', error);
+            return { success: false, message: error.message };
+        }
+
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error interno creando boleta:', error);
+        return { success: false, message: 'Error interno del servidor' };
+    }
+}
+
+async function ActualizarBoleta(boleta, { nombre, Grupo }) {
+    try {
+        const { data, error } = await supabase
+            .from('boletas')
+            .update({ nombre, Grupo })
+            .eq('boleta', boleta)
+            .select();
+
+        if (error) {
+            console.error('Error actualizando boleta:', error);
+            return { success: false, message: error.message };
+        }
+
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error interno actualizando boleta:', error);
+        return { success: false, message: 'Error interno del servidor' };
+    }
+}
+
+async function EliminarBoleta(boleta) {
+    try {
+        const { data: usuario } = await supabase
+            .from('usuarios_web_movil')
+            .select('id')
+            .eq('boleta', boleta)
+            .maybeSingle();
+
+        if (usuario) {
+            return { success: false, message: 'No se puede eliminar: el alumno ya tiene una cuenta registrada en la app' };
+        }
+
+        const { error } = await supabase
+            .from('boletas')
+            .delete()
+            .eq('boleta', boleta);
+
+        if (error) {
+            console.error('Error eliminando boleta:', error);
+            return { success: false, message: error.message };
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error interno eliminando boleta:', error);
+        return { success: false, message: 'Error interno del servidor' };
+    }
+}
+
+async function BulkUpsertBoletas(rows, overwriteDuplicates) {
+    try {
+        const { data, error } = await supabase
+            .from('boletas')
+            .upsert(rows, { onConflict: 'boleta', ignoreDuplicates: !overwriteDuplicates })
+            .select();
+
+        if (error) {
+            console.error('Error en upsert masivo de boletas:', error);
+            return { success: false, message: error.message };
+        }
+
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error interno en BulkUpsertBoletas:', error);
+        return { success: false, message: 'Error interno del servidor' };
+    }
+}
+
+async function BoletasExistentes(boletasArr) {
+    try {
+        if (!boletasArr || boletasArr.length === 0) return { success: true, data: [] };
+
+        const { data, error } = await supabase
+            .from('boletas')
+            .select('boleta')
+            .in('boleta', boletasArr);
+
+        if (error) {
+            console.error('Error verificando boletas existentes:', error);
+            return { success: false, message: error.message };
+        }
+
+        return { success: true, data: (data || []).map(r => r.boleta) };
+    } catch (error) {
+        console.error('Error interno en BoletasExistentes:', error);
+        return { success: false, message: 'Error interno del servidor' };
+    }
+}
+
 module.exports = {
     CrearLibro,
     CrearEjemplar,
@@ -675,5 +820,11 @@ module.exports = {
     ActualizarEstadoSolicitudLibro,
     EntregarLibro,
     ObtenerPrestamosLibros,
-    MarcarPrestamoDevuelto
+    MarcarPrestamoDevuelto,
+    ObtenerBoletas,
+    CrearBoleta,
+    ActualizarBoleta,
+    EliminarBoleta,
+    BulkUpsertBoletas,
+    BoletasExistentes,
 };

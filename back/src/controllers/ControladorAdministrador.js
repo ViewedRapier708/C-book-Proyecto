@@ -1,3 +1,4 @@
+const path = require('path');
 const {
     CrearLibro,
     CrearEjemplar,
@@ -19,7 +20,13 @@ const {
     ActualizarEstadoSolicitudLibro,
     EntregarLibro,
     ObtenerPrestamosLibros,
-    MarcarPrestamoDevuelto
+    MarcarPrestamoDevuelto,
+    ObtenerBoletas,
+    CrearBoleta,
+    ActualizarBoleta,
+    EliminarBoleta,
+    BulkUpsertBoletas,
+    BoletasExistentes,
 } = require('../models/ModeloAdministrador.js');
 const { enviarCorreo, plantillaCorreo } = require('../utils/servicioCorreo.js');
 const {
@@ -1141,6 +1148,227 @@ async function marcarPrestamoDevuelto(req, res) {
 }
 
 
+// ==================== BOLETAS (CATÁLOGO DE ALUMNOS) ====================
+
+const BOLETA_FORMAT_RE = /^\d{10}$/;
+const GRUPO_FORMAT_RE = /^\d[A-Z]{2,4}\d?[A-Z]?$/;
+
+async function obtenerBoletas(req, res) {
+    try {
+        const resultado = await ObtenerBoletas();
+        if (resultado.success) return res.status(200).json(resultado);
+        return res.status(400).json(resultado);
+    } catch (error) {
+        console.error('Error en obtenerBoletas:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+}
+
+async function crearBoleta(req, res) {
+    try {
+        const { boleta, nombre, Grupo } = req.body;
+
+        const boletaStr = String(boleta ?? '').trim();
+        const nombreTrim = String(nombre ?? '').trim();
+        const grupoTrim = String(Grupo ?? '').trim().toUpperCase();
+
+        if (!BOLETA_FORMAT_RE.test(boletaStr)) {
+            return res.status(400).json({ success: false, message: 'La boleta debe tener exactamente 10 dígitos numéricos' });
+        }
+        if (!nombreTrim) {
+            return res.status(400).json({ success: false, message: 'El nombre es requerido' });
+        }
+        if (!GRUPO_FORMAT_RE.test(grupoTrim)) {
+            return res.status(400).json({ success: false, message: 'El grupo debe tener el formato correcto (ej: 6CM1, 7IM3A)' });
+        }
+
+        const supabaseClient = require('../config/db').getClient();
+        const { data: existente } = await supabaseClient
+            .from('boletas')
+            .select('boleta')
+            .eq('boleta', parseInt(boletaStr, 10))
+            .maybeSingle();
+
+        if (existente) {
+            return res.status(409).json({ success: false, message: 'Ya existe una boleta con ese número' });
+        }
+
+        const resultado = await CrearBoleta({
+            boleta: parseInt(boletaStr, 10),
+            nombre: nombreTrim.toUpperCase(),
+            Grupo: grupoTrim,
+        });
+
+        if (resultado.success) return res.status(201).json(resultado);
+        return res.status(400).json(resultado);
+    } catch (error) {
+        console.error('Error en crearBoleta:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+}
+
+async function actualizarBoleta(req, res) {
+    try {
+        const { boleta: boletaParam } = req.params;
+        const { nombre, Grupo } = req.body;
+
+        const boletaNum = parseInt(boletaParam, 10);
+        if (!boletaParam || Number.isNaN(boletaNum)) {
+            return res.status(400).json({ success: false, message: 'Boleta inválida' });
+        }
+
+        const nombreTrim = String(nombre ?? '').trim();
+        const grupoTrim = String(Grupo ?? '').trim().toUpperCase();
+
+        if (!nombreTrim) {
+            return res.status(400).json({ success: false, message: 'El nombre es requerido' });
+        }
+        if (!GRUPO_FORMAT_RE.test(grupoTrim)) {
+            return res.status(400).json({ success: false, message: 'El grupo debe tener el formato correcto (ej: 6CM1, 7IM3A)' });
+        }
+
+        const resultado = await ActualizarBoleta(boletaNum, {
+            nombre: nombreTrim.toUpperCase(),
+            Grupo: grupoTrim,
+        });
+
+        if (resultado.success) return res.status(200).json(resultado);
+        return res.status(400).json(resultado);
+    } catch (error) {
+        console.error('Error en actualizarBoleta:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+}
+
+async function eliminarBoleta(req, res) {
+    try {
+        const { boleta: boletaParam } = req.params;
+        const boletaNum = parseInt(boletaParam, 10);
+
+        if (!boletaParam || Number.isNaN(boletaNum)) {
+            return res.status(400).json({ success: false, message: 'Boleta inválida' });
+        }
+
+        const resultado = await EliminarBoleta(boletaNum);
+
+        if (resultado.success) return res.status(200).json(resultado);
+        // 409 if blocked by existing user
+        return res.status(resultado.message.includes('cuenta registrada') ? 409 : 400).json(resultado);
+    } catch (error) {
+        console.error('Error en eliminarBoleta:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+}
+
+async function previewCargaMasiva(req, res) {
+    try {
+        const file = req.file;
+        if (!file) {
+            return res.status(400).json({ success: false, message: 'No se recibió ningún archivo' });
+        }
+
+        const { parsePDF, parseCSV, parseXLSX } = require('../utils/parserAlumnos');
+        const ext = path.extname(file.originalname).toLowerCase();
+        const mime = (file.mimetype || '').toLowerCase();
+
+        let parsedRows = [];
+        try {
+            if (ext === '.pdf' || mime === 'application/pdf') {
+                parsedRows = await parsePDF(file.buffer);
+            } else if (ext === '.csv' || mime === 'text/csv' || mime === 'application/csv') {
+                parsedRows = parseCSV(file.buffer);
+            } else if (['.xlsx', '.xls'].includes(ext) || mime.includes('spreadsheetml') || mime.includes('ms-excel')) {
+                parsedRows = parseXLSX(file.buffer);
+            } else {
+                return res.status(400).json({ success: false, message: 'Formato no soportado. Use PDF, CSV o XLSX.' });
+            }
+        } catch (parseError) {
+            console.error('Error parseando archivo:', parseError);
+            return res.status(400).json({ success: false, message: 'Error al procesar el archivo: ' + parseError.message });
+        }
+
+        // Batch-check which boletas already exist
+        const potentialNums = parsedRows
+            .filter(r => BOLETA_FORMAT_RE.test(String(r.boleta)))
+            .map(r => parseInt(String(r.boleta), 10));
+
+        const existingResult = await BoletasExistentes(potentialNums);
+        const existingSet = new Set(existingResult.data || []);
+
+        const rows = parsedRows.map(r => {
+            const boletaStr = String(r.boleta ?? '').trim();
+            const nombre = String(r.nombre ?? '').trim();
+            const grupo = String(r.Grupo ?? r.grupo ?? '').trim().toUpperCase();
+
+            const isValidFormat = BOLETA_FORMAT_RE.test(boletaStr) && nombre.length > 0 && GRUPO_FORMAT_RE.test(grupo);
+
+            if (!isValidFormat) {
+                return { boleta: boletaStr, nombre, Grupo: grupo, status: 'invalid' };
+            }
+
+            const boletaNum = parseInt(boletaStr, 10);
+            return {
+                boleta: boletaNum,
+                nombre,
+                Grupo: grupo,
+                status: existingSet.has(boletaNum) ? 'duplicate' : 'valid',
+            };
+        });
+
+        const summary = {
+            valid: rows.filter(r => r.status === 'valid').length,
+            duplicate: rows.filter(r => r.status === 'duplicate').length,
+            invalid: rows.filter(r => r.status === 'invalid').length,
+        };
+
+        return res.status(200).json({ success: true, rows, summary, fileName: file.originalname });
+    } catch (error) {
+        console.error('Error en previewCargaMasiva:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+}
+
+async function confirmarCargaMasiva(req, res) {
+    try {
+        const { rows, overwriteDuplicates = false } = req.body;
+
+        if (!Array.isArray(rows) || rows.length === 0) {
+            return res.status(400).json({ success: false, message: 'No hay filas para importar' });
+        }
+
+        const validRows = rows
+            .filter(r => BOLETA_FORMAT_RE.test(String(r.boleta)) && r.nombre && r.Grupo)
+            .map(r => ({
+                boleta: parseInt(String(r.boleta), 10),
+                nombre: String(r.nombre).trim().toUpperCase(),
+                Grupo: String(r.Grupo).trim().toUpperCase(),
+            }));
+
+        if (validRows.length === 0) {
+            return res.status(400).json({ success: false, message: 'No hay filas con formato válido para importar' });
+        }
+
+        // Pre-check which already exist so we can report accurate counts
+        const boletaNums = validRows.map(r => r.boleta);
+        const existingResult = await BoletasExistentes(boletaNums);
+        const existingSet = new Set(existingResult.data || []);
+
+        const inserted = validRows.filter(r => !existingSet.has(r.boleta)).length;
+        const dupCount = validRows.filter(r => existingSet.has(r.boleta)).length;
+        const updated = overwriteDuplicates ? dupCount : 0;
+        const skipped = overwriteDuplicates ? 0 : dupCount;
+
+        const resultado = await BulkUpsertBoletas(validRows, overwriteDuplicates);
+
+        if (!resultado.success) return res.status(400).json(resultado);
+
+        return res.status(200).json({ success: true, inserted, updated, skipped });
+    } catch (error) {
+        console.error('Error en confirmarCargaMasiva:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+}
+
 module.exports = {
     crearLibro,
     crearComputadora,
@@ -1156,5 +1384,11 @@ module.exports = {
     gestionarSolicitud,
     registrarEntrega,
     obtenerPrestamosLibros,
-    marcarPrestamoDevuelto
+    marcarPrestamoDevuelto,
+    obtenerBoletas,
+    crearBoleta,
+    actualizarBoleta,
+    eliminarBoleta,
+    previewCargaMasiva,
+    confirmarCargaMasiva,
 };

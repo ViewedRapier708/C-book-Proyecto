@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, BookOpen, Monitor, PenTool, Users,
   FileText, ClipboardList, LogOut, BookCheck, Package,
-  BarChart3, FileBarChart, UserCircle, Settings, Mail
+  BarChart3, FileBarChart, UserCircle, Settings, Mail, GraduationCap
 } from 'lucide-react';
 
 const adminLinks = [
@@ -12,6 +12,7 @@ const adminLinks = [
   { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
   { to: '/admin/reportes', icon: FileBarChart, label: 'Reportes' },
   { section: 'Altas' },
+  { to: '/admin/alumnos', icon: GraduationCap, label: 'Alumnos' },
   { to: '/admin/libros', icon: BookOpen, label: 'Libros' },
   { to: '/admin/computadoras', icon: Monitor, label: 'Computadoras' },
   { to: '/admin/restiradores', icon: PenTool, label: 'Restiradores' },

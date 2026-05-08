@@ -1,20 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pandoc --version)",
-      "Bash(npm --version)",
-      "Bash(python -c \"import docx; print\\('OK'\\)\")",
-      "Bash(pip install *)",
-      "Bash(python *)",
-      "Bash(pip show *)",
-      "PowerShell(pip *)",
-      "Bash(where python *)",
-      "Bash(where pip *)",
-      "Bash(C:/Python314/python.exe *)",
-      "Bash(npm install *)",
-      "Bash(npm list *)",
-      "Bash(node md_to_docx.mjs)",
-      "Bash(Get-ChildItem *)"
+      "mcp__claude_ai_Figma__use_figma",
+      "Bash(python \"c:\\\\Users\\\\mantm\\\\Downloads\\\\t1 \\(1\\).py\")",
+      "Bash(git worktree *)",
+      "Bash(node src/test/parserAlumnos.test.js)",
+      "Bash(node -e \"const r=require\\('./src/routes/Rutas.js'\\); console.log\\('Routes OK'\\)\")",
+      "Bash(node -e \"const c=require\\('./src/controllers/ControladorAdministrador.js'\\); const keys=Object.keys\\(c\\); console.log\\('Exports:', keys.join\\(', '\\)\\)\")"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "figma-local"
+  ]
 }
