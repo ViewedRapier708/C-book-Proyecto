@@ -3,6 +3,18 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import toast from 'react-hot-toast';
 
+function validarPassword(password) {
+  if (!password || password.length < 6 || password.length > 16)
+    return 'La contraseña debe tener entre 6 y 16 caracteres';
+  if (!/[a-z]/.test(password))
+    return 'La contraseña debe contener al menos una letra minúscula';
+  if (!/[A-Z]/.test(password))
+    return 'La contraseña debe contener al menos una letra mayúscula';
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
+    return 'La contraseña debe contener al menos un carácter especial';
+  return null;
+}
+
 export default function ResetPassword() {
   const navigate = useNavigate();
   const [status, setStatus] = useState('checking'); // 'checking' | 'ready' | 'error'
@@ -63,8 +75,9 @@ export default function ResetPassword() {
     e.preventDefault();
     setMsg(null);
 
-    if (form.newPassword.length < 6 || form.newPassword.length > 16) {
-      setMsg({ type: 'error', text: 'La contraseña debe tener entre 6 y 16 caracteres' });
+    const errorPsw = validarPassword(form.newPassword);
+    if (errorPsw) {
+      setMsg({ type: 'error', text: errorPsw });
       return;
     }
     if (form.newPassword !== form.confPassword) {
@@ -98,7 +111,7 @@ export default function ResetPassword() {
       <div className="auth-right">
         <div className="auth-form">
           <h2>Nueva contraseña</h2>
-          <p className="subtitle">Elige una contraseña entre 6 y 16 caracteres</p>
+          <p className="subtitle">Debe tener entre 6 y 16 caracteres, mayúsculas, minúsculas y 1 carácter especial</p>
 
           {msg && <div className={`msg msg-${msg.type}`}>{msg.text}</div>}
 

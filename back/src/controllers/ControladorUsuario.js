@@ -17,6 +17,25 @@ const jwt = require('jsonwebtoken');
 
 const SESSION_SAFETY_WINDOW_MS = Number(process.env.SESSION_REFRESH_THRESHOLD_MS) || 60000; // 1 min por defecto
 
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{6,16}$/;
+const CORREO_IPN_REGEX = /^[\w.-]+@alumno\.ipn\.mx$/;
+
+function validarPassword(password) {
+  if (!password || password.length < 6 || password.length > 16) {
+    return 'La contraseña debe tener entre 6 y 16 caracteres';
+  }
+  if (!/[a-z]/.test(password)) {
+    return 'La contraseña debe contener al menos una letra minúscula';
+  }
+  if (!/[A-Z]/.test(password)) {
+    return 'La contraseña debe contener al menos una letra mayúscula';
+  }
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    return 'La contraseña debe contener al menos un carácter especial';
+  }
+  return null;
+}
+
 // ==================== REGISTRO ====================
 async function registro(req, res) {
   if (!req.body) {
@@ -35,12 +54,13 @@ async function registro(req, res) {
       return res.status(400).json({ error: 'Boleta debe tener 10 dígitos numéricos' });
     }
 
-    if (!/^[\w.-]+@[\w.-]+\.\w+$/.test(correo)) {
-      return res.status(400).json({ error: 'Correo con formato inválido' });
+    if (!CORREO_IPN_REGEX.test(correo)) {
+      return res.status(400).json({ error: 'Solo se permiten correos institucionales @alumno.ipn.mx' });
     }
 
-    if (password.length < 6 || password.length > 16) {
-      return res.status(400).json({ error: 'Contraseña debe tener entre 6 y 16 caracteres' });
+    const errorPsw = validarPassword(password);
+    if (errorPsw) {
+      return res.status(400).json({ error: errorPsw });
     }
 
     if (password !== confPsw) {
@@ -313,8 +333,7 @@ async function solicitarRecuperacion(req, res) {
 
     const busqueda = await buscarCorreoPorBoleta(boleta);
     if (!busqueda.success) {
-      // Respuesta genérica para no revelar si la boleta existe
-      return res.status(200).json({ success: true, message: 'Si la boleta está registrada, recibirás un correo con las instrucciones.' });
+      return res.status(400).json({ error: 'No existe ninguna cuenta con esa boleta' });
     }
 
     const resultado = await CambiarContraseña(busqueda.correo);
@@ -322,7 +341,7 @@ async function solicitarRecuperacion(req, res) {
       return res.status(500).json({ error: 'No se pudo enviar el correo de recuperación' });
     }
 
-    return res.status(200).json({ success: true, message: 'Si la boleta está registrada, recibirás un correo con las instrucciones.' });
+    return res.status(200).json({ success: true, message: 'Revisa tu correo para continuar con el cambio de contraseña.' });
   } catch (err) {
     console.error('Error en solicitarRecuperacion:', err);
     return res.status(500).json({ error: 'Error interno del servidor' });
@@ -337,8 +356,9 @@ async function actualizarContraseña(req, res) {
       return res.status(400).json({ error: 'Faltan datos obligatorios' });
     }
 
-    if (newPassword.length < 6 || newPassword.length > 16) {
-      return res.status(400).json({ error: 'La contraseña debe tener entre 6 y 16 caracteres' });
+    const errorPsw = validarPassword(newPassword);
+    if (errorPsw) {
+      return res.status(400).json({ error: errorPsw });
     }
 
     if (newPassword !== confPassword) {
@@ -372,6 +392,11 @@ async function cambiarContrasenaPropia(req, res) {
 
     if (newPassword.length < 6 || newPassword.length > 16) {
       return res.status(400).json({ error: 'La contraseña debe tener entre 6 y 16 caracteres' });
+    }
+
+    const errorPsw = validarPassword(newPassword);
+    if (errorPsw) {
+      return res.status(400).json({ error: errorPsw });
     }
 
     // Verificar que el correo proporcionado coincida con el de la sesión

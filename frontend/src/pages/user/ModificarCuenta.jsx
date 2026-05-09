@@ -10,6 +10,19 @@ import { authApi } from '../../api/auth';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 import Modal from '../../components/ui/Modal';
 
+
+function validarPassword(password) {
+  if (!password || password.length < 6 || password.length > 16)
+    return 'La contraseña debe tener entre 6 y 16 caracteres';
+  if (!/[a-z]/.test(password))
+    return 'La contraseña debe contener al menos una letra minúscula';
+  if (!/[A-Z]/.test(password))
+    return 'La contraseña debe contener al menos una letra mayúscula';
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
+    return 'La contraseña debe contener al menos un carácter especial';
+  return null;
+}
+
 function PwdInput({ field, placeholder, show, form, setForm, setShow, inputStyle }) {
   return (
     <div style={{ position: 'relative' }}>
@@ -57,6 +70,10 @@ export default function ModificarCuenta() {
     }
     if (form.nueva !== form.confirmar) {
       setError('Las contraseñas no coinciden'); return;
+    }
+    const errorPsw = validarPassword(form.nueva);
+    if (errorPsw) {
+      setError(errorPsw); return;
     }
 
     setLoading(true);
@@ -165,7 +182,7 @@ export default function ModificarCuenta() {
           </button>
           <div>
             <h1>Cambiar Contraseña</h1>
-            <p>Ingresa tus credenciales actuales y la nueva contraseña</p>
+            <p>Mín. 6 carácteres, mayúsculas, minúsculas y 1 carácter especial</p>
           </div>
         </div>
       </div>
