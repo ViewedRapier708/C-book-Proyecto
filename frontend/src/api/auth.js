@@ -16,4 +16,6 @@ export const authApi = {
       TipoDatoACambiar,
       ...(TipoDatoACambiar === 'correo' ? { nuevoCorreo: value } : { nuevaContraseña: value }),
     }),
+  changePassword: (correo, currentPassword, newPassword) =>
+    api.post('/cambiar-contrasena', { correo, currentPassword, newPassword }),
 };

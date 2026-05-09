@@ -2,12 +2,12 @@ const { CrearSolicitud, CancelarSolicitud, getSolicitudes } = require("../models
 const { enviarCorreo, plantillaCorreo } = require("../utils/servicioCorreo");
 const { getClient } = require("../config/db");
 
-const tipos = ['computadora', 'restirador', 'libro'];
+const tipos = ['libro'];
 
 /**
  * Crea una solicitud de recurso.
  * Espera en el body: { tipo, boleta, idRecurso }
- * - tipo: 'computadora' | 'restirador' | 'libro'
+ * - tipo: 'libro'
  * - boleta: string de 10 dígitos
  * - idRecurso: entero positivo (id interno del recurso)
  */
@@ -65,27 +65,9 @@ async function crearSolicitud(req,res) {
                                     { label: 'Ejemplar #', value: String(ej.numero_ejemplar ?? '-') },
                                 ];
                             }
-                        } else if (tipo === 'computadora') {
-                            const { data: pc } = await supabase
-                                .from('computadoras')
-                                .select('no_computadora')
-                                .eq('id', idRecurso)
-                                .single();
-                            if (pc) {
-                                detalles = [{ label: 'Computadora #', value: String(pc.no_computadora) }];
-                            }
-                        } else if (tipo === 'restirador') {
-                            const { data: rest } = await supabase
-                                .from('restiradores')
-                                .select('no_restirador')
-                                .eq('id', idRecurso)
-                                .single();
-                            if (rest) {
-                                detalles = [{ label: 'Restirador #', value: String(rest.no_restirador) }];
-                            }
                         }
 
-                        const tipoLabel = tipo === 'libro' ? 'Libro' : tipo === 'computadora' ? 'Computadora' : 'Restirador';
+                        const tipoLabel = tipo === 'libro' ? 'Libro' : tipo;
                         const html = plantillaCorreo({
                             titulo: `Solicitud de ${tipoLabel} Recibida`,
                             mensaje: `Tu solicitud de <b>${tipoLabel}</b> ha sido registrada correctamente y se encuentra en estado pendiente.`,

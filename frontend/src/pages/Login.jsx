@@ -83,7 +83,7 @@ export default function Login() {
       <div className="auth-left">
         <div className="auth-hero">
           <h1>C-Book</h1>
-          <p>Plataforma digital creada para facilitar el acceso a recursos educativos. Solicita computadoras, libros y restiradores de forma rápida.</p>
+          <p>Plataforma digital creada para facilitar el acceso a recursos educativos. Solicita libros de forma rápida.</p>
         </div>
       </div>
       <div className="auth-right">

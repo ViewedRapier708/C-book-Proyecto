@@ -2,9 +2,9 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useState, useRef, useEffect } from 'react';
 import {
-  LayoutDashboard, BookOpen, Monitor, PenTool, Users,
+  LayoutDashboard, BookOpen, Users,
   FileText, ClipboardList, LogOut, BookCheck, Package,
-  BarChart3, FileBarChart, UserCircle, Settings, Mail,
+  BarChart3, FileBarChart, UserCircle, Settings,
   ChevronDown, Menu, X
 } from 'lucide-react';
 
@@ -15,8 +15,6 @@ const adminLinks = [
   { to: '/admin/reportes', icon: FileBarChart, label: 'Reportes' },
   { section: 'Altas' },
   { to: '/admin/libros', icon: BookOpen, label: 'Libros' },
-  { to: '/admin/computadoras', icon: Monitor, label: 'Computadoras' },
-  { to: '/admin/restiradores', icon: PenTool, label: 'Restiradores' },
   { section: 'Gestión' },
   { to: '/admin/usuarios', icon: Users, label: 'Usuarios' },
   { to: '/admin/documentos', icon: FileText, label: 'Documentos' },
@@ -28,16 +26,13 @@ const userLinks = [
   { section: 'General' },
   { to: '/user', icon: LayoutDashboard, label: 'Inicio', end: true },
   { section: 'Servicios' },
-  { to: '/user/computadoras', icon: Monitor, label: 'Computadoras' },
   { to: '/user/libros', icon: BookOpen, label: 'Libros' },
-  { to: '/user/restiradores', icon: PenTool, label: 'Restiradores' },
   { section: 'Mis Solicitudes' },
   { to: '/user/mis-solicitudes', icon: Package, label: 'Solicitudes' },
   { to: '/user/mis-solicitudes-libros', icon: BookOpen, label: 'Solicitudes Libros' },
   { section: 'Cuenta' },
   { to: '/user/perfil', icon: UserCircle, label: 'Mi Perfil' },
-  { to: '/user/cambiar-correo', icon: Mail, label: 'Cambiar Correo' },
-  { to: '/user/cuenta', icon: Settings, label: 'Modificar Cuenta' },
+  { to: '/user/cuenta', icon: Settings, label: 'Cambiar Contraseña' },
 ];
 
 function DropdownMenu({ section, items, onClose }) {

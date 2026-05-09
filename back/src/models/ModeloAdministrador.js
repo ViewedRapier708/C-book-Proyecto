@@ -61,39 +61,7 @@ async function CrearEjemplar(libro_id, codigo_barras, numero_ejemplar, anio, est
     }
 }
 
-  async function CrearComputadora(procesador, programas, carrera, Disponible = true, En_funcionamiento = true, Observacion = 'N/A', no_inventario, no_computadora) {
-    try {
-        const { data, error } = await supabase
-            .from('computadoras')
-            .insert([{ procesador, programas, carrera, Disponible, En_funcionamiento, Observacion, no_inventario, no_computadora }])
-            .select();
-        if (error) {
-            console.error("Error creando computadora:", error);
-            return { success: false, message: error.message };
-        }
-        return { success: true, data: data };
-    } catch (error) {
-        console.error("Error interno creando computadora:", error);
-        return { success: false, message: 'Error interno del servidor' };
-    }
-}
 
-  async function CrearRestirador(Disponible = true, estado_de_material = true, Observacion = 'N/A', no_inventario, no_restirador) {
-    try {
-        const { data, error } = await supabase
-            .from('restiradores')
-            .insert([{ Disponible, estado_de_material, Observacion, no_inventario, no_restirador }])
-            .select();
-        if (error) {
-            console.error("Error creando restirador:", error);
-            return { success: false, message: error.message };
-        }
-        return { success: true, data: data };
-    } catch (error) {
-        console.error("Error interno creando restirador:", error);
-        return { success: false, message: 'Error interno del servidor' };
-    }
-}
 
 
   async function CrearGuardarropa(ocupado, estado) {
@@ -113,41 +81,7 @@ async function CrearEjemplar(libro_id, codigo_barras, numero_ejemplar, anio, est
     }
 }//Para despues
 
-  async function eliminarComputadora(id) {
-    try {
-        const { data, error } = await supabase
-            .from('computadoras')
-            .delete()
-            .eq('id', id)
-            .select();
-        if (error) {
-            console.error("Error eliminando computadora:", error);
-            return { success: false, message: error.message };
-        }
-        return { success: true, data: data };
-    } catch (error) {
-        console.error("Error interno eliminando computadora:", error);
-        return { success: false, message: 'Error interno del servidor' };
-    }   
-}
 
-  async function eliminarRestirador(id) {
-    try {
-        const { data, error } = await supabase
-            .from('restiradores')
-            .delete()
-            .eq('id', id)
-            .select();
-        if (error) {
-            console.error("Error eliminando restirador:", error);
-            return { success: false, message: error.message };
-        }
-        return { success: true, data: data };
-    } catch (error) {
-        console.error("Error interno eliminando restirador:", error);
-        return { success: false, message: 'Error interno del servidor' };
-    }
-}
 
   async function eliminarLibro(id) {
     try {
@@ -185,41 +119,7 @@ async function eliminarGuardarropa(id) {
     }
 }
 
-  async function actualizarDatosComputadora(id, procesador, programas, carrera, Disponible, En_funcionamiento, Observacion, no_inventario, no_computadora) {
-    try {
-        const { data, error } = await supabase
-            .from('computadoras')
-            .update({ procesador, programas, carrera, Disponible, En_funcionamiento, Observacion, no_inventario, no_computadora })
-            .eq('id', id)
-            .select();
-        if (error) {
-            console.error("Error actualizando computadora:", error);
-            return { success: false, message: error.message };
-        }
-        return { success: true, data: data };
-    } catch (error) {
-        console.error("Error interno actualizando computadora:", error);
-        return { success: false, message: 'Error interno del servidor' };
-    }
-}
 
-  async function actualizarDatosRestirador(id, Disponible, estado_de_material, Observacion, no_inventario, no_restirador) {
-    try {
-        const { data, error } = await supabase
-            .from('restiradores')
-            .update({ Disponible, estado_de_material, Observacion, no_inventario, no_restirador })
-            .eq('id', id)
-            .select();
-        if (error) {
-            console.error("Error actualizando restirador:", error);
-            return { success: false, message: error.message };
-        }
-        return { success: true, data: data };
-    } catch (error) {
-        console.error("Error interno actualizando restirador:", error);
-        return { success: false, message: 'Error interno del servidor' };
-    }
-}
 
   async function actualizarDatosLibro(id, titulo, clasificacion, isbn, tipo_material, autor) {
     try {
@@ -263,10 +163,6 @@ async function ObtenerMateriales(tipo, pagination = {}) {
     switch (tipo) {
         case 'libros':
             return await obtenerLibros(pagination);
-        case 'computadoras':
-            return await obtenerComputadoras(pagination);
-        case 'restiradores':
-            return await obtenerRestiradores(pagination);
         case 'guardarropas':
             return await obtenerGuardarropas(pagination);
         default:
@@ -274,35 +170,7 @@ async function ObtenerMateriales(tipo, pagination = {}) {
     }
 }
 
-async function obtenerComputadoras(pagination) {
-    try {
-        const { page, limit, from, to } = resolvePagination(pagination);
 
-        const { count, error: countError } = await supabase
-            .from('computadoras')
-            .select('*', { count: 'exact', head: true });
-
-        if (countError) {
-            console.error('Error obteniendo total computadoras:', countError);
-            return { success: false, message: countError.message };
-        }
-
-        const { data, error } = await supabase
-            .from('computadoras')
-            .select('*')
-            .range(from, to);
-
-        if (error) {
-            console.error('Error obteniendo computadora:', error);
-            return { success: false, message: error.message };
-        }
-
-        return { success: true, data: data, total: count, page, limit };
-    } catch (error) {
-        console.error('Error interno obteniendo computadora:', error);
-        return { success: false, message: 'Error interno del servidor' };
-    }
-}
 
 async function obtenerLibros(pagination) {
     try {
@@ -353,35 +221,7 @@ async function obtenerLibros(pagination) {
     }
 }
 
-async function obtenerRestiradores(pagination) {
-    try {
-        const { page, limit, from, to } = resolvePagination(pagination);
 
-        const { count, error: countError } = await supabase
-            .from('restiradores')
-            .select('*', { count: 'exact', head: true });
-
-        if (countError) {
-            console.error('Error obteniendo total restiradores:', countError);
-            return { success: false, message: countError.message };
-        }
-
-        const { data, error } = await supabase
-            .from('restiradores')
-            .select('*')
-            .range(from, to);
-
-        if (error) {
-            console.error('Error obteniendo restirador:', error);
-            return { success: false, message: error.message };
-        }
-
-        return { success: true, data: data, total: count, page, limit };
-    } catch (error) {
-        console.error('Error interno obteniendo restirador:', error);
-        return { success: false, message: 'Error interno del servidor' };
-    }
-}
   async function obtenerGuardarropas(pagination) {
     try {
         const { page, limit, from, to } = resolvePagination(pagination);
@@ -798,23 +638,15 @@ async function BoletasExistentes(boletasArr) {
 module.exports = {
     CrearLibro,
     CrearEjemplar,
-    CrearComputadora,
-    CrearRestirador,
     CrearGuardarropa,
-    eliminarComputadora,
-    eliminarRestirador,
     eliminarLibro,
     eliminarGuardarropa,
-    actualizarDatosComputadora,
-    actualizarDatosRestirador,
     actualizarDatosLibro,
     actualizarDatosEjemplar,
     ObtenerMateriales,
     ObtenerUsuarios,
     HabilitarDocumentacionUsuario,
-    obtenerComputadoras,
     obtenerLibros,
-    obtenerRestiradores,
     obtenerGuardarropas,
     ObtenerSolicitudesLibros,
     ActualizarEstadoSolicitudLibro,

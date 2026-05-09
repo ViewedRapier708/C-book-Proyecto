@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { verificarSesion, registro, verificarCorreo, login, cerrarSesion, CambioDatos, solicitarRecuperacion, actualizarContraseña } = require('../controllers/ControladorUsuario.js');
-const { obtenerRecursosPorTipo} = require('../controllers/ControladorRecursos.js');
+const { verificarSesion, registro, verificarCorreo, login, cerrarSesion, CambioDatos, solicitarRecuperacion, actualizarContraseña, cambiarContrasenaPropia } = require('../controllers/ControladorUsuario.js');
+const { obtenerRecursosPorTipo, obtenerLibrosMasSolicitados } = require('../controllers/ControladorRecursos.js');
 const middlewareAutenticacion = require('../middleware/verificacionPeticiones.js');
 const controladorSolicitudes = require('../controllers/ControladorSolicitudes.js');
 const controladorAdministrador = require('../controllers/ControladorAdministrador.js');
@@ -20,24 +20,22 @@ router.post('/login', login);
 router.get('/session', verificarSesion);
 router.post('/logout', sessionGuard, cerrarSesion);
 router.get('/recursos', obtenerRecursosPorTipo);
+router.get('/libros/mas-solicitados', sessionGuard, obtenerLibrosMasSolicitados);
 router.get('/recursos/usuario', sessionGuard, controladorSolicitudes.obtencionSolicitudesUsuario);
 router.post('/solicitud', sessionGuard,middlewareAutenticacion.verificarDisponibilidad,controladorSolicitudes.crearSolicitud);
 router.delete('/solicitud/:tipo/:id', sessionGuard, controladorSolicitudes.cancelarSolicitud);
 router.patch('/CuentaUpdate', sessionGuard, CambioDatos);
+router.post('/cambiar-contrasena', sessionGuard, cambiarContrasenaPropia);
 // ==================== RUTAS DE ADMINISTRADOR ====================
 
 // Crear materiales
 router.post('/admin/libros', sessionGuard, controladorAdministrador.crearLibro);
-router.post('/admin/computadoras', sessionGuard, controladorAdministrador.crearComputadora);
-router.post('/admin/restiradores', sessionGuard, controladorAdministrador.crearRestirador);
 
 // Eliminar materiales
 router.delete('/admin/materiales/:tipo/:id', sessionGuard, controladorAdministrador.eliminarMaterial);
 
 // Actualizar materiales
 router.put('/admin/libros', sessionGuard, controladorAdministrador.actualizarLibro);
-router.put('/admin/computadoras', sessionGuard, controladorAdministrador.actualizarComputadora);
-router.put('/admin/restiradores', sessionGuard, controladorAdministrador.actualizarRestirador);
 
 // Obtener materiales
 router.get('/admin/materiales/:tipo', sessionGuard, controladorAdministrador.obtenerMateriales);

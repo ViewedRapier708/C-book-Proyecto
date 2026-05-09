@@ -5,7 +5,7 @@ import { Spinner, EmptyState } from '../../components/ui/Feedback';
 import Pagination from '../../components/ui/Pagination';
 import Modal from '../../components/ui/Modal';
 import toast from 'react-hot-toast';
-import { Search } from 'lucide-react';
+import { Search, TrendingUp, Star } from 'lucide-react';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 
 const MAX_LIBROS = 3;
@@ -21,21 +21,25 @@ export default function SolicitudLibros() {
   const [confirm, setConfirm] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [activasCount, setActivasCount] = useState(0);
+  const [masSolicitados, setMasSolicitados] = useState([]);
+  const [loadingTop, setLoadingTop] = useState(true);
   const PER_PAGE = 12;
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [catData, solData] = await Promise.all([
+      const [catData, solData, topData] = await Promise.all([
         recursosApi.getByType('libro'),
         solicitudesApi.getUserSolicitudes(),
+        recursosApi.getMasSolicitados(),
       ]);
       setItems(catData.data || []);
+      setMasSolicitados(topData.data || []);
       const sols = solData.data || [];
       const activas = sols.filter(s => s.tipo_solicitud === 'libro' && s.estado_asistencia_id === 1).length;
       setActivasCount(activas);
     } catch { toast.error('Error al cargar libros'); }
-    finally { setLoading(false); }
+    finally { setLoading(false); setLoadingTop(false); }
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -92,6 +96,46 @@ export default function SolicitudLibros() {
       {activasCount >= MAX_LIBROS && (
         <div style={{ padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', background: '#f59e0b18', border: '1px solid #f59e0b44', marginBottom: '1rem', fontSize: '0.85rem', color: '#f59e0b' }}>
           Ya tienes {activasCount} solicitudes de libros activas (máximo {MAX_LIBROS}). Debes concluir alguna antes de solicitar otro.
+        </div>
+      )}
+
+      {!loadingTop && masSolicitados.length > 0 && (
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <TrendingUp size={18} color="var(--accent-primary)" />
+            <h3 style={{ margin: 0, fontSize: '1rem' }}>Libros más solicitados</h3>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Recomendaciones</span>
+          </div>
+          <div className="resource-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+            {masSolicitados.map((b) => (
+              <div key={b.id} className="resource-card" style={{ border: '1px solid var(--accent-primary-light)' }}>
+                <div className="resource-card-title">
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>
+                    {b.libros?.titulo || 'Sin título'}
+                  </span>
+                  {b.solicitudes_count >= 3 && <Star size={14} color="#f59e0b" fill="#f59e0b" />}
+                </div>
+                <div className="resource-card-body">
+                  <div className="resource-card-row"><span className="resource-card-label">Autor</span><span className="resource-card-value">{b.libros?.autor || '-'}</span></div>
+                  <div className="resource-card-row"><span className="resource-card-label">Solicitado</span><span className="resource-card-value" style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>{b.solicitudes_count} vez{Number(b.solicitudes_count) !== 1 ? 'es' : ''}</span></div>
+                </div>
+                <div className="resource-card-actions">
+                  <button
+                    className="btn btn-outline btn-sm"
+                    style={{ flex: 1 }}
+                    onClick={() => {
+                      setSearch(b.libros?.titulo || '');
+                      setFilterTipo('');
+                      setFilterDisp('');
+                      setPage(1);
+                    }}
+                  >
+                    Ver en catálogo
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

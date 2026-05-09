@@ -6,11 +6,7 @@ export const adminApi = {
   // Materials CRUD
   getMaterials: (tipo) => api.get(`/admin/materiales/${tipo}`),
   createBook: (data) => api.post('/admin/libros', data),
-  createComputer: (data) => api.post('/admin/computadoras', data),
-  createRestirador: (data) => api.post('/admin/restiradores', data),
   updateBook: (data) => api.put('/admin/libros', data),
-  updateComputer: (data) => api.put('/admin/computadoras', data),
-  updateRestirador: (data) => api.put('/admin/restiradores', data),
   deleteMaterial: (tipo, id) => api.delete(`/admin/materiales/${tipo}/${id}`),
 
   // Users

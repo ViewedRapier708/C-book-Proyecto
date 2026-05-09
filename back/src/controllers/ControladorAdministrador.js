@@ -2,15 +2,9 @@ const path = require('path');
 const {
     CrearLibro,
     CrearEjemplar,
-    CrearComputadora,
-    CrearRestirador,
     CrearGuardarropa,
-    eliminarComputadora,
-    eliminarRestirador,
     eliminarLibro,
     eliminarGuardarropa,
-    actualizarDatosComputadora,
-    actualizarDatosRestirador,
     actualizarDatosLibro,
     actualizarDatosEjemplar,
     ObtenerUsuarios,
@@ -332,157 +326,9 @@ for (const [campo, limites] of Object.entries(longitudes)) {
     }
 }
 
-async function crearComputadora(req, res) {
-    try {
-        const { 
-            procesador, programas, carrera, 
-            Disponible, En_funcionamiento, Observacion, 
-            no_inventario, no_computadora 
-        } = req.body;
 
-        const procesadorTrim = String(procesador ?? '').trim();
-        const programasTrim = String(programas ?? '').trim();
-        const carreraTrim = String(carrera ?? '').trim();
-        const noInventarioTrim = String(no_inventario ?? '').trim();
-        
-        if (!procesadorTrim || !programasTrim || !carreraTrim || !noInventarioTrim || no_computadora === undefined || no_computadora === null || String(no_computadora).trim() === '') {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Todos los campos requeridos deben estar presentes' 
-            });
-        }
 
-        const validacionNoComputadora = validarEnteroSinDecimales(no_computadora, 'no_computadora');
-        if (!validacionNoComputadora.ok) {
-            return res.status(400).json({
-                success: false,
-                message: validacionNoComputadora.message
-            });
-        }
 
-        const noComputadoraNumero = validacionNoComputadora.value;
-
-        // Validar duplicados
-        const supabase = getClient();
-        const { data: inventarioDuplicado } = await supabase
-            .from('computadoras')
-            .select('id')
-            .eq('no_inventario', noInventarioTrim)
-            .maybeSingle();
-
-        if (inventarioDuplicado) {
-            return res.status(409).json({
-                success: false,
-                message: 'Ya existe una computadora con este número de inventario'
-            });
-        }
-
-        const { data: computadoraDuplicada } = await supabase
-            .from('computadoras')
-            .select('id')
-            .eq('no_computadora', noComputadoraNumero)
-            .maybeSingle();
-
-        if (computadoraDuplicada) {
-            return res.status(409).json({
-                success: false,
-                message: 'Ya existe una computadora con este número'
-            });
-        }
-
-        const resultado = await CrearComputadora(
-            procesadorTrim, programasTrim, carreraTrim, 
-            Disponible, En_funcionamiento, Observacion, 
-            noInventarioTrim, noComputadoraNumero
-        );
-        
-        if (resultado.success) {
-            return res.status(201).json(resultado);
-        } else {
-            return res.status(400).json(resultado);
-        }
-    } catch (error) {
-        console.error('Error en crearComputadora:', error);
-        return res.status(500).json({ 
-            success: false, 
-            message: 'Error interno del servidor' 
-        });
-    }
-}
-
-async function crearRestirador(req, res) {
-    try {
-        const { 
-            Disponible, estado_de_material, estado_material, 
-            Observacion, no_inventario, no_restirador 
-        } = req.body;
-
-        const estadoMaterial = estado_de_material ?? estado_material;
-        const noInventarioTrim = String(no_inventario ?? '').trim();
-        
-        if (!noInventarioTrim || no_restirador === undefined || no_restirador === null || String(no_restirador).trim() === '') {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Los campos no_inventario y no_restirador son requeridos' 
-            });
-        }
-
-        const validacionNoRestirador = validarEnteroSinDecimales(no_restirador, 'no_restirador');
-        if (!validacionNoRestirador.ok) {
-            return res.status(400).json({
-                success: false,
-                message: validacionNoRestirador.message
-            });
-        }
-
-        const noRestiradorNumero = validacionNoRestirador.value;
-
-        // Validar duplicados
-        const supabase = getClient();
-        const { data: inventarioDuplicado } = await supabase
-            .from('restiradores')
-            .select('id')
-            .eq('no_inventario', noInventarioTrim)
-            .maybeSingle();
-
-        if (inventarioDuplicado) {
-            return res.status(409).json({
-                success: false,
-                message: 'Ya existe un restirador con este número de inventario'
-            });
-        }
-
-        const { data: restiradorDuplicado } = await supabase
-            .from('restiradores')
-            .select('id')
-            .eq('no_restirador', noRestiradorNumero)
-            .maybeSingle();
-
-        if (restiradorDuplicado) {
-            return res.status(409).json({
-                success: false,
-                message: 'Ya existe un restirador con este número'
-            });
-        }
-
-        const resultado = await CrearRestirador(
-            Disponible, estadoMaterial, 
-            Observacion, noInventarioTrim, noRestiradorNumero
-        );
-        
-        if (resultado.success) {
-            return res.status(201).json(resultado);
-        } else {
-            return res.status(400).json(resultado);
-        }
-    } catch (error) {
-        console.error('Error en crearRestirador:', error);
-        return res.status(500).json({ 
-            success: false, 
-            message: 'Error interno del servidor' 
-        });
-    }
-}
 
 async function crearGuardarropa(req, res) {
     try {
@@ -520,17 +366,11 @@ async function eliminarMaterial(req, res) {
             });
         }
 
-        let resultado;
-        
+let resultado;
+         
         switch (tipo) {
             case 'libros':
                 resultado = await eliminarLibro(id);
-                break;
-            case 'computadoras':
-                resultado = await eliminarComputadora(id);
-                break;
-            case 'restiradores':
-                resultado = await eliminarRestirador(id);
                 break;
             case 'guardarropas':
                 resultado = await eliminarGuardarropa(id);
@@ -538,7 +378,7 @@ async function eliminarMaterial(req, res) {
             default:
                 return res.status(400).json({ 
                     success: false, 
-                    message: 'Tipo de material no válido' 
+                    message: 'Tipo de material no v�lido' 
                 });
         }
 
@@ -647,99 +487,9 @@ async function actualizarLibro(req, res) {
     }
 }
 
-async function actualizarComputadora(req, res) {
-    try {
-        const { 
-            id, procesador, programas, carrera, 
-            Disponible, En_funcionamiento, Observacion, 
-            no_inventario, no_computadora 
-        } = req.body;
-        
-        if (!id) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'El id es requerido' 
-            });
-        }
 
-        let noComputadoraActualizada = no_computadora;
-        if (no_computadora !== undefined) {
-            const validacionNoComputadora = validarEnteroSinDecimales(no_computadora, 'no_computadora');
-            if (!validacionNoComputadora.ok) {
-                return res.status(400).json({
-                    success: false,
-                    message: validacionNoComputadora.message
-                });
-            }
-            noComputadoraActualizada = validacionNoComputadora.value;
-        }
 
-        const resultado = await actualizarDatosComputadora(
-            id, procesador, programas, carrera, 
-            Disponible, En_funcionamiento, Observacion, 
-            no_inventario, noComputadoraActualizada
-        );
-        
-        if (resultado.success) {
-            return res.status(200).json(resultado);
-        } else {
-            return res.status(400).json(resultado);
-        }
-    } catch (error) {
-        console.error('Error en actualizarComputadora:', error);
-        return res.status(500).json({ 
-            success: false, 
-            message: 'Error interno del servidor' 
-        });
-    }
-}
 
-async function actualizarRestirador(req, res) {
-    try {
-        const { 
-            id, Disponible, estado_de_material, estado_material, 
-            Observacion, no_inventario, no_restirador 
-        } = req.body;
-
-        const estadoMaterial = estado_de_material ?? estado_material;
-        
-        if (!id) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'El id es requerido' 
-            });
-        }
-
-        let noRestiradorActualizado = no_restirador;
-        if (no_restirador !== undefined) {
-            const validacionNoRestirador = validarEnteroSinDecimales(no_restirador, 'no_restirador');
-            if (!validacionNoRestirador.ok) {
-                return res.status(400).json({
-                    success: false,
-                    message: validacionNoRestirador.message
-                });
-            }
-            noRestiradorActualizado = validacionNoRestirador.value;
-        }
-
-        const resultado = await actualizarDatosRestirador(
-            id, Disponible, estadoMaterial, 
-            Observacion, no_inventario, noRestiradorActualizado
-        );
-        
-        if (resultado.success) {
-            return res.status(200).json(resultado);
-        } else {
-            return res.status(400).json(resultado);
-        }
-    } catch (error) {
-        console.error('Error en actualizarRestirador:', error);
-        return res.status(500).json({ 
-            success: false, 
-            message: 'Error interno del servidor' 
-        });
-    }
-}
 
 // ==================== OBTENER MATERIALES ====================
 
@@ -1371,12 +1121,8 @@ async function confirmarCargaMasiva(req, res) {
 
 module.exports = {
     crearLibro,
-    crearComputadora,
-    crearRestirador,
     eliminarMaterial,
     actualizarLibro,
-    actualizarComputadora,
-    actualizarRestirador,
     obtenerMateriales,
     obtenerUsuarios,
     habilitarDocumentacion,

@@ -11,8 +11,6 @@ const allCommands = [
   { label: 'Inicio', to: '/admin', icon: LayoutDashboard, role: 'Admin' },
   { label: 'Analytics', to: '/admin/analytics', icon: BarChart3, role: 'Admin' },
   { label: 'Libros (Alta)', to: '/admin/libros', icon: BookOpen, role: 'Admin' },
-  { label: 'Computadoras (Alta)', to: '/admin/computadoras', icon: Monitor, role: 'Admin' },
-  { label: 'Restiradores (Alta)', to: '/admin/restiradores', icon: PenTool, role: 'Admin' },
   { label: 'Usuarios', to: '/admin/usuarios', icon: Users, role: 'Admin' },
   { label: 'Documentos', to: '/admin/documentos', icon: FileText, role: 'Admin' },
   { label: 'Solicitudes Libros', to: '/admin/solicitudes-libros', icon: ClipboardList, role: 'Admin' },
@@ -20,9 +18,7 @@ const allCommands = [
   { label: 'Reportes', to: '/admin/reportes', icon: FileText, role: 'Admin' },
   // User
   { label: 'Inicio', to: '/user', icon: LayoutDashboard, role: 'alumno' },
-  { label: 'Computadoras', to: '/user/computadoras', icon: Monitor, role: 'alumno' },
   { label: 'Libros', to: '/user/libros', icon: BookOpen, role: 'alumno' },
-  { label: 'Restiradores', to: '/user/restiradores', icon: PenTool, role: 'alumno' },
   { label: 'Mis Solicitudes', to: '/user/mis-solicitudes', icon: Package, role: 'alumno' },
   { label: 'Solicitudes Libros', to: '/user/mis-solicitudes-libros', icon: BookOpen, role: 'alumno' },
   { label: 'Mi Perfil', to: '/user/perfil', icon: Settings, role: 'alumno' },

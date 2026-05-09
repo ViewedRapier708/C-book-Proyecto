@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { BookOpen, Monitor, PenTool, Package, Activity, ArrowRight, RefreshCw } from 'lucide-react';
+import { BookOpen, Package, Activity, ArrowRight, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
@@ -9,13 +9,6 @@ import { solicitudesApi } from '../../api/recursos';
 import StatCard from '../../components/ui/StatCard';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 import { Spinner } from '../../components/ui/Feedback';
-
-const ESTADO_ASISTENCIA = {
-  1: 'pendiente',
-  2: 'asistio',
-  3: 'cancelada',
-  4: 'no_asistio',
-};
 
 const ESTADO_SOLICITUD = {
   1: 'pendiente',
@@ -33,16 +26,12 @@ const ESTADO_PRESTAMO = {
 };
 
 const TIPO_MAP = {
-  computadora: 'Computadora',
-  restirador: 'Restirador',
   libro: 'Libro',
 };
 
 function getTipoSolicitud(s) {
   if (s.tipo_solicitud) return s.tipo_solicitud.toLowerCase();
   if (s.ejemplar_id) return 'libro';
-  if (s.computadora_id) return 'computadora';
-  if (s.restirador_id) return 'restirador';
   return 'desconocido';
 }
 
@@ -51,11 +40,9 @@ function getEstadoStr(s) {
 
   // Para libros
   if (tipo === 'libro') {
-    // Primero verificar estado de préstamo si existe
     if (s.estado_prestamo_id) {
       return ESTADO_PRESTAMO[s.estado_prestamo_id] || 'sin_estado';
     }
-    // Luego estado de solicitud (puede venir como estado_solicitud_id o estado_asistencia_id)
     const estadoSolicitud = s.estado_solicitud_id ?? s.estado_asistencia_id;
     if (estadoSolicitud) {
       return ESTADO_SOLICITUD[estadoSolicitud] || 'sin_estado';
@@ -63,18 +50,14 @@ function getEstadoStr(s) {
     return 'sin_estado';
   }
 
-  // Para computadoras y restiradores
-  if (s.estado_asistencia_id) {
-    return ESTADO_ASISTENCIA[s.estado_asistencia_id] || 'sin_estado';
-  }
   return 'sin_estado';
 }
 
 // Solicitud activa = está en uso actualmente
 function isActiva(s) {
   const estado = getEstadoStr(s);
-  // Activa = usando computadora/restirador (asistio) o tiene libro (aprobada, entregado, en_espera_recoleccion, recogido)
-  return ['asistio', 'aprobada', 'entregado', 'en_espera_recoleccion', 'recogido'].includes(estado);
+  // Activa = tiene libro (aprobada, entregado, en_espera_recoleccion, recogido)
+  return ['aprobada', 'entregado', 'en_espera_recoleccion', 'recogido'].includes(estado);
 }
 
 // Solicitud pendiente = esperando respuesta/acción
@@ -135,9 +118,7 @@ export default function UserHome() {
   const recientes = solicitudes.slice(0, 5);
 
   const services = [
-    { icon: Monitor, label: 'Computadoras', desc: 'Solicita una computadora disponible', to: '/user/computadoras', color: '#0ea5e9' },
     { icon: BookOpen, label: 'Libros', desc: 'Busca y solicita libros del acervo', to: '/user/libros', color: '#1f8a70' },
-    { icon: PenTool, label: 'Restiradores', desc: 'Reserva un restirador de trabajo', to: '/user/restiradores', color: '#1f9d74' },
     { icon: Package, label: 'Mis Solicitudes', desc: 'Revisa el estado de tus solicitudes', to: '/user/mis-solicitudes', color: '#d97706' },
   ];
 

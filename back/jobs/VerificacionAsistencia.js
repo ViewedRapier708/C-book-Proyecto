@@ -8,57 +8,13 @@ try {
     ({ getClient } = require('../config/db'));
 }
 const supabase = getClient();
-var Act_computadoras={}
-var Act_restiradores={}
 var Solicicitudes_libros={}
 async function verificarAsistencia(params) {
     const actividades = await obtenerActividades();
     // Supabase regresa { data, error }, así que aquí normalizamos sin romper tu estructura
-    Act_computadoras = (actividades.Computadoras && actividades.Computadoras.data) ? actividades.Computadoras.data : actividades.Computadoras;
-    Act_restiradores = (actividades.Restiradores && actividades.Restiradores.data) ? actividades.Restiradores.data : actividades.Restiradores;
     Solicicitudes_libros = (actividades.Libros && actividades.Libros.data) ? actividades.Libros.data : actividades.Libros;
 
     const tareasCancelacion = [];
-   
-    Object.entries(Act_computadoras || {}).forEach(([key, value]) => {
-        if (!value || !value.fecha_solicitud) {
-            return;
-        }
-        let fechaActual = new Date().getHours();//Obtener la hora actual
-        let fechaActividad = new Date(value.fecha_solicitud);
-        let horaLimite = fechaActividad.getHours() ;//Verificar la hora limite de asistencia
-
-        // Verificación real por fecha completa (no solo hora), con tolerancia configurable
-        const minutosTolerancia = Number(process.env.ASISTENCIA_TIMEOUT_MINUTES || 60);
-        const limiteAsistencia = new Date(fechaActividad.getTime() + (minutosTolerancia * 60 * 1000));
-
-        if(fechaActual > horaLimite || new Date() > limiteAsistencia){
-            // Aquí puedes actualizar el estado de la actividad en la base de datos si es necesario
-            tareasCancelacion.push(
-                cancelarActividad(value.id, 'computadora').catch((err) => console.error('Error cancelando computadora:', err))
-            );
-        }
-    });
-
-    Object.entries(Act_restiradores || {}).forEach(([key, value]) => {
-        if (!value || !value.fecha_solicitud) {
-            return;
-        }
-        let fechaActual = new Date().getHours();
-        let fechaActividad = new Date(value.fecha_solicitud);
-        let horaLimite = fechaActividad.getHours() ;
-
-        const minutosTolerancia = Number(process.env.ASISTENCIA_TIMEOUT_MINUTES || 60);
-        const limiteAsistencia = new Date(fechaActividad.getTime() + (minutosTolerancia * 60 * 1000));
-
-        if(fechaActual > horaLimite || new Date() > limiteAsistencia){
-            // Aquí puedes actualizar el estado de la actividad en la base de datos si es necesario
-            tareasCancelacion.push(
-                cancelarActividad(value.id, 'restirador').catch((err) => console.error('Error cancelando restirador:', err))
-            );
-        }
-    
-    });
 
     Object.entries(Solicicitudes_libros || {}).forEach(([key, value]) => {
         if (!value || !value.fecha_solicitud) {
@@ -109,12 +65,10 @@ async function verificarAsistencia(params) {
 
 
 const obtenerActividades = async () => {
-const Computadoras = await supabase.from('solicitudes_computadora').select('*').eq("estado_asistencia_id",1);
-const Restiradores = await supabase.from('solicitudes_restirador').select('*').eq("estado_asistencia_id",1);
 // Libros: pendientes (1) y aprobadas por recolectar (2)
 const Libros = await supabase.from('solicitudes_libros').select('*').in("estado_asistencia_id",[1,2]);
 
-return {Computadoras,Restiradores,Libros};
+return {Libros};
     // Lógica para obtener las actividades programadas desde la base de datos
     // Retorna un array de actividades con sus fechas y estados
 }
@@ -124,28 +78,13 @@ const cancelarActividad = async (ID_SOLICITUD, tipo = null) => {
     // si se pasa tipo, solo cancela en la tabla correcta.
     const nowIso = new Date().toISOString();
 
-    if (tipo === 'computadora') {
-        await supabase
-            .from('solicitudes_computadora')
-            .update({ estado_asistencia_id: 4 })
-            .eq('id', ID_SOLICITUD)
-            .eq('estado_asistencia_id', 1);
-    } else if (tipo === 'restirador') {
-        await supabase
-            .from('solicitudes_restirador')
-            .update({ estado_asistencia_id: 4 })
-            .eq('id', ID_SOLICITUD)
-            .eq('estado_asistencia_id', 1);
-    } else if (tipo === 'libro') {
+    if (tipo === 'libro') {
         await supabase
             .from('solicitudes_libros')
             .update({ estado_asistencia_id: 4 })
             .eq('id', ID_SOLICITUD)
             .in('estado_asistencia_id', [1, 2]);
     } else {
-        // Comportamiento original (por compatibilidad): intenta cancelar en todas
-        await supabase.from('solicitudes_computadora').update({ estado_asistencia_id: 4 }).eq('id', ID_SOLICITUD);
-        await supabase.from('solicitudes_restirador').update({ estado_asistencia_id: 4 }).eq('id', ID_SOLICITUD);
         await supabase.from('solicitudes_libros').update({ estado_asistencia_id: 4 }).eq('id', ID_SOLICITUD);
     }
 

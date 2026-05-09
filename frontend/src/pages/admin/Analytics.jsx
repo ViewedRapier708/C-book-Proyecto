@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   BarChart3, TrendingUp, PieChart as PieChartIcon,
-  Activity, Users, BookOpen, Monitor, PenTool, RefreshCw
+  Activity, Users, BookOpen, RefreshCw
 } from 'lucide-react';
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -51,8 +51,6 @@ export default function Analytics() {
   const disp = stats?.disponibilidad || {};
 
   const pieDistribucion = stats ? [
-    { name: 'Computadoras', value: porTipo.computadora || 0 },
-    { name: 'Restiradores', value: porTipo.restirador || 0 },
     { name: 'Libros', value: porTipo.libro || 0 },
   ].filter(d => d.value > 0) : [];
 
@@ -63,15 +61,11 @@ export default function Analytics() {
   ].filter(d => d.value > 0) : [];
 
   const disponibilidad = stats ? [
-    { name: 'Computadoras', disponibles: disp.computadoras?.disponibles || 0, total: disp.computadoras?.total || 0, ocupados: (disp.computadoras?.total || 0) - (disp.computadoras?.disponibles || 0) },
-    { name: 'Restiradores', disponibles: disp.restiradores?.disponibles || 0, total: disp.restiradores?.total || 0, ocupados: (disp.restiradores?.total || 0) - (disp.restiradores?.disponibles || 0) },
   ] : [];
 
   const statCards = stats ? [
     { icon: Users, label: 'Total Usuarios', value: totales.usuarios || 0, color: '#c46f21' },
     { icon: BookOpen, label: 'Total Libros', value: totales.libros || 0, color: '#1f8a70' },
-    { icon: Monitor, label: 'Total Computadoras', value: totales.computadoras || 0, color: '#0ea5e9' },
-    { icon: PenTool, label: 'Total Restiradores', value: totales.restiradores || 0, color: '#1f9d74' },
     { icon: Activity, label: 'Total Solicitudes', value: totales.solicitudes || 0, color: '#d97706' },
     { icon: BarChart3, label: 'Préstamos Activos', value: totales.prestamosActivos || 0, color: '#d4654a' },
   ] : [];

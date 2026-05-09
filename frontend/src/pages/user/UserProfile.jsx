@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   UserCircle, Mail, Hash, Shield, Sun, Moon,
-  Activity, BookOpen, Monitor, PenTool, Edit2, Key, ChevronRight
+  Activity, BookOpen, Key, ChevronRight
 } from 'lucide-react';
 import { solicitudesApi } from '../../api/recursos';
 import AnimatedPage from '../../components/layout/AnimatedPage';
@@ -29,8 +29,6 @@ const ESTADO_SOLICITUD = {
 };
 
 const TIPO_MAP = {
-  computadora: 'Computadora',
-  restirador: 'Restirador',
   libro: 'Libro',
 };
 
@@ -102,7 +100,7 @@ export default function UserProfile() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem' }}>
               <Mail size={16} color="var(--text-muted)" />
               <span style={{ color: 'var(--text-muted)' }}>Correo:</span>
-              <strong style={{ wordBreak: 'break-all' }}>{user?.correo || '-'}</strong>
+              <strong style={{ wordBreak: 'break-all' }}>{user?.email || '-'}</strong>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem' }}>
               <Shield size={16} color="var(--text-muted)" />
@@ -117,9 +115,7 @@ export default function UserProfile() {
           <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Acciones</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '1rem' }}>
             {[
-              { icon: Edit2, label: 'Editar perfil', to: '/user/perfil/editar' },
-              { icon: Mail, label: 'Cambiar correo', to: '/user/cambiar-correo' },
-              { icon: Key, label: 'Modificar cuenta', to: '/user/cuenta' },
+              { icon: Key, label: 'Cambiar contraseña', to: '/user/cuenta' },
             ].map(({ icon: Icon, label, to }) => (
               <button
                 key={to}
@@ -178,9 +174,7 @@ export default function UserProfile() {
           {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0.75rem', marginBottom: '1.5rem' }}>
             <StatCard icon={Activity} label="Total Solicitudes" value={solicitudes.length} color="#1f8a70" delay={0} />
-            <StatCard icon={Monitor} label="Computadoras" value={countByType('computadora')} color="#0ea5e9" delay={0.08} />
             <StatCard icon={BookOpen} label="Libros" value={countByType('libro')} color="#c46f21" delay={0.16} />
-            <StatCard icon={PenTool} label="Restiradores" value={countByType('restirador')} color="#1f9d74" delay={0.24} />
           </div>
 
           {/* Status Breakdown */}

@@ -19,7 +19,7 @@ function getEstado(id) {
 }
 
 function getTipoLabel(tipo) {
-  const m = { computadora: 'Computadora', restirador: 'Restirador', libro: 'Libro' };
+  const m = { libro: 'Libro' };
   return m[tipo] || tipo;
 }
 
@@ -39,7 +39,7 @@ export default function MisSolicitudes() {
     try {
       const data = await solicitudesApi.getUserSolicitudes();
       const list = data.data || data.solicitudes || [];
-      const normalized = list.filter((s) => s.tipo_solicitud !== 'libro');
+      const normalized = list.filter((s) => s.tipo_solicitud === 'libro');
       setItems(normalized);
     } catch { toast.error('Error al cargar solicitudes'); }
     finally { setLoading(false); }
@@ -87,8 +87,6 @@ export default function MisSolicitudes() {
         </div>
         <select value={filterTipo} onChange={(e) => { setFilterTipo(e.target.value); setPage(1); }} style={{ maxWidth: 160 }}>
           <option value="">Todos los tipos</option>
-          <option value="computadora">Computadora</option>
-          <option value="restirador">Restirador</option>
         </select>
         <select value={filterEstado} onChange={(e) => { setFilterEstado(e.target.value); setPage(1); }} style={{ maxWidth: 160 }}>
           <option value="">Todos los estados</option>

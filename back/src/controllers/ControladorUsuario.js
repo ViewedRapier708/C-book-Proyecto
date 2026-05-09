@@ -10,7 +10,8 @@ const {
   revocarSesionesSupabase,
   CambiarContraseña,
   CambioCorreo,
-  ActualizarContraseñaConToken
+  ActualizarContraseñaConToken,
+  actualizarContrasenaPropia
 } = require('../models/ModeloUsuario.js');
 const jwt = require('jsonwebtoken');
 
@@ -356,4 +357,42 @@ async function actualizarContraseña(req, res) {
   }
 }
 
-module.exports = { registro, verificarCorreo, login, cerrarSesion, verificarSesion, CambioDatos, solicitarRecuperacion, actualizarContraseña };
+// ==================== CAMBIO DE CONTRASEÑA (DESDE PERFIL) ====================
+async function cambiarContrasenaPropia(req, res) {
+  try {
+    const { correo, currentPassword, newPassword } = req.body;
+    const usuario = req.session?.user;
+
+    console.log('[cambiarContrasenaPropia] Request recibido. boleta:', usuario?.boleta, 'correo:', correo);
+
+    if (!correo || !currentPassword || !newPassword) {
+      console.error('[cambiarContrasenaPropia] Faltan datos:', { correo, currentPassword: !!currentPassword, newPassword: !!newPassword });
+      return res.status(400).json({ error: 'Faltan datos obligatorios' });
+    }
+
+    if (newPassword.length < 6 || newPassword.length > 16) {
+      return res.status(400).json({ error: 'La contraseña debe tener entre 6 y 16 caracteres' });
+    }
+
+    // Verificar que el correo proporcionado coincida con el de la sesión
+    if (correo !== usuario?.email) {
+      console.error('[cambiarContrasenaPropia] El correo no coincide con la sesión. Recibido:', correo, 'Esperado:', usuario?.email);
+      return res.status(400).json({ error: 'El correo no coincide con tu cuenta' });
+    }
+
+    const resultado = await actualizarContrasenaPropia(usuario.boleta, correo, usuario.supabaseUserId, newPassword);
+
+    if (!resultado.success) {
+      console.error('[cambiarContrasenaPropia] Error en actualizarContrasenaPropia:', resultado.error);
+      return res.status(400).json({ error: resultado.error });
+    }
+
+    console.log('[cambiarContrasenaPropia] Éxito');
+    return res.status(200).json({ success: true, message: 'Contraseña actualizada exitosamente' });
+  } catch (err) {
+    console.error('[cambiarContrasenaPropia] Error en catch:', err);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+module.exports = { registro, verificarCorreo, login, cerrarSesion, verificarSesion, CambioDatos, solicitarRecuperacion, actualizarContraseña, cambiarContrasenaPropia };

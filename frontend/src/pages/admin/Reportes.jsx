@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   FileBarChart, FileDown, FileSpreadsheet, Calendar,
-  Users, BookOpen, Monitor, PenTool, ClipboardList, RefreshCw
+  Users, BookOpen, RefreshCw
 } from 'lucide-react';
 import { adminApi } from '../../api/admin';
 import { exportToExcel, exportMultiSheetExcel } from '../../utils/exportExcel';
@@ -15,8 +15,6 @@ import AnimatedPage from '../../components/layout/AnimatedPage';
 const reportTypes = [
   { id: 'usuarios', label: 'Usuarios', icon: Users, color: '#c46f21' },
   { id: 'libros', label: 'Libros', icon: BookOpen, color: '#1f8a70' },
-  { id: 'computadoras', label: 'Computadoras', icon: Monitor, color: '#0ea5e9' },
-  { id: 'restiradores', label: 'Restiradores', icon: PenTool, color: '#1f9d74' },
   { id: 'completo', label: 'Reporte Completo', icon: FileBarChart, color: '#d97706' },
 ];
 
@@ -35,20 +33,6 @@ const columnMap = {
     { key: 'anio', label: 'Año' },
     { key: 'Disponible', label: 'Disponible' },
   ],
-  computadoras: [
-    { key: 'no_computadora', label: 'No. PC' },
-    { key: 'procesador', label: 'Procesador' },
-    { key: 'programas', label: 'Programas' },
-    { key: 'carrera', label: 'Carrera' },
-    { key: 'Disponible', label: 'Disponible' },
-    { key: 'En_funcionamiento', label: 'Funcionando' },
-  ],
-  restiradores: [
-    { key: 'no_restirador', label: 'No. Restirador' },
-    { key: 'no_inventario', label: 'No. Inventario' },
-    { key: 'estado_de_material', label: 'Estado Material' },
-    { key: 'Disponible', label: 'Disponible' },
-  ],
 };
 
 export default function Reportes() {
@@ -65,18 +49,14 @@ export default function Reportes() {
         result = await adminApi.getUsers();
         setData(prev => ({ ...prev, usuarios: result.data || [] }));
       } else if (type === 'completo') {
-        const [u, l, c, r] = await Promise.all([
+        const [u, l] = await Promise.all([
           adminApi.getUsers(),
           adminApi.getMaterials('libros'),
-          adminApi.getMaterials('computadoras'),
-          adminApi.getMaterials('restiradores'),
         ]);
         setData(prev => ({
           ...prev,
           usuarios: u.data || [],
           libros: l.data || [],
-          computadoras: c.data || [],
-          restiradores: r.data || [],
           completo: true,
         }));
       } else {
@@ -111,7 +91,7 @@ export default function Reportes() {
   };
 
   const handleExcelCompleto = () => {
-    const sheets = Object.keys(columnMap).map(key => ({
+    const sheets = Object.keys(columnMap).filter(key => key !== 'completo').map(key => ({
       name: key.charAt(0).toUpperCase() + key.slice(1),
       data: (data[key] || []).map(row => {
         const obj = {};
@@ -151,8 +131,6 @@ export default function Reportes() {
     const allStats = [
       { label: 'Usuarios', value: (data.usuarios || []).length },
       { label: 'Libros', value: (data.libros || []).length },
-      { label: 'Computadoras', value: (data.computadoras || []).length },
-      { label: 'Restiradores', value: (data.restiradores || []).length },
     ];
     const rows = [
       ...((data.libros || []).slice(0, 30).map(r => [r.libros?.titulo || '-', r.libros?.autor || '-', r.libros?.isbn || '-', r.Disponible ? 'Sí' : 'No'])),
@@ -271,12 +249,10 @@ export default function Reportes() {
         <motion.div className="card" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <h4 style={{ margin: '0 0 1rem' }}>Resumen del Reporte Completo</h4>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem' }}>
-            {[
-              { label: 'Usuarios', count: (data.usuarios || []).length, color: '#c46f21' },
-              { label: 'Libros', count: (data.libros || []).length, color: '#1f8a70' },
-              { label: 'Computadoras', count: (data.computadoras || []).length, color: '#0ea5e9' },
-              { label: 'Restiradores', count: (data.restiradores || []).length, color: '#1f9d74' },
-            ].map(item => (
+{[
+               { label: 'Usuarios', count: (data.usuarios || []).length, color: '#c46f21' },
+               { label: 'Libros', count: (data.libros || []).length, color: '#1f8a70' },
+             ].map(item => (
               <div key={item.label} style={{ textAlign: 'center', padding: '1rem', borderRadius: 'var(--radius)', background: item.color + '10' }}>
                 <div style={{ fontSize: '1.8rem', fontWeight: 700, color: item.color }}>{item.count}</div>
                 <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{item.label}</div>
