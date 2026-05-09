@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: c-book-api
+    name: c-book-proyecto
     env: node
     region: ohio
     buildCommand: npm install
