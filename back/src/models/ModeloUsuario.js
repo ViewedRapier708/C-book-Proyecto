@@ -282,7 +282,8 @@ async function revocarSesionesSupabase(accessToken) {
 //Cambio de contraseña y recuperación de contraseña
 async function CambiarContraseña(correo) {
   const supabase = getClient();
-  const redirectTo = `${process.env.FRONTEND_URL || 'https://c-book-proyecto.vercel.app'}/reset-password`;
+  const base = (process.env.FRONTEND_URL || 'https://c-book-proyecto.vercel.app').replace(/\/+$/, '');
+  const redirectTo = `${base}/reset-password`;
   try {
     const { data, error } = await supabase.auth.resetPasswordForEmail(correo, {
       redirectTo
