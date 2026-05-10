@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { authApi } from '../api/auth';
+import { supabase } from '../lib/supabaseClient';
+
+const CORREO_IPN_REGEX = /^[\w.-]+@alumno\.ipn\.mx$/;
 
 export default function ForgotPassword() {
-  const [boleta, setBoleta] = useState('');
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState(null);
   const [sent, setSent] = useState(false);
@@ -12,16 +14,27 @@ export default function ForgotPassword() {
     e.preventDefault();
     setMsg(null);
 
-    if (!/^\d{10}$/.test(boleta)) {
-      setMsg({ type: 'error', text: 'La boleta debe tener 10 dígitos' });
+    if (!email) {
+      setMsg({ type: 'error', text: 'Ingresa tu correo electrónico' });
+      return;
+    }
+
+    if (!CORREO_IPN_REGEX.test(email)) {
+      setMsg({ type: 'error', text: 'Debes usar tu correo institucional @alumno.ipn.mx' });
       return;
     }
 
     setLoading(true);
     try {
-      const data = await authApi.forgotPassword(boleta);
+      const redirectTo = `${window.location.origin}/reset-password`;
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo,
+      });
+
+      if (error) throw error;
+
       setSent(true);
-      setMsg({ type: 'success', text: data.message || 'Revisa tu correo para continuar.' });
+      setMsg({ type: 'success', text: 'Revisa tu correo para continuar.' });
     } catch (err) {
       setMsg({ type: 'error', text: err.message || 'No se pudo procesar la solicitud' });
     } finally {
@@ -34,27 +47,25 @@ export default function ForgotPassword() {
       <div className="auth-left">
         <div className="auth-hero">
           <h1>C-Book</h1>
-          <p>Recupera el acceso a tu cuenta ingresando tu número de boleta. Te enviaremos un enlace a tu correo registrado.</p>
+          <p>Recupera el acceso a tu cuenta ingresando tu correo institucional. Te enviaremos un enlace para restablecer tu contraseña.</p>
         </div>
       </div>
       <div className="auth-right">
         <div className="auth-form">
           <h2>Recuperar contraseña</h2>
-          <p className="subtitle">Ingresa tu boleta y te enviaremos las instrucciones</p>
+          <p className="subtitle">Ingresa tu correo y te enviaremos las instrucciones</p>
 
           {msg && <div className={`msg msg-${msg.type}`}>{msg.text}</div>}
 
           {!sent ? (
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Número de boleta</label>
+                <label>Correo institucional</label>
                 <input
-                  type="text"
-                  placeholder="Ej: 2023630001"
-                  maxLength={10}
-                  value={boleta}
-                  onChange={(e) => setBoleta(e.target.value)}
-                  onKeyPress={(e) => e.key !== 'Enter' && !/\d/.test(e.key) && e.preventDefault()}
+                  type="email"
+                  placeholder="Ej: a2023630001@alumno.ipn.mx"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>

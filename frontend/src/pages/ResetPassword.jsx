@@ -17,26 +17,30 @@ function validarPassword(password) {
 
 export default function ResetPassword() {
   const navigate = useNavigate();
-  const [status, setStatus] = useState('checking');
+  const [ready, setReady] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const [form, setForm] = useState({ newPassword: '', confPassword: '' });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState(null);
-  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     let settled = false;
+    const markReady = () => { if (!settled) { settled = true; setReady(true); } };
+    const markError = (msg) => { if (!settled) { settled = true; setErrorMsg(msg); } };
 
-    const markReady = () => { if (!settled) { settled = true; setStatus('ready'); } };
-    const markError = (message) => { if (!settled) { settled = true; setErrorMsg(message); setStatus('error'); } };
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        markReady();
+      }
+    });
 
-    const establecerSesion = async () => {
-      // Flujo implícito: Supabase pone los tokens en el hash de la URL
+    const establecerSesionManual = async () => {
       const hash = window.location.hash.substring(1);
       const hashParams = new URLSearchParams(hash);
+      const type = hashParams.get('type');
       const accessToken = hashParams.get('access_token');
       const refreshToken = hashParams.get('refresh_token');
-      const type = hashParams.get('type');
 
       if (type === 'recovery' && accessToken) {
         try {
@@ -49,16 +53,15 @@ export default function ResetPassword() {
           } else {
             markReady();
           }
+          return;
         } catch {
           markError('El enlace de recuperación es inválido o ha expirado');
+          return;
         }
-        return;
       }
 
-      // Flujo PKCE: Supabase pone el código en query params
       const searchParams = new URLSearchParams(window.location.search);
       const code = searchParams.get('code');
-
       if (code) {
         try {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
@@ -67,23 +70,27 @@ export default function ResetPassword() {
           } else {
             markReady();
           }
+          return;
         } catch {
           markError('El enlace de recuperación es inválido o ha expirado');
+          return;
         }
-        return;
       }
 
-      // No se encontró ningún token
-      markError('No se encontró un token de recuperación válido en el enlace.');
+      setTimeout(() => {
+        if (!settled) {
+          markError('No se encontró un token de recuperación válido en el enlace.');
+        }
+      }, 3000);
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
         markReady();
+      } else {
+        establecerSesionManual();
       }
     });
-
-    establecerSesion();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -134,24 +141,22 @@ export default function ResetPassword() {
 
           {msg && <div className={`msg msg-${msg.type}`}>{msg.text}</div>}
 
-          {status === 'checking' && (
+          {!ready && !errorMsg && (
             <p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '1rem 0' }}>
               Verificando enlace...
             </p>
           )}
 
-    {status === 'error' && (
-          <div style={{ textAlign: 'center' }}>
-          <div className="msg msg-error">
-            {errorMsg || 'El enlace de recuperación es inválido o ha expirado.'}
-          </div>
-          <p className="toggle-link" style={{ marginTop: '1rem' }}>
-            <Link to="/forgot-password">Solicitar un nuevo enlace</Link>
-          </p>
-        </div>
-        )}
+          {errorMsg && (
+            <div style={{ textAlign: 'center' }}>
+              <div className="msg msg-error">{errorMsg}</div>
+              <p className="toggle-link" style={{ marginTop: '1rem' }}>
+                <Link to="/forgot-password">Solicitar un nuevo enlace</Link>
+              </p>
+            </div>
+          )}
 
-          {status === 'ready' && (
+          {ready && (
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label>Nueva contraseña</label>
