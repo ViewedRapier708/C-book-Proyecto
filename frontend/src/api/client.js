@@ -9,7 +9,18 @@ async function request(endpoint, options = {}) {
     ...options,
   };
   const res = await fetch(url, config);
-  const data = await res.json().catch(() => ({}));
+
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    const err = new Error(
+      `El servidor no está disponible (${res.status}). Verifica que el backend esté ejecutándose.`
+    );
+    err.status = res.status;
+    throw err;
+  }
+
+  const data = await res.json();
+
   if (!res.ok) {
     if (res.status === 401 && !endpoint.startsWith('/login')) {
       window.dispatchEvent(new CustomEvent(AUTH_UNAUTHORIZED_EVENT));
