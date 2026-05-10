@@ -285,6 +285,7 @@ async function CambiarContraseña(correo) {
   const base = (process.env.FRONTEND_URL || 'https://c-book-proyecto.vercel.app').replace(/\/+$/, '');
   const redirectTo = `${base}/reset-password`;
   try {
+    console.log('[CambiarContraseña] Enviando reset a:', correo, 'redirectTo:', redirectTo);
     const { data, error } = await supabase.auth.resetPasswordForEmail(correo, {
       redirectTo
     });
@@ -293,6 +294,7 @@ async function CambiarContraseña(correo) {
       console.error('Error enviando correo de recuperación:', error);
       return { success: false, error: error.message };
     }
+    console.log('[CambiarContraseña] Correo de recuperación enviado exitosamente');
     return { success: true, data };
   } catch (err) {
     console.error('Error en CambiarContraseña:', err);

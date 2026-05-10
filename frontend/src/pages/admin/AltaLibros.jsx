@@ -110,6 +110,7 @@ export default function AltaLibros() {
       <div className="page-header">
         <h1>Gestión de Libros</h1>
         <p>Alta, edición y eliminación de libros del acervo</p>
+        <span className="badge badge-info" style={{ fontSize: '0.95rem', padding: '0.4rem 0.9rem', marginLeft: '1rem' }}>{items.length} libros registrados</span>
       </div>
 
       <div className="toolbar">

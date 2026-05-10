@@ -6,8 +6,8 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') }) || require('dotenv').config();
 
 function ensureEnv() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
+  const url = (process.env.SUPABASE_URL || '').trim();
+  const key = (process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || '').trim();
 
   if (!url || !key) {
     throw new Error('SUPABASE_URL y SUPABASE_[ANON|SERVICE]_KEY deben estar configurados en el archivo .env');

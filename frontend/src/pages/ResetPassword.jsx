@@ -17,16 +17,21 @@ function validarPassword(password) {
 
 export default function ResetPassword() {
   const navigate = useNavigate();
-  const [status, setStatus] = useState('checking'); // 'checking' | 'ready' | 'error'
+  const [status, setStatus] = useState('checking');
   const [form, setForm] = useState({ newPassword: '', confPassword: '' });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState(null);
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
+    let settled = false;
+
+    const markReady = () => { if (!settled) { settled = true; setStatus('ready'); } };
+    const markError = (message) => { if (!settled) { settled = true; setErrorMsg(message); setStatus('error'); } };
+
     const establecerSesion = async () => {
       // Flujo implícito: Supabase pone los tokens en el hash de la URL
-      // Ej: /reset-password#access_token=xxx&refresh_token=yyy&type=recovery
       const hash = window.location.hash.substring(1);
       const hashParams = new URLSearchParams(hash);
       const accessToken = hashParams.get('access_token');
@@ -34,33 +39,47 @@ export default function ResetPassword() {
       const type = hashParams.get('type');
 
       if (type === 'recovery' && accessToken) {
-        const { error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken || '',
-        });
-        setStatus(error ? 'error' : 'ready');
+        try {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || '',
+          });
+          if (error) {
+            markError(error.message || 'El enlace de recuperación es inválido o ha expirado');
+          } else {
+            markReady();
+          }
+        } catch {
+          markError('El enlace de recuperación es inválido o ha expirado');
+        }
         return;
       }
 
       // Flujo PKCE: Supabase pone el código en query params
-      // Ej: /reset-password?code=xxx
       const searchParams = new URLSearchParams(window.location.search);
       const code = searchParams.get('code');
 
       if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        setStatus(error ? 'error' : 'ready');
+        try {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) {
+            markError(error.message || 'El enlace de recuperación es inválido o ha expirado');
+          } else {
+            markReady();
+          }
+        } catch {
+          markError('El enlace de recuperación es inválido o ha expirado');
+        }
         return;
       }
 
       // No se encontró ningún token
-      setStatus('error');
+      markError('No se encontró un token de recuperación válido en el enlace.');
     };
 
-    // onAuthStateChange también detecta PASSWORD_RECOVERY (respaldo)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
-        setStatus('ready');
+        markReady();
       }
     });
 
@@ -121,16 +140,16 @@ export default function ResetPassword() {
             </p>
           )}
 
-          {status === 'error' && (
-            <div style={{ textAlign: 'center' }}>
-              <div className="msg msg-error">
-                El enlace de recuperación es inválido o ha expirado.
-              </div>
-              <p className="toggle-link" style={{ marginTop: '1rem' }}>
-                <Link to="/forgot-password">Solicitar un nuevo enlace</Link>
-              </p>
-            </div>
-          )}
+    {status === 'error' && (
+          <div style={{ textAlign: 'center' }}>
+          <div className="msg msg-error">
+            {errorMsg || 'El enlace de recuperación es inválido o ha expirado.'}
+          </div>
+          <p className="toggle-link" style={{ marginTop: '1rem' }}>
+            <Link to="/forgot-password">Solicitar un nuevo enlace</Link>
+          </p>
+        </div>
+        )}
 
           {status === 'ready' && (
             <form onSubmit={handleSubmit}>
