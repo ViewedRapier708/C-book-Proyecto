@@ -420,4 +420,21 @@ async function cambiarContrasenaPropia(req, res) {
   }
 }
 
-module.exports = { registro, verificarCorreo, login, cerrarSesion, verificarSesion, CambioDatos, solicitarRecuperacion, actualizarContraseña, cambiarContrasenaPropia };
+async function obtenerCorreoPorBoleta(req, res) {
+  try {
+    const { boleta } = req.body;
+    if (!boleta || !/^\d{10}$/.test(boleta)) {
+      return res.status(400).json({ error: 'Boleta inválida' });
+    }
+    const busqueda = await buscarCorreoPorBoleta(boleta);
+    if (!busqueda.success) {
+      return res.status(404).json({ error: 'No existe ninguna cuenta con esa boleta' });
+    }
+    return res.json({ correo: busqueda.correo });
+  } catch (err) {
+    console.error('Error en obtenerCorreoPorBoleta:', err);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+module.exports = { registro, verificarCorreo, login, cerrarSesion, verificarSesion, CambioDatos, solicitarRecuperacion, actualizarContraseña, cambiarContrasenaPropia, obtenerCorreoPorBoleta };

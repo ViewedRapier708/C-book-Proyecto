@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-
-const CORREO_IPN_REGEX = /^[\w.-]+@alumno\.ipn\.mx$/;
+import { authApi } from '../api/auth';
 
 export default function ForgotPassword() {
-  const [email, setEmail] = useState('');
+  const [boleta, setBoleta] = useState('');
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState(null);
   const [sent, setSent] = useState(false);
@@ -14,20 +13,17 @@ export default function ForgotPassword() {
     e.preventDefault();
     setMsg(null);
 
-    if (!email) {
-      setMsg({ type: 'error', text: 'Ingresa tu correo electrónico' });
-      return;
-    }
-
-    if (!CORREO_IPN_REGEX.test(email)) {
-      setMsg({ type: 'error', text: 'Debes usar tu correo institucional @alumno.ipn.mx' });
+    if (!/^\d{10}$/.test(boleta)) {
+      setMsg({ type: 'error', text: 'La boleta debe tener 10 dígitos' });
       return;
     }
 
     setLoading(true);
     try {
+      const data = await authApi.obtenerCorreo(boleta);
+
       const redirectTo = `${window.location.origin}/reset-password`;
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(data.correo, {
         redirectTo,
       });
 
@@ -47,25 +43,27 @@ export default function ForgotPassword() {
       <div className="auth-left">
         <div className="auth-hero">
           <h1>C-Book</h1>
-          <p>Recupera el acceso a tu cuenta ingresando tu correo institucional. Te enviaremos un enlace para restablecer tu contraseña.</p>
+          <p>Recupera el acceso a tu cuenta ingresando tu número de boleta. Te enviaremos un enlace a tu correo registrado.</p>
         </div>
       </div>
       <div className="auth-right">
         <div className="auth-form">
           <h2>Recuperar contraseña</h2>
-          <p className="subtitle">Ingresa tu correo y te enviaremos las instrucciones</p>
+          <p className="subtitle">Ingresa tu boleta y te enviaremos las instrucciones</p>
 
           {msg && <div className={`msg msg-${msg.type}`}>{msg.text}</div>}
 
           {!sent ? (
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Correo institucional</label>
+                <label>Número de boleta</label>
                 <input
-                  type="email"
-                  placeholder="Ej: a2023630001@alumno.ipn.mx"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="text"
+                  placeholder="Ej: 2023630001"
+                  maxLength={10}
+                  value={boleta}
+                  onChange={(e) => setBoleta(e.target.value)}
+                  onKeyPress={(e) => e.key !== 'Enter' && !/\d/.test(e.key) && e.preventDefault()}
                   required
                 />
               </div>

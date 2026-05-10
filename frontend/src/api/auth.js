@@ -7,6 +7,7 @@ export const authApi = {
   verifyEmail: (boleta, correo) => api.post('/verificar', { boleta, correo }),
   getSession: () => api.get('/session'),
   logout: () => api.post('/logout'),
+  obtenerCorreo: (boleta) => api.post('/obtener-correo', { boleta }),
   forgotPassword: (boleta) => api.post('/forgot-password', { boleta }),
   resetPassword: (access_token, newPassword, confPassword) =>
     api.post('/reset-password', { access_token, newPassword, confPassword }),

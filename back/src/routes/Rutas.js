@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { verificarSesion, registro, verificarCorreo, login, cerrarSesion, CambioDatos, solicitarRecuperacion, actualizarContraseña, cambiarContrasenaPropia } = require('../controllers/ControladorUsuario.js');
+const { verificarSesion, registro, verificarCorreo, login, cerrarSesion, CambioDatos, solicitarRecuperacion, actualizarContraseña, cambiarContrasenaPropia, obtenerCorreoPorBoleta } = require('../controllers/ControladorUsuario.js');
 const { obtenerRecursosPorTipo, obtenerLibrosMasSolicitados } = require('../controllers/ControladorRecursos.js');
 const middlewareAutenticacion = require('../middleware/verificacionPeticiones.js');
 const controladorSolicitudes = require('../controllers/ControladorSolicitudes.js');
@@ -13,6 +13,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 
 
 
 router.post('/registro', registro);
+router.post('/obtener-correo', obtenerCorreoPorBoleta);
 router.post('/forgot-password', solicitarRecuperacion);
 router.post('/reset-password', actualizarContraseña);
 router.post('/verificar', verificarCorreo);
