@@ -19,7 +19,12 @@ function ensureEnv() {
 function connect() {
   if (!client) {
     const { url, key } = ensureEnv();
-    client = createClient(url, key);
+    client = createClient(url, key, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
     console.log('✅ Conexión a Supabase inicializada correctamente');
   }
   return client;

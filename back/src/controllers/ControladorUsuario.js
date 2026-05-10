@@ -338,7 +338,7 @@ async function solicitarRecuperacion(req, res) {
 
     const resultado = await CambiarContraseña(busqueda.correo);
     if (!resultado.success) {
-      return res.status(500).json({ error: 'No se pudo enviar el correo de recuperación' });
+      return res.status(500).json({ error: resultado.error || 'No se pudo enviar el correo de recuperación' });
     }
 
     return res.status(200).json({ success: true, message: 'Revisa tu correo para continuar con el cambio de contraseña.' });
