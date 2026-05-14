@@ -33,6 +33,14 @@ const Analytics       = lazy(() => import('./pages/admin/Analytics'));
 const Reportes        = lazy(() => import('./pages/admin/Reportes'));
 const NotFound        = lazy(() => import('./pages/NotFound'));
 
+// Soporte
+const SoporteDashboard      = lazy(() => import('./pages/support/SoporteDashboard'));
+const BandejaTickets        = lazy(() => import('./pages/support/BandejaTickets'));
+const DetalleTicket         = lazy(() => import('./pages/support/DetalleTicket'));
+const ReportarError         = lazy(() => import('./pages/support/ReportarError'));
+const MisReportes           = lazy(() => import('./pages/support/MisReportes'));
+const ConfiguracionSoporte  = lazy(() => import('./pages/support/ConfiguracionSoporte'));
+
 export default function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -68,6 +76,9 @@ export default function App() {
             <Route path="mis-solicitudes-libros" element={<MisSolicitudesLibros />} />
             <Route path="perfil" element={<UserProfile />} />
             <Route path="cuenta" element={<ModificarCuenta />} />
+            {/* Soporte — Usuario */}
+            <Route path="soporte/reportar" element={<ReportarError />} />
+            <Route path="soporte/mis-reportes" element={<MisReportes />} />
           </Route>
 
           {/* Admin */}
@@ -88,6 +99,13 @@ export default function App() {
             <Route path="prestamos-libros" element={<PrestamosLibros />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="reportes" element={<Reportes />} />
+            {/* Soporte — Admin */}
+            <Route path="soporte" element={<SoporteDashboard />} />
+            <Route path="soporte/tickets" element={<BandejaTickets />} />
+            <Route path="soporte/tickets/:id" element={<DetalleTicket />} />
+            <Route path="soporte/reportar" element={<ReportarError />} />
+            <Route path="soporte/mis-reportes" element={<MisReportes />} />
+            <Route path="soporte/config" element={<ConfiguracionSoporte />} />
           </Route>
 
           {/* 404 */}

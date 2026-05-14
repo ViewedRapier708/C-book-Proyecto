@@ -3,7 +3,8 @@ import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, BookOpen, Users,
   FileText, ClipboardList, LogOut, BookCheck, Package,
-  BarChart3, FileBarChart, UserCircle, Settings, GraduationCap
+  BarChart3, FileBarChart, UserCircle, Settings, GraduationCap,
+  Bug, Inbox, MessageSquarePlus,
 } from 'lucide-react';
 
 const adminLinks = [
@@ -19,6 +20,12 @@ const adminLinks = [
   { to: '/admin/documentos', icon: FileText, label: 'Documentos' },
   { to: '/admin/solicitudes-libros', icon: ClipboardList, label: 'Solicitudes Libros' },
   { to: '/admin/prestamos-libros', icon: BookCheck, label: 'Préstamos Libros' },
+  { section: 'Soporte' },
+  { to: '/admin/soporte', icon: LayoutDashboard, label: 'Dashboard Soporte' },
+  { to: '/admin/soporte/tickets', icon: Inbox, label: 'Bandeja de Tickets' },
+  { to: '/admin/soporte/reportar', icon: Bug, label: 'Reportar Error' },
+  { to: '/admin/soporte/mis-reportes', icon: MessageSquarePlus, label: 'Mis Reportes' },
+  { to: '/admin/soporte/config', icon: Settings, label: 'Config. Soporte' },
 ];
 
 const userLinks = [
@@ -32,6 +39,9 @@ const userLinks = [
   { section: 'Cuenta' },
   { to: '/user/perfil', icon: UserCircle, label: 'Mi Perfil' },
   { to: '/user/cuenta', icon: Settings, label: 'Cambiar Contraseña' },
+  { section: 'Soporte' },
+  { to: '/user/soporte/reportar', icon: Bug, label: 'Reportar Error' },
+  { to: '/user/soporte/mis-reportes', icon: MessageSquarePlus, label: 'Mis Reportes' },
 ];
 
 export default function Sidebar({ open, onClose }) {
