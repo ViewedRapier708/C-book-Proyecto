@@ -1,31 +1,35 @@
 const { refrescarSesionSupabase } = require('../models/ModeloUsuario');
+const jwt = require('jsonwebtoken');
 
 const SESSION_REFRESH_THRESHOLD_MS = 60000;
 
 module.exports = async function sessionGuard(req, res, next) {
-  console.log("sessionGuard - Inicio de verificación de sesión");
   try {
-    console.log("sessionGuard - Verificando sesión");
-    console.log('sessionGuard - headers.cookie:', req.headers && req.headers.cookie);
-    const sessionUser = req.session.user;
-    console.log("Session User:", sessionUser); //debug
-    if (!sessionUser) {
-      console.log("sessionGuard - No hay sesión activa");
+    const token = req.cookies.app_session;
+    if (!token) {
       return res.status(401).json({ error: 'No hay sesión activa' });
     }
 
+    const secret = req.app.locals.sessionSecret || process.env.SESSION_SECRET || 'dev_session_secret_change_me';
+    let sessionUser;
+    
+    try {
+      sessionUser = jwt.verify(token, secret);
+    } catch (e) {
+      return res.status(401).json({ error: 'Sesión inválida o expirada' });
+    }
+
     if (!sessionUser.tokens?.accessToken) {
-      console.log("sessionGuard - Sesión inválida: falta accessToken");
       return res.status(401).json({ error: 'Sesión inválida' });
     }
 
+    let tokenUpdated = false;
+
     if (needsRefresh(sessionUser.tokens.expiresAt)) {
-      console.log("sessionGuard - Refrescando sesión para usuario:", sessionUser.boleta);
       const refreshed = await refrescarSesionSupabase(sessionUser.tokens.refreshToken);
 
       if (!refreshed.success) {
-        console.log("sessionGuard - No se pudo refrescar la sesión, cerrando sesión");
-        req.session.user = null;
+        res.clearCookie('app_session', req.app.locals.cookieSettings);
         return res.status(401).json({ error: 'Sesión expirada' });
       }
 
@@ -36,8 +40,18 @@ module.exports = async function sessionGuard(req, res, next) {
         expiresIn: refreshed.session.expires_in
       };
 
-      req.session.user = sessionUser;
-      await persistSession(req);
+      // Si mutamos el sessionUser (token update), necesitamos emitir nueva cookie
+      tokenUpdated = true;
+    }
+
+    // Mockear req.session.user para retrocompatibilidad con los controladores viejos
+    req.session = { user: sessionUser };
+
+    if (tokenUpdated) {
+      // Remover "iat" y "exp" para que jwt.sign genere nuevos
+      const { iat, exp, ...payload } = sessionUser;
+      const newToken = jwt.sign(payload, secret, { expiresIn: '2h' });
+      res.cookie('app_session', newToken, req.app.locals.cookieSettings);
     }
 
     res.locals.supabaseAccessToken = sessionUser.tokens.accessToken;
@@ -50,16 +64,8 @@ module.exports = async function sessionGuard(req, res, next) {
 };
 
 function needsRefresh(expiresAt) {
-  console.log("sessionGuard - Verificando si necesita refrescar sesión, expiresAt:", expiresAt);
   if (!expiresAt) {
     return false;
   }
   return expiresAt - Date.now() <= SESSION_REFRESH_THRESHOLD_MS;
-}
-
-function persistSession(req) {
-  console.log("sessionGuard - Persistiendo sesión actualizada");
-  return new Promise((resolve, reject) => {
-    req.session.save(err => (err ? reject(err) : resolve()));
-  });
 }

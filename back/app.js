@@ -1,8 +1,6 @@
 const cors = require('cors');
 const express = require('express');
-const session = require('express-session');
-const { render } = require('ejs');
-const path = require('path');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const app = express();
@@ -11,18 +9,34 @@ const authRoutes = require('./src/routes/Rutas.js');
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const isProduction = NODE_ENV === 'production';
 const sessionSecret = process.env.SESSION_SECRET || 'dev_session_secret_change_me';
+const rawSameSite = (process.env.SESSION_COOKIE_SAME_SITE || 'lax').toLowerCase();
+const configuredSameSite = ['lax', 'strict', 'none'].includes(rawSameSite) ? rawSameSite : 'lax';
+const configuredSecure = process.env.SESSION_COOKIE_SECURE
+  ? process.env.SESSION_COOKIE_SECURE === 'true'
+  : isProduction;
+
+// If SameSite=None is used, Secure must be enabled by browsers.
+const cookieSecure = configuredSameSite === 'none' ? true : configuredSecure;
+
+if (isProduction) {
+  // Necesario para cookies secure detrás de proxy (Vercel)
+  app.set('trust proxy', 1);
+}
 
 // Middleware para leer JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser(sessionSecret));
 
 // Configuración de CORS - localhost
 const defaultOrigins = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
   'http://localhost:5500',
   'http://127.0.0.1:5500',
-  'https://viewedrapier708.github.io/C-book-Proyecto/'
+  'https://c-book-proyecto.vercel.app'
 ];
 
 const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
@@ -36,27 +50,14 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// ===============================
-//  STORE PARA VER SESIONES
-// ===============================
-const MemoryStore = session.MemoryStore;
-const sessionStore = new MemoryStore();
-
-
-
-// Configuración de sesión
-app.use(session({
-  secret: sessionSecret,
-  resave: false,
-  saveUninitialized: false,
-  store: sessionStore,
-  cookie: {
-    httpOnly: true,
-    secure: false,
-    sameSite:'lax',
-    maxAge: 1000 * 60 * 60 * 2 // 2h por defecto
-  }
-}));
+// Set session config variables for other modules
+app.locals.cookieSettings = {
+  httpOnly: true,
+  secure: cookieSecure,
+  sameSite: configuredSameSite,
+  maxAge: 1000 * 60 * 60 * 2 // 2h por defecto
+};
+app.locals.sessionSecret = sessionSecret;
 
 // ===============================
 //   ARCHIVOS ESTÁTICOS
@@ -67,23 +68,18 @@ app.get('/', (req, res) => {
 }
 );
 
-// ===============================
-//   RUTA PARA VER SESIONES ACTIVAS
-// ===============================
-app.get('/debug/sesiones', (req, res) => {//Quitar en produccion
-  sessionStore.all((err, sesiones) => {
-    if (err) {
-      return res.status(500).json({ error: 'Error al obtener sesiones' });
-    }
-    res.json(sesiones);
-  });
-});
-
 // Rutas de autenticación
 app.use('/auth', authRoutes);
 
-// Puerto
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+module.exports = app;
+
+// Puerto (solo para ejecución local)
+if (require.main === module) {
+  // Inicia los cron jobs solo cuando se ejecuta como servidor (node app.js)
+  require('./cron');
+
+  const PORT = Number(process.env.PORT) || 3000;
+  app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  });
+}

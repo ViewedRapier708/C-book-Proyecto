@@ -6,20 +6,39 @@ const { getClient } = require('../config/db');
 async function validarBoletaEnTabla(boleta) {
   const supabase = getClient();
   try {
-    const { data, error } = await supabase
-      .from('usuarios_web_movil')
-      .select('boleta')
-      .eq('boleta', boleta)
-      .maybeSingle();
+ 
 
-    if (error) {
-      console.error("Error validando boleta:", error);
-      return false;
-    }
-    return !!data; // true si existe
+const { data: boletaData, error: errorBoleta } = await supabase
+  .from('boletas')
+  .select('boleta')
+  .eq('boleta', boleta)
+  .maybeSingle();
+
+if (errorBoleta) {
+  console.error("Error validando boleta boletas:", errorBoleta);
+  return false;
+}
+if (!boletaData) {
+  return {respuesta:true,msg:"Boleta no encontrada verifique su boleta"};
+}
+ const { data: usuario, error } = await supabase
+  .from('usuarios_web_movil')
+  .select('boleta')
+  .eq('boleta', boleta)
+  .maybeSingle();
+
+if (error) {
+  console.error("Error validando boleta usuarios:", error);
+  return false;
+}
+
+if (usuario) {
+  return {respuesta:true,msg:"Boleta ya registrada en otra cuenta"};
+}
+return {respuesta:false,msg:"Registro de boleta disponible"};
   } catch (err) {
     console.error("Error en validarBoletaEnTabla:", err);
-    return false;
+    return {respuesta:true,msg:"Error interno"};
   }
 }
 
@@ -82,8 +101,6 @@ async function registrarEnAuth(boleta, correo, password) {
 async function crearUsuarioEnTabla(boleta, correo) {
   const supabase = getClient();
   try {
-    console.log("Creando usuario en tabla:", { boleta, correo }); //debug
-    
     const { data, error } = await supabase
       .from('usuarios_web_movil')
       .insert([{
@@ -98,7 +115,6 @@ async function crearUsuarioEnTabla(boleta, correo) {
       return { success: false, error: error.message };
     }
 
-    console.log("Usuario creado:", data); //debug
     return { success: true, data: data };
   } catch (err) {
     console.error("Error en crearUsuarioEnTabla:", err);
@@ -172,8 +188,6 @@ async function loginConAuth(correo, password) {
       email: correo,
       password: password
     });
-
-    console.log("Login Auth:", data?.session ? 'Sesión creada' : 'Sin sesión', error?.message); //debug
 
     if (error) {
       let mensaje = 'Error al iniciar sesión';
@@ -265,18 +279,81 @@ async function revocarSesionesSupabase(accessToken) {
     return { success: false, error: 'Error interno' };
   }
 }
-//===================Obtener solicitudes de un usuario=================== 
+//Cambio de contraseña y recuperación de contraseña
+async function CambiarContraseña(correo) {
+  const supabase = getClient();
+  const redirectTo = `${process.env.FRONTEND_URL || 'https://c-book-proyecto.vercel.app'}/reset-password`;
+  try {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(correo, {
+      redirectTo
+    });
+
+    if (error) {
+      console.error('Error enviando correo de recuperación:', error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, data };
+  } catch (err) {
+    console.error('Error en CambiarContraseña:', err);
+    return { success: false, error: 'Error interno' };
+  }
+}
+
+async function ActualizarContraseñaConToken(accessToken, newPassword) {
+  const supabase = getClient();
+  try {
+    const payload = JSON.parse(Buffer.from(accessToken.split('.')[1], 'base64').toString());
+    const userId = payload.sub;
+
+    if (!userId) {
+      return { success: false, error: 'Token inválido' };
+    }
+
+    const { error } = await supabase.auth.admin.updateUserById(userId, {
+      password: newPassword
+    });
+
+    if (error) {
+      console.error('Error actualizando contraseña:', error);
+      return { success: false, error: error.message };
+    }
+    return { success: true };
+  } catch (err) {
+    console.error('Error en ActualizarContraseñaConToken:', err);
+    return { success: false, error: 'Error interno' };
+  }
+}
+async function CambioCorreo(nuevoCorreo) {
+  const supabase=getClient();
+  try {
+    const { data, error } = await supabase.auth.updateUser({
+      email: nuevoCorreo
+    });
+    if (error) {
+      console.error('Error cambiando correo:', error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error en CambioCorreo:', error);
+    return { success: false, error: 'Error interno' };
+  }
+}
 
 
-module.exports = { 
-  validarBoletaEnTabla, 
-  validarCorreoEnTabla, 
-  registrarEnAuth, 
+
+module.exports = {
+  validarBoletaEnTabla,
+  validarCorreoEnTabla,
+  registrarEnAuth,
   crearUsuarioEnTabla,
   verificarConfirmacionPorBoleta,
   buscarCorreoPorBoleta,
   loginConAuth,
   traerUsuarioInfo,
   refrescarSesionSupabase,
-  revocarSesionesSupabase
+  revocarSesionesSupabase,
+  CambiarContraseña,
+  CambioCorreo,
+  ActualizarContraseñaConToken
 };

@@ -19,10 +19,26 @@ async function CrearSolicitud(tipoSolicitud, boleta, idRecurso) {
 
 //==================Funciones de los materiales para agregar los registros==================
 async function CrearSolicitudComputadora(boleta, idRecurso) {
+    const { data: compData, error: compError } = await supabase
+        .from('computadoras')
+        .select('id')
+        .eq('no_computadora', idRecurso)
+        .limit(1)
+        .maybeSingle();
+
+    if (compError) {
+        console.error("Error buscando computadora:", compError);
+        return { success: false, error: compError.message };
+    }
+
+    if (!compData?.id) {
+        return { success: false, error: 'Recurso no encontrado' };
+    }
+
     try {
         const { error } = await supabase
             .from('solicitudes_computadora')
-            .insert([{ usuario_boleta: boleta, computadora_id: idRecurso }]);
+            .insert([{ usuario_boleta: boleta, computadora_id: compData.id }]);
         //El estado se pone automáticamente en 'pendiente'
         if (error) {
             console.error("Error creando solicitud de computadora:", error);
@@ -36,10 +52,26 @@ async function CrearSolicitudComputadora(boleta, idRecurso) {
 
 }
 async function CrearSolicitudRestiradores(boleta, idRecurso) {
+   const { data: resData, error: resError } = await supabase
+        .from('restiradores')
+        .select('id')
+        .eq('no_restirador', idRecurso)
+        .limit(1)
+        .maybeSingle();
+
+    if (resError) {
+        console.error("Error buscando restirador:", resError);
+        return { success: false, error: resError.message };
+    }
+
+    if (!resData?.id) {
+        return { success: false, error: 'Recurso no encontrado' };
+    }
     try {
+        console.log("Creando solicitud de restirador para boleta:", boleta, "y restirador ID:", idRecurso);
         const { error } = await supabase
             .from('solicitudes_restirador')
-            .insert([{ usuario_boleta: boleta, restirador_id: idRecurso }]);
+            .insert([{ usuario_boleta: boleta, restirador_id: resData.id }]);
 
         if (error) {
             console.error("Error creando solicitud de restirador:", error);
@@ -57,8 +89,6 @@ async function CrearSolicitudRestiradores(boleta, idRecurso) {
 async function CrearSolicitudlibro(boleta, idRecurso) {
     try {
         // Estado 1 = pendiente (ajusta si tu catálogo es diferente)
-        const estadoPendiente = 1;
-        const now = new Date();
         // No se envían fechas, se usan los defaults de la tabla
         const { error } = await supabase
             .from('solicitudes_libros')
@@ -95,18 +125,24 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
 
     async function VerificarDisponibilidadComputadora(n_recurso) {
         try {
-            const { data, error } = await supabase.from('computadoras').select('id,Disponible').eq('no_computadora', n_recurso).single();
-            console.log("Disponibilidad Computadora:", data, error); //debug
-
+            const { data, error } = await supabase
+                .from('computadoras')
+                .select('id,Disponible,En_funcionamiento')
+                .eq('no_computadora', n_recurso)
+                .limit(1)
+                .maybeSingle();
             if (error) {
                 console.error("Error verificando disponibilidad:", error);
                 return { success: false, message: error.message };
             }
-            if (data.length === 0) {
+            if (!data) {
                 return { success: false, message: 'Recurso no encontrado' };
             }
             if (data.Disponible === false) {
                 return { message: 'La computadora no está disponible actualmente', success: false };
+            }
+            if (data.En_funcionamiento === false) {
+                return { message: 'La computadora no está en funcionamiento', success: false };
             }
             return { success: true, message: null, idRecurso: data.id };//Indica que la computadora está disponible
 
@@ -118,17 +154,24 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
     }
     async function VerificarDisponibilidadRestirador(n_recurso) {
         try {
-            const { data, error } = await supabase.from('restiradores').select('id,Disponible').eq('no_restirador', n_recurso).single();
-            console.log("Disponibilidad Restirador:", data, error); //debug
+            const { data, error } = await supabase
+                .from('restiradores')
+                .select('id,Disponible,estado_de_material')
+                .eq('no_restirador', n_recurso)
+                .limit(1)
+                .maybeSingle();
             if (error) {
                 console.error("Error verificando disponibilidad:", error);
                 return { success: false, message: error.message };
             }
-            if (data.length === 0) {
+            if (!data) {
                 return { success: false, message: 'Recurso no encontrado' };
             }
             if (data.Disponible === false) {
                 return { message: 'El restirador no está disponible actualmente', success: false };
+            }
+            if (data.estado_de_material === false) {
+                return { message: 'El restirador no está en funcionamiento', success: false };
             }
             return { success: true, message: null, idRecurso: data.id };   //Indica que el restirador está disponible
 
@@ -141,14 +184,18 @@ async function VerificarDisponibilidadRecurso(tipoSolicitud, idRecurso) {//Poner
     }
     async function VerificarDisponibilidadLibro(n_recurso) {
         try {
-            const { data, error } = await supabase.from('ejemplares').select('id,Disponible').eq('libro_id', n_recurso).single();
+            // Ahora n_recurso es el id del ejemplar
+            const { data, error } = await supabase
+                .from('ejemplares')
+                .select('id,Disponible')
+                .eq('id', n_recurso)
+                .single();
 
-            console.log("Disponibilidad Libro:", data, error);
             if (error) {
                 console.error("Error verificando disponibilidad:", error);
                 return { success: false, message: error.message };
             }
-            if (data.length === 0) {
+            if (!data) {
                 return { success: false, message: 'Recurso no encontrado' };
             }
             if (data.Disponible === false) {
@@ -217,7 +264,6 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
     }
     async function contarPendientesPorTabla(client, tabla, boleta) {
         try {
-            console.log(`Contando solicitudes activas en ${tabla} para boleta ${boleta}`); //debug
             const { data, count, error } = await client
                 .from(tabla)
                 .select('id', { count: 'exact' })
@@ -239,27 +285,152 @@ async function ObtenerSolicitudesActivasPorBoleta(tipo, boleta) {
 async function getSolicitudes(boleta) {
   const supabase = getClient();
   try {
-        console.log('[Solicitudes] Consultando v_solicitudes_alumno con boleta/registro_id:', boleta);
-    const { data, error } = await supabase//Retorna todas las solicitudes hechas por un alumno
-      .from('v_solicitudes_alumno')
-      .select('*')
-      .eq('registro_id', boleta);
+    // Consultar las tres tablas directamente para tener control de los nombres de columna
+    const [compRes, restRes, libRes] = await Promise.all([
+      supabase
+        .from('solicitudes_computadora')
+        .select('id, usuario_boleta, computadora_id, fecha_solicitud, fecha_limite_llegada, estado_asistencia_id')
+        .eq('usuario_boleta', boleta),
+      supabase
+        .from('solicitudes_restirador')
+        .select('id, usuario_boleta, restirador_id, fecha_solicitud, fecha_limite_llegada, estado_asistencia_id')
+        .eq('usuario_boleta', boleta),
+      supabase
+        .from('solicitudes_libros')
+        .select(`id, usuario_boleta, ejemplar_id, fecha_solicitud, fecha_limite_respuesta, fecha_aprobacion, fecha_limite_recoleccion, motivo_rechazo, fecha_rechazo, estado_asistencia_id,
+          ejemplares ( id, numero_ejemplar, libros ( titulo, autor ) ),
+          prestamos_libros ( fecha_inicio_prestamo, fecha_limite_devolucion, fecha_devolucion_real )`)
+        .eq('usuario_boleta', boleta),
+    ]);
 
-        console.log('[Solicitudes] Data recuperada:', {
-            total: Array.isArray(data) ? data.length : 0,
-            preview: Array.isArray(data) ? data.slice(0, 5) : data
-        });
-    if (error) {
-      console.error("Error obteniendo solicitudes:", error);
-      return { success: false, error: error.message };
-    }
+    if (compRes.error) console.error("Error solicitudes_computadora:", compRes.error);
+    if (restRes.error) console.error("Error solicitudes_restirador:", restRes.error);
+    if (libRes.error) console.error("Error solicitudes_libros:", libRes.error);
 
-    console.log("Solicitudes obtenidas:", data); //debug
-    return { success: true, data };
+    const computadoras = (compRes.data || []).map(s => ({
+      ...s, tipo_solicitud: 'computadora', recurso_id: s.computadora_id
+    }));
+    const restiradores = (restRes.data || []).map(s => ({
+      ...s, tipo_solicitud: 'restirador', recurso_id: s.restirador_id
+    }));
+    const libros = (libRes.data || []).map(s => {
+      const prestamo = Array.isArray(s.prestamos_libros) ? s.prestamos_libros[0] : s.prestamos_libros;
+      return {
+        ...s,
+        tipo_solicitud: 'libro',
+        recurso_id: s.ejemplar_id,
+        titulo: s.ejemplares?.libros?.titulo || null,
+        autor: s.ejemplares?.libros?.autor || null,
+        fecha_inicio_prestamo: prestamo?.fecha_inicio_prestamo || null,
+        fecha_limite_devolucion: prestamo?.fecha_limite_devolucion || null,
+        fecha_devolucion_real: prestamo?.fecha_devolucion_real || null,
+      };
+    });
+
+    const solicitudes = [...computadoras, ...restiradores, ...libros]
+      .sort((a, b) => new Date(b.fecha_solicitud) - new Date(a.fecha_solicitud));
+
+    const solicitudesEnriquecidas = await anexarNumeroMaterialSolicitudes(supabase, solicitudes);
+
+    return { success: true, data: solicitudesEnriquecidas };
   } catch (err) {
     console.error("Error en getSolicitudes:", err);
     return { success: false, error: 'Error interno' };
   }
+}
+
+function normalizarTipoSolicitud(solicitud) {
+    const tipo = solicitud?.tipo ?? solicitud?.tipo_solicitud ?? '';
+    return String(tipo).trim().toLowerCase();
+}
+
+function obtenerIdRecursoSolicitud(solicitud) {
+    if (!solicitud || typeof solicitud !== 'object') return null;
+    const id = (
+        solicitud.recurso_id ??
+        solicitud.id_recurso ??
+        solicitud.computadora_id ??
+        solicitud.restirador_id ??
+        solicitud.ejemplar_id ??
+        solicitud.recurso?.id ??
+        solicitud.recurso ??
+        null
+    );
+    const idNumero = Number(id);
+    return Number.isFinite(idNumero) ? idNumero : null;
+}
+
+async function anexarNumeroMaterialSolicitudes(supabase, solicitudes) {
+    if (!Array.isArray(solicitudes) || solicitudes.length === 0) return solicitudes;
+
+    const idsComputadoras = new Set();
+    const idsRestiradores = new Set();
+    const idsLibros = new Set();
+
+    solicitudes.forEach((solicitud) => {
+        const tipo = normalizarTipoSolicitud(solicitud);
+        const idRecurso = obtenerIdRecursoSolicitud(solicitud);
+        if (!idRecurso) return;
+
+        if (tipo === 'computadora') idsComputadoras.add(idRecurso);
+        if (tipo === 'restirador') idsRestiradores.add(idRecurso);
+        if (tipo === 'libro') idsLibros.add(idRecurso);
+    });
+
+    const [computadorasRes, restiradoresRes, librosRes] = await Promise.all([
+        idsComputadoras.size
+            ? supabase.from('computadoras').select('id,no_computadora').in('id', Array.from(idsComputadoras))
+            : Promise.resolve({ data: [], error: null }),
+        idsRestiradores.size
+            ? supabase.from('restiradores').select('id,no_restirador').in('id', Array.from(idsRestiradores))
+            : Promise.resolve({ data: [], error: null }),
+        idsLibros.size
+            ? supabase.from('ejemplares').select('id,numero_ejemplar').in('id', Array.from(idsLibros))
+            : Promise.resolve({ data: [], error: null })
+    ]);
+
+    if (computadorasRes.error) {
+        console.error('Error obteniendo no_computadora:', computadorasRes.error);
+    }
+    if (restiradoresRes.error) {
+        console.error('Error obteniendo no_restirador:', restiradoresRes.error);
+    }
+    if (librosRes.error) {
+        console.error('Error obteniendo numero_ejemplar:', librosRes.error);
+    }
+
+    const mapaComputadoras = new Map((computadorasRes.data || []).map((item) => [String(item.id), item.no_computadora]));
+    const mapaRestiradores = new Map((restiradoresRes.data || []).map((item) => [String(item.id), item.no_restirador]));
+    const mapaLibros = new Map((librosRes.data || []).map((item) => [String(item.id), item.numero_ejemplar]));
+
+    return solicitudes.map((solicitud) => {
+        const numeroMaterialExistente = (
+            solicitud.numero_material ??
+            solicitud.numero_ejemplar ??
+            solicitud.no_computadora ??
+            solicitud.no_restirador ??
+            solicitud.no_inventario ??
+            null
+        );
+        if (numeroMaterialExistente !== null && numeroMaterialExistente !== undefined) {
+            return { ...solicitud, numero_material: numeroMaterialExistente };
+        }
+
+        const tipo = normalizarTipoSolicitud(solicitud);
+        const idRecurso = obtenerIdRecursoSolicitud(solicitud);
+        const idKey = idRecurso !== null ? String(idRecurso) : null;
+        let numero_material = null;
+
+        if (tipo === 'computadora' && idKey && mapaComputadoras.has(idKey)) {
+            numero_material = mapaComputadoras.get(idKey);
+        } else if (tipo === 'restirador' && idKey && mapaRestiradores.has(idKey)) {
+            numero_material = mapaRestiradores.get(idKey);
+        } else if (tipo === 'libro' && idKey && mapaLibros.has(idKey)) {
+            numero_material = mapaLibros.get(idKey);
+        }
+
+        return { ...solicitud, numero_material: numero_material ?? solicitud.recurso_id ?? solicitud.id_recurso ?? null };
+    });
 }
 
 
@@ -270,7 +441,6 @@ async function CancelarSolicitud(tipoSolicitud, solicitudId, boleta) {
     if (!Number.isInteger(id)) {
         return { success: false, error: 'ID de solicitud inválido' };
     }
-
     let tabla = null;
     switch (tipoSolicitud) {
         case 'computadora':
@@ -287,9 +457,12 @@ async function CancelarSolicitud(tipoSolicitud, solicitudId, boleta) {
     }
 
     try {
+        // estados_asistencia: 3=cancelada | estados_solicitud (libros): 4=cancelada
+        const estadoCancelado = tipoSolicitud === 'libro' ? 4 : 3;
+
         let query = supabase
             .from(tabla)
-            .update({ estado_asistencia_id: 3 }) // 3 = cancelada
+            .update({ estado_asistencia_id: estadoCancelado })
             .eq('id', id)
             .eq('estado_asistencia_id', 1); // solo cancelar si está pendiente
 
@@ -311,7 +484,6 @@ async function CancelarSolicitud(tipoSolicitud, solicitudId, boleta) {
     }
 }
 
-
 // ==================== EXPORTAR FUNCIONES ====================
 module.exports = {
     CrearSolicitud,
@@ -323,5 +495,4 @@ module.exports = {
     CancelarSolicitud,
     getSolicitudes
 };
-
 
