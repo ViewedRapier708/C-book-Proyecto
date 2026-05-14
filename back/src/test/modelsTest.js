@@ -17,15 +17,3 @@ async function testLoginUser() {
   require('dotenv').config();
   const loginResult = await loginUser(2024090191, 'test123');
 }
-
-async function modelComputadoras(){
-  const { obtenerRecursosPorTipo } = require('../models/ModeloRecursos.js');
-  obtenerRecursosPorTipo().then(result => {
-  }).catch(error => {
-    console.error('Error al obtener recursos:', error);
-  });
-}
-
-
-
-modelComputadoras(); // ✅ Esto imprime el resultado real

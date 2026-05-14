@@ -1,48 +1,23 @@
 import { useState, Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import Sidebar from './Sidebar';
+import Navbar from './Navbar';
 import ThemeToggle from '../ui/ThemeToggle';
 import CommandPalette from '../ui/CommandPalette';
-import { Menu, Command } from 'lucide-react';
+import { Command } from 'lucide-react';
 
 export default function DashboardLayout() {
-  const [open, setOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const location = useLocation();
 
   return (
-    <div className="flex min-h-screen">
-      {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-[var(--bg-sidebar)] backdrop-blur-xl border-b border-[var(--border-color)] z-[98] px-4 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-[var(--accent-primary)]">
-          📚 C-Book
-        </h2>
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <button
-            className="p-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-glass)] text-[var(--text-primary)] hover:bg-[var(--bg-glass-strong)] transition-colors"
-            onClick={() => setCmdOpen(true)}
-            title="Ctrl+K"
-          >
-            <Command size={18} />
-          </button>
-          <button
-            className="p-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-glass)] text-[var(--text-primary)] hover:bg-[var(--bg-glass-strong)] transition-colors"
-            onClick={() => setOpen(true)}
-          >
-            <Menu size={22} />
-          </button>
-        </div>
-      </div>
-
-      <Sidebar open={open} onClose={() => setOpen(false)} />
+    <div className="min-h-screen">
+      <Navbar />
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 md:ml-[260px] min-h-screen max-w-full md:max-w-[calc(100%-260px)] px-4 md:px-8 pb-8 pt-[calc(3.5rem+1rem)] md:pt-0">
-        {/* Desktop topbar */}
-        <div className="hidden md:flex justify-between items-center py-4 mb-2">
-          <div />
+      <main className="min-h-screen px-4 md:px-8 pb-8 pt-20 max-w-[1600px] mx-auto">
+        {/* Top bar with utilities */}
+        <div className="flex justify-end items-center py-3 mb-2">
           <div className="flex items-center gap-2">
             <button
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--border-glow)] transition-all text-xs font-mono opacity-70"

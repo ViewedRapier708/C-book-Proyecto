@@ -15,21 +15,16 @@ const ResetPassword      = lazy(() => import('./pages/ResetPassword'));
 
 // User
 const UserHome             = lazy(() => import('./pages/user/UserHome'));
-const SolicitudComputadoras = lazy(() => import('./pages/user/SolicitudComputadoras'));
 const SolicitudLibros      = lazy(() => import('./pages/user/SolicitudLibros'));
-const SolicitudRestiradores = lazy(() => import('./pages/user/SolicitudRestiradores'));
 const MisSolicitudes       = lazy(() => import('./pages/user/MisSolicitudes'));
 const MisSolicitudesLibros = lazy(() => import('./pages/user/MisSolicitudesLibros'));
 const UserProfile          = lazy(() => import('./pages/user/UserProfile'));
-const EditarPerfil         = lazy(() => import('./pages/user/EditarPerfil'));
-const CambiarCorreo        = lazy(() => import('./pages/user/CambiarCorreo'));
 const ModificarCuenta      = lazy(() => import('./pages/user/ModificarCuenta'));
 
 // Admin
 const AdminHome       = lazy(() => import('./pages/admin/AdminHome'));
+const AltaAlumnos     = lazy(() => import('./pages/admin/AltaAlumnos'));
 const AltaLibros      = lazy(() => import('./pages/admin/AltaLibros'));
-const AltaComputadoras = lazy(() => import('./pages/admin/AltaComputadoras'));
-const AltaRestiradores = lazy(() => import('./pages/admin/AltaRestiradores'));
 const Usuarios        = lazy(() => import('./pages/admin/Usuarios'));
 const Documentos      = lazy(() => import('./pages/admin/Documentos'));
 const SolicitudesLibros = lazy(() => import('./pages/admin/SolicitudesLibros'));
@@ -68,14 +63,10 @@ export default function App() {
             }
           >
             <Route index element={<UserHome />} />
-            <Route path="computadoras" element={<SolicitudComputadoras />} />
             <Route path="libros" element={<SolicitudLibros />} />
-            <Route path="restiradores" element={<SolicitudRestiradores />} />
             <Route path="mis-solicitudes" element={<MisSolicitudes />} />
             <Route path="mis-solicitudes-libros" element={<MisSolicitudesLibros />} />
             <Route path="perfil" element={<UserProfile />} />
-            <Route path="perfil/editar" element={<EditarPerfil />} />
-            <Route path="cambiar-correo" element={<CambiarCorreo />} />
             <Route path="cuenta" element={<ModificarCuenta />} />
           </Route>
 
@@ -89,9 +80,8 @@ export default function App() {
             }
           >
             <Route index element={<AdminHome />} />
+            <Route path="alumnos" element={<AltaAlumnos />} />
             <Route path="libros" element={<AltaLibros />} />
-            <Route path="computadoras" element={<AltaComputadoras />} />
-            <Route path="restiradores" element={<AltaRestiradores />} />
             <Route path="usuarios" element={<Usuarios />} />
             <Route path="documentos" element={<Documentos />} />
             <Route path="solicitudes-libros" element={<SolicitudesLibros />} />

@@ -2,9 +2,8 @@
 
 const { ObtenerSolicitudesActivasPorBoleta } = require('../models/ModeloSolicitudes.js');
 const { VerificarDisponibilidadRecurso } = require('../models/ModeloSolicitudes.js');
-// Middleware para verificar restirador
 
-const tipos = ['computadora', 'restirador', 'libro'];
+const tipos = ['libro'];
 
 async function verificarDisponibilidad(req, res, next) {
     //Variable que se necesita para saber que tipo de material se esta solicitando
@@ -18,39 +17,16 @@ async function verificarDisponibilidad(req, res, next) {
     if (!tipos.includes(tipo)) {
         return res.status(400).json({
             success: false,
-            error: 'Tipo de material inválido. Los tipos permitidos son: computadora, restirador, libro.'
+            error: 'Tipo de material invǭlido. Los tipos permitidos son: libro.'
         });
     }
     //Variables que se deben de verificar para que se pueda hacer la solicitud
-    if (tipo === 'computadora' || tipo === 'restirador') {
+    if (tipo === 'libro') {
         const numeroBoleta = Number(boleta);
         if (!Number.isInteger(numeroBoleta)) {
             return res.status(400).json({
                 success: false,
-                error: 'La boleta del usuario es inválida'
-            });
-        }
-        const pendientes = await ObtenerSolicitudesActivasPorBoleta(tipo, numeroBoleta);//Verificar si tiene solicitudes activas del usuario
-
-        if (!pendientes.success) {
-            return res.status(500).json({
-                success: false,
-                error: pendientes.error || 'No se pudo validar las solicitudes activas'
-            });
-        }
-
-        if (pendientes.total > 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'Ya tienes una solicitud activa pendiente. Debes concluirla antes de generar otra.'
-            });
-        }
-    } else if (tipo === 'libro') {
-        const numeroBoleta = Number(boleta);
-        if (!Number.isInteger(numeroBoleta)) {
-            return res.status(400).json({
-                success: false,
-                error: 'La boleta del usuario es inválida'
+                error: 'La boleta del usuario es invǭlida'
             });
         }
         // Ejecutar ambas verificaciones en paralelo para libros
@@ -81,20 +57,6 @@ async function verificarDisponibilidad(req, res, next) {
         }
 
         return next();
-    }
-
-    
-    //Verificar disponibilidad del recurso segun el tipo
-    const disponibilidad = await VerificarDisponibilidadRecurso(tipo, idRecurso); //Verificar si el recurso esta disponible
-    if (disponibilidad.success === true && disponibilidad.message == null) {
-
-        next();
-    }
-    if (disponibilidad.success === false) {
-        return res.status(400).json({
-            success: false,
-            error: disponibilidad.message || 'Recurso no disponible'
-        });
     }
 }
 

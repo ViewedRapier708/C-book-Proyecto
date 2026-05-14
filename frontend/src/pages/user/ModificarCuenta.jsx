@@ -1,81 +1,95 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Lock, Eye, EyeOff, ShieldCheck,
-  Mail, CheckCircle, AlertCircle, Key
+  Mail, CheckCircle, XCircle, Key
 } from 'lucide-react';
-import toast from 'react-hot-toast';
 import { authApi } from '../../api/auth';
 import AnimatedPage from '../../components/layout/AnimatedPage';
+import Modal from '../../components/ui/Modal';
 
-const tabs = [
-  { id: 'password', label: 'Contraseña', icon: Lock },
-  { id: 'email', label: 'Correo', icon: Mail },
-];
+
+function validarPassword(password) {
+  if (!password || password.length < 6 || password.length > 16)
+    return 'La contraseña debe tener entre 6 y 16 caracteres';
+  if (!/[a-z]/.test(password))
+    return 'La contraseña debe contener al menos una letra minúscula';
+  if (!/[A-Z]/.test(password))
+    return 'La contraseña debe contener al menos una letra mayúscula';
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
+    return 'La contraseña debe contener al menos un carácter especial';
+  return null;
+}
+
+function PwdInput({ field, placeholder, show, form, setForm, setShow, inputStyle }) {
+  return (
+    <div style={{ position: 'relative' }}>
+      <Lock size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+      <input
+        type={show[field] ? 'text' : 'password'}
+        value={form[field]}
+        onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))}
+        placeholder={placeholder}
+        style={{ ...inputStyle, paddingRight: '2.5rem' }}
+        onFocus={e => e.target.style.borderColor = 'var(--accent-primary-light)'}
+        onBlur={e => e.target.style.borderColor = 'var(--border)'}
+      />
+      <button
+        type="button"
+        onClick={() => setShow(s => ({ ...s, [field]: !s[field] }))}
+        style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 2 }}
+      >
+        {show[field] ? <EyeOff size={15} /> : <Eye size={15} />}
+      </button>
+    </div>
+  );
+}
 
 export default function ModificarCuenta() {
-  const { user, checkSession } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [tabActiva, setTabActiva] = useState('password');
 
-  // --- Password state ---
-  const [psw, setPsw] = useState({ nueva: '', confirmar: '' });
-  const [showPsw, setShowPsw] = useState({ nueva: false, confirmar: false });
-  const [loadingPsw, setLoadingPsw] = useState(false);
-  const [exitoPsw, setExitoPsw] = useState(false);
-  const [errorPsw, setErrorPsw] = useState('');
+  const [form, setForm] = useState({ correo: '', currentPassword: '', nueva: '', confirmar: '' });
+  const [show, setShow] = useState({ currentPassword: false, nueva: false, confirmar: false });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTipo, setModalTipo] = useState('');
 
-  // --- Email state ---
-  const [correos, setCorreos] = useState({ nuevo: '', confirmar: '' });
-  const [loadingEmail, setLoadingEmail] = useState(false);
-  const [exitoEmail, setExitoEmail] = useState(false);
-  const [errorEmail, setErrorEmail] = useState('');
-
-  const handleCambiarPassword = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorPsw('');
+    setError('');
 
-    if (!psw.nueva || !psw.confirmar) { setErrorPsw('Completa todos los campos'); return; }
-    if (psw.nueva.length < 6 || psw.nueva.length > 16) { setErrorPsw('La contraseña debe tener entre 6 y 16 caracteres'); return; }
-    if (psw.nueva !== psw.confirmar) { setErrorPsw('Las contraseñas no coinciden'); return; }
-
-    setLoadingPsw(true);
-    try {
-      await authApi.updateAccount(user.boleta, 'contraseña', psw.nueva);
-      setExitoPsw(true);
-      setPsw({ nueva: '', confirmar: '' });
-      toast.success('Contraseña actualizada correctamente');
-      setTimeout(() => setExitoPsw(false), 4000);
-    } catch (err) {
-      setErrorPsw(err.message || 'No se pudo actualizar la contraseña');
-    } finally {
-      setLoadingPsw(false);
+    if (!form.correo || !form.currentPassword || !form.nueva || !form.confirmar) {
+      setError('Completa todos los campos'); return;
     }
-  };
+    if (form.nueva.length < 6 || form.nueva.length > 16) {
+      setError('La contraseña debe tener entre 6 y 16 caracteres'); return;
+    }
+    if (form.nueva !== form.confirmar) {
+      setError('Las contraseñas no coinciden'); return;
+    }
+    const errorPsw = validarPassword(form.nueva);
+    if (errorPsw) {
+      setError(errorPsw); return;
+    }
 
-  const handleCambiarEmail = async (e) => {
-    e.preventDefault();
-    setErrorEmail('');
-
-    if (!correos.nuevo || !correos.confirmar) { setErrorEmail('Completa todos los campos'); return; }
-    if (!/^[\w.-]+@[\w.-]+\.\w+$/.test(correos.nuevo)) { setErrorEmail('El formato del correo no es válido'); return; }
-    if (correos.nuevo !== correos.confirmar) { setErrorEmail('Los correos no coinciden'); return; }
-    if (correos.nuevo === (user?.email || '')) { setErrorEmail('El nuevo correo es igual al actual'); return; }
-
-    setLoadingEmail(true);
+    setLoading(true);
     try {
-      await authApi.updateAccount(user.boleta, 'correo', correos.nuevo);
-      setExitoEmail(true);
-      setCorreos({ nuevo: '', confirmar: '' });
-      toast.success('Correo actualizado correctamente');
-      await checkSession();
-      setTimeout(() => setExitoEmail(false), 4000);
+      await authApi.changePassword(form.correo, form.currentPassword, form.nueva);
+      setForm({ correo: '', currentPassword: '', nueva: '', confirmar: '' });
+      setModalTipo('success');
+      setModalOpen(true);
     } catch (err) {
-      setErrorEmail(err.message || 'No se pudo actualizar el correo');
+      const msg = err.message || 'Hubo un error al cambiar su contraseña porfavor intentelo mas tarde';
+      console.error('[ModificarCuenta] Error al cambiar contraseña:', msg);
+      setError(msg);
+      setModalTipo('error');
+      setModalOpen(true);
     } finally {
-      setLoadingEmail(false);
+      setLoading(false);
     }
   };
 
@@ -117,20 +131,7 @@ export default function ModificarCuenta() {
         marginBottom: '1rem', color: 'var(--danger)', fontSize: '0.83rem',
       }}
     >
-      <AlertCircle size={14} style={{ flexShrink: 0 }} /> {msg}
-    </motion.div>
-  ) : null;
-
-  const SuccessBanner = ({ show, msg }) => show ? (
-    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-      style={{
-        display: 'flex', alignItems: 'center', gap: '0.5rem',
-        padding: '0.7rem 1rem', borderRadius: 'var(--radius-sm)',
-        background: 'var(--success-bg)', border: '1px solid rgba(31,157,116,0.25)',
-        marginBottom: '1rem', color: 'var(--success)', fontSize: '0.83rem',
-      }}
-    >
-      <CheckCircle size={14} style={{ flexShrink: 0 }} /> {msg}
+      <XCircle size={14} style={{ flexShrink: 0 }} /> {msg}
     </motion.div>
   ) : null;
 
@@ -152,8 +153,15 @@ export default function ModificarCuenta() {
     { label: 'Muy fuerte', color: '#1f8a70' },
   ];
 
-  const level = strengthLevel(psw.nueva);
+  const level = strengthLevel(form.nueva);
   const sInfo = strengthInfo[level];
+
+  useEffect(() => {
+    if (modalOpen && modalTipo === 'success') {
+      const timer = setTimeout(() => setModalOpen(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [modalOpen, modalTipo]);
 
   return (
     <AnimatedPage>
@@ -173,214 +181,115 @@ export default function ModificarCuenta() {
             <ArrowLeft size={18} />
           </button>
           <div>
-            <h1>Modificar Cuenta</h1>
-            <p>Gestiona tu contraseña y correo electrónico</p>
+            <h1>Cambiar Contraseña</h1>
+            <p>Mín. 6 carácteres, mayúsculas, minúsculas y 1 carácter especial</p>
           </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: 560 }}>
-        {/* Tabs */}
-        <div style={{
-          display: 'flex', gap: '0.25rem', padding: '0.3rem',
-          background: 'var(--bg-glass)', borderRadius: 'var(--radius-sm)',
-          border: '1px solid var(--border)', marginBottom: '1.5rem',
-        }}>
-          {tabs.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setTabActiva(id)}
-              style={{
-                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                gap: '0.45rem', padding: '0.55rem 1rem',
-                borderRadius: 'calc(var(--radius-sm) - 2px)',
-                border: 'none', cursor: 'pointer', fontSize: '0.88rem', fontWeight: 500,
-                transition: 'all 0.2s',
-                background: tabActiva === id ? 'var(--button-primary-bg)' : 'transparent',
-                color: tabActiva === id ? '#fff' : 'var(--text-muted)',
-              }}
-            >
-              <Icon size={15} /> {label}
-            </button>
-          ))}
-        </div>
+      <div style={{ maxWidth: 480 }}>
+        <motion.div className="card" key="psw"
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem' }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 'var(--radius-sm)',
+              background: 'var(--info-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Key size={18} color="var(--info)" />
+            </div>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1rem' }}>Cambiar contraseña</h3>
+              <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                Verifica tu identidad para cambiar la contraseña
+              </p>
+            </div>
+          </div>
 
-        <AnimatePresence mode="wait">
-          {tabActiva === 'password' && (
-            <motion.div key="psw" className="card"
-              initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem' }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: 'var(--radius-sm)',
-                  background: 'var(--info-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <Key size={18} color="var(--info)" />
-                </div>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '1rem' }}>Cambiar contraseña</h3>
-                  <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                    Mínimo 6 caracteres, máximo 16
-                  </p>
-                </div>
+          <ErrorMsg msg={error} />
+
+          <form onSubmit={handleSubmit}>
+            <div style={fieldWrap}>
+              <label style={labelStyle}>Correo electrónico</label>
+              <div style={{ position: 'relative' }}>
+                <Mail size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <input
+                  type="email"
+                  value={form.correo}
+                  onChange={e => setForm(f => ({ ...f, correo: e.target.value }))}
+                  placeholder={user?.correo || 'correo@ejemplo.com'}
+                  style={inputStyle}
+                  onFocus={e => e.target.style.borderColor = 'var(--accent-primary-light)'}
+                  onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                />
               </div>
+            </div>
 
-              <SuccessBanner show={exitoPsw} msg="¡Contraseña actualizada exitosamente!" />
-              <ErrorMsg msg={errorPsw} />
+            <div style={fieldWrap}>
+              <label style={labelStyle}>Contraseña actual</label>
+              <PwdInput field="currentPassword" placeholder="••••••••" show={show} form={form} setForm={setForm} setShow={setShow} inputStyle={inputStyle} />
+            </div>
 
-              <form onSubmit={handleCambiarPassword}>
-                <div style={fieldWrap}>
-                  <label style={labelStyle}>Nueva contraseña</label>
-                  <div style={{ position: 'relative' }}>
-                    <Lock size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                    <input
-                      type={showPsw.nueva ? 'text' : 'password'}
-                      value={psw.nueva}
-                      onChange={e => setPsw(p => ({ ...p, nueva: e.target.value }))}
-                      placeholder="••••••••"
-                      style={{ ...inputStyle, paddingRight: '2.5rem' }}
-                      onFocus={e => e.target.style.borderColor = 'var(--accent-primary-light)'}
-                      onBlur={e => e.target.style.borderColor = 'var(--border)'}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPsw(p => ({ ...p, nueva: !p.nueva }))}
-                      style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 2 }}
-                    >
-                      {showPsw.nueva ? <EyeOff size={15} /> : <Eye size={15} />}
-                    </button>
+            <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '1.25rem 0' }} />
+
+            <div style={fieldWrap}>
+              <label style={labelStyle}>Nueva contraseña</label>
+              <PwdInput field="nueva" placeholder="••••••••" show={show} form={form} setForm={setForm} setShow={setShow} inputStyle={inputStyle} />
+              {form.nueva && (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.25rem' }}>
+                    {[0, 1, 2, 3].map(i => (
+                      <div key={i} style={{
+                        flex: 1, height: 3, borderRadius: 999,
+                        background: i < level ? sInfo.color : 'var(--bg-glass-strong)',
+                        transition: 'background 0.3s',
+                      }} />
+                    ))}
                   </div>
-
-                  {/* Strength bar */}
-                  {psw.nueva && (
-                    <div style={{ marginTop: '0.5rem' }}>
-                      <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.25rem' }}>
-                        {[0, 1, 2, 3].map(i => (
-                          <div key={i} style={{
-                            flex: 1, height: 3, borderRadius: 999,
-                            background: i < level ? sInfo.color : 'var(--bg-glass-strong)',
-                            transition: 'background 0.3s',
-                          }} />
-                        ))}
-                      </div>
-                      <span style={{ fontSize: '0.72rem', color: sInfo.color }}>{sInfo.label}</span>
-                    </div>
-                  )}
+                  <span style={{ fontSize: '0.72rem', color: sInfo.color }}>{sInfo.label}</span>
                 </div>
+              )}
+            </div>
 
-                <div style={{ ...fieldWrap, marginBottom: '1.5rem' }}>
-                  <label style={labelStyle}>Confirmar nueva contraseña</label>
-                  <div style={{ position: 'relative' }}>
-                    <Lock size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                    <input
-                      type={showPsw.confirmar ? 'text' : 'password'}
-                      value={psw.confirmar}
-                      onChange={e => setPsw(p => ({ ...p, confirmar: e.target.value }))}
-                      placeholder="••••••••"
-                      style={{ ...inputStyle, paddingRight: '2.5rem' }}
-                      onFocus={e => e.target.style.borderColor = 'var(--accent-primary-light)'}
-                      onBlur={e => e.target.style.borderColor = 'var(--border)'}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPsw(p => ({ ...p, confirmar: !p.confirmar }))}
-                      style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 2 }}
-                    >
-                      {showPsw.confirmar ? <EyeOff size={15} /> : <Eye size={15} />}
-                    </button>
-                  </div>
-                  {psw.confirmar && psw.nueva !== psw.confirmar && (
-                    <p style={{ fontSize: '0.75rem', color: 'var(--danger)', marginTop: '0.35rem' }}>
-                      Las contraseñas no coinciden
-                    </p>
-                  )}
-                </div>
+            <div style={{ ...fieldWrap, marginBottom: '1.5rem' }}>
+              <label style={labelStyle}>Confirmar nueva contraseña</label>
+              <PwdInput field="confirmar" placeholder="••••••••" show={show} form={form} setForm={setForm} setShow={setShow} inputStyle={inputStyle} />
+              {form.confirmar && form.nueva !== form.confirmar && (
+                <p style={{ fontSize: '0.75rem', color: 'var(--danger)', marginTop: '0.35rem' }}>
+                  Las contraseñas no coinciden
+                </p>
+              )}
+            </div>
 
-                <motion.button type="submit" disabled={loadingPsw} style={btnPrimary(loadingPsw)}
-                  whileHover={!loadingPsw ? { scale: 1.01 } : {}}
-                  whileTap={!loadingPsw ? { scale: 0.99 } : {}}
-                >
-                  {loadingPsw ? <><Spinner /> Actualizando...</> : <><ShieldCheck size={16} /> Actualizar contraseña</>}
-                </motion.button>
-              </form>
-            </motion.div>
-          )}
-
-          {tabActiva === 'email' && (
-            <motion.div key="email" className="card"
-              initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }}
-              transition={{ duration: 0.2 }}
+            <motion.button type="submit" disabled={loading} style={btnPrimary(loading)}
+              whileHover={!loading ? { scale: 1.01 } : {}}
+              whileTap={!loading ? { scale: 0.99 } : {}}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem' }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: 'var(--radius-sm)',
-                  background: 'var(--warning-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <Mail size={18} color="var(--warning)" />
-                </div>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '1rem' }}>Cambiar correo</h3>
-                  <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                    Actual: <strong style={{ color: 'var(--text-secondary)' }}>{user?.email || '-'}</strong>
-                  </p>
-                </div>
-              </div>
-
-              <SuccessBanner show={exitoEmail} msg="¡Correo actualizado exitosamente!" />
-              <ErrorMsg msg={errorEmail} />
-
-              <form onSubmit={handleCambiarEmail}>
-                <div style={fieldWrap}>
-                  <label style={labelStyle}>Nuevo correo electrónico</label>
-                  <div style={{ position: 'relative' }}>
-                    <Mail size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                    <input
-                      type="email"
-                      value={correos.nuevo}
-                      onChange={e => setCorreos(c => ({ ...c, nuevo: e.target.value }))}
-                      placeholder="nuevo@correo.com"
-                      style={inputStyle}
-                      onFocus={e => e.target.style.borderColor = 'var(--accent-primary-light)'}
-                      onBlur={e => e.target.style.borderColor = 'var(--border)'}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ ...fieldWrap, marginBottom: '1.5rem' }}>
-                  <label style={labelStyle}>Confirmar nuevo correo</label>
-                  <div style={{ position: 'relative' }}>
-                    <Mail size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                    <input
-                      type="email"
-                      value={correos.confirmar}
-                      onChange={e => setCorreos(c => ({ ...c, confirmar: e.target.value }))}
-                      placeholder="nuevo@correo.com"
-                      style={inputStyle}
-                      onFocus={e => e.target.style.borderColor = 'var(--accent-primary-light)'}
-                      onBlur={e => e.target.style.borderColor = 'var(--border)'}
-                    />
-                  </div>
-                  {correos.confirmar && correos.nuevo !== correos.confirmar && (
-                    <p style={{ fontSize: '0.75rem', color: 'var(--danger)', marginTop: '0.35rem' }}>
-                      Los correos no coinciden
-                    </p>
-                  )}
-                </div>
-
-                <motion.button type="submit" disabled={loadingEmail} style={btnPrimary(loadingEmail)}
-                  whileHover={!loadingEmail ? { scale: 1.01 } : {}}
-                  whileTap={!loadingEmail ? { scale: 0.99 } : {}}
-                >
-                  {loadingEmail ? <><Spinner /> Actualizando...</> : <><Mail size={16} /> Actualizar correo</>}
-                </motion.button>
-              </form>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              {loading ? <><Spinner /> Actualizando...</> : <><ShieldCheck size={16} /> Actualizar contraseña</>}
+            </motion.button>
+          </form>
+        </motion.div>
       </div>
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
+      <Modal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalTipo === 'success' ? 'Contraseña actualizada' : 'Error'}
+      >
+        {modalTipo === 'success' ? (
+          <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+            <CheckCircle size={48} color="var(--success)" style={{ marginBottom: '1rem' }} />
+            <p style={{ fontSize: '1rem', fontWeight: 500 }}>Contraseña actualizada correctamente</p>
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+            <XCircle size={48} color="var(--danger)" style={{ marginBottom: '1rem' }} />
+            <p style={{ fontSize: '1rem', fontWeight: 500 }}>Hubo un error al cambiar su contraseña porfavor intentelo mas tarde</p>
+          </div>
+        )}
+      </Modal>
     </AnimatedPage>
   );
 }

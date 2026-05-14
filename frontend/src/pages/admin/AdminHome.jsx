@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
-  BookOpen, Monitor, PenTool, Users, FileText,
+  BookOpen, Users, FileText,
   ClipboardList, BookCheck, TrendingUp, Activity,
   ArrowRight, BarChart3, AlertCircle
 } from 'lucide-react';
@@ -22,8 +22,6 @@ const COLORS = ['#1f8a70', '#0ea5e9', '#1f9d74', '#d97706', '#d4654a', '#c46f21'
 
 const quickLinks = [
   { icon: BookOpen, label: 'Libros', to: '/admin/libros', color: '#1f8a70' },
-  { icon: Monitor, label: 'Computadoras', to: '/admin/computadoras', color: '#0ea5e9' },
-  { icon: PenTool, label: 'Restiradores', to: '/admin/restiradores', color: '#1f9d74' },
   { icon: Users, label: 'Usuarios', to: '/admin/usuarios', color: '#c46f21' },
   { icon: FileText, label: 'Documentos', to: '/admin/documentos', color: '#d97706' },
   { icon: ClipboardList, label: 'Solicitudes', to: '/admin/solicitudes-libros', color: '#d4654a' },
@@ -55,16 +53,12 @@ export default function AdminHome() {
   }, []);
 
   const pieData = stats ? [
-    { name: 'Computadoras', value: stats.solicitudesPorTipo?.computadora || 0 },
-    { name: 'Restiradores', value: stats.solicitudesPorTipo?.restirador || 0 },
     { name: 'Libros', value: stats.solicitudesPorTipo?.libro || 0 },
   ].filter(d => d.value > 0) : [];
 
   const statCards = stats ? [
     { icon: Users, label: 'Usuarios', value: stats.totales?.usuarios || 0, color: '#c46f21' },
     { icon: BookOpen, label: 'Libros', value: stats.totales?.libros || 0, subtitle: `${stats.disponibilidad?.libros?.disponibles || 0} disponibles`, color: '#1f8a70' },
-    { icon: Monitor, label: 'Computadoras', value: stats.totales?.computadoras || 0, subtitle: `${stats.disponibilidad?.computadoras?.disponibles || 0} disponibles`, color: '#0ea5e9' },
-    { icon: PenTool, label: 'Restiradores', value: stats.totales?.restiradores || 0, subtitle: `${stats.disponibilidad?.restiradores?.disponibles || 0} disponibles`, color: '#1f9d74' },
     { icon: ClipboardList, label: 'Solicitudes Pendientes', value: stats.solicitudesPorEstado?.pendientes || 0, color: '#d97706' },
     { icon: BookCheck, label: 'Préstamos Activos', value: stats.totales?.prestamosActivos || 0, color: '#d4654a' },
   ] : [];

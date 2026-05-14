@@ -282,8 +282,10 @@ async function revocarSesionesSupabase(accessToken) {
 //Cambio de contraseña y recuperación de contraseña
 async function CambiarContraseña(correo) {
   const supabase = getClient();
-  const redirectTo = `${process.env.FRONTEND_URL || 'https://c-book-proyecto.vercel.app'}/reset-password`;
+  const base = (process.env.FRONTEND_URL || 'https://c-book-proyecto.vercel.app').replace(/\/+$/, '');
+  const redirectTo = `${base}/reset-password`;
   try {
+    console.log('[CambiarContraseña] Enviando reset a:', correo, 'redirectTo:', redirectTo);
     const { data, error } = await supabase.auth.resetPasswordForEmail(correo, {
       redirectTo
     });
@@ -292,6 +294,7 @@ async function CambiarContraseña(correo) {
       console.error('Error enviando correo de recuperación:', error);
       return { success: false, error: error.message };
     }
+    console.log('[CambiarContraseña] Correo de recuperación enviado exitosamente');
     return { success: true, data };
   } catch (err) {
     console.error('Error en CambiarContraseña:', err);
@@ -323,22 +326,34 @@ async function ActualizarContraseñaConToken(accessToken, newPassword) {
     return { success: false, error: 'Error interno' };
   }
 }
-async function CambioCorreo(nuevoCorreo) {
-  const supabase=getClient();
+async function actualizarContrasenaPropia(boleta, correo, supabaseUserId, newPassword) {
+  const supabase = getClient();
   try {
-    const { data, error } = await supabase.auth.updateUser({
-      email: nuevoCorreo
-    });
-    if (error) {
-      console.error('Error cambiando correo:', error);
-      return { success: false, error: error.message };
+    console.log('[actualizarContrasenaPropia] Cambiando contraseña para boleta:', boleta, 'supabaseUserId:', supabaseUserId);
+
+    if (!supabaseUserId) {
+      console.error('[actualizarContrasenaPropia] No hay supabaseUserId disponible');
+      return { success: false, error: 'Error de autenticación' };
     }
-    return { success: true, data };
-  } catch (error) {
-    console.error('Error en CambioCorreo:', error);
-    return { success: false, error: 'Error interno' };
+
+    const { error: updateError } = await supabase.auth.admin.updateUserById(supabaseUserId, {
+      password: newPassword
+    });
+
+    if (updateError) {
+      console.error('[actualizarContrasenaPropia] Error en admin.updateUserById:', updateError);
+      return { success: false, error: updateError.message };
+    }
+
+    console.log('[actualizarContrasenaPropia] Contraseña actualizada exitosamente');
+    return { success: true };
+  } catch (err) {
+    console.error('[actualizarContrasenaPropia] Error en catch:', err);
+    return { success: false, error: 'Error interno del servidor' };
   }
 }
+
+
 
 
 
@@ -354,6 +369,6 @@ module.exports = {
   refrescarSesionSupabase,
   revocarSesionesSupabase,
   CambiarContraseña,
-  CambioCorreo,
-  ActualizarContraseñaConToken
+  ActualizarContraseñaConToken,
+  actualizarContrasenaPropia
 };

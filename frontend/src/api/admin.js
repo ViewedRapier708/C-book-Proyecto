@@ -1,14 +1,12 @@
 import { api } from './client';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 export const adminApi = {
   // Materials CRUD
   getMaterials: (tipo) => api.get(`/admin/materiales/${tipo}`),
   createBook: (data) => api.post('/admin/libros', data),
-  createComputer: (data) => api.post('/admin/computadoras', data),
-  createRestirador: (data) => api.post('/admin/restiradores', data),
   updateBook: (data) => api.put('/admin/libros', data),
-  updateComputer: (data) => api.put('/admin/computadoras', data),
-  updateRestirador: (data) => api.put('/admin/restiradores', data),
   deleteMaterial: (tipo, id) => api.delete(`/admin/materiales/${tipo}/${id}`),
 
   // Users
@@ -23,4 +21,21 @@ export const adminApi = {
   // Loans
   getBookLoans: () => api.get('/admin/prestamos/libros'),
   markLoanReturned: (id) => api.post(`/admin/prestamos/libros/${id}/devolver`),
+
+  // Boletas (catálogo de alumnos)
+  getBoletas: () => api.get('/admin/boletas'),
+  createBoleta: (data) => api.post('/admin/boletas', data),
+  updateBoleta: (boleta, data) => api.put(`/admin/boletas/${boleta}`, data),
+  deleteBoleta: (boleta) => api.delete(`/admin/boletas/${boleta}`),
+  confirmBulkBoletas: (data) => api.post('/admin/boletas/bulk', data),
+  previewBulkBoletas: async (formData) => {
+    const res = await fetch(`${API_BASE}/auth/admin/boletas/preview`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || data.message || `Error ${res.status}`);
+    return data;
+  },
 };

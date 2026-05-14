@@ -1,15 +1,10 @@
+const path = require('path');
 const {
     CrearLibro,
     CrearEjemplar,
-    CrearComputadora,
-    CrearRestirador,
     CrearGuardarropa,
-    eliminarComputadora,
-    eliminarRestirador,
     eliminarLibro,
     eliminarGuardarropa,
-    actualizarDatosComputadora,
-    actualizarDatosRestirador,
     actualizarDatosLibro,
     actualizarDatosEjemplar,
     ObtenerUsuarios,
@@ -19,7 +14,13 @@ const {
     ActualizarEstadoSolicitudLibro,
     EntregarLibro,
     ObtenerPrestamosLibros,
-    MarcarPrestamoDevuelto
+    MarcarPrestamoDevuelto,
+    ObtenerBoletas,
+    CrearBoleta,
+    ActualizarBoleta,
+    EliminarBoleta,
+    BulkUpsertBoletas,
+    BoletasExistentes,
 } = require('../models/ModeloAdministrador.js');
 const { enviarCorreo, plantillaCorreo } = require('../utils/servicioCorreo.js');
 const {
@@ -325,157 +326,9 @@ for (const [campo, limites] of Object.entries(longitudes)) {
     }
 }
 
-async function crearComputadora(req, res) {
-    try {
-        const { 
-            procesador, programas, carrera, 
-            Disponible, En_funcionamiento, Observacion, 
-            no_inventario, no_computadora 
-        } = req.body;
 
-        const procesadorTrim = String(procesador ?? '').trim();
-        const programasTrim = String(programas ?? '').trim();
-        const carreraTrim = String(carrera ?? '').trim();
-        const noInventarioTrim = String(no_inventario ?? '').trim();
-        
-        if (!procesadorTrim || !programasTrim || !carreraTrim || !noInventarioTrim || no_computadora === undefined || no_computadora === null || String(no_computadora).trim() === '') {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Todos los campos requeridos deben estar presentes' 
-            });
-        }
 
-        const validacionNoComputadora = validarEnteroSinDecimales(no_computadora, 'no_computadora');
-        if (!validacionNoComputadora.ok) {
-            return res.status(400).json({
-                success: false,
-                message: validacionNoComputadora.message
-            });
-        }
 
-        const noComputadoraNumero = validacionNoComputadora.value;
-
-        // Validar duplicados
-        const supabase = getClient();
-        const { data: inventarioDuplicado } = await supabase
-            .from('computadoras')
-            .select('id')
-            .eq('no_inventario', noInventarioTrim)
-            .maybeSingle();
-
-        if (inventarioDuplicado) {
-            return res.status(409).json({
-                success: false,
-                message: 'Ya existe una computadora con este número de inventario'
-            });
-        }
-
-        const { data: computadoraDuplicada } = await supabase
-            .from('computadoras')
-            .select('id')
-            .eq('no_computadora', noComputadoraNumero)
-            .maybeSingle();
-
-        if (computadoraDuplicada) {
-            return res.status(409).json({
-                success: false,
-                message: 'Ya existe una computadora con este número'
-            });
-        }
-
-        const resultado = await CrearComputadora(
-            procesadorTrim, programasTrim, carreraTrim, 
-            Disponible, En_funcionamiento, Observacion, 
-            noInventarioTrim, noComputadoraNumero
-        );
-        
-        if (resultado.success) {
-            return res.status(201).json(resultado);
-        } else {
-            return res.status(400).json(resultado);
-        }
-    } catch (error) {
-        console.error('Error en crearComputadora:', error);
-        return res.status(500).json({ 
-            success: false, 
-            message: 'Error interno del servidor' 
-        });
-    }
-}
-
-async function crearRestirador(req, res) {
-    try {
-        const { 
-            Disponible, estado_de_material, estado_material, 
-            Observacion, no_inventario, no_restirador 
-        } = req.body;
-
-        const estadoMaterial = estado_de_material ?? estado_material;
-        const noInventarioTrim = String(no_inventario ?? '').trim();
-        
-        if (!noInventarioTrim || no_restirador === undefined || no_restirador === null || String(no_restirador).trim() === '') {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Los campos no_inventario y no_restirador son requeridos' 
-            });
-        }
-
-        const validacionNoRestirador = validarEnteroSinDecimales(no_restirador, 'no_restirador');
-        if (!validacionNoRestirador.ok) {
-            return res.status(400).json({
-                success: false,
-                message: validacionNoRestirador.message
-            });
-        }
-
-        const noRestiradorNumero = validacionNoRestirador.value;
-
-        // Validar duplicados
-        const supabase = getClient();
-        const { data: inventarioDuplicado } = await supabase
-            .from('restiradores')
-            .select('id')
-            .eq('no_inventario', noInventarioTrim)
-            .maybeSingle();
-
-        if (inventarioDuplicado) {
-            return res.status(409).json({
-                success: false,
-                message: 'Ya existe un restirador con este número de inventario'
-            });
-        }
-
-        const { data: restiradorDuplicado } = await supabase
-            .from('restiradores')
-            .select('id')
-            .eq('no_restirador', noRestiradorNumero)
-            .maybeSingle();
-
-        if (restiradorDuplicado) {
-            return res.status(409).json({
-                success: false,
-                message: 'Ya existe un restirador con este número'
-            });
-        }
-
-        const resultado = await CrearRestirador(
-            Disponible, estadoMaterial, 
-            Observacion, noInventarioTrim, noRestiradorNumero
-        );
-        
-        if (resultado.success) {
-            return res.status(201).json(resultado);
-        } else {
-            return res.status(400).json(resultado);
-        }
-    } catch (error) {
-        console.error('Error en crearRestirador:', error);
-        return res.status(500).json({ 
-            success: false, 
-            message: 'Error interno del servidor' 
-        });
-    }
-}
 
 async function crearGuardarropa(req, res) {
     try {
@@ -513,17 +366,11 @@ async function eliminarMaterial(req, res) {
             });
         }
 
-        let resultado;
-        
+let resultado;
+         
         switch (tipo) {
             case 'libros':
                 resultado = await eliminarLibro(id);
-                break;
-            case 'computadoras':
-                resultado = await eliminarComputadora(id);
-                break;
-            case 'restiradores':
-                resultado = await eliminarRestirador(id);
                 break;
             case 'guardarropas':
                 resultado = await eliminarGuardarropa(id);
@@ -531,7 +378,7 @@ async function eliminarMaterial(req, res) {
             default:
                 return res.status(400).json({ 
                     success: false, 
-                    message: 'Tipo de material no válido' 
+                    message: 'Tipo de material no v�lido' 
                 });
         }
 
@@ -640,99 +487,9 @@ async function actualizarLibro(req, res) {
     }
 }
 
-async function actualizarComputadora(req, res) {
-    try {
-        const { 
-            id, procesador, programas, carrera, 
-            Disponible, En_funcionamiento, Observacion, 
-            no_inventario, no_computadora 
-        } = req.body;
-        
-        if (!id) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'El id es requerido' 
-            });
-        }
 
-        let noComputadoraActualizada = no_computadora;
-        if (no_computadora !== undefined) {
-            const validacionNoComputadora = validarEnteroSinDecimales(no_computadora, 'no_computadora');
-            if (!validacionNoComputadora.ok) {
-                return res.status(400).json({
-                    success: false,
-                    message: validacionNoComputadora.message
-                });
-            }
-            noComputadoraActualizada = validacionNoComputadora.value;
-        }
 
-        const resultado = await actualizarDatosComputadora(
-            id, procesador, programas, carrera, 
-            Disponible, En_funcionamiento, Observacion, 
-            no_inventario, noComputadoraActualizada
-        );
-        
-        if (resultado.success) {
-            return res.status(200).json(resultado);
-        } else {
-            return res.status(400).json(resultado);
-        }
-    } catch (error) {
-        console.error('Error en actualizarComputadora:', error);
-        return res.status(500).json({ 
-            success: false, 
-            message: 'Error interno del servidor' 
-        });
-    }
-}
 
-async function actualizarRestirador(req, res) {
-    try {
-        const { 
-            id, Disponible, estado_de_material, estado_material, 
-            Observacion, no_inventario, no_restirador 
-        } = req.body;
-
-        const estadoMaterial = estado_de_material ?? estado_material;
-        
-        if (!id) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'El id es requerido' 
-            });
-        }
-
-        let noRestiradorActualizado = no_restirador;
-        if (no_restirador !== undefined) {
-            const validacionNoRestirador = validarEnteroSinDecimales(no_restirador, 'no_restirador');
-            if (!validacionNoRestirador.ok) {
-                return res.status(400).json({
-                    success: false,
-                    message: validacionNoRestirador.message
-                });
-            }
-            noRestiradorActualizado = validacionNoRestirador.value;
-        }
-
-        const resultado = await actualizarDatosRestirador(
-            id, Disponible, estadoMaterial, 
-            Observacion, no_inventario, noRestiradorActualizado
-        );
-        
-        if (resultado.success) {
-            return res.status(200).json(resultado);
-        } else {
-            return res.status(400).json(resultado);
-        }
-    } catch (error) {
-        console.error('Error en actualizarRestirador:', error);
-        return res.status(500).json({ 
-            success: false, 
-            message: 'Error interno del servidor' 
-        });
-    }
-}
 
 // ==================== OBTENER MATERIALES ====================
 
@@ -1141,14 +898,231 @@ async function marcarPrestamoDevuelto(req, res) {
 }
 
 
+// ==================== BOLETAS (CATÁLOGO DE ALUMNOS) ====================
+
+const BOLETA_FORMAT_RE = /^\d{10}$/;
+const GRUPO_FORMAT_RE = /^\d[A-Z]{2,4}\d?[A-Z]?$/;
+
+async function obtenerBoletas(req, res) {
+    try {
+        const resultado = await ObtenerBoletas();
+        if (resultado.success) return res.status(200).json(resultado);
+        return res.status(400).json(resultado);
+    } catch (error) {
+        console.error('Error en obtenerBoletas:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+}
+
+async function crearBoleta(req, res) {
+    try {
+        const { boleta, nombre, Grupo } = req.body;
+
+        const boletaStr = String(boleta ?? '').trim();
+        const nombreTrim = String(nombre ?? '').trim();
+        const grupoTrim = String(Grupo ?? '').trim().toUpperCase();
+
+        if (!BOLETA_FORMAT_RE.test(boletaStr)) {
+            return res.status(400).json({ success: false, message: 'La boleta debe tener exactamente 10 dígitos numéricos' });
+        }
+        if (!nombreTrim) {
+            return res.status(400).json({ success: false, message: 'El nombre es requerido' });
+        }
+        if (!GRUPO_FORMAT_RE.test(grupoTrim)) {
+            return res.status(400).json({ success: false, message: 'El grupo debe tener el formato correcto (ej: 6CM1, 7IM3A)' });
+        }
+
+        const supabaseClient = require('../config/db').getClient();
+        const { data: existente } = await supabaseClient
+            .from('boletas')
+            .select('boleta')
+            .eq('boleta', parseInt(boletaStr, 10))
+            .maybeSingle();
+
+        if (existente) {
+            return res.status(409).json({ success: false, message: 'Ya existe una boleta con ese número' });
+        }
+
+        const resultado = await CrearBoleta({
+            boleta: parseInt(boletaStr, 10),
+            nombre: nombreTrim.toUpperCase(),
+            Grupo: grupoTrim,
+        });
+
+        if (resultado.success) return res.status(201).json(resultado);
+        return res.status(400).json(resultado);
+    } catch (error) {
+        console.error('Error en crearBoleta:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+}
+
+async function actualizarBoleta(req, res) {
+    try {
+        const { boleta: boletaParam } = req.params;
+        const { nombre, Grupo } = req.body;
+
+        const boletaNum = parseInt(boletaParam, 10);
+        if (!boletaParam || Number.isNaN(boletaNum)) {
+            return res.status(400).json({ success: false, message: 'Boleta inválida' });
+        }
+
+        const nombreTrim = String(nombre ?? '').trim();
+        const grupoTrim = String(Grupo ?? '').trim().toUpperCase();
+
+        if (!nombreTrim) {
+            return res.status(400).json({ success: false, message: 'El nombre es requerido' });
+        }
+        if (!GRUPO_FORMAT_RE.test(grupoTrim)) {
+            return res.status(400).json({ success: false, message: 'El grupo debe tener el formato correcto (ej: 6CM1, 7IM3A)' });
+        }
+
+        const resultado = await ActualizarBoleta(boletaNum, {
+            nombre: nombreTrim.toUpperCase(),
+            Grupo: grupoTrim,
+        });
+
+        if (resultado.success) return res.status(200).json(resultado);
+        return res.status(400).json(resultado);
+    } catch (error) {
+        console.error('Error en actualizarBoleta:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+}
+
+async function eliminarBoleta(req, res) {
+    try {
+        const { boleta: boletaParam } = req.params;
+        const boletaNum = parseInt(boletaParam, 10);
+
+        if (!boletaParam || Number.isNaN(boletaNum)) {
+            return res.status(400).json({ success: false, message: 'Boleta inválida' });
+        }
+
+        const resultado = await EliminarBoleta(boletaNum);
+
+        if (resultado.success) return res.status(200).json(resultado);
+        // 409 if blocked by existing user
+        return res.status(resultado.message.includes('cuenta registrada') ? 409 : 400).json(resultado);
+    } catch (error) {
+        console.error('Error en eliminarBoleta:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+}
+
+async function previewCargaMasiva(req, res) {
+    try {
+        const file = req.file;
+        if (!file) {
+            return res.status(400).json({ success: false, message: 'No se recibió ningún archivo' });
+        }
+
+        const { parsePDF, parseCSV, parseXLSX } = require('../utils/parserAlumnos');
+        const ext = path.extname(file.originalname).toLowerCase();
+        const mime = (file.mimetype || '').toLowerCase();
+
+        let parsedRows = [];
+        try {
+            if (ext === '.pdf' || mime === 'application/pdf') {
+                parsedRows = await parsePDF(file.buffer);
+            } else if (ext === '.csv' || mime === 'text/csv' || mime === 'application/csv') {
+                parsedRows = parseCSV(file.buffer);
+            } else if (['.xlsx', '.xls'].includes(ext) || mime.includes('spreadsheetml') || mime.includes('ms-excel')) {
+                parsedRows = parseXLSX(file.buffer);
+            } else {
+                return res.status(400).json({ success: false, message: 'Formato no soportado. Use PDF, CSV o XLSX.' });
+            }
+        } catch (parseError) {
+            console.error('Error parseando archivo:', parseError);
+            return res.status(400).json({ success: false, message: 'Error al procesar el archivo: ' + parseError.message });
+        }
+
+        // Batch-check which boletas already exist
+        const potentialNums = parsedRows
+            .filter(r => BOLETA_FORMAT_RE.test(String(r.boleta)))
+            .map(r => parseInt(String(r.boleta), 10));
+
+        const existingResult = await BoletasExistentes(potentialNums);
+        const existingSet = new Set(existingResult.data || []);
+
+        const rows = parsedRows.map(r => {
+            const boletaStr = String(r.boleta ?? '').trim();
+            const nombre = String(r.nombre ?? '').trim();
+            const grupo = String(r.Grupo ?? r.grupo ?? '').trim().toUpperCase();
+
+            const isValidFormat = BOLETA_FORMAT_RE.test(boletaStr) && nombre.length > 0 && GRUPO_FORMAT_RE.test(grupo);
+
+            if (!isValidFormat) {
+                return { boleta: boletaStr, nombre, Grupo: grupo, status: 'invalid' };
+            }
+
+            const boletaNum = parseInt(boletaStr, 10);
+            return {
+                boleta: boletaNum,
+                nombre,
+                Grupo: grupo,
+                status: existingSet.has(boletaNum) ? 'duplicate' : 'valid',
+            };
+        });
+
+        const summary = {
+            valid: rows.filter(r => r.status === 'valid').length,
+            duplicate: rows.filter(r => r.status === 'duplicate').length,
+            invalid: rows.filter(r => r.status === 'invalid').length,
+        };
+
+        return res.status(200).json({ success: true, rows, summary, fileName: file.originalname });
+    } catch (error) {
+        console.error('Error en previewCargaMasiva:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+}
+
+async function confirmarCargaMasiva(req, res) {
+    try {
+        const { rows, overwriteDuplicates = false } = req.body;
+
+        if (!Array.isArray(rows) || rows.length === 0) {
+            return res.status(400).json({ success: false, message: 'No hay filas para importar' });
+        }
+
+        const validRows = rows
+            .filter(r => BOLETA_FORMAT_RE.test(String(r.boleta)) && r.nombre && r.Grupo)
+            .map(r => ({
+                boleta: parseInt(String(r.boleta), 10),
+                nombre: String(r.nombre).trim().toUpperCase(),
+                Grupo: String(r.Grupo).trim().toUpperCase(),
+            }));
+
+        if (validRows.length === 0) {
+            return res.status(400).json({ success: false, message: 'No hay filas con formato válido para importar' });
+        }
+
+        // Pre-check which already exist so we can report accurate counts
+        const boletaNums = validRows.map(r => r.boleta);
+        const existingResult = await BoletasExistentes(boletaNums);
+        const existingSet = new Set(existingResult.data || []);
+
+        const inserted = validRows.filter(r => !existingSet.has(r.boleta)).length;
+        const dupCount = validRows.filter(r => existingSet.has(r.boleta)).length;
+        const updated = overwriteDuplicates ? dupCount : 0;
+        const skipped = overwriteDuplicates ? 0 : dupCount;
+
+        const resultado = await BulkUpsertBoletas(validRows, overwriteDuplicates);
+
+        if (!resultado.success) return res.status(400).json(resultado);
+
+        return res.status(200).json({ success: true, inserted, updated, skipped });
+    } catch (error) {
+        console.error('Error en confirmarCargaMasiva:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+}
+
 module.exports = {
     crearLibro,
-    crearComputadora,
-    crearRestirador,
     eliminarMaterial,
     actualizarLibro,
-    actualizarComputadora,
-    actualizarRestirador,
     obtenerMateriales,
     obtenerUsuarios,
     habilitarDocumentacion,
@@ -1156,5 +1130,11 @@ module.exports = {
     gestionarSolicitud,
     registrarEntrega,
     obtenerPrestamosLibros,
-    marcarPrestamoDevuelto
+    marcarPrestamoDevuelto,
+    obtenerBoletas,
+    crearBoleta,
+    actualizarBoleta,
+    eliminarBoleta,
+    previewCargaMasiva,
+    confirmarCargaMasiva,
 };

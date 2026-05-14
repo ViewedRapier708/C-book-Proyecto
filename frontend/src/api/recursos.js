@@ -2,6 +2,7 @@ import { api } from './client';
 
 export const recursosApi = {
   getByType: (tipo) => api.get(`/recursos?tipo=${tipo}`),
+  getMasSolicitados: () => api.get('/libros/mas-solicitados'),
 };
 
 export const solicitudesApi = {

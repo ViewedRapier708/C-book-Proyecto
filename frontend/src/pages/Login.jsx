@@ -3,6 +3,20 @@ import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
+const CORREO_IPN_REGEX = /^[\w.-]+@alumno\.ipn\.mx$/;
+
+function validarPassword(password) {
+  if (!password || password.length < 6 || password.length > 16)
+    return 'La contraseña debe tener entre 6 y 16 caracteres';
+  if (!/[a-z]/.test(password))
+    return 'La contraseña debe contener al menos una letra minúscula';
+  if (!/[A-Z]/.test(password))
+    return 'La contraseña debe contener al menos una letra mayúscula';
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
+    return 'La contraseña debe contener al menos un carácter especial';
+  return null;
+}
+
 export default function Login() {
   const { user, login, register } = useAuth();
   const navigate = useNavigate();
@@ -48,12 +62,13 @@ export default function Login() {
       setMsg({ type: 'error', text: 'La boleta debe tener 10 dígitos' });
       return;
     }
-    if (!/^[\w.-]+@[\w.-]+\.\w+$/.test(form.correo)) {
-      setMsg({ type: 'error', text: 'Correo con formato inválido' });
+    if (!CORREO_IPN_REGEX.test(form.correo)) {
+      setMsg({ type: 'error', text: 'Solo se permiten correos institucionales @alumno.ipn.mx' });
       return;
     }
-    if (form.password.length < 6 || form.password.length > 16) {
-      setMsg({ type: 'error', text: 'La contraseña debe tener entre 6 y 16 caracteres' });
+    const errorPsw = validarPassword(form.password);
+    if (errorPsw) {
+      setMsg({ type: 'error', text: errorPsw });
       return;
     }
     if (form.password !== form.confPsw) {
@@ -83,14 +98,14 @@ export default function Login() {
       <div className="auth-left">
         <div className="auth-hero">
           <h1>C-Book</h1>
-          <p>Plataforma digital creada para facilitar el acceso a recursos educativos. Solicita computadoras, libros y restiradores de forma rápida.</p>
+          <p>Plataforma digital creada para facilitar el acceso a recursos educativos. Solicita libros de forma rápida.</p>
         </div>
       </div>
       <div className="auth-right">
         <div className="auth-form">
           <h2>{mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}</h2>
           <p className="subtitle">
-            {mode === 'login' ? 'Accede a tu biblioteca digital' : 'Regístrate para empezar'}
+            {mode === 'login' ? 'Accede a tu biblioteca digital' : 'Solo correos @alumno.ipn.mx'}
           </p>
 
           {msg && <div className={`msg msg-${msg.type}`}>{msg.text}</div>}
@@ -114,7 +129,7 @@ export default function Login() {
                 <label>Correo institucional</label>
                 <input
                   type="email"
-                  placeholder="correo@ejemplo.com"
+                  placeholder="correo@alumno.ipn.mx"
                   value={form.correo}
                   onChange={set('correo')}
                   required
