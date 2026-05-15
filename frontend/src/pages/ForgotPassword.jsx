@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
 import { authApi } from '../api/auth';
 
 export default function ForgotPassword() {
@@ -20,14 +19,7 @@ export default function ForgotPassword() {
 
     setLoading(true);
     try {
-      const data = await authApi.obtenerCorreo(boleta);
-
-      const redirectTo = `${window.location.origin}/reset-password`;
-      const { error } = await supabase.auth.resetPasswordForEmail(data.correo, {
-        redirectTo,
-      });
-
-      if (error) throw error;
+      await authApi.forgotPassword(boleta);
 
       setSent(true);
       setMsg({ type: 'success', text: 'Revisa tu correo para continuar.' });
