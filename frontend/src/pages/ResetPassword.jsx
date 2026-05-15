@@ -23,78 +23,6 @@ export default function ResetPassword() {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState(null);
-<<<<<<< HEAD
-
-  useEffect(() => {
-    let settled = false;
-    const markReady = () => { if (!settled) { settled = true; setReady(true); } };
-    const markError = (msg) => { if (!settled) { settled = true; setErrorMsg(msg); } };
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        markReady();
-      }
-    });
-
-    const establecerSesionManual = async () => {
-      const hash = window.location.hash.substring(1);
-      const hashParams = new URLSearchParams(hash);
-      const type = hashParams.get('type');
-      const accessToken = hashParams.get('access_token');
-      const refreshToken = hashParams.get('refresh_token');
-
-      if (type === 'recovery' && accessToken) {
-        try {
-          const { error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken || '',
-          });
-          if (error) {
-            markError(error.message || 'El enlace de recuperación es inválido o ha expirado');
-          } else {
-            markReady();
-          }
-          return;
-        } catch {
-          markError('El enlace de recuperación es inválido o ha expirado');
-          return;
-        }
-      }
-
-      const searchParams = new URLSearchParams(window.location.search);
-      const code = searchParams.get('code');
-      if (code) {
-        try {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) {
-            markError(error.message || 'El enlace de recuperación es inválido o ha expirado');
-          } else {
-            markReady();
-          }
-          return;
-        } catch {
-          markError('El enlace de recuperación es inválido o ha expirado');
-          return;
-        }
-      }
-
-      setTimeout(() => {
-        if (!settled) {
-          markError('No se encontró un token de recuperación válido en el enlace.');
-        }
-      }, 3000);
-    };
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        markReady();
-      } else {
-        establecerSesionManual();
-      }
-    });
-
-    return () => subscription.unsubscribe();
-=======
   const [errorMsg, setErrorMsg] = useState('');
   const [resetToken, setResetToken] = useState('');
 
@@ -110,7 +38,6 @@ export default function ResetPassword() {
 
     setResetToken(token);
     setStatus('ready');
->>>>>>> 7b3b38ab431e846f7d8a6b4e718709e606f45696
   }, []);
 
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
