@@ -18,12 +18,12 @@ function validarPassword(password) {
 export default function ResetPassword() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
+  const [status, setStatus] = useState('checking');
   const [errorMsg, setErrorMsg] = useState('');
   const [form, setForm] = useState({ newPassword: '', confPassword: '' });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState(null);
-  const [errorMsg, setErrorMsg] = useState('');
   const [resetToken, setResetToken] = useState('');
 
   useEffect(() => {
@@ -37,6 +37,7 @@ export default function ResetPassword() {
     }
 
     setResetToken(token);
+    setReady(true);
     setStatus('ready');
   }, []);
 
