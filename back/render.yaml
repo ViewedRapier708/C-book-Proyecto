@@ -16,6 +16,8 @@ services:
         value: https://c-book-proyecto.vercel.app
       - key: SESSION_SECRET
         generateValue: true
+      - key: RESET_PASSWORD_SECRET
+        generateValue: true
       - key: SESSION_COOKIE_SAME_SITE
         value: none
       - key: SESSION_COOKIE_SECURE
