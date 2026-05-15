@@ -8,9 +8,9 @@ const {
   loginConAuth,
   traerUsuarioInfo,
   revocarSesionesSupabase,
-  CambiarContraseña,
+  cambiarContrasenaRecovery,
   CambioCorreo,
-  ActualizarContraseñaConToken,
+  actualizarContrasenaConToken,
   actualizarContrasenaPropia
 } = require('../models/ModeloUsuario.js');
 const jwt = require('jsonwebtoken');
@@ -302,7 +302,7 @@ async function CambioDatos(req , res) {
         if (!boleta || !nuevaContraseña) {
           return res.status(400).json({ error: 'Faltan datos para actualizar contraseña' });
         }
-        const resultadoContraseña = await CambiarContraseña(boleta, nuevaContraseña);
+        const resultadoContraseña = await cambiarContrasenaRecovery(boleta, nuevaContraseña);
         if (!resultadoContraseña.success) {
           return res.status(400).json({ error: resultadoContraseña.error || 'Error al cambiar contraseña' });
         } 
@@ -336,7 +336,7 @@ async function solicitarRecuperacion(req, res) {
       return res.status(400).json({ error: 'No existe ninguna cuenta con esa boleta' });
     }
 
-    const resultado = await CambiarContraseña(busqueda.correo);
+    const resultado = await cambiarContrasenaRecovery(busqueda.correo);
     if (!resultado.success) {
       return res.status(500).json({ error: resultado.error || 'No se pudo enviar el correo de recuperación' });
     }
@@ -365,7 +365,7 @@ async function actualizarContraseña(req, res) {
       return res.status(400).json({ error: 'Las contraseñas no coinciden' });
     }
 
-    const resultado = await ActualizarContraseñaConToken(access_token, newPassword);
+    const resultado = await actualizarContrasenaConToken(access_token, newPassword);
     if (!resultado.success) {
       return res.status(400).json({ error: resultado.error || 'No se pudo actualizar la contraseña' });
     }

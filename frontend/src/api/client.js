@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://c-book-proyecto.onrender.com' : '');
+const API_BASE = (import.meta.env.VITE_API_URL || '').trim();
 export const AUTH_UNAUTHORIZED_EVENT = 'auth:unauthorized';
 
 async function request(endpoint, options = {}) {

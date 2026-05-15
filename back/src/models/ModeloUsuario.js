@@ -323,18 +323,11 @@ async function revocarSesionesSupabase(accessToken) {
   }
 }
 //Cambio de contraseña y recuperación de contraseña
-async function CambiarContraseña(correo) {
+async function cambiarContrasenaRecovery(correo) {
   try {
-    const usuarioAuth = await buscarUsuarioAuthPorCorreo(correo);
-
-    if (!usuarioAuth?.id) {
-      return { success: false, error: 'Usuario no encontrado en autenticación' };
-    }
-
     const token = jwt.sign(
       {
         purpose: 'password_recovery',
-        sub: usuarioAuth.id,
         email: correo
       },
       getResetTokenSecret(),
@@ -351,13 +344,13 @@ async function CambiarContraseña(correo) {
     <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">C-Book</h1>
   </div>
   <div style="padding:28px 32px">
-    <h2 style="margin:0 0 8px;font-size:18px;color:#111827">Recuperación de contraseña</h2>
+    <h2 style="margin:0 0 8px;font-size:18px;color:#111827">Recuperacion de contrasena</h2>
     <p style="margin:0 0 20px;color:#4b5563;font-size:14px;line-height:1.6">
-      Recibimos una solicitud para cambiar la contraseña de tu cuenta. Usa el siguiente botón para crear una nueva contraseña.
+      Recibimos una solicitud para cambiar la contrasena de tu cuenta. Usa el siguiente boton para crear una nueva contrasena.
     </p>
     <p style="text-align:center;margin:28px 0">
       <a href="${resetUrl}" style="display:inline-block;background:#6366f1;color:#fff;text-decoration:none;padding:12px 18px;border-radius:8px;font-weight:700">
-        Cambiar contraseña
+        Cambiar contrasena
       </a>
     </p>
     <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5">
@@ -365,46 +358,51 @@ async function CambiarContraseña(correo) {
     </p>
   </div>
   <div style="padding:16px 32px;background:#f9fafb;text-align:center;border-top:1px solid #e5e7eb">
-    <p style="margin:0;font-size:11px;color:#9ca3af">Este correo fue generado automáticamente por C-Book.</p>
+    <p style="margin:0;font-size:11px;color:#9ca3af">Este correo fue generado automaticamente por C-Book.</p>
   </div>
 </div>
 </body></html>`;
 
-    const enviado = await enviarCorreo(correo, 'Recuperación de contraseña - C-Book', html);
+    const enviado = await enviarCorreo(correo, 'Recuperacion de contrasena - C-Book', html);
 
     if (!enviado.success) {
-      return { success: false, error: 'No se pudo enviar el correo de recuperación' };
+      return { success: false, error: 'No se pudo enviar el correo de recuperacion' };
     }
 
     return { success: true };
   } catch (err) {
-    console.error('Error en CambiarContraseña:', err);
+    console.error('Error en cambiarContrasenaRecovery:', err);
     return { success: false, error: 'Error interno' };
   }
 }
 
-async function ActualizarContraseñaConToken(accessToken, newPassword) {
+async function actualizarContrasenaConToken(accessToken, newPassword) {
   const supabase = getClient();
   try {
     const payload = jwt.verify(accessToken, getResetTokenSecret());
-    const userId = payload.sub;
 
-    if (!userId || payload.purpose !== 'password_recovery') {
-      return { success: false, error: 'Token inválido o expirado' };
+    if (!payload?.email || payload.purpose !== 'password_recovery') {
+      return { success: false, error: 'Token invalido o expirado' };
     }
 
-    const { error } = await supabase.auth.admin.updateUserById(userId, {
+    const usuarioAuth = await buscarUsuarioAuthPorCorreo(payload.email);
+
+    if (!usuarioAuth?.id) {
+      return { success: false, error: 'Usuario no encontrado en autenticacion' };
+    }
+
+    const { error } = await supabase.auth.admin.updateUserById(usuarioAuth.id, {
       password: newPassword
     });
 
     if (error) {
-      console.error('Error actualizando contraseña:', error);
+      console.error('Error actualizando contrasena:', error);
       return { success: false, error: error.message };
     }
     return { success: true };
   } catch (err) {
-    console.error('Error en ActualizarContraseñaConToken:', err);
-    return { success: false, error: 'El enlace de recuperación es inválido o ha expirado' };
+    console.error('Error en actualizarContrasenaConToken:', err);
+    return { success: false, error: 'El enlace de recuperacion es invalido o ha expirado' };
   }
 }
 async function actualizarContrasenaPropia(boleta, correo, supabaseUserId, newPassword) {
@@ -449,7 +447,7 @@ module.exports = {
   traerUsuarioInfo,
   refrescarSesionSupabase,
   revocarSesionesSupabase,
-  CambiarContraseña,
-  ActualizarContraseñaConToken,
+  cambiarContrasenaRecovery,
+  actualizarContrasenaConToken,
   actualizarContrasenaPropia
 };

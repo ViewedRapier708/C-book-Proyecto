@@ -1,16 +1,25 @@
 const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'cbookgmai@gmail.com',
-        pass: 'xhrm sxxt xbxs vnqa'
-    }
-});
+const smtpConfig = {
+  service: process.env.SMTP_SERVICE || 'gmail',
+  auth: {
+    user: process.env.SMTP_USER || 'cbookgmai@gmail.com',
+    pass: process.env.SMTP_PASS || 'xhrm sxxt xbxs vnqa'
+  },
+  pool: true,
+  maxConnections: 3,
+  maxMessages: 100,
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 20000
+};
+
+const transporter = nodemailer.createTransport(smtpConfig);
+const mailFrom = process.env.SMTP_FROM || 'C-Book System <escbookgmai@gmail.com>';
 
 async function enviarCorreo(destinatario, asunto, html) {
     const mailOptions = {
-        from: 'C-Book System <escbookgmai@gmail.com>',
+        from: mailFrom,
         to: destinatario,
         subject: asunto,
         html: html
@@ -27,9 +36,9 @@ async function enviarCorreo(destinatario, asunto, html) {
 }
 
 /**
- * Genera un correo HTML con diseño profesional para C-Book.
+ * Genera un correo HTML con diseno profesional para C-Book.
  * @param {object} opts
- * @param {string} opts.titulo - Título principal del correo
+ * @param {string} opts.titulo - Titulo principal del correo
  * @param {string} opts.mensaje - Mensaje descriptivo
  * @param {string} opts.nombre - Nombre del alumno
  * @param {string} opts.boleta - Boleta del alumno
@@ -55,7 +64,7 @@ function plantillaCorreo({ titulo, mensaje, nombre, boleta, grupo, detalles = []
 <div style="max-width:560px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
   <!-- Header -->
   <div style="background:${color};padding:28px 32px;text-align:center">
-    <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700;letter-spacing:-.3px">📚 C-Book</h1>
+    <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700;letter-spacing:-.3px">C-Book</h1>
   </div>
 
   <!-- Body -->
@@ -84,7 +93,7 @@ function plantillaCorreo({ titulo, mensaje, nombre, boleta, grupo, detalles = []
 
   <!-- Footer -->
   <div style="padding:16px 32px;background:#f9fafb;text-align:center;border-top:1px solid #e5e7eb">
-    <p style="margin:0;font-size:11px;color:#9ca3af">Este correo fue generado automáticamente por el sistema C-Book.<br>No respondas a este mensaje.</p>
+    <p style="margin:0;font-size:11px;color:#9ca3af">Este correo fue generado automaticamente por el sistema C-Book.<br>No respondas a este mensaje.</p>
   </div>
 </div>
 </body></html>`;

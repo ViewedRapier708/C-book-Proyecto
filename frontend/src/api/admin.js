@@ -1,6 +1,6 @@
 import { api } from './client';
 
-const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://c-book-proyecto.onrender.com' : '');
+const API_BASE = (import.meta.env.VITE_API_URL || '').trim();
 
 export const adminApi = {
   // Materials CRUD
