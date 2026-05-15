@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
+import { authApi } from '../api/auth';
 import toast from 'react-hot-toast';
 
 function validarPassword(password) {
@@ -23,6 +23,7 @@ export default function ResetPassword() {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState(null);
+<<<<<<< HEAD
 
   useEffect(() => {
     let settled = false;
@@ -93,6 +94,23 @@ export default function ResetPassword() {
     });
 
     return () => subscription.unsubscribe();
+=======
+  const [errorMsg, setErrorMsg] = useState('');
+  const [resetToken, setResetToken] = useState('');
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const token = searchParams.get('token');
+
+    if (!token) {
+      setErrorMsg('No se encontró un token de recuperación válido en el enlace.');
+      setStatus('error');
+      return;
+    }
+
+    setResetToken(token);
+    setStatus('ready');
+>>>>>>> 7b3b38ab431e846f7d8a6b4e718709e606f45696
   }, []);
 
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
@@ -113,10 +131,7 @@ export default function ResetPassword() {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password: form.newPassword });
-      if (error) throw new Error(error.message);
-
-      await supabase.auth.signOut();
+      await authApi.resetPassword(resetToken, form.newPassword, form.confPassword);
       toast.success('¡Contraseña actualizada! Inicia sesión con tu nueva contraseña.');
       navigate('/', { replace: true });
     } catch (err) {
@@ -147,9 +162,11 @@ export default function ResetPassword() {
             </p>
           )}
 
-          {errorMsg && (
+          {status === 'error' && (
             <div style={{ textAlign: 'center' }}>
-              <div className="msg msg-error">{errorMsg}</div>
+              <div className="msg msg-error">
+                {errorMsg || 'El enlace de recuperación es inválido o ha expirado.'}
+              </div>
               <p className="toggle-link" style={{ marginTop: '1rem' }}>
                 <Link to="/forgot-password">Solicitar un nuevo enlace</Link>
               </p>

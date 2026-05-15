@@ -379,7 +379,8 @@ async function EntregarLibro(idSolicitud, boleta, idEjemplar) {
                 solicitud_id: idSolicitud,
                 estado_prestamo_id: 2, // Recogido / Activo
                 fecha_inicio_prestamo: fechaInicio,
-                fecha_limite_devolucion: fechaLimite
+                fecha_limite_devolucion: fechaLimite,
+                fecha_devolucion_real: null
             }]);
 
         if (errorPrestamo) throw errorPrestamo;
@@ -396,6 +397,17 @@ async function EntregarLibro(idSolicitud, boleta, idEjemplar) {
         console.error("Error entregando libro:", error);
         return { success: false, message: error.message };
     }
+}
+
+function normalizarFechaDevolucion(fechaInicioPrestamo, fechaDevolucionReal = null) {
+    const fechaInicio = fechaInicioPrestamo ? new Date(fechaInicioPrestamo) : null;
+    const fechaDevolucion = fechaDevolucionReal ? new Date(fechaDevolucionReal) : new Date();
+
+    if (fechaInicio && !Number.isNaN(fechaInicio.getTime()) && fechaDevolucion < fechaInicio) {
+        return fechaInicio;
+    }
+
+    return fechaDevolucion;
 }
 
 async function ObtenerPrestamosLibros() {
@@ -427,7 +439,26 @@ async function ObtenerPrestamosLibros() {
             `);
            
         if (error) throw error;
-        return { success: true, data };
+
+        const ordenados = (data || []).sort((a, b) => {
+            const prioridadEstado = (estadoId) => {
+                const estado = Number(estadoId);
+                if (estado === 1 || estado === 2) return 0; // Activos
+                if (estado === 3) return 2; // Completados / devueltos
+                return 1;
+            };
+
+            const prioridadA = prioridadEstado(a.estado_prestamo_id);
+            const prioridadB = prioridadEstado(b.estado_prestamo_id);
+
+            if (prioridadA !== prioridadB) {
+                return prioridadA - prioridadB;
+            }
+
+            return new Date(b.fecha_inicio_prestamo || 0) - new Date(a.fecha_inicio_prestamo || 0);
+        });
+
+        return { success: true, data: ordenados };
     } catch (error) {
         console.error("Error obteniendo prestamos:", error);
         return { success: false, message: error.message };
@@ -441,6 +472,7 @@ async function MarcarPrestamoDevuelto(idPrestamo, fechaDevolucionReal = null, ob
             .select(`
                 id,
                 estado_prestamo_id,
+                fecha_inicio_prestamo,
                 solicitudes_libros (
                     id,
                     ejemplares (id)
@@ -448,7 +480,7 @@ async function MarcarPrestamoDevuelto(idPrestamo, fechaDevolucionReal = null, ob
             `)
             .eq('id', idPrestamo)
             .single();
-
+console.log(prestamo, errorPrestamo)
         if (errorPrestamo || !prestamo) {
             return { success: false, message: errorPrestamo?.message || 'Préstamo no encontrado' };
         }
@@ -459,7 +491,7 @@ async function MarcarPrestamoDevuelto(idPrestamo, fechaDevolucionReal = null, ob
 
         const updateData = {
             estado_prestamo_id: 3,
-            fecha_devolucion_real: fechaDevolucionReal ?? new Date()
+            fecha_devolucion_real: normalizarFechaDevolucion(prestamo.fecha_inicio_prestamo, fechaDevolucionReal)
         };
 
         if (observaciones !== undefined) {

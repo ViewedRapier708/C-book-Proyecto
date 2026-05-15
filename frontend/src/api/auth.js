@@ -9,8 +9,8 @@ export const authApi = {
   logout: () => api.post('/logout'),
   obtenerCorreo: (boleta) => api.post('/obtener-correo', { boleta }),
   forgotPassword: (boleta) => api.post('/forgot-password', { boleta }),
-  resetPassword: (access_token, newPassword, confPassword) =>
-    api.post('/reset-password', { access_token, newPassword, confPassword }),
+  resetPassword: (token, newPassword, confPassword) =>
+    api.post('/reset-password', { access_token: token, newPassword, confPassword }),
   updateAccount: (boleta, TipoDatoACambiar, value) =>
     api.patch('/CuentaUpdate', {
       boleta,

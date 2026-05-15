@@ -1,4 +1,47 @@
 const { getClient } = require('../config/db');
+const jwt = require('jsonwebtoken');
+const { enviarCorreo } = require('../utils/servicioCorreo');
+
+const RESET_TOKEN_TTL = '30m';
+
+function getFrontendBaseUrl() {
+  const fallback = process.env.NODE_ENV === 'production'
+    ? 'https://c-book-proyecto.vercel.app'
+    : 'http://localhost:5173';
+
+  return (process.env.FRONTEND_URL || fallback).replace(/\/+$/, '');
+}
+
+function getResetTokenSecret() {
+  return process.env.RESET_PASSWORD_SECRET || process.env.SESSION_SECRET || 'dev_session_secret_change_me';
+}
+
+async function buscarUsuarioAuthPorCorreo(correo) {
+  const supabase = getClient();
+  const normalizedEmail = String(correo || '').trim().toLowerCase();
+  let page = 1;
+
+  while (page <= 20) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
+
+    if (error) {
+      throw error;
+    }
+
+    const usuario = (data?.users || []).find((u) => String(u.email || '').toLowerCase() === normalizedEmail);
+    if (usuario) {
+      return usuario;
+    }
+
+    if (!data?.users?.length || data.users.length < 1000) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return null;
+}
 
 // ==================== REGISTRO ====================
 
@@ -281,21 +324,59 @@ async function revocarSesionesSupabase(accessToken) {
 }
 //Cambio de contraseña y recuperación de contraseña
 async function CambiarContraseña(correo) {
-  const supabase = getClient();
-  const base = (process.env.FRONTEND_URL || 'https://c-book-proyecto.vercel.app').replace(/\/+$/, '');
-  const redirectTo = `${base}/reset-password`;
   try {
-    console.log('[CambiarContraseña] Enviando reset a:', correo, 'redirectTo:', redirectTo);
-    const { data, error } = await supabase.auth.resetPasswordForEmail(correo, {
-      redirectTo
-    });
+    const usuarioAuth = await buscarUsuarioAuthPorCorreo(correo);
 
-    if (error) {
-      console.error('Error enviando correo de recuperación:', error);
-      return { success: false, error: error.message };
+    if (!usuarioAuth?.id) {
+      return { success: false, error: 'Usuario no encontrado en autenticación' };
     }
-    console.log('[CambiarContraseña] Correo de recuperación enviado exitosamente');
-    return { success: true, data };
+
+    const token = jwt.sign(
+      {
+        purpose: 'password_recovery',
+        sub: usuarioAuth.id,
+        email: correo
+      },
+      getResetTokenSecret(),
+      { expiresIn: RESET_TOKEN_TTL }
+    );
+
+    const resetUrl = `${getFrontendBaseUrl()}/reset-password?token=${encodeURIComponent(token)}`;
+    const html = `
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:'Segoe UI',Roboto,Arial,sans-serif">
+<div style="max-width:560px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
+  <div style="background:#6366f1;padding:28px 32px;text-align:center">
+    <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">C-Book</h1>
+  </div>
+  <div style="padding:28px 32px">
+    <h2 style="margin:0 0 8px;font-size:18px;color:#111827">Recuperación de contraseña</h2>
+    <p style="margin:0 0 20px;color:#4b5563;font-size:14px;line-height:1.6">
+      Recibimos una solicitud para cambiar la contraseña de tu cuenta. Usa el siguiente botón para crear una nueva contraseña.
+    </p>
+    <p style="text-align:center;margin:28px 0">
+      <a href="${resetUrl}" style="display:inline-block;background:#6366f1;color:#fff;text-decoration:none;padding:12px 18px;border-radius:8px;font-weight:700">
+        Cambiar contraseña
+      </a>
+    </p>
+    <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5">
+      Este enlace expira en 30 minutos. Si no solicitaste el cambio, ignora este correo.
+    </p>
+  </div>
+  <div style="padding:16px 32px;background:#f9fafb;text-align:center;border-top:1px solid #e5e7eb">
+    <p style="margin:0;font-size:11px;color:#9ca3af">Este correo fue generado automáticamente por C-Book.</p>
+  </div>
+</div>
+</body></html>`;
+
+    const enviado = await enviarCorreo(correo, 'Recuperación de contraseña - C-Book', html);
+
+    if (!enviado.success) {
+      return { success: false, error: 'No se pudo enviar el correo de recuperación' };
+    }
+
+    return { success: true };
   } catch (err) {
     console.error('Error en CambiarContraseña:', err);
     return { success: false, error: 'Error interno' };
@@ -305,11 +386,11 @@ async function CambiarContraseña(correo) {
 async function ActualizarContraseñaConToken(accessToken, newPassword) {
   const supabase = getClient();
   try {
-    const payload = JSON.parse(Buffer.from(accessToken.split('.')[1], 'base64').toString());
+    const payload = jwt.verify(accessToken, getResetTokenSecret());
     const userId = payload.sub;
 
-    if (!userId) {
-      return { success: false, error: 'Token inválido' };
+    if (!userId || payload.purpose !== 'password_recovery') {
+      return { success: false, error: 'Token inválido o expirado' };
     }
 
     const { error } = await supabase.auth.admin.updateUserById(userId, {
@@ -323,7 +404,7 @@ async function ActualizarContraseñaConToken(accessToken, newPassword) {
     return { success: true };
   } catch (err) {
     console.error('Error en ActualizarContraseñaConToken:', err);
-    return { success: false, error: 'Error interno' };
+    return { success: false, error: 'El enlace de recuperación es inválido o ha expirado' };
   }
 }
 async function actualizarContrasenaPropia(boleta, correo, supabaseUserId, newPassword) {
