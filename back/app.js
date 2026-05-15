@@ -43,8 +43,24 @@ const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
   ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
   : defaultOrigins;
 
+const allowedOriginPatterns = [
+  /^https:\/\/c-book-proyecto(?:-[a-z0-9-]+)?\.vercel\.app$/i,
+  /^https:\/\/c-book-proyecto-git-[a-z0-9-]+-[a-z0-9-]+\.vercel\.app$/i
+];
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  return allowedOrigins.includes(origin) || allowedOriginPatterns.some(pattern => pattern.test(origin));
+}
+
 app.use(cors({
-  origin: allowedOrigins,
+  origin(origin, callback) {
+    if (isAllowedOrigin(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`Origen no permitido por CORS: ${origin}`));
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
