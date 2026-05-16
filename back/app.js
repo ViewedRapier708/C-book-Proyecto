@@ -19,9 +19,11 @@ const configuredSecure = process.env.SESSION_COOKIE_SECURE
 const cookieSecure = configuredSameSite === 'none' ? true : configuredSecure;
 
 if (isProduction) {
-  // Necesario para cookies secure detrás de proxy (Vercel)
+  // Necesario para cookies secure detras de proxies como Azure App Service/Vercel.
   app.set('trust proxy', 1);
 }
+
+app.disable('x-powered-by');
 
 // Middleware para leer JSON
 app.use(express.json());
@@ -83,6 +85,16 @@ app.get('/', (req, res) => {
   res.status(200).json({ mensaje: 'API de C-Book funcionando' });
 }
 );
+
+// Health check para Azure App Service.
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'c-book-api',
+    environment: NODE_ENV,
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Rutas de autenticación
 app.use('/auth', authRoutes);

@@ -1,32 +1,55 @@
 const nodemailer = require('nodemailer');
 
-const smtpConfig = {
-  service: process.env.SMTP_SERVICE || 'gmail',
-  auth: {
-    user: process.env.SMTP_USER || 'cbookgmai@gmail.com',
-    pass: process.env.SMTP_PASS || 'xhrm sxxt xbxs vnqa'
-  },
-  pool: true,
-  maxConnections: 3,
-  maxMessages: 100,
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 20000
-};
+let transporter = null;
 
-const transporter = nodemailer.createTransport(smtpConfig);
-const mailFrom = process.env.SMTP_FROM || 'C-Book System <escbookgmai@gmail.com>';
+function getTransporter() {
+    if (transporter) {
+        return transporter;
+    }
+
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASS;
+
+    if (!user || !pass) {
+        throw new Error('SMTP_USER y SMTP_PASS deben estar configurados para enviar correos');
+    }
+
+    const smtpConfig = {
+        service: process.env.SMTP_SERVICE || 'gmail',
+        auth: { user, pass },
+        pool: true,
+        maxConnections: 3,
+        maxMessages: 100,
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 20000
+    };
+
+    if (process.env.SMTP_HOST) {
+        delete smtpConfig.service;
+        smtpConfig.host = process.env.SMTP_HOST;
+        smtpConfig.port = Number(process.env.SMTP_PORT) || 587;
+        smtpConfig.secure = process.env.SMTP_SECURE === 'true';
+    }
+
+    transporter = nodemailer.createTransport(smtpConfig);
+    return transporter;
+}
+
+function getMailFrom() {
+    return process.env.SMTP_FROM || `C-Book System <${process.env.SMTP_USER}>`;
+}
 
 async function enviarCorreo(destinatario, asunto, html) {
     const mailOptions = {
-        from: mailFrom,
+        from: getMailFrom(),
         to: destinatario,
         subject: asunto,
         html: html
     };
 
     try {
-        const info = await transporter.sendMail(mailOptions);
+        const info = await getTransporter().sendMail(mailOptions);
         console.log('Correo enviado: ' + info.response);
         return { success: true };
     } catch (error) {
