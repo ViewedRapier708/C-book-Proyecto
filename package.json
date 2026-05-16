@@ -24,6 +24,7 @@
   },
   "scripts": {
     "dev:back": "nodemon back/app.js",
-    "start:back": "node back/app.js"
+    "start:back": "node back/app.js",
+    "start": "node back/app.js"
   }
 }
