@@ -32,7 +32,9 @@ function getTransporter() {
         smtpConfig.secure = process.env.SMTP_SECURE === 'true';
     }
 
+
     transporter = nodemailer.createTransport(smtpConfig);
+    console.log('Transportador de correo configurado correctamente');
     return transporter;
 }
 
