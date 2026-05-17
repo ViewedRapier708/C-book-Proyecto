@@ -180,6 +180,7 @@ async function login(req, res) {
     const nombre = (userData.data?.boletas?.nombre ).trim();
     const grupo = userData.data?.boletas?.Grupo ;
     const rol= userData.data?.rol ;
+    const tiene_documentos = Boolean(userData.data?.tiene_documentos);
 
     const supabaseSession = loginResult.session;
 
@@ -194,6 +195,7 @@ async function login(req, res) {
       boleta,
       grupo,
       rol,
+      tiene_documentos,
       tokens: {
         accessToken: supabaseSession.access_token,
         refreshToken: supabaseSession.refresh_token,
@@ -236,9 +238,15 @@ async function verificarSesion(req, res) {
       return res.status(200).json({ autenticado: false, user: null });
     }
 
+    const userData = await traerUsuarioInfo(sessionUser.boleta);
+    const publicUser = sanitizeSessionUser({
+      ...sessionUser,
+      tiene_documentos: userData.success ? Boolean(userData.data?.tiene_documentos) : sessionUser.tiene_documentos
+    });
+
     return res.status(200).json({
       autenticado: true,
-      user: sanitizeSessionUser(sessionUser)
+      user: publicUser
     });
   } catch (err) {
    // console.error('Error en verificarSesion:', err);
