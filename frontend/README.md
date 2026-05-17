@@ -1,16 +1,34 @@
-# React + Vite
+# Frontend C-Book
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicacion React/Vite del sistema C-Book.
 
-Currently, two official plugins are available:
+## Desarrollo local
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```powershell
+cd frontend
+npm install
+Copy-Item .env.example .env
+npm run dev
+```
 
-## React Compiler
+En local puedes dejar `VITE_API_URL` vacio. Vite manda `/auth/*` al backend local definido en `vite.config.js`.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Produccion en Azure
 
-## Expanding the ESLint configuration
+Si el frontend se publica en Azure Static Web Apps, configura:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```text
+App location: frontend
+Output location: dist
+Build command: npm run build
+```
+
+Variable de entorno obligatoria en el hosting del frontend:
+
+```text
+VITE_API_URL=https://<tu-backend>.azurewebsites.net
+```
+
+No agregues `/auth` a `VITE_API_URL`; el cliente API lo agrega automaticamente.
+
+El archivo `staticwebapp.config.json` permite que las rutas de React como `/user`, `/admin` y `/reset-password` funcionen al recargar la pagina.

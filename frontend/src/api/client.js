@@ -1,8 +1,13 @@
-const API_BASE = (import.meta.env.VITE_API_URL || '').trim();
+const API_BASE = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
 export const AUTH_UNAUTHORIZED_EVENT = 'auth:unauthorized';
 
+export function authUrl(endpoint) {
+  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  return `${API_BASE}/auth${normalizedEndpoint}`;
+}
+
 async function request(endpoint, options = {}) {
-  const url = `${API_BASE}/auth${endpoint}`;
+  const url = authUrl(endpoint);
   const config = {
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...options.headers },

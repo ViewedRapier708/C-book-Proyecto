@@ -71,6 +71,12 @@ SMTP_FROM=C-Book System <correo>
 WEBSITE_NODE_DEFAULT_VERSION=~24
 ```
 
+Notas:
+
+- `FRONTEND_URL` se usa para links de recuperacion de contrasena y tambien como origen CORS permitido cuando no defines `CORS_ALLOWED_ORIGINS`.
+- En `NODE_ENV=production`, la cookie de sesion usa `SameSite=None` y `Secure=true` por defecto para funcionar entre Azure Static Web Apps y Azure App Service.
+- Si defines `CORS_ALLOWED_ORIGINS`, incluye todos los dominios reales del frontend separados por coma, sin slash final.
+
 Si usas un proveedor SMTP que no sea Gmail, usa `SMTP_HOST`, `SMTP_PORT` y `SMTP_SECURE` en lugar de `SMTP_SERVICE`.
 
 ## Health check

@@ -9,7 +9,7 @@ const authRoutes = require('./src/routes/Rutas.js');
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const isProduction = NODE_ENV === 'production';
 const sessionSecret = process.env.SESSION_SECRET || 'dev_session_secret_change_me';
-const rawSameSite = (process.env.SESSION_COOKIE_SAME_SITE || 'lax').toLowerCase();
+const rawSameSite = (process.env.SESSION_COOKIE_SAME_SITE || (isProduction ? 'none' : 'lax')).toLowerCase();
 const configuredSameSite = ['lax', 'strict', 'none'].includes(rawSameSite) ? rawSameSite : 'lax';
 const configuredSecure = process.env.SESSION_COOKIE_SECURE
   ? process.env.SESSION_COOKIE_SECURE === 'true'
@@ -41,9 +41,16 @@ const defaultOrigins = [
   'https://c-book-proyecto.vercel.app'
 ];
 
+function parseOrigins(value) {
+  return String(value || '')
+    .split(',')
+    .map(origin => origin.trim().replace(/\/+$/, ''))
+    .filter(Boolean);
+}
+
 const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
-  ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
-  : defaultOrigins;
+  ? parseOrigins(process.env.CORS_ALLOWED_ORIGINS)
+  : [...defaultOrigins, ...parseOrigins(process.env.FRONTEND_URL)];
 
 const allowedOriginPatterns = [
   /^https:\/\/c-book-proyecto(?:-[a-z0-9-]+)?\.vercel\.app$/i,
