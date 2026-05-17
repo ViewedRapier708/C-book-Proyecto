@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/auth/(.*)",
-      "destination": "/api/index.js"
+      "destination": "https://backendcbook-gfh3fdhpfbc0hrfs.mexicocentral-01.azurewebsites.net/"
     },
     {
       "source": "/(.*)",
