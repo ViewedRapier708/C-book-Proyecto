@@ -1,4 +1,5 @@
 const soporte = require('../models/ModeloSoporte');
+const jwt = require('jsonwebtoken');
 
 function getUser(req) {
   return req.session?.user || {};
@@ -19,6 +20,52 @@ function handleError(res, err) {
   return res.status(err.status || 500).json({
     error: err.message || 'Error interno del modulo de soporte',
   });
+}
+
+function buildSupportSessionUser(loginResult) {
+  const { session, user, profile } = loginResult;
+  return {
+    authProvider: 'support',
+    tipoCuenta: 'soporte',
+    supabaseUserId: user.id,
+    userId: profile.user_id,
+    nombre: profile.full_name,
+    email: profile.email,
+    correo: profile.email,
+    boleta: profile.boleta || '',
+    telefono: profile.phone || '',
+    rol: profile.role,
+    estado: profile.status,
+    tokens: {
+      accessToken: session.access_token,
+      refreshToken: session.refresh_token,
+      expiresAt: session.expires_at ? session.expires_at * 1000 : null,
+      expiresIn: session.expires_in,
+    },
+  };
+}
+
+async function loginSoporte(req, res) {
+  try {
+    const { email, correo, boleta, password } = req.body || {};
+    const identifier = boleta || email || correo;
+    const loginResult = await soporte.loginSoporte(identifier, password);
+    const sessionUser = buildSupportSessionUser(loginResult);
+    const secret = req.app.locals.sessionSecret || process.env.SESSION_SECRET || 'dev_session_secret_change_me';
+    const token = jwt.sign(sessionUser, secret, { expiresIn: '2h' });
+
+    res.cookie('app_session', token, req.app.locals.cookieSettings);
+
+    return res.status(200).json({
+      success: true,
+      mensaje: 'Inicio de sesion de soporte exitoso',
+      user: soporte.sanitizeSupportSessionUser(sessionUser),
+      rol: sessionUser.rol,
+      tipoCuenta: sessionUser.tipoCuenta,
+    });
+  } catch (err) {
+    return handleError(res, err);
+  }
 }
 
 async function listarTipos(req, res) {
@@ -139,7 +186,28 @@ async function configuracion(req, res) {
   }
 }
 
+async function listarAgentes(req, res) {
+  try {
+    const agentes = await soporte.listarAgentes(getUser(req));
+    return res.json({ agentes });
+  } catch (err) {
+    return handleError(res, err);
+  }
+}
+
+async function crearAgente(req, res) {
+  try {
+    const agente = await soporte.crearAgente(req.body || {}, getUser(req));
+    return res.status(201).json({ agente });
+  } catch (err) {
+    return handleError(res, err);
+  }
+}
+
 module.exports = {
+  loginSoporte,
+  listarAgentes,
+  crearAgente,
   listarTipos,
   crearTicket,
   crearTicketPublico,

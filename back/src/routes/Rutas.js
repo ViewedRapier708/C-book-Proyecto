@@ -68,6 +68,7 @@ router.get('/admin/tendencias', sessionGuard, controladorAnalytics.obtenerTenden
 router.get('/admin/actividad', sessionGuard, controladorAnalytics.obtenerActividad);
 
 // ==================== RUTAS DE SOPORTE ====================
+router.post('/soporte/login', controladorSoporte.loginSoporte);
 router.get('/soporte/tipos', controladorSoporte.listarTipos);
 router.post('/soporte/public/tickets', controladorSoporte.crearTicketPublico);
 router.post('/soporte/tickets', sessionGuard, controladorSoporte.crearTicket);
@@ -79,5 +80,7 @@ router.post('/soporte/tickets/:id/comentarios', sessionGuard, controladorSoporte
 router.post('/soporte/tickets/:id/tiempo', sessionGuard, controladorSoporte.registrarTiempo);
 router.get('/soporte/dashboard', sessionGuard, controladorSoporte.dashboard);
 router.get('/soporte/config', sessionGuard, controladorSoporte.configuracion);
+router.get('/soporte/agentes', sessionGuard, controladorSoporte.listarAgentes);
+router.post('/soporte/agentes', sessionGuard, controladorSoporte.crearAgente);
 
 module.exports = router;

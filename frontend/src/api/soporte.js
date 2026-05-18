@@ -27,4 +27,6 @@ export const soporteApi = {
     api.post(`/soporte/tickets/${encodeURIComponent(id)}/tiempo`, { minutes, note }),
   dashboard: () => api.get('/soporte/dashboard'),
   config: () => api.get('/soporte/config'),
+  getAgents: () => api.get('/soporte/agentes'),
+  createAgent: (data) => api.post('/soporte/agentes', data),
 };

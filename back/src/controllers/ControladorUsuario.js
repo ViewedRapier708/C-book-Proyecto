@@ -13,7 +13,33 @@ const {
   actualizarContrasenaConToken,
   actualizarContrasenaPropia
 } = require('../models/ModeloUsuario.js');
+const { revocarSesionSoporte, loginSoporte: loginSoporteModel } = require('../models/ModeloSoporte.js');
 const jwt = require('jsonwebtoken');
+
+function buildSupportSessionUser(loginResult, secret, cookieSettings) {
+  const { session, user, profile } = loginResult;
+  const sessionUser = {
+    authProvider: 'support',
+    tipoCuenta: 'soporte',
+    supabaseUserId: user.id,
+    userId: profile.user_id,
+    nombre: profile.full_name,
+    email: profile.email,
+    correo: profile.email,
+    telefono: profile.phone || '',
+    rol: profile.role,
+    estado: profile.status,
+    tokens: {
+      accessToken: session.access_token,
+      refreshToken: session.refresh_token,
+      expiresAt: session.expires_at ? session.expires_at * 1000 : null,
+      expiresIn: session.expires_in,
+    },
+  };
+
+  const token = jwt.sign(sessionUser, secret, { expiresIn: '2h' });
+  return { sessionUser, token };
+}
 
 const SESSION_SAFETY_WINDOW_MS = Number(process.env.SESSION_REFRESH_THRESHOLD_MS) || 60000; // 1 min por defecto
 
@@ -162,62 +188,88 @@ async function login(req, res) {
       return res.status(400).json({ error: "Boleta debe tener 10 dígitos" });
     }
 
-    // Buscar correo por boleta
-    const busqueda = await buscarCorreoPorBoleta(boleta);
-    
-    if (!busqueda.success) {
-      return res.status(400).json({ error: busqueda.error || 'Usuario no encontrado' });
-    }
+    const secret = req.app.locals.sessionSecret || process.env.SESSION_SECRET || 'dev_session_secret_change_me';
 
-    // Iniciar sesión con Supabase Auth
-    const loginResult = await loginConAuth(busqueda.correo, password);
-    
-    if (!loginResult.success) {
-      return res.status(400).json({ error: loginResult.error || 'Error al iniciar sesión' });
-    }
-    const userData = await traerUsuarioInfo(boleta);
+    // First try normal user login
+    try {
+      // Buscar correo por boleta
+      const busqueda = await buscarCorreoPorBoleta(boleta);
+      
+      if (busqueda.success) {
+        // Iniciar sesión con Supabase Auth
+        const loginResult = await loginConAuth(busqueda.correo, password);
+        
+        if (loginResult.success) {
+          const userData = await traerUsuarioInfo(boleta);
 
-    const nombre = (userData.data?.boletas?.nombre ).trim();
-    const grupo = userData.data?.boletas?.Grupo ;
-    const rol= userData.data?.rol ;
-    const tiene_documentos = Boolean(userData.data?.tiene_documentos);
+          const nombre = (userData.data?.boletas?.nombre).trim();
+          const grupo = userData.data?.boletas?.Grupo;
+          const rol = userData.data?.rol;
+          const tiene_documentos = Boolean(userData.data?.tiene_documentos);
 
-    const supabaseSession = loginResult.session;
+          const supabaseSession = loginResult.session;
 
-    if (!supabaseSession) {
-      return res.status(500).json({ error: 'No se pudo crear la sesión en Supabase' });
-    }
+          if (!supabaseSession) {
+            return res.status(500).json({ error: 'No se pudo crear la sesión en Supabase' });
+          }
 
-    const sessionUser = {
-      supabaseUserId: loginResult.user.id,
-      nombre,
-      email: loginResult.user.email,
-      boleta,
-      grupo,
-      rol,
-      tiene_documentos,
-      tokens: {
-        accessToken: supabaseSession.access_token,
-        refreshToken: supabaseSession.refresh_token,
-        expiresAt: supabaseSession.expires_at ? supabaseSession.expires_at * 1000 : null,
-        expiresIn: supabaseSession.expires_in
+          const sessionUser = {
+            authProvider: 'main',
+            tipoCuenta: 'principal',
+            supabaseUserId: loginResult.user.id,
+            nombre,
+            email: loginResult.user.email,
+            boleta,
+            grupo,
+            rol,
+            tiene_documentos,
+            tokens: {
+              accessToken: supabaseSession.access_token,
+              refreshToken: supabaseSession.refresh_token,
+              expiresAt: supabaseSession.expires_at ? supabaseSession.expires_at * 1000 : null,
+              expiresIn: supabaseSession.expires_in
+            }
+          };
+
+          // Crear JWT propio con la info de sesión
+          const token = jwt.sign(sessionUser, secret, { expiresIn: '2h' });
+          
+          // Guardar token en cookie
+          res.cookie('app_session', token, req.app.locals.cookieSettings);
+
+          return res.status(200).json({
+            success: true,
+            mensaje: 'Inicio de sesión exitoso',
+            user: sanitizeSessionUser(sessionUser),
+            rol: rol
+          });
+        }
       }
-    };
+    } catch (err) {
+      // Normal user login failed, continue to try support login
+    }
 
-    // Crear JWT propio con la info de sesión
-    const token = jwt.sign(sessionUser, req.app.locals.sessionSecret || process.env.SESSION_SECRET || 'dev_session_secret_change_me', { expiresIn: '2h' });
-    
-    // Guardar token en cookie
-    res.cookie('app_session', token, req.app.locals.cookieSettings);
+    // Try support login - lookup support user by boleta
+    try {
+      const supportLoginResult = await loginSoporteModel(boleta, password);
+      const { sessionUser, token } = buildSupportSessionUser(supportLoginResult, secret, req.app.locals.cookieSettings);
+      
+      res.cookie('app_session', token, req.app.locals.cookieSettings);
 
-    return res.status(200).json({
-      success: true,
-      mensaje: 'Inicio de sesión exitoso',
-      user: sanitizeSessionUser(sessionUser),
-      rol: rol
-    });
+      return res.status(200).json({
+        success: true,
+        mensaje: 'Inicio de sesión de soporte exitoso',
+        user: sanitizeSessionUser(sessionUser),
+        rol: sessionUser.rol,
+        tipoCuenta: sessionUser.tipoCuenta,
+      });
+    } catch (supportErr) {
+      // Support login also failed
+    }
+
+    // If both logins fail
+    return res.status(400).json({ error: 'Boleta o contraseña incorrectos' });
   } catch (err) {
-  //  console.error("Error en login:", err);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
@@ -236,6 +288,13 @@ async function verificarSesion(req, res) {
       sessionUser = jwt.verify(token, secret);
     } catch (e) {
       return res.status(200).json({ autenticado: false, user: null });
+    }
+
+    if (sessionUser.authProvider === 'support' || sessionUser.tipoCuenta === 'soporte') {
+      return res.status(200).json({
+        autenticado: true,
+        user: sanitizeSessionUser(sessionUser)
+      });
     }
 
     const userData = await traerUsuarioInfo(sessionUser.boleta);
@@ -266,7 +325,9 @@ async function cerrarSesion(req, res) {
         const accessToken = sessionUser?.tokens?.accessToken;
         
         if (accessToken) {
-          const revocado = await revocarSesionesSupabase(accessToken);
+          const revocado = sessionUser.authProvider === 'support'
+            ? await revocarSesionSoporte(accessToken)
+            : await revocarSesionesSupabase(accessToken);
           if (!revocado.success) {
            // console.warn('No se pudo revocar la sesión en Supabase:', revocado.error);
           }

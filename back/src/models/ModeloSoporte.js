@@ -42,16 +42,37 @@ const PRIORITY_FROM_DB = {
   urgent: 'Urgente',
 };
 
-function requireAdmin(user) {
-  if (user?.rol !== 'Admin') {
-    const err = new Error('Solo administradores pueden realizar esta accion');
+const SUPPORT_ROLES = {
+  ADMIN: 'support_admin',
+  AGENT: 'support_agent',
+};
+
+function isSupportStaff(user) {
+  return user?.tipoCuenta === 'soporte' && [SUPPORT_ROLES.ADMIN, SUPPORT_ROLES.AGENT].includes(user?.rol);
+}
+
+function isSupportAdmin(user) {
+  return user?.tipoCuenta === 'soporte' && user?.rol === SUPPORT_ROLES.ADMIN;
+}
+
+function requireSupportStaff(user) {
+  if (!isSupportStaff(user)) {
+    const err = new Error('Solo usuarios de soporte pueden realizar esta accion');
+    err.status = 403;
+    throw err;
+  }
+}
+
+function requireSupportAdmin(user) {
+  if (!isSupportAdmin(user)) {
+    const err = new Error('Solo administradores de soporte pueden realizar esta accion');
     err.status = 403;
     throw err;
   }
 }
 
 function actorName(user = {}) {
-  return user.nombre || user.email || user.correo || user.boleta || 'Usuario';
+  return user.nombre || user.full_name || user.email || user.correo || user.boleta || 'Usuario';
 }
 
 function logDbSuccess(operation, details = {}) {
@@ -141,6 +162,239 @@ async function listarTipos() {
   }
   logDbSuccess('listarTipos', { rows: data?.length || 0, names: (data || []).map((t) => t.name) });
   return data || [];
+}
+
+function mapSupportProfile(profile = {}) {
+  return {
+    userId: profile.user_id,
+    nombre: profile.full_name,
+    email: profile.email,
+    telefono: profile.phone || '',
+    boleta: profile.boleta || '',
+    rol: profile.role,
+    estado: profile.status,
+    activo: profile.status === 'active',
+    creado: profile.created_at,
+    actualizado: profile.updated_at,
+  };
+}
+
+function sanitizeSupportSessionUser(sessionUser = {}) {
+  if (!sessionUser) return null;
+  const { tokens, iat, exp, ...publicData } = sessionUser;
+  return publicData;
+}
+
+async function buscarPerfilSoporte(userId) {
+  const supabase = getSupportClient();
+  const { data, error } = await supabase
+    .from('support_profiles')
+    .select('user_id,full_name,email,phone,boleta,role,status,created_at,updated_at')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) {
+    logDbError('buscarPerfilSoporte.select', error);
+    throw error;
+  }
+
+  return data;
+}
+
+async function loginSoporte(identifier, password) {
+  const supabase = getSupportClient();
+  
+  // Check if identifier is a boleta (10 digits)
+  const isBoleta = /^\d{10}$/.test(identifier);
+  
+  let email;
+  if (isBoleta) {
+    // Lookup support user by boleta
+    const { data: profile, error } = await supabase
+      .from('support_profiles')
+      .select('email')
+      .eq('boleta', identifier)
+      .maybeSingle();
+    
+    if (error || !profile) {
+      const err = new Error('Usuario o contrasena incorrectos');
+      err.status = 401;
+      throw err;
+    }
+    email = profile.email;
+  } else {
+    email = String(identifier || '').trim().toLowerCase();
+  }
+
+  if (!email || !password) {
+    const err = new Error('Usuario o contrasena incorrectos');
+    err.status = 400;
+    throw err;
+  }
+
+  const { data, error: authError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (authError || !data?.user || !data?.session) {
+    const err = new Error('Usuario o contrasena incorrectos');
+    err.status = 401;
+    throw err;
+  }
+
+  const profile = await buscarPerfilSoporte(data.user.id);
+
+  if (!profile) {
+    const err = new Error('Rol no autorizado para el modulo de soporte');
+    err.status = 403;
+    throw err;
+  }
+
+  if (profile.status !== 'active') {
+    const err = new Error('Cuenta inactiva. Contacte al administrador de soporte');
+    err.status = 403;
+    throw err;
+  }
+
+  if (![SUPPORT_ROLES.ADMIN, SUPPORT_ROLES.AGENT].includes(profile.role)) {
+    const err = new Error('Rol no autorizado para el modulo de soporte');
+    err.status = 403;
+    throw err;
+  }
+
+  return {
+    session: data.session,
+    user: data.user,
+    profile,
+  };
+}
+
+async function refrescarSesionSoporte(refreshToken) {
+  const supabase = getSupportClient();
+  try {
+    const { data, error } = await supabase.auth.refreshSession({ refresh_token: refreshToken });
+
+    if (error) {
+      logDbError('refrescarSesionSoporte', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, session: data.session, user: data.user };
+  } catch (err) {
+    logDbError('refrescarSesionSoporte.catch', err);
+    return { success: false, error: 'Error interno' };
+  }
+}
+
+async function revocarSesionSoporte(accessToken) {
+  const supabase = getSupportClient();
+  try {
+    if (!accessToken) return { success: false, error: 'Access token invalido' };
+
+    const { error } = await supabase.auth.admin.signOut(accessToken);
+    if (error) {
+      logDbError('revocarSesionSoporte', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    logDbError('revocarSesionSoporte.catch', err);
+    return { success: false, error: 'Error interno' };
+  }
+}
+
+async function listarAgentes(user) {
+  requireSupportAdmin(user);
+  const supabase = getSupportClient();
+  const { data, error } = await supabase
+    .from('support_profiles')
+    .select('user_id,full_name,email,phone,role,status,created_at,updated_at')
+    .in('role', [SUPPORT_ROLES.ADMIN, SUPPORT_ROLES.AGENT])
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    logDbError('listarAgentes.select', error);
+    throw error;
+  }
+
+  return (data || []).map(mapSupportProfile);
+}
+
+async function crearAgente(payload, user) {
+  requireSupportAdmin(user);
+  const supabase = getSupportClient();
+  const nombre = String(payload.nombre || payload.fullName || '').trim();
+  const email = String(payload.email || payload.correo || '').trim().toLowerCase();
+  const password = String(payload.password || payload.contrasena || '').trim();
+  const telefono = String(payload.telefono || payload.phone || '').trim() || null;
+  const boleta = String(payload.boleta || '').trim() || null;
+  const rol = payload.rol === SUPPORT_ROLES.ADMIN ? SUPPORT_ROLES.ADMIN : SUPPORT_ROLES.AGENT;
+  const estado = payload.estado === 'inactive' || payload.activo === false ? 'inactive' : 'active';
+
+  if (!nombre || !email || !password) {
+    const err = new Error('Nombre, correo y contrasena temporal son obligatorios');
+    err.status = 400;
+    throw err;
+  }
+
+  const { data: existingProfile, error: existingError } = await supabase
+    .from('support_profiles')
+    .select('user_id,email')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (existingError) {
+    logDbError('crearAgente.existingProfile', existingError);
+    throw existingError;
+  }
+  if (existingProfile) {
+    const err = new Error('Ya existe una cuenta de soporte con ese correo');
+    err.status = 409;
+    throw err;
+  }
+
+  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: {
+      full_name: nombre,
+      role: rol,
+      source: 'cbook_support',
+    },
+  });
+
+  if (authError) {
+    logDbError('crearAgente.auth', authError);
+    const err = new Error(authError.message?.toLowerCase().includes('already') ? 'Ya existe una cuenta con ese correo' : authError.message);
+    err.status = authError.message?.toLowerCase().includes('already') ? 409 : 400;
+    throw err;
+  }
+
+  const { data, error } = await supabase
+    .from('support_profiles')
+    .insert({
+      user_id: authData.user.id,
+      full_name: nombre,
+      email,
+      phone: telefono,
+      boleta,
+      role: rol,
+      status: estado,
+      created_by: user.supabaseUserId || user.userId || null,
+    })
+    .select('user_id,full_name,email,phone,boleta,role,status,created_at,updated_at')
+    .single();
+
+  if (error) {
+    logDbError('crearAgente.profile', error);
+    await supabase.auth.admin.deleteUser(authData.user.id).catch(() => {});
+    throw error;
+  }
+
+  return mapSupportProfile(data);
 }
 
 async function asegurarTipo(nombre) {
@@ -234,7 +488,7 @@ async function listarTickets(filtros = {}, user) {
     .order('created_at', { ascending: false })
     .range(from, to);
 
-  if (user?.rol !== 'Admin') {
+  if (!isSupportStaff(user)) {
     query = query.eq('requester_boleta', user.boleta);
   }
   if (filtros.mine === 'true') {
@@ -285,14 +539,14 @@ async function obtenerTicket(id, user) {
     err.status = 404;
     throw err;
   }
-  if (user?.rol !== 'Admin' && data.requester_boleta && data.requester_boleta !== user?.boleta) {
+  if (!isSupportStaff(user) && data.requester_boleta && data.requester_boleta !== user?.boleta) {
     const err = new Error('No tienes permiso para ver este ticket');
     err.status = 403;
     throw err;
   }
   logDbSuccess('obtenerTicket.select', { id: data.id, ticket_number: data.ticket_number, status: data.status });
   const mapped = mapTicket(data);
-  if (user?.rol !== 'Admin') {
+  if (!isSupportStaff(user)) {
     mapped.comentarios = mapped.comentarios.filter((c) => !c.interno);
     mapped.history = mapped.history.filter((h) => !String(h.texto || '').toLowerCase().includes('nota interna'));
   }
@@ -300,7 +554,7 @@ async function obtenerTicket(id, user) {
 }
 
 async function tomarTicket(id, user) {
-  requireAdmin(user);
+  requireSupportStaff(user);
   const supabase = getSupportClient();
   const current = await obtenerTicket(id, user);
   const { data, error } = await supabase
@@ -329,7 +583,7 @@ async function tomarTicket(id, user) {
 }
 
 async function cambiarEstado(id, estado, user, comentario = '') {
-  requireAdmin(user);
+  requireSupportStaff(user);
   const supabase = getSupportClient();
   const current = await obtenerTicket(id, user);
   const nextStatus = STATUS_TO_DB[estado];
@@ -368,7 +622,7 @@ async function cambiarEstado(id, estado, user, comentario = '') {
 async function agregarComentario(id, body, isInternal, user) {
   const supabase = getSupportClient();
   const ticket = await obtenerTicket(id, user);
-  if (isInternal) requireAdmin(user);
+  if (isInternal) requireSupportStaff(user);
 
   const text = String(body || '').trim();
   if (!text) {
@@ -393,7 +647,7 @@ async function agregarComentario(id, body, isInternal, user) {
 }
 
 async function registrarTiempo(id, minutes, note, user) {
-  requireAdmin(user);
+  requireSupportStaff(user);
   const supabase = getSupportClient();
   const ticket = await obtenerTicket(id, user);
   const value = Number(minutes);
@@ -428,7 +682,7 @@ async function registrarTiempo(id, minutes, note, user) {
 }
 
 async function dashboard(user) {
-  requireAdmin(user);
+  requireSupportStaff(user);
   const { tickets } = await listarTickets({ limit: 100 }, user);
   const abiertos = tickets.filter((t) => ['Nuevo', 'Abierto', 'Pendiente', 'En espera'].includes(t.estado));
   const resueltos = tickets.filter((t) => t.estado === 'Resuelto' || t.estado === 'Cerrado');
@@ -459,12 +713,13 @@ async function dashboard(user) {
 }
 
 async function configuracion(user) {
-  requireAdmin(user);
+  requireSupportAdmin(user);
   const supabase = getSupportClient();
-  const [tipos, plantillas, asignacion] = await Promise.all([
+  const [tipos, plantillas, asignacion, agentes] = await Promise.all([
     listarTipos(),
     supabase.from('response_templates').select('id,title,body,is_active').order('title'),
     supabase.from('assignment_settings').select('*').maybeSingle(),
+    listarAgentes(user),
   ]);
 
   if (plantillas.error) {
@@ -485,6 +740,7 @@ async function configuracion(user) {
     tipos,
     plantillas: plantillas.data || [],
     asignacion: asignacion.data || null,
+    agentes,
   };
 }
 
@@ -524,6 +780,15 @@ async function crearNotificacion(ticketId, email, eventKey, subject, body) {
 }
 
 module.exports = {
+  SUPPORT_ROLES,
+  isSupportStaff,
+  isSupportAdmin,
+  sanitizeSupportSessionUser,
+  loginSoporte,
+  refrescarSesionSoporte,
+  revocarSesionSoporte,
+  listarAgentes,
+  crearAgente,
   listarTipos,
   crearTicket,
   listarTickets,

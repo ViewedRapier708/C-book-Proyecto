@@ -5,6 +5,7 @@ import { Plus, Search, ChevronRight, RefreshCcw, AlertCircle } from 'lucide-reac
 import AnimatedPage from '../../components/layout/AnimatedPage';
 import { useAuth } from '../../context/AuthContext';
 import { soporteApi } from '../../api/soporte';
+import { isSupportRole } from '../../utils/authRoutes';
 import '../../styles/support.css';
 
 const ESTADOS_FILTRO = ['Todos', 'Nuevo', 'Abierto', 'Pendiente', 'En espera', 'Resuelto', 'Cerrado'];
@@ -33,8 +34,8 @@ export default function MisReportes() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const detailBase = user?.rol === 'Admin' ? '/admin/soporte/tickets' : '/user/soporte/mis-reportes';
-  const reportPath = user?.rol === 'Admin' ? '/admin/soporte/reportar' : '/user/soporte/reportar';
+  const detailBase = isSupportRole(user?.rol) ? '/soporte/tickets' : '/user/soporte/mis-reportes';
+  const reportPath = isSupportRole(user?.rol) ? '/soporte/reportar' : '/user/soporte/reportar';
 
   const load = async () => {
     setLoading(true);

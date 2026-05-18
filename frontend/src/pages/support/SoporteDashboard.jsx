@@ -8,6 +8,8 @@ import {
 } from 'recharts';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 import { soporteApi } from '../../api/soporte';
+import { useAuth } from '../../context/AuthContext';
+import { isSupportAdmin } from '../../utils/authRoutes';
 import '../../styles/support.css';
 
 const COLORS = ['#176d5a', '#c46f21', '#0284c7', '#8b5cf6', '#dc4c3f', '#1f9d74'];
@@ -31,6 +33,7 @@ function formatDate(value) {
 
 export default function SoporteDashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -70,12 +73,14 @@ export default function SoporteDashboard() {
             <p className="text-sm text-[var(--text-muted)]">Metricas reales del proyecto Supabase de soporte</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button className="px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)]" onClick={() => navigate('/admin/soporte/reportar')}>
+            <button className="px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)]" onClick={() => navigate('/soporte/reportar')}>
               Reportar
             </button>
-            <button className="px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)]" onClick={() => navigate('/admin/soporte/config')}>
-              Configuracion
-            </button>
+            {isSupportAdmin(user?.rol) && (
+              <button className="px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)]" onClick={() => navigate('/soporte/config')}>
+                Configuracion
+              </button>
+            )}
             <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)]" onClick={load} disabled={loading}>
               <RefreshCcw size={14} /> Actualizar
             </button>
@@ -105,13 +110,13 @@ export default function SoporteDashboard() {
                 <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2"><Activity size={15} /> Cola en vivo</h3>
                 <p className="text-xs text-[var(--text-muted)] mt-0.5">Tickets abiertos o pendientes</p>
               </div>
-              <button className="flex items-center gap-1 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)]" onClick={() => navigate('/admin/soporte/tickets')}>
+              <button className="flex items-center gap-1 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)]" onClick={() => navigate('/soporte/tickets')}>
                 Ver bandeja <ChevronRight size={12} />
               </button>
             </div>
             <div className="space-y-0">
               {(data?.cola || []).map((t) => (
-                <div key={t.id} className="flex items-center gap-3 py-3 border-b border-[var(--border-color)] last:border-0 cursor-pointer hover:bg-[var(--bg-glass)] -mx-2 px-2 rounded-lg transition-colors" onClick={() => navigate(`/admin/soporte/tickets/${t.id}`)}>
+                <div key={t.id} className="flex items-center gap-3 py-3 border-b border-[var(--border-color)] last:border-0 cursor-pointer hover:bg-[var(--bg-glass)] -mx-2 px-2 rounded-lg transition-colors" onClick={() => navigate(`/soporte/tickets/${t.id}`)}>
                   <span className="sup-ticket-id text-xs">{t.folio}</span>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-[var(--text-primary)] truncate">{t.titulo}</div>

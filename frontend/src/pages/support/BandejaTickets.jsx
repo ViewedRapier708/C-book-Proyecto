@@ -131,7 +131,7 @@ export default function BandejaTickets() {
               <tbody>
                 {loading && <tr><td colSpan={9} className="px-4 py-12 text-center text-sm text-[var(--text-muted)]">Cargando tickets...</td></tr>}
                 {!loading && filtered.map((t) => (
-                  <tr key={t.id} className="border-b border-[var(--border-color)] hover:bg-[var(--bg-glass)] cursor-pointer transition-colors" onClick={() => navigate(`/admin/soporte/tickets/${t.id}`)}>
+                  <tr key={t.id} className="border-b border-[var(--border-color)] hover:bg-[var(--bg-glass)] cursor-pointer transition-colors" onClick={() => navigate(`/soporte/tickets/${t.id}`)}>
                     <td className="px-3 py-3"><span className="sup-ticket-id">{t.folio}</span></td>
                     <td className="px-3 py-3">
                       <div className="font-medium text-[var(--text-primary)] line-clamp-1">{t.titulo}</div>

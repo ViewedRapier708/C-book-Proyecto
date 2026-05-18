@@ -206,7 +206,6 @@ async function buscarCorreoPorBoleta(boleta) {
       .select('correo')
       .eq('boleta', boleta)
       .maybeSingle();
-console.log("Resultado de buscarCorreoPorBoleta:", { data, error });
     if (error) {
       console.error("Error buscando correo:", error);
       return { success: false, error: error.message };

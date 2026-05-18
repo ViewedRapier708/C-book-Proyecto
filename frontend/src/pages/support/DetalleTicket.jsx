@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 import { useAuth } from '../../context/AuthContext';
 import { soporteApi } from '../../api/soporte';
+import { isSupportRole } from '../../utils/authRoutes';
 import '../../styles/support.css';
 
 const ESTADOS = ['Nuevo', 'Abierto', 'Pendiente', 'En espera', 'Resuelto', 'Cerrado'];
@@ -43,7 +44,7 @@ export default function DetalleTicket() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isAdmin = user?.rol === 'Admin';
+  const isSupport = isSupportRole(user?.rol);
   const [ticket, setTicket] = useState(null);
   const [comentario, setComentario] = useState('');
   const [interno, setInterno] = useState(false);
@@ -54,7 +55,7 @@ export default function DetalleTicket() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const backPath = isAdmin ? '/admin/soporte/tickets' : '/user/soporte/mis-reportes';
+  const backPath = isSupport ? '/soporte/tickets' : '/user/soporte/mis-reportes';
 
   const load = async () => {
     setLoading(true);
@@ -108,7 +109,7 @@ export default function DetalleTicket() {
       <div className="space-y-4">
         <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
           <button className="flex items-center gap-1.5 hover:text-[var(--text-primary)] transition-colors" onClick={() => navigate(backPath)}>
-            <ArrowLeft size={13} /> {isAdmin ? 'Bandeja' : 'Mis reportes'}
+            <ArrowLeft size={13} /> {isSupport ? 'Bandeja' : 'Mis reportes'}
           </button>
           <span>/</span>
           <span className="font-bold text-[var(--text-primary)] sup-ticket-id">{ticket.folio}</span>
@@ -133,7 +134,7 @@ export default function DetalleTicket() {
                 <span className="flex items-center gap-1.5"><Clock size={13} /> Tiempo <strong className="text-[var(--text-primary)] ml-1">{formatMinutes(ticket.tiempoMinutos)}</strong></span>
               </div>
 
-              {isAdmin && (
+              {isSupport && (
                 <div className="flex flex-wrap gap-2 pt-3 border-t border-[var(--border-color)]">
                   <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#c46f21' }} disabled={busy} onClick={() => runAction(() => soporteApi.takeTicket(ticket.id), 'Ticket tomado')}>
                     <Hand size={14} /> Tomar ticket
@@ -183,7 +184,7 @@ export default function DetalleTicket() {
             <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-bold text-[var(--text-primary)]">Responder</h3>
-                {isAdmin && (
+                {isSupport && (
                   <label className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
                     <input type="checkbox" checked={interno} onChange={(e) => setInterno(e.target.checked)} />
                     Nota interna
@@ -210,7 +211,7 @@ export default function DetalleTicket() {
               <DetailRow label="Tiempo"><span className="font-mono text-sm font-bold text-[var(--text-primary)]">{formatMinutes(ticket.tiempoMinutos)}</span></DetailRow>
             </div>
 
-            {isAdmin && (
+            {isSupport && (
               <>
                 <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4">
                   <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 mb-3"><PauseCircle size={14} /> Cambiar estado</h3>

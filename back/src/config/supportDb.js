@@ -23,20 +23,13 @@ function ensureSupportEnv() {
 }
 
 function getSupportClient() {
-  if (!supportClient) {
-    const { url, key } = ensureSupportEnv();
-    supportClient = createClient(url, key, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
-    console.log('[SoporteDB] Conexion inicializada correctamente', {
-      host: safeHost(url),
-      keyConfigured: Boolean(key),
-    });
-  }
-  return supportClient;
+  const { url, key } = ensureSupportEnv();
+  return createClient(url, key, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
 }
 
 function safeHost(url) {
@@ -47,4 +40,4 @@ function safeHost(url) {
   }
 }
 
-module.exports = { getSupportClient };
+module.exports = { getSupportClient, safeHost };

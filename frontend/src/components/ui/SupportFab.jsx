@@ -1,6 +1,7 @@
 import { Headphones } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { isSupportRole } from '../../utils/authRoutes';
 import '../../styles/support.css';
 
 export default function SupportFab() {
@@ -8,8 +9,10 @@ export default function SupportFab() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const target = user?.rol === 'Admin'
-    ? '/admin/soporte'
+  const target = isSupportRole(user?.rol)
+    ? '/soporte'
+    : user?.rol === 'Admin'
+      ? '/admin/soporte/reportar'
     : user
       ? '/user/soporte/reportar'
       : '/soporte/reportar';

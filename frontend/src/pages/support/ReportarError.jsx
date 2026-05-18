@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 import { useAuth } from '../../context/AuthContext';
 import { soporteApi } from '../../api/soporte';
+import { isSupportRole } from '../../utils/authRoutes';
 import '../../styles/support.css';
 
 const FALLBACK_TYPES = [
@@ -71,6 +72,11 @@ export default function ReportarError() {
   const [submitting, setSubmitting] = useState(false);
   const [created, setCreated] = useState(null);
   const [error, setError] = useState('');
+  const reportListPath = isSupportRole(user?.rol)
+    ? '/soporte/tickets'
+    : user?.rol === 'Admin'
+      ? '/admin'
+      : '/user/soporte/mis-reportes';
 
   useEffect(() => {
     let alive = true;
@@ -132,7 +138,7 @@ export default function ReportarError() {
             <button className="px-4 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm text-[var(--text-secondary)]" onClick={() => navigate(-1)}>
               Volver
             </button>
-            <button className="px-4 py-2 rounded-lg text-sm font-semibold text-white" style={{ background: '#c46f21' }} onClick={() => navigate(user?.rol === 'Admin' ? '/admin/soporte/mis-reportes' : '/user/soporte/mis-reportes')}>
+            <button className="px-4 py-2 rounded-lg text-sm font-semibold text-white" style={{ background: '#c46f21' }} onClick={() => navigate(reportListPath)}>
               Ver mis reportes
             </button>
           </div>

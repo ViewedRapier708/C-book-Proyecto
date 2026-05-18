@@ -3,11 +3,14 @@ export const AUTH_UNAUTHORIZED_EVENT = 'auth:unauthorized';
 
 export function authUrl(endpoint) {
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  console.log(`Constructed URL: ${API_BASE}/auth${normalizedEndpoint}`);
   return `${API_BASE}/auth${normalizedEndpoint}`;
 }
 
 async function request(endpoint, options = {}) {
   const url = authUrl(endpoint);
+  console.log(`Requesting ${options.method || 'GET'} ${url}`);
+
   const config = {
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...options.headers },

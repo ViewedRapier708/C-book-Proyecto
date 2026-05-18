@@ -2,7 +2,6 @@
 let client = null;
 const { createClient } = require('@supabase/supabase-js');
 const path = require('path');
-// Carga .env siempre desde la raíz de 'back', sin depender del cwd
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') }) || require('dotenv').config();
 
 function ensureEnv() {
@@ -25,13 +24,19 @@ function connect() {
         persistSession: false
       }
     });
-    console.log('✅ Conexión a Supabase inicializada correctamente');
+    console.log('✅ Conexion a Supabase inicializada correctamente');
   }
   return client;
 }
 
 function getClient() {
-  return connect();
+  const { url, key } = ensureEnv();
+  return createClient(url, key, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
 }
 
 module.exports = { connect, getClient };

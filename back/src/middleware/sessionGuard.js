@@ -1,4 +1,5 @@
 const { refrescarSesionSupabase } = require('../models/ModeloUsuario');
+const { refrescarSesionSoporte } = require('../models/ModeloSoporte');
 const jwt = require('jsonwebtoken');
 
 const SESSION_REFRESH_THRESHOLD_MS = 60000;
@@ -26,7 +27,9 @@ module.exports = async function sessionGuard(req, res, next) {
     let tokenUpdated = false;
 
     if (needsRefresh(sessionUser.tokens.expiresAt)) {
-      const refreshed = await refrescarSesionSupabase(sessionUser.tokens.refreshToken);
+      const refreshed = sessionUser.authProvider === 'support'
+        ? await refrescarSesionSoporte(sessionUser.tokens.refreshToken)
+        : await refrescarSesionSupabase(sessionUser.tokens.refreshToken);
 
       if (!refreshed.success) {
         res.clearCookie('app_session', req.app.locals.cookieSettings);
