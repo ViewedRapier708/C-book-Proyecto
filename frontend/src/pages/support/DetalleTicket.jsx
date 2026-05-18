@@ -1,49 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft, ArrowUp, Clock, Calendar, User,
-  CheckCircle2, PauseCircle, Shuffle, Lock, RefreshCcw,
-  FileText, Send, Paperclip, Activity, Eye, Plus,
-  Hand, Bug,
+  CheckCircle2, PauseCircle, Lock, RefreshCcw,
+  Send, Activity, Hand, Bug, AlertCircle, Timer,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import AnimatedPage from '../../components/layout/AnimatedPage';
+import { useAuth } from '../../context/AuthContext';
+import { soporteApi } from '../../api/soporte';
 import '../../styles/support.css';
 
-// ── Mock data (se reemplazará con API) ───────────────────────────────
-const MOCK_TICKETS = {
-  'SOP-2841': {
-    id: 'SOP-2841', tipo: 'Funcional', titulo: 'Error al registrar préstamo de libro: ISBN no válido',
-    estado: 'Abierto', prioridad: 'Alta',
-    solicitante: 'Laura Méndez', solicitanteRol: 'Admin Biblioteca · Zacatenco',
-    agente: 'María Velázquez', creado: 'Hoy 09:14', actualizado: 'hace 12 min', tiempo: '2h 15m', sla: 0.6,
-    descripcion: 'Al intentar registrar un préstamo escaneando el ISBN 978-607-32-1234-5, el sistema responde "ISBN no válido" aunque el libro está dado de alta y disponible en el catálogo.\n\nSucede con cualquier libro dado de alta a partir del 1 de mayo. Préstamos de meses anteriores funcionan normalmente.',
-    pasos: [
-      'Iniciar sesión como Admin Biblioteca (Zacatenco).',
-      'Ir a Préstamos → Nuevo préstamo.',
-      'Seleccionar al alumno por boleta.',
-      'Escanear o pegar el ISBN 978-607-32-1234-5.',
-      'Aparece "ISBN no válido" y el botón Confirmar queda deshabilitado.',
-    ],
-  },
-};
-
-const HISTORIAL = [
-  { kind: 'created', actor: 'Laura Méndez',    hora: 'Hoy 09:14', texto: 'Reportó el error desde el sistema de biblioteca. Estado inicial Nuevo.' },
-  { kind: 'taken',   actor: 'María Velázquez', hora: 'Hoy 09:32', texto: 'Estado cambió de Nuevo a Abierto.' },
-  { kind: 'comment', actor: 'María Velázquez', hora: 'Hoy 09:48', texto: 'Reproducí el error en entorno de pruebas. Confirmo: la validación de ISBN-13 está rechazando el último dígito de control para libros nuevos.' },
-  { kind: 'status',  actor: 'María Velázquez', hora: 'Hoy 10:22', texto: 'Estado cambió a Pendiente. Solicita información al usuario.', adjunto: 'Hola Laura, para reproducir el error necesito que me confirmes si el problema ocurre en todos los navegadores o solo en Chrome. ¿Podrías compartir también el ISBN de un libro que sí funcione?' },
-  { kind: 'comment', actor: 'Laura Méndez',    hora: 'Hoy 10:55', texto: 'Confirmo que ocurre en Chrome y Edge. ISBN que sí funciona: 978-607-32-0987-1 (libro dado de alta el 24 de abril).' },
-  { kind: 'time',    actor: 'María Velázquez', hora: 'Hoy 11:30', texto: '+1h 15m · "Reproducción en local y revisión del validador"' },
-  { kind: 'status',  actor: 'María Velázquez', hora: 'Hoy 12:04', texto: 'Volvió a Abierto. Información recibida del solicitante. Continúa trabajo.' },
-];
-
-const PALETTE = ['#176d5a', '#c46f21', '#0284c7', '#8b5cf6', '#dc4c3f', '#1f9d74'];
-
-function Avatar({ name }) {
-  const initials = name.split(' ').map(s => s[0]).slice(0, 2).join('');
-  const bg = PALETTE[name.charCodeAt(0) % PALETTE.length];
-  return <div className="sup-avatar" style={{ background: bg }}>{initials}</div>;
-}
+const ESTADOS = ['Nuevo', 'Abierto', 'Pendiente', 'En espera', 'Resuelto', 'Cerrado'];
 
 function EstadoBadge({ estado }) {
   const map = { Nuevo: 'sup-estado-nuevo', Abierto: 'sup-estado-abierto', Pendiente: 'sup-estado-pendiente', 'En espera': 'sup-estado-espera', Resuelto: 'sup-estado-resuelto', Cerrado: 'sup-estado-cerrado' };
@@ -59,270 +27,211 @@ function DetailRow({ label, children }) {
   );
 }
 
+function formatDate(value) {
+  if (!value) return '-';
+  return new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+}
+
+function formatMinutes(minutes) {
+  const value = Number(minutes) || 0;
+  const h = Math.floor(value / 60);
+  const m = value % 60;
+  return h ? `${h}h ${m}m` : `${m}m`;
+}
+
 export default function DetalleTicket() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.rol === 'Admin';
+  const [ticket, setTicket] = useState(null);
   const [comentario, setComentario] = useState('');
-  const [tabHistorial, setTabHistorial] = useState('todo');
-  const [tabComposer, setTabComposer] = useState('comentario');
-  const [timer] = useState('00:23:14');
+  const [interno, setInterno] = useState(false);
+  const [estado, setEstado] = useState('Abierto');
+  const [minutes, setMinutes] = useState(15);
+  const [timeNote, setTimeNote] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
 
-  const ticket = MOCK_TICKETS[id] ?? MOCK_TICKETS['SOP-2841'];
+  const backPath = isAdmin ? '/admin/soporte/tickets' : '/user/soporte/mis-reportes';
+
+  const load = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const { ticket: data } = await soporteApi.getTicket(id);
+      setTicket(data);
+      setEstado(data.estado || 'Abierto');
+    } catch (err) {
+      setError(err.message || 'No se pudo cargar el ticket');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, [id]);
+
+  const runAction = async (action, okMessage) => {
+    setBusy(true);
+    setError('');
+    try {
+      const { ticket: updated } = await action();
+      setTicket(updated);
+      setEstado(updated.estado);
+      toast.success(okMessage);
+    } catch (err) {
+      setError(err.message || 'No se pudo actualizar el ticket');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (loading) {
+    return <AnimatedPage><div className="py-16 text-center text-sm text-[var(--text-muted)]">Cargando ticket...</div></AnimatedPage>;
+  }
+
+  if (error && !ticket) {
+    return (
+      <AnimatedPage>
+        <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200 flex items-center gap-2">
+          <AlertCircle size={16} /> {error}
+        </div>
+      </AnimatedPage>
+    );
+  }
 
   return (
     <AnimatedPage>
       <div className="space-y-4">
-
-        {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-          <button
-            className="flex items-center gap-1.5 hover:text-[var(--text-primary)] transition-colors"
-            onClick={() => navigate('/admin/soporte/tickets')}
-          >
-            <ArrowLeft size={13} /> Bandeja
+          <button className="flex items-center gap-1.5 hover:text-[var(--text-primary)] transition-colors" onClick={() => navigate(backPath)}>
+            <ArrowLeft size={13} /> {isAdmin ? 'Bandeja' : 'Mis reportes'}
           </button>
           <span>/</span>
-          <span className="font-bold text-[var(--text-primary)] sup-ticket-id">{ticket.id}</span>
+          <span className="font-bold text-[var(--text-primary)] sup-ticket-id">{ticket.folio}</span>
         </div>
 
+        {error && <div className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200"><AlertCircle size={16} /> {error}</div>}
+
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
-
-          {/* ── Columna principal ── */}
           <div className="space-y-4">
-
-            {/* Header del ticket */}
             <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5">
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="sup-ticket-id">{ticket.id}</span>
+                <span className="sup-ticket-id">{ticket.folio}</span>
                 <EstadoBadge estado={ticket.estado} />
                 <span className="sup-badge sup-badge-funcional">{ticket.tipo}</span>
                 <span className="sup-badge" style={{ background: 'rgba(220,76,63,0.15)', color: '#f87171' }}>Prioridad {ticket.prioridad}</span>
-                <span className="ml-auto text-xs text-[var(--text-muted)]">actualizado {ticket.actualizado}</span>
+                <span className="ml-auto text-xs text-[var(--text-muted)]">actualizado {formatDate(ticket.actualizado)}</span>
               </div>
-              <h2 className="text-xl font-extrabold text-[var(--text-primary)] tracking-tight mb-3 leading-snug">
-                {ticket.titulo}
-              </h2>
+              <h2 className="text-xl font-extrabold text-[var(--text-primary)] tracking-tight mb-3 leading-snug">{ticket.titulo}</h2>
               <div className="flex flex-wrap gap-4 text-xs text-[var(--text-secondary)] mb-4">
-                <span className="flex items-center gap-1.5"><User size={13} /> {ticket.solicitante} · {ticket.solicitanteRol}</span>
-                <span className="flex items-center gap-1.5"><Calendar size={13} /> Creado {ticket.creado}</span>
-                <span className="flex items-center gap-1.5"><Clock size={13} /> Tiempo registrado <strong className="text-[var(--text-primary)] ml-1">{ticket.tiempo}</strong></span>
+                <span className="flex items-center gap-1.5"><User size={13} /> {ticket.solicitante} - {ticket.solicitanteRol || ticket.solicitanteBoleta}</span>
+                <span className="flex items-center gap-1.5"><Calendar size={13} /> Creado {formatDate(ticket.creado)}</span>
+                <span className="flex items-center gap-1.5"><Clock size={13} /> Tiempo <strong className="text-[var(--text-primary)] ml-1">{formatMinutes(ticket.tiempoMinutos)}</strong></span>
               </div>
-              <div className="h-px bg-[var(--border-color)] mb-4" />
-              {/* Action bar */}
-              <div className="flex flex-wrap gap-2">
-                <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white transition-all" style={{ background: '#c46f21' }}>
-                  <Hand size={14} /> Tomar ticket
-                </button>
-                <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white transition-all" style={{ background: '#d97706' }}>
-                  <PauseCircle size={14} /> Cambiar estado
-                </button>
-                <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white transition-all" style={{ background: '#1f9d74' }}>
-                  <CheckCircle2 size={14} /> Resolver
-                </button>
-                <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all">
-                  <Shuffle size={14} /> Reasignar
-                </button>
-                <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all">
-                  <Clock size={14} /> Registrar tiempo
-                </button>
-                <div className="flex-1" />
-                <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all">
-                  <Lock size={14} /> Cerrar
-                </button>
-                <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all">
-                  <RefreshCcw size={14} /> Reabrir
-                </button>
-              </div>
-            </div>
 
-            {/* Descripción */}
-            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5">
-              <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 mb-3">
-                <Bug size={15} /> Descripción del error
-              </h3>
-              <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-line mb-3">
-                {ticket.descripcion}
-              </div>
-              {ticket.pasos && (
-                <>
-                  <p className="text-sm font-semibold text-[var(--text-primary)] mb-2">Pasos para reproducir:</p>
-                  <ol className="list-decimal list-inside space-y-1 text-sm text-[var(--text-secondary)] leading-relaxed mb-3">
-                    {ticket.pasos.map((p, i) => <li key={i}>{p}</li>)}
-                  </ol>
-                </>
+              {isAdmin && (
+                <div className="flex flex-wrap gap-2 pt-3 border-t border-[var(--border-color)]">
+                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#c46f21' }} disabled={busy} onClick={() => runAction(() => soporteApi.takeTicket(ticket.id), 'Ticket tomado')}>
+                    <Hand size={14} /> Tomar ticket
+                  </button>
+                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#1f9d74' }} disabled={busy} onClick={() => runAction(() => soporteApi.changeStatus(ticket.id, 'Resuelto', 'Ticket marcado como resuelto'), 'Ticket resuelto')}>
+                    <CheckCircle2 size={14} /> Resolver
+                  </button>
+                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)] disabled:opacity-50" disabled={busy} onClick={() => runAction(() => soporteApi.changeStatus(ticket.id, 'Cerrado', 'Ticket cerrado'), 'Ticket cerrado')}>
+                    <Lock size={14} /> Cerrar
+                  </button>
+                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)] disabled:opacity-50" disabled={busy} onClick={() => runAction(() => soporteApi.changeStatus(ticket.id, 'Abierto', 'Ticket reabierto'), 'Ticket reabierto')}>
+                    <RefreshCcw size={14} /> Reabrir
+                  </button>
+                </div>
               )}
-              <div className="flex flex-wrap gap-2">
-                <span className="sup-badge sup-badge-neutral">📎 captura-error.png</span>
-                <span className="sup-badge sup-badge-neutral">📎 console-network.log</span>
-              </div>
             </div>
 
-            {/* Historial */}
+            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5">
+              <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 mb-3"><Bug size={15} /> Descripcion del error</h3>
+              <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-line mb-3">{ticket.descripcion}</div>
+              <div className="text-xs text-[var(--text-muted)]">Modulo reportado: {ticket.modulo}</div>
+            </div>
+
             <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
-                  <Activity size={15} /> Historial cronológico
-                </h3>
-                <div className="flex bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg p-0.5 gap-0.5">
-                  {['todo', 'comentarios', 'cambios'].map(t => (
-                    <button key={t} onClick={() => setTabHistorial(t)}
-                      className={`px-2.5 py-1 rounded-md text-xs font-semibold capitalize transition-all ${tabHistorial === t ? 'bg-[var(--bg-glass-strong)] text-[var(--text-primary)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}>
-                      {t}
-                    </button>
-                  ))}
-                </div>
+                <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2"><Activity size={15} /> Historial</h3>
               </div>
               <div className="sup-timeline">
-                {HISTORIAL.map((h, i) => (
-                  <div key={i} className="sup-tl-item" data-kind={h.kind}>
-                    <div className="text-xs text-[var(--text-secondary)] mb-1">
-                      <strong className="text-[var(--text-primary)]">{h.actor}</strong>
-                      {' · '}
-                      <span className="text-[var(--text-muted)]">{h.hora}</span>
-                    </div>
-                    <div className="text-sm text-[var(--text-secondary)] leading-relaxed">{h.texto}</div>
-                    {h.adjunto && (
-                      <div className="sup-tl-attached mt-2">{h.adjunto}</div>
-                    )}
+                {(ticket.history || []).map((h) => (
+                  <div key={h.id} className="sup-tl-item" data-kind={h.tipo}>
+                    <div className="text-xs text-[var(--text-muted)] mb-1">{formatDate(h.creado)}</div>
+                    <div className="text-sm text-[var(--text-secondary)] leading-relaxed">{h.texto || `Evento: ${h.tipo}`}</div>
                   </div>
                 ))}
+                {(ticket.comentarios || []).map((c) => (
+                  <div key={c.id} className="sup-tl-item" data-kind="comment">
+                    <div className="text-xs text-[var(--text-muted)] mb-1">{formatDate(c.creado)} {c.interno ? '- nota interna' : '- comentario'}</div>
+                    <div className="text-sm text-[var(--text-secondary)] leading-relaxed">{c.texto}</div>
+                  </div>
+                ))}
+                {(ticket.history || []).length === 0 && (ticket.comentarios || []).length === 0 && (
+                  <div className="text-sm text-[var(--text-muted)]">Sin historial registrado.</div>
+                )}
               </div>
             </div>
 
-            {/* Compositor de respuesta */}
             <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-bold text-[var(--text-primary)]">Responder o registrar acción</h3>
-                <div className="flex bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg p-0.5 gap-0.5">
-                  {['comentario', 'nota interna'].map(t => (
-                    <button key={t} onClick={() => setTabComposer(t)}
-                      className={`px-2.5 py-1 rounded-md text-xs font-semibold capitalize transition-all ${tabComposer === t ? 'bg-[var(--bg-glass-strong)] text-[var(--text-primary)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}>
-                      {t}
-                    </button>
-                  ))}
-                </div>
+                <h3 className="text-sm font-bold text-[var(--text-primary)]">Responder</h3>
+                {isAdmin && (
+                  <label className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
+                    <input type="checkbox" checked={interno} onChange={(e) => setInterno(e.target.checked)} />
+                    Nota interna
+                  </label>
+                )}
               </div>
-              <textarea
-                className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[#e89a4f] transition-colors resize-none min-h-[90px]"
-                placeholder='Escribe la respuesta al solicitante. Escribe "/" para insertar una plantilla.'
-                value={comentario}
-                onChange={e => setComentario(e.target.value)}
-              />
-              <div className="flex items-center justify-between mt-3">
-                <div className="flex items-center gap-2">
-                  <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all">
-                    <FileText size={12} /> Plantillas
-                  </button>
-                  <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all">
-                    <Paperclip size={12} /> Adjuntar
-                  </button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button className="px-3 py-1.5 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all">
-                    Guardar borrador
-                  </button>
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all" style={{ background: '#c46f21' }}>
-                    <Send size={12} /> Enviar respuesta
-                  </button>
-                </div>
+              <textarea className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none resize-none min-h-[90px]" placeholder="Escribe una respuesta o informacion adicional." value={comentario} onChange={(e) => setComentario(e.target.value)} />
+              <div className="flex justify-end mt-3">
+                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#c46f21' }} disabled={busy || !comentario.trim()} onClick={() => runAction(() => soporteApi.addComment(ticket.id, comentario, interno), 'Comentario guardado').then(() => setComentario(''))}>
+                  <Send size={12} /> Enviar respuesta
+                </button>
               </div>
             </div>
-
           </div>
 
-          {/* ── Columna derecha ── */}
           <div className="space-y-4">
-
-            {/* Detalles */}
             <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4">
               <h3 className="text-sm font-bold text-[var(--text-primary)] mb-3">Detalles</h3>
               <DetailRow label="Estado"><EstadoBadge estado={ticket.estado} /></DetailRow>
-              <DetailRow label="Prioridad">
-                <span className="flex items-center gap-1 text-xs font-bold sup-prio-alta">
-                  <ArrowUp size={12} /> Alta
-                </span>
-              </DetailRow>
-              <DetailRow label="Tipo">
-                <span className="sup-badge sup-badge-funcional">{ticket.tipo}</span>
-              </DetailRow>
-              <DetailRow label="Asignado a">
-                <div className="flex items-center gap-2">
-                  <Avatar name={ticket.agente} />
-                  <span className="text-xs text-[var(--text-secondary)]">{ticket.agente}</span>
+              <DetailRow label="Prioridad"><span className="flex items-center gap-1 text-xs font-bold sup-prio-alta"><ArrowUp size={12} /> {ticket.prioridad}</span></DetailRow>
+              <DetailRow label="Tipo"><span className="sup-badge sup-badge-funcional">{ticket.tipo}</span></DetailRow>
+              <DetailRow label="Asignado">{ticket.agente || 'Sin asignar'}</DetailRow>
+              <DetailRow label="Solicitante"><div><div className="text-xs font-medium text-[var(--text-primary)]">{ticket.solicitante}</div><div className="text-xs text-[var(--text-muted)]">{ticket.solicitanteCorreo || ticket.solicitanteBoleta}</div></div></DetailRow>
+              <DetailRow label="Tiempo"><span className="font-mono text-sm font-bold text-[var(--text-primary)]">{formatMinutes(ticket.tiempoMinutos)}</span></DetailRow>
+            </div>
+
+            {isAdmin && (
+              <>
+                <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4">
+                  <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 mb-3"><PauseCircle size={14} /> Cambiar estado</h3>
+                  <select className="w-full px-3 py-2 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] mb-2" value={estado} onChange={(e) => setEstado(e.target.value)}>
+                    {ESTADOS.map((s) => <option key={s}>{s}</option>)}
+                  </select>
+                  <button className="w-full px-3 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#d97706' }} disabled={busy || estado === ticket.estado} onClick={() => runAction(() => soporteApi.changeStatus(ticket.id, estado, `Estado cambiado a ${estado}`), 'Estado actualizado')}>
+                    Guardar estado
+                  </button>
                 </div>
-              </DetailRow>
-              <DetailRow label="Solicitante">
-                <div>
-                  <div className="text-xs font-medium text-[var(--text-primary)]">{ticket.solicitante}</div>
-                  <div className="text-xs text-[var(--text-muted)]">{ticket.solicitanteRol}</div>
+
+                <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4">
+                  <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 mb-3"><Timer size={14} /> Registrar tiempo</h3>
+                  <input type="number" min="1" className="w-full px-3 py-2 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] mb-2" value={minutes} onChange={(e) => setMinutes(e.target.value)} />
+                  <input className="w-full px-3 py-2 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] mb-2" placeholder="Nota opcional" value={timeNote} onChange={(e) => setTimeNote(e.target.value)} />
+                  <button className="w-full px-3 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#1f9d74' }} disabled={busy} onClick={() => runAction(() => soporteApi.logTime(ticket.id, minutes, timeNote), 'Tiempo registrado')}>
+                    Registrar
+                  </button>
                 </div>
-              </DetailRow>
-              <DetailRow label="Tiempo">
-                <span className="font-mono text-sm font-bold text-[var(--text-primary)]">{ticket.tiempo}</span>
-              </DetailRow>
-              <DetailRow label="Creado">
-                <span className="text-xs text-[var(--text-secondary)]">{ticket.creado}</span>
-              </DetailRow>
-              <DetailRow label="SLA">
-                <div style={{ width: 130 }}>
-                  <div className="sup-sla-bar">
-                    <div className="sup-sla-fill" style={{ width: `${ticket.sla * 100}%`, background: '#d97706' }} />
-                  </div>
-                  <div className="text-right text-xs text-[var(--text-muted)] mt-0.5">4h restantes</div>
-                </div>
-              </DetailRow>
-            </div>
-
-            {/* Cronómetro */}
-            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4">
-              <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 mb-3">
-                <Clock size={14} /> Cronómetro
-              </h3>
-              <div className="rounded-xl p-4 text-center border border-[var(--border-color)]" style={{ background: 'rgba(196,111,33,0.08)' }}>
-                <div className="font-mono text-3xl font-extrabold tracking-wider" style={{ color: '#e89a4f' }}>{timer}</div>
-                <div className="text-xs text-[var(--text-muted)] uppercase tracking-widest mt-1">sesión actual</div>
-              </div>
-              <div className="grid grid-cols-2 gap-2 mt-3">
-                <button className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold text-white" style={{ background: '#1f9d74' }}>
-                  <PauseCircle size={13} /> Pausar
-                </button>
-                <button className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold text-white" style={{ background: '#c46f21' }}>
-                  <Plus size={13} /> Registrar
-                </button>
-              </div>
-            </div>
-
-            {/* Atajos */}
-            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4">
-              <h3 className="text-sm font-bold text-[var(--text-primary)] mb-3">Atajos</h3>
-              <div className="sup-shortcut-row"><span>Tomar ticket</span><kbd>T</kbd></div>
-              <div className="sup-shortcut-row"><span>Resolver</span><kbd>R</kbd></div>
-              <div className="sup-shortcut-row"><span>Insertar plantilla</span><kbd>/</kbd></div>
-              <div className="sup-shortcut-row"><span>Enviar respuesta</span><kbd>⌘ ↵</kbd></div>
-            </div>
-
-            {/* Tickets relacionados */}
-            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4">
-              <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 mb-3">
-                <Eye size={14} /> Tickets relacionados
-              </h3>
-              <div className="space-y-2">
-                {[
-                  { id: 'SOP-2812', t: 'Validación de ISBN-13 falla en altas masivas' },
-                  { id: 'SOP-2789', t: 'Préstamo no detecta libros recién dados de alta' },
-                ].map(r => (
-                  <div
-                    key={r.id}
-                    className="p-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-glass)] cursor-pointer hover:border-[var(--border-glow)] transition-all"
-                    onClick={() => navigate(`/admin/soporte/tickets/${r.id}`)}
-                  >
-                    <div className="sup-ticket-id text-xs mb-1">{r.id}</div>
-                    <div className="text-xs text-[var(--text-secondary)]">{r.t}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ import ProtectedRoute from './components/layout/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
 import PageLoader from './components/ui/PageLoader';
 import ErrorBoundary from './components/ui/ErrorBoundary';
+import SupportFab from './components/ui/SupportFab';
 
 // ── Lazy-loaded pages (code-split) ──────────────────────
 const Login              = lazy(() => import('./pages/Login'));
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="/verificar" element={<EmailVerification />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/soporte/reportar" element={<ReportarError />} />
 
           {/* User */}
           <Route
@@ -79,6 +81,7 @@ export default function App() {
             {/* Soporte — Usuario */}
             <Route path="soporte/reportar" element={<ReportarError />} />
             <Route path="soporte/mis-reportes" element={<MisReportes />} />
+            <Route path="soporte/mis-reportes/:id" element={<DetalleTicket />} />
           </Route>
 
           {/* Admin */}
@@ -111,6 +114,7 @@ export default function App() {
           {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <SupportFab />
         </Suspense>
         </ErrorBoundary>
       </AuthProvider>

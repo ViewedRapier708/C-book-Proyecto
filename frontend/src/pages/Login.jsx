@@ -98,14 +98,14 @@ export default function Login() {
       <div className="auth-left">
         <div className="auth-hero">
           <h1>C-Book</h1>
-          <p>Plataforma digital creada para facilitar el acceso a recursos educativos. Solicita libros de forma rápida.</p>
+          <p>Plataforma digital creada para facilitar el acceso a recursos educativos, solicitudes de libros y seguimiento de soporte.</p>
         </div>
       </div>
       <div className="auth-right">
         <div className="auth-form">
           <h2>{mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}</h2>
           <p className="subtitle">
-            {mode === 'login' ? 'Accede a tu biblioteca digital' : 'Solo correos @alumno.ipn.mx'}
+            {mode === 'login' ? 'Accede a C-Book y al modulo de soporte' : 'Solo correos @alumno.ipn.mx'}
           </p>
 
           {msg && <div className={`msg msg-${msg.type}`}>{msg.text}</div>}
