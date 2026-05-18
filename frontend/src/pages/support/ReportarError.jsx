@@ -1,69 +1,141 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Bug, Eye, Zap, Hash, Lock, MoreHorizontal,
-  Check, Send, Paperclip, X, ArrowLeft,
+  Bug, Eye, Zap, Hash, Lock, MoreHorizontal, BookOpen, PackageSearch,
+  Check, Send, ArrowLeft, AlertCircle,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import AnimatedPage from '../../components/layout/AnimatedPage';
+import { useAuth } from '../../context/AuthContext';
+import { soporteApi } from '../../api/soporte';
 import '../../styles/support.css';
 
-const TIPOS = [
-  { v: 'Funcional',   d: 'Algo no funciona como debería',    icon: Bug,         color: '#0284c7' },
-  { v: 'Visual',      d: 'Diseño, textos cortados, etc.',    icon: Eye,         color: '#8b5cf6' },
-  { v: 'Rendimiento', d: 'Carga lenta o cuelgues',           icon: Zap,         color: '#d97706' },
-  { v: 'Datos',       d: 'Información incorrecta',           icon: Hash,        color: '#1f9d74' },
-  { v: 'Acceso',      d: 'No puedo entrar o sin permisos',   icon: Lock,        color: '#dc4c3f' },
-  { v: 'Otro',        d: 'No encaja con lo anterior',        icon: MoreHorizontal, color: '#64748b' },
+const FALLBACK_TYPES = [
+  { name: 'Funcional', description: 'Algo no funciona como deberia', icon: Bug, color: '#0284c7' },
+  { name: 'Visual', description: 'Diseno, textos cortados, etc.', icon: Eye, color: '#8b5cf6' },
+  { name: 'Rendimiento', description: 'Carga lenta o cuelgues', icon: Zap, color: '#d97706' },
+  { name: 'Datos', description: 'Informacion incorrecta', icon: Hash, color: '#1f9d74' },
+  { name: 'Acceso', description: 'No puedo entrar o sin permisos', icon: Lock, color: '#dc4c3f' },
+  { name: 'Otro', description: 'No encaja con lo anterior', icon: MoreHorizontal, color: '#64748b' },
 ];
+
+const ICONS = { Funcional: Bug, Visual: Eye, Rendimiento: Zap, Datos: Hash, Acceso: Lock, Otro: MoreHorizontal };
+const COLORS = { Funcional: '#0284c7', Visual: '#8b5cf6', Rendimiento: '#d97706', Datos: '#1f9d74', Acceso: '#dc4c3f', Otro: '#64748b' };
+
+function iconForType(name = '') {
+  const lower = name.toLowerCase();
+  if (lower.includes('acceso') || lower.includes('sesion') || lower.includes('login')) return Lock;
+  if (lower.includes('inventario') || lower.includes('libro') || lower.includes('ejemplar')) return BookOpen;
+  if (lower.includes('prestamo') || lower.includes('devolucion') || lower.includes('renovacion')) return PackageSearch;
+  if (lower.includes('tecnico') || lower.includes('general')) return Bug;
+  return ICONS[name] || MoreHorizontal;
+}
+
+function colorForType(name = '') {
+  const lower = name.toLowerCase();
+  if (lower.includes('acceso')) return '#dc4c3f';
+  if (lower.includes('inventario')) return '#0284c7';
+  if (lower.includes('prestamo') || lower.includes('devolucion')) return '#d97706';
+  if (lower.includes('tecnico')) return '#8b5cf6';
+  return COLORS[name] || '#64748b';
+}
 
 const PRIORIDADES = [
-  { v: 'Baja',  d: 'Puedo seguir trabajando',            color: '#1f9d74' },
-  { v: 'Media', d: 'Afecta una tarea',                   color: '#d97706' },
-  { v: 'Alta',  d: 'Bloquea operación de la biblioteca', color: '#dc4c3f' },
+  { v: 'Baja', d: 'Puedo seguir trabajando', color: '#1f9d74' },
+  { v: 'Media', d: 'Afecta una tarea', color: '#d97706' },
+  { v: 'Alta', d: 'Bloquea operacion de la biblioteca', color: '#dc4c3f' },
 ];
 
-const MIS_REPORTES_RECIENTES = [
-  { id: 'SOP-2841', titulo: 'Error al registrar préstamo: ISBN no válido', estado: 'Abierto'  },
-  { id: 'SOP-2820', titulo: 'No puedo descargar reporte mensual de bajas', estado: 'Resuelto' },
-  { id: 'SOP-2802', titulo: 'Catálogo no muestra portadas de libros nuevos', estado: 'Cerrado' },
+const MODULOS = [
+  'Prestamos - Nuevo prestamo',
+  'Catalogo - Busqueda',
+  'Usuarios - Registro',
+  'Reportes - Exportar',
+  'Documentos',
+  'Login / Acceso',
+  'Otro modulo',
 ];
-
-function EstadoBadge({ estado }) {
-  const map = { Nuevo: 'sup-estado-nuevo', Abierto: 'sup-estado-abierto', Pendiente: 'sup-estado-pendiente', 'En espera': 'sup-estado-espera', Resuelto: 'sup-estado-resuelto', Cerrado: 'sup-estado-cerrado' };
-  return <span className={`sup-badge sup-badge--dot ${map[estado] ?? 'sup-badge-neutral'}`}>{estado}</span>;
-}
 
 export default function ReportarError() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [tipos, setTipos] = useState(FALLBACK_TYPES);
   const [tipo, setTipo] = useState('Funcional');
+  const [modulo, setModulo] = useState(MODULOS[0]);
   const [prioridad, setPrioridad] = useState('Media');
+  const [titulo, setTitulo] = useState('');
+  const [correo, setCorreo] = useState('');
+  const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [enviado, setEnviado] = useState(false);
-  const [archivos] = useState(['captura-error.png · 248 KB', 'console-network.log · 4 KB']);
+  const [submitting, setSubmitting] = useState(false);
+  const [created, setCreated] = useState(null);
+  const [error, setError] = useState('');
 
-  const handleEnviar = () => {
-    if (!descripcion.trim()) return;
-    setEnviado(true);
-    setTimeout(() => navigate(-1), 2500);
+  useEffect(() => {
+    let alive = true;
+    soporteApi.getTypes()
+      .then(({ tipos: data }) => {
+        if (!alive || !Array.isArray(data) || data.length === 0) return;
+        const mapped = data
+          .filter((t) => t.is_active !== false)
+          .map((t) => ({
+            ...t,
+            icon: iconForType(t.name),
+            color: colorForType(t.name),
+          }));
+        setTipos(mapped);
+        if (mapped[0]?.name) setTipo(mapped[0].name);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const canSubmit = useMemo(() => {
+    const baseValid = descripcion.trim().length >= 15 && titulo.trim().length >= 4;
+    if (user) return baseValid;
+    return baseValid && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim());
+  }, [descripcion, titulo, correo, user]);
+
+  const handleEnviar = async () => {
+    if (!canSubmit || submitting) return;
+    setSubmitting(true);
+    setError('');
+    try {
+      const payload = { tipo, modulo, prioridad, titulo, descripcion, correo, nombre };
+      const { ticket } = user
+        ? await soporteApi.createTicket(payload)
+        : await soporteApi.createPublicTicket(payload);
+      setCreated(ticket);
+      toast.success(`Ticket ${ticket.folio} creado`);
+    } catch (err) {
+      setError(err.message || 'No se pudo crear el ticket');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  if (enviado) {
+  if (created) {
     return (
       <AnimatedPage>
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="w-16 h-16 rounded-full flex items-center justify-center"
-            style={{ background: '#1f9d7422' }}
-          >
+          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: '#1f9d7422' }}>
             <Check size={32} style={{ color: '#1f9d74' }} />
           </motion.div>
           <h2 className="text-xl font-bold text-[var(--text-primary)]">Reporte enviado</h2>
           <p className="text-sm text-[var(--text-muted)] text-center max-w-sm">
-            Tu ticket ha sido creado con estado <strong className="text-[var(--text-primary)]">Nuevo</strong>. El equipo de soporte recibirá una notificación de inmediato.
+            Se creo el ticket <strong className="text-[var(--text-primary)]">{created.folio}</strong> con estado <strong className="text-[var(--text-primary)]">Nuevo</strong>.
           </p>
+          <div className="flex gap-2">
+            <button className="px-4 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm text-[var(--text-secondary)]" onClick={() => navigate(-1)}>
+              Volver
+            </button>
+            <button className="px-4 py-2 rounded-lg text-sm font-semibold text-white" style={{ background: '#c46f21' }} onClick={() => navigate(user?.rol === 'Admin' ? '/admin/soporte/mis-reportes' : '/user/soporte/mis-reportes')}>
+              Ver mis reportes
+            </button>
+          </div>
         </div>
       </AnimatedPage>
     );
@@ -72,203 +144,125 @@ export default function ReportarError() {
   return (
     <AnimatedPage>
       <div className="space-y-5">
-
-        {/* Header */}
         <div className="flex items-center gap-3">
-          <button
-            className="p-1.5 rounded-lg hover:bg-[var(--bg-glass)] transition-colors text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-            onClick={() => navigate(-1)}
-          >
+          <button className="p-1.5 rounded-lg hover:bg-[var(--bg-glass)] transition-colors text-[var(--text-muted)] hover:text-[var(--text-primary)]" onClick={() => navigate(-1)}>
             <ArrowLeft size={18} />
           </button>
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: '#e89a4f' }}>
-              CU-S01 · RF-01 / RF-02 / RF-03
-            </p>
+            <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: '#e89a4f' }}>Soporte C-Book</p>
             <h1 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Reportar un error</h1>
-            <p className="text-sm text-[var(--text-muted)] mt-0.5">
-              Describe lo que está fallando. El equipo de soporte recibirá una notificación inmediata.
-            </p>
+            <p className="text-sm text-[var(--text-muted)] mt-0.5">Describe el problema y deja un correo para dar seguimiento.</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-5">
+        {error && (
+          <div className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            <AlertCircle size={16} /> {error}
+          </div>
+        )}
 
-          {/* ── Formulario ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5">
           <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-6 space-y-5">
-
-            {/* Tipo de error */}
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-[var(--text-primary)]">
-                Tipo de error <span style={{ color: '#dc4c3f' }}>*</span>
-              </label>
+              <label className="block text-sm font-semibold text-[var(--text-primary)]">Tipo de error</label>
               <div className="sup-type-grid">
-                {TIPOS.map(t => (
-                  <motion.div
-                    key={t.v}
-                    className={`sup-type-card ${tipo === t.v ? 'selected' : ''}`}
-                    style={{ '--type-color': t.color }}
-                    onClick={() => setTipo(t.v)}
-                    whileTap={{ scale: 0.97 }}
-                  >
-                    <t.icon size={18} style={{ color: t.color, flexShrink: 0 }} />
-                    <div className="min-w-0">
-                      <div className="text-sm font-bold text-[var(--text-primary)]">{t.v}</div>
-                      <div className="text-xs text-[var(--text-muted)] mt-0.5 leading-tight">{t.d}</div>
-                    </div>
-                    {tipo === t.v && (
-                      <div className="sup-type-card-check">
-                        <Check size={11} />
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
+                {tipos.map((t) => {
+                  const Icon = t.icon || MoreHorizontal;
+                  return (
+                    <motion.button
+                      type="button"
+                      key={t.name}
+                      className={`sup-type-card text-left ${tipo === t.name ? 'selected' : ''}`}
+                      style={{ '--type-color': t.color }}
+                      onClick={() => setTipo(t.name)}
+                      whileTap={{ scale: 0.97 }}
+                    >
+                      <Icon size={18} style={{ color: t.color, flexShrink: 0 }} />
+                      <span className="min-w-0">
+                        <span className="block text-sm font-bold text-[var(--text-primary)]">{t.name}</span>
+                        <span className="block text-xs text-[var(--text-muted)] mt-0.5 leading-tight">{t.description || 'Sin descripcion'}</span>
+                      </span>
+                      {tipo === t.name && <span className="sup-type-card-check"><Check size={11} /></span>}
+                    </motion.button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* ¿Dónde ocurrió? */}
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-[var(--text-primary)]">
-                ¿Dónde ocurrió? <span style={{ color: '#dc4c3f' }}>*</span>
-              </label>
-              <select className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f] transition-colors">
-                <option>Préstamos · Nuevo préstamo</option>
-                <option>Catálogo · Búsqueda</option>
-                <option>Usuarios · Registro</option>
-                <option>Reportes · Exportar</option>
-                <option>Otro módulo</option>
+              <label className="block text-sm font-semibold text-[var(--text-primary)]">Donde ocurrio</label>
+              <select className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" value={modulo} onChange={(e) => setModulo(e.target.value)}>
+                {MODULOS.map((m) => <option key={m}>{m}</option>)}
               </select>
             </div>
 
-            {/* Prioridad sugerida */}
+            {!user && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-[var(--text-primary)]">Correo de contacto</label>
+                  <input className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" value={correo} onChange={(e) => setCorreo(e.target.value)} placeholder="correo@ejemplo.com" type="email" />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-[var(--text-primary)]">Nombre</label>
+                  <input className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Tu nombre" />
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-[var(--text-primary)]">Prioridad sugerida</label>
               <div className="flex gap-2">
-                {PRIORIDADES.map(p => (
-                  <div
-                    key={p.v}
-                    className={`sup-prio-card ${prioridad === p.v ? 'selected' : ''}`}
-                    style={{ '--prio-color': p.color }}
-                    onClick={() => setPrioridad(p.v)}
-                  >
-                    <div className="text-sm font-bold text-[var(--text-primary)]">{p.v}</div>
-                    <div className="text-xs text-[var(--text-muted)] mt-0.5">{p.d}</div>
-                  </div>
+                {PRIORIDADES.map((p) => (
+                  <button type="button" key={p.v} className={`sup-prio-card text-left ${prioridad === p.v ? 'selected' : ''}`} style={{ '--prio-color': p.color }} onClick={() => setPrioridad(p.v)}>
+                    <span className="block text-sm font-bold text-[var(--text-primary)]">{p.v}</span>
+                    <span className="block text-xs text-[var(--text-muted)] mt-0.5">{p.d}</span>
+                  </button>
                 ))}
               </div>
             </div>
 
-            {/* Descripción */}
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-[var(--text-primary)]">
-                Descripción <span style={{ color: '#dc4c3f' }}>*</span>
-              </label>
-              <p className="text-xs text-[var(--text-muted)]">
-                Cuéntanos qué intentabas hacer, qué pasó y qué esperabas que pasara. Cuantos más detalles, más rápido lo resolveremos.
-              </p>
-              <textarea
-                className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[#e89a4f] transition-colors resize-none"
-                rows={5}
-                placeholder="Ej: Al intentar registrar un préstamo escaneando el ISBN, el sistema responde 'ISBN no válido'..."
-                value={descripcion}
-                onChange={e => setDescripcion(e.target.value)}
-              />
-              <div className="flex items-center justify-between">
-                <span className="text-xs" style={{ color: descripcion.length > 0 ? '#1f9d74' : 'var(--text-muted)' }}>
-                  {descripcion.length > 30 ? '● Buena descripción' : descripcion.length > 0 ? '● Agrega más detalles' : ''}
-                </span>
-                <span className="text-xs text-[var(--text-muted)]">{descripcion.length} / 2000</span>
+              <label className="block text-sm font-semibold text-[var(--text-primary)]">Asunto</label>
+              <input className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" value={titulo} onChange={(e) => setTitulo(e.target.value)} maxLength={160} placeholder="Ej: No puedo enviar una solicitud de libro" />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-[var(--text-primary)]">Descripcion</label>
+              <textarea className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f] resize-none" rows={6} value={descripcion} onChange={(e) => setDescripcion(e.target.value)} maxLength={2000} placeholder="Explica que intentabas hacer, que paso y que esperabas que ocurriera." />
+              <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+                <span>{descripcion.length >= 15 ? 'Descripcion suficiente' : 'Minimo 15 caracteres'}</span>
+                <span>{descripcion.length} / 2000</span>
               </div>
             </div>
 
-            {/* Adjuntos */}
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-[var(--text-primary)]">Adjuntos (opcional)</label>
-              <div className="sup-dropzone">
-                <Paperclip size={22} style={{ color: '#e89a4f' }} />
-                <div className="text-sm">Arrastra capturas o archivos · <span className="font-semibold cursor-pointer" style={{ color: '#e89a4f' }}>elige desde tu equipo</span></div>
-                <div className="text-xs text-[var(--text-muted)]">PNG, JPG, PDF, TXT · máx. 10 MB</div>
-              </div>
-              {archivos.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {archivos.map(a => (
-                    <span key={a} className="flex items-center gap-1.5 sup-badge sup-badge-neutral">
-                      📎 {a}
-                      <button className="opacity-60 hover:opacity-100 transition-opacity"><X size={10} /></button>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Botones */}
-            <div className="flex items-center justify-between pt-2">
-              <button
-                className="px-4 py-2 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-glass)] transition-all"
-                onClick={() => navigate(-1)}
-              >
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button className="px-4 py-2 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-glass)]" onClick={() => navigate(-1)}>
                 Cancelar
               </button>
-              <div className="flex items-center gap-2">
-                <button className="px-4 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all">
-                  Guardar borrador
-                </button>
-                <button
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-50"
-                  style={{ background: '#c46f21' }}
-                  disabled={!descripcion.trim()}
-                  onClick={handleEnviar}
-                >
-                  <Send size={14} /> Enviar reporte
-                </button>
-              </div>
+              <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#c46f21' }} disabled={!canSubmit || submitting} onClick={handleEnviar}>
+                <Send size={14} /> {submitting ? 'Enviando...' : 'Enviar reporte'}
+              </button>
             </div>
           </div>
 
-          {/* ── Panel lateral ── */}
-          <div className="space-y-4">
-
-            {/* Qué pasa al enviar */}
-            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5">
-              <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 mb-4">
-                <Zap size={15} /> Qué pasa al enviar
-              </h3>
-              <div className="space-y-3">
-                {[
-                  { n: 1, t: 'Se crea un ticket',   d: 'ID único, estado inicial Nuevo, fecha y hora automáticas.' },
-                  { n: 2, t: 'Se notifica al equipo', d: 'El módulo de soporte recibe la alerta de inmediato.' },
-                  { n: 3, t: 'Un agente lo toma',    d: 'Lo verás en "Mis reportes" cuando alguien lo asigne.' },
-                  { n: 4, t: 'Recibes el resultado', d: 'Te avisamos cuando se resuelva o si necesitan más info.' },
-                ].map(s => (
-                  <div key={s.n} className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-extrabold text-white flex-shrink-0" style={{ background: '#c46f21' }}>
-                      {s.n}
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-[var(--text-primary)]">{s.t}</div>
-                      <div className="text-xs text-[var(--text-muted)] mt-0.5 leading-relaxed">{s.d}</div>
-                    </div>
+          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5 h-fit">
+            <h3 className="text-sm font-bold text-[var(--text-primary)] mb-4">Que pasa al enviar</h3>
+            <div className="space-y-3">
+              {[
+                ['Se crea un ticket', 'Se genera folio y queda en estado Nuevo.'],
+                ['Queda en bandeja', 'Los administradores lo ven en soporte.'],
+                ['Se atiende', 'Un agente puede tomarlo, comentar y cambiar estado.'],
+                ['Puedes seguirlo', 'Aparece en Mis reportes con su historial.'],
+              ].map(([t, d], i) => (
+                <div key={t} className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-extrabold text-white flex-shrink-0" style={{ background: '#c46f21' }}>{i + 1}</div>
+                  <div>
+                    <div className="text-sm font-semibold text-[var(--text-primary)]">{t}</div>
+                    <div className="text-xs text-[var(--text-muted)] mt-0.5 leading-relaxed">{d}</div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-
-            {/* Mis reportes recientes */}
-            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5">
-              <h3 className="text-sm font-bold text-[var(--text-primary)] mb-3">Mis reportes recientes</h3>
-              <div className="space-y-2">
-                {MIS_REPORTES_RECIENTES.map(r => (
-                  <div key={r.id} className="p-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-glass)]">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="sup-ticket-id text-xs">{r.id}</span>
-                      <EstadoBadge estado={r.estado} />
-                    </div>
-                    <div className="text-xs text-[var(--text-secondary)] leading-snug">{r.titulo}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
           </div>
         </div>
       </div>
