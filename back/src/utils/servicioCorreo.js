@@ -52,7 +52,8 @@ async function enviarCorreo(destinatario, asunto, html) {
 
     try {
         const info = await getTransporter().sendMail(mailOptions);
-        console.log('Correo enviado: ' + info.response);
+        console.log('Correo enviado: ' + info.messageId+' a ' + destinatario + ' con asunto: ' + asunto);
+        console.log('Mensaje ID: ' + mailOptions);
         return { success: true };
     } catch (error) {
         console.error('Error enviando correo:', error);

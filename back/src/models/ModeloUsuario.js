@@ -364,7 +364,8 @@ async function cambiarContrasenaRecovery(correo) {
 </body></html>`;
 
     const enviado = await enviarCorreo(correo, 'Recuperacion de contrasena - C-Book', html);
-
+    console.log('Resultado de enviarCorreo en cambiarContrasenaRecovery:', enviado);
+    
     if (!enviado.success) {
       return { success: false, error: 'No se pudo enviar el correo de recuperacion' };
     }
