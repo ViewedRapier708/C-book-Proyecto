@@ -5,7 +5,7 @@ import {
   LayoutDashboard, BookOpen, Users,
   FileText, ClipboardList, LogOut, Package,
   BarChart3, FileBarChart, UserCircle, Settings,
-  ChevronDown, Menu, X, GraduationCap, Headphones,
+  ChevronDown, Menu, X, GraduationCap,
 } from 'lucide-react';
 import { isSupportAdmin, isSupportRole } from '../../utils/authRoutes';
 
@@ -41,9 +41,11 @@ function supportLinks(role) {
   return [
     { section: 'Soporte' },
     { to: '/soporte', icon: LayoutDashboard, label: 'Dashboard', end: true },
-    { to: '/soporte/tickets', icon: ClipboardList, label: 'Tickets' },
-    { to: '/soporte/reportar', icon: Headphones, label: 'Reportar error' },
-    ...(isSupportAdmin(role) ? [{ section: 'Administracion' }, { to: '/soporte/config', icon: Settings, label: 'Configuracion' }] : []),
+    { to: '/soporte/tickets', icon: ClipboardList, label: 'Tikets' },
+    ...(isSupportAdmin(role) ? [
+      { section: 'Equipo' },
+      { to: '/soporte/agregar-agente', icon: Users, label: 'Agregar agente de soporte' },
+    ] : []),
   ];
 }
 
@@ -58,61 +60,6 @@ function getRoleLabel(user) {
   if (user?.rol === 'support_admin') return 'Admin soporte';
   if (user?.rol === 'support_agent') return 'Agente soporte';
   return 'Alumno';
-}
-
-function DropdownMenu({ section, items, onClose }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    }
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isOpen]);
-
-  return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-glass-strong)] hover:text-[var(--text-primary)] transition-all"
-      >
-        {section}
-        <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
-
-      {isOpen && (
-        <div className="absolute top-full left-0 mt-1 min-w-[200px] bg-[var(--bg-card)] backdrop-blur-xl border border-[var(--border-color)] rounded-lg shadow-xl py-1 z-50">
-          {items.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `flex items-center gap-2.5 px-3 py-2 text-sm font-medium transition-all ${
-                  isActive
-                    ? 'bg-[var(--button-primary-bg)] text-white'
-                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-glass-strong)] hover:text-[var(--text-primary)]'
-                }`
-              }
-              onClick={() => {
-                setIsOpen(false);
-                onClose?.();
-              }}
-            >
-              <item.icon size={16} />
-              {item.label}
-            </NavLink>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 }
 
 function UserMenu({ user, onLogout }) {
@@ -141,25 +88,25 @@ function UserMenu({ user, onLogout }) {
         <div className="w-8 h-8 rounded-full bg-[image:var(--gradient-primary)] flex items-center justify-center text-xs font-bold text-white">
           {String(label).slice(0, 2).toUpperCase()}
         </div>
-        <div className="hidden md:block text-left">
-          <strong className="block text-xs text-[var(--text-primary)]">{label}</strong>
-          <span className="block text-[0.65rem] text-[var(--text-muted)]">{getRoleLabel(user)}</span>
+        <div className="hidden md:block text-left max-w-[180px]">
+          <strong className="block text-xs text-[var(--text-primary)] truncate">{label}</strong>
+          <span className="block text-[0.65rem] text-[var(--text-muted)] truncate">{getRoleLabel(user)}</span>
         </div>
         <ChevronDown size={14} className={`hidden md:block text-[var(--text-muted)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-1 w-64 bg-[var(--bg-card)] backdrop-blur-xl border border-[var(--border-color)] rounded-lg shadow-xl py-2 z-50">
-          <div className="px-3 py-2 border-b border-[var(--border-color)]">
-            <strong className="block text-sm text-[var(--text-primary)]">{label}</strong>
-            <span className="block text-xs text-[var(--text-muted)] truncate">{user?.correo || user?.email || getRoleLabel(user)}</span>
+        <div className="dropdown-menu absolute top-full right-0 mt-1 w-64 backdrop-blur-xl rounded-lg shadow-xl py-2 z-50">
+          <div className="dropdown-header px-3 py-2">
+            <strong className="block text-sm break-all">{label}</strong>
+            <span className="block text-xs break-all">{user?.correo || user?.email || getRoleLabel(user)}</span>
           </div>
           {!isSupportRole(user?.rol) && (
             <>
-              <div className="px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-[var(--text-muted)] border-b border-[var(--border-color)]">Soporte</div>
+              <div className="dropdown-section-label">Soporte</div>
               <NavLink
                 to={user?.rol === 'Admin' ? '/admin/soporte/reportar' : '/user/soporte/reportar'}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-glass-strong)] hover:text-[var(--text-primary)] transition-all"
+                className="dropdown-item flex items-center gap-2 px-3 py-2 text-sm"
                 onClick={() => setIsOpen(false)}
               >
                 <Headphones size={16} />
@@ -168,7 +115,7 @@ function UserMenu({ user, onLogout }) {
               {user?.rol !== 'Admin' && (
                 <NavLink
                   to="/user/soporte/mis-reportes"
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-glass-strong)] hover:text-[var(--text-primary)] transition-all"
+                  className="dropdown-item flex items-center gap-2 px-3 py-2 text-sm"
                   onClick={() => setIsOpen(false)}
                 >
                   <ClipboardList size={16} />
@@ -178,7 +125,7 @@ function UserMenu({ user, onLogout }) {
             </>
           )}
           <button
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-glass-strong)] hover:text-[var(--text-primary)] transition-all"
+            className="dropdown-item flex items-center gap-2 px-3 py-2 text-sm"
             onClick={() => {
               setIsOpen(false);
               onLogout();
@@ -204,17 +151,7 @@ export default function Navbar({ onClose }) {
     navigate('/', { replace: true });
   };
 
-  const sections = [];
-  let currentSection = null;
-
-  links.forEach((item) => {
-    if (item.section) {
-      currentSection = { name: item.section, items: [] };
-      sections.push(currentSection);
-    } else if (currentSection) {
-      currentSection.items.push(item);
-    }
-  });
+  const navLinks = links.filter((item) => !item.section);
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
@@ -231,60 +168,68 @@ export default function Navbar({ onClose }) {
       />
 
       <div
-        className={`fixed top-0 right-0 bottom-0 w-[280px] bg-[var(--bg-sidebar)] backdrop-blur-xl border-l border-[var(--border-color)] z-[100] transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-y-auto lg:hidden ${
+        className={`mobile-sidebar fixed top-0 right-0 bottom-0 w-[280px] backdrop-blur-xl z-[100] transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-y-auto lg:hidden ${
           mobileMenuOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between px-4 h-16 border-b border-[var(--border-color)]">
-          <h2 className="text-lg font-bold text-[var(--accent-primary)]">C-Book</h2>
-          <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-lg hover:bg-[var(--bg-glass-strong)] transition-colors">
+        <div className="mobile-header flex items-center justify-between px-4 h-16">
+          <h2 className="text-lg font-bold">C-Book</h2>
+          <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-lg mobile-close-btn">
             <X size={20} />
           </button>
         </div>
 
         <nav className="p-3">
-          {sections.map((section) => (
-            <div key={section.name} className="mb-4">
-              <div className="text-[0.65rem] font-bold uppercase tracking-widest text-[var(--text-muted)] px-2 pb-2">
-                {section.name}
-              </div>
-              <div className="space-y-0.5">
-                {section.items.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    end={item.end}
-                    className={({ isActive }) =>
-                      `flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                        isActive
-                          ? 'bg-[var(--button-primary-bg)] text-white shadow-lg'
-                          : 'text-[var(--text-secondary)] hover:bg-[var(--bg-glass-strong)] hover:text-[var(--text-primary)]'
-                      }`
-                    }
-                    onClick={closeMobileMenu}
-                  >
-                    <item.icon size={18} />
-                    {item.label}
-                  </NavLink>
-                ))}
-              </div>
-            </div>
-          ))}
+          <div className="space-y-0.5">
+            {navLinks.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) =>
+                  `mobile-nav-link flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                    isActive
+                      ? 'active'
+                      : ''
+                  }`
+                }
+                onClick={closeMobileMenu}
+              >
+                <item.icon size={18} />
+                {item.label}
+              </NavLink>
+            ))}
+          </div>
         </nav>
       </div>
 
-      <nav className="fixed top-0 left-0 right-0 h-16 bg-[var(--bg-sidebar)] backdrop-blur-xl border-b border-[var(--border-color)] z-[100] px-4 md:px-6">
+      <nav className="main-nav fixed top-0 left-0 right-0 h-16 backdrop-blur-xl z-[100] px-4 md:px-6">
         <div className="h-full flex items-center justify-between gap-4 max-w-[1600px] mx-auto">
           <div className="flex-shrink-0">
-            <h2 className="text-lg font-bold text-[var(--accent-primary)]">C-Book</h2>
-            <small className="text-[0.6rem] text-[var(--text-muted)] uppercase tracking-widest hidden sm:block">
+            <h2 className="text-lg font-bold">C-Book</h2>
+            <small className="main-nav-label">
               {getRoleLabel(user)}
             </small>
           </div>
 
           <div className="hidden lg:flex items-center gap-1 flex-1 justify-center">
-            {sections.map((section) => (
-              <DropdownMenu key={section.name} section={section.name} items={section.items} onClose={onClose} />
+            {navLinks.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) =>
+                  `mobile-nav-link flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    isActive
+                      ? 'active'
+                      : ''
+                  }`
+                }
+                onClick={onClose}
+              >
+                <item.icon size={16} />
+                {item.label}
+              </NavLink>
             ))}
           </div>
 
@@ -292,7 +237,7 @@ export default function Navbar({ onClose }) {
             <div className="hidden lg:block">
               <UserMenu user={user} onLogout={handleLogout} />
             </div>
-            <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden p-2 rounded-lg hover:bg-[var(--bg-glass-strong)] transition-colors">
+            <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden p-2 rounded-lg mobile-menu-btn">
               <Menu size={22} />
             </button>
           </div>

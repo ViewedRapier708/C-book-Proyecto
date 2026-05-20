@@ -126,21 +126,23 @@ export default function ReportarError() {
   if (created) {
     return (
       <AnimatedPage>
-        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: '#1f9d7422' }}>
-            <Check size={32} style={{ color: '#1f9d74' }} />
-          </motion.div>
-          <h2 className="text-xl font-bold text-[var(--text-primary)]">Reporte enviado</h2>
-          <p className="text-sm text-[var(--text-muted)] text-center max-w-sm">
-            Se creo el ticket <strong className="text-[var(--text-primary)]">{created.folio}</strong> con estado <strong className="text-[var(--text-primary)]">Nuevo</strong>.
-          </p>
-          <div className="flex gap-2">
-            <button className="px-4 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm text-[var(--text-secondary)]" onClick={() => navigate(-1)}>
-              Volver
-            </button>
-            <button className="px-4 py-2 rounded-lg text-sm font-semibold text-white" style={{ background: '#c46f21' }} onClick={() => navigate(reportListPath)}>
-              Ver mis reportes
-            </button>
+        <div className="max-w-[1240px] mx-auto w-full px-2 sm:px-3 lg:px-5 py-4 md:py-6">
+          <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: '#1f9d7422' }}>
+              <Check size={32} style={{ color: '#1f9d74' }} />
+            </motion.div>
+            <h2 className="text-xl font-bold text-[var(--text-primary)]">Reporte enviado</h2>
+            <p className="text-sm text-[var(--text-muted)] text-center max-w-sm">
+              Se creo el ticket <strong className="text-[var(--text-primary)]">{created.folio}</strong> con estado <strong className="text-[var(--text-primary)]">Nuevo</strong>.
+            </p>
+            <div className="flex gap-2">
+              <button className="px-4 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm text-[var(--text-secondary)]" onClick={() => navigate(-1)}>
+                Volver
+              </button>
+              <button className="px-4 py-2 rounded-lg text-sm font-semibold text-white" style={{ background: '#c46f21' }} onClick={() => navigate(reportListPath)}>
+                Ver mis reportes
+              </button>
+            </div>
           </div>
         </div>
       </AnimatedPage>
@@ -149,7 +151,7 @@ export default function ReportarError() {
 
   return (
     <AnimatedPage>
-      <div className="space-y-5">
+      <div className="max-w-[1240px] mx-auto w-full px-2 sm:px-3 lg:px-5 py-4 md:py-6 space-y-5">
         <div className="flex items-center gap-3">
           <button className="p-1.5 rounded-lg hover:bg-[var(--bg-glass)] transition-colors text-[var(--text-muted)] hover:text-[var(--text-primary)]" onClick={() => navigate(-1)}>
             <ArrowLeft size={18} />

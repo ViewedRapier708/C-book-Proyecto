@@ -10,7 +10,7 @@ export default function SupportFab() {
   const location = useLocation();
 
   const target = isSupportRole(user?.rol)
-    ? '/soporte'
+    ? '/soporte/reportar'
     : user?.rol === 'Admin'
       ? '/admin/soporte/reportar'
     : user

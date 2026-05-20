@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 import { soporteApi } from '../../api/soporte';
+import { useAuth } from '../../context/AuthContext';
+import { isSupportAdmin } from '../../utils/authRoutes';
 import '../../styles/support.css';
 
 const ESTADOS_FILTRO = ['Todos', 'Nuevo', 'Abierto', 'Pendiente', 'En espera', 'Resuelto', 'Cerrado'];
@@ -35,6 +37,7 @@ function formatDate(value) {
 
 export default function BandejaTickets() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [estadoFiltro, setEstadoFiltro] = useState('Todos');
   const [tipoFiltro, setTipoFiltro] = useState('Todos');
   const [prioFiltro, setPrioFiltro] = useState('Todos');
@@ -131,7 +134,15 @@ export default function BandejaTickets() {
               <tbody>
                 {loading && <tr><td colSpan={9} className="px-4 py-12 text-center text-sm text-[var(--text-muted)]">Cargando tickets...</td></tr>}
                 {!loading && filtered.map((t) => (
-                  <tr key={t.id} className="border-b border-[var(--border-color)] hover:bg-[var(--bg-glass)] cursor-pointer transition-colors" onClick={() => navigate(`/soporte/tickets/${t.id}`)}>
+                  <tr
+                    key={t.id}
+                    className={`border-b border-[var(--border-color)] transition-colors ${(!t.agente || t.agente === user?.nombre || isSupportAdmin(user?.rol)) ? 'hover:bg-[var(--bg-glass)] cursor-pointer' : 'opacity-70 cursor-not-allowed'}`}
+                    onClick={() => {
+                      if (!t.agente || t.agente === user?.nombre || isSupportAdmin(user?.rol)) {
+                        navigate(`/soporte/tickets/${t.id}`);
+                      }
+                    }}
+                  >
                     <td className="px-3 py-3"><span className="sup-ticket-id">{t.folio}</span></td>
                     <td className="px-3 py-3">
                       <div className="font-medium text-[var(--text-primary)] line-clamp-1">{t.titulo}</div>

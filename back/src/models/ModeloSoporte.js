@@ -328,13 +328,24 @@ async function crearAgente(payload, user) {
   const nombre = String(payload.nombre || payload.fullName || '').trim();
   const email = String(payload.email || payload.correo || '').trim().toLowerCase();
   const password = String(payload.password || payload.contrasena || '').trim();
+  const confirmPassword = String(payload.confirmPassword || payload.confirmarContrasena || '').trim();
   const telefono = String(payload.telefono || payload.phone || '').trim() || null;
   const boleta = String(payload.boleta || '').trim() || null;
-  const rol = payload.rol === SUPPORT_ROLES.ADMIN ? SUPPORT_ROLES.ADMIN : SUPPORT_ROLES.AGENT;
-  const estado = payload.estado === 'inactive' || payload.activo === false ? 'inactive' : 'active';
+  const rol = SUPPORT_ROLES.AGENT;
+  const estado = 'active';
 
   if (!nombre || !email || !password) {
     const err = new Error('Nombre, correo y contrasena temporal son obligatorios');
+    err.status = 400;
+    throw err;
+  }
+  if (!confirmPassword) {
+    const err = new Error('Debes confirmar la contrasena');
+    err.status = 400;
+    throw err;
+  }
+  if (password !== confirmPassword) {
+    const err = new Error('La confirmacion de contrasena no coincide');
     err.status = 400;
     throw err;
   }
@@ -544,6 +555,16 @@ async function obtenerTicket(id, user) {
     err.status = 403;
     throw err;
   }
+  if (
+    isSupportStaff(user)
+    && user?.rol === SUPPORT_ROLES.AGENT
+    && data.assigned_agent_name
+    && data.assigned_agent_name !== actorName(user)
+  ) {
+    const err = new Error(`Este ticket esta asignado a ${data.assigned_agent_name}`);
+    err.status = 403;
+    throw err;
+  }
   logDbSuccess('obtenerTicket.select', { id: data.id, ticket_number: data.ticket_number, status: data.status });
   const mapped = mapTicket(data);
   if (!isSupportStaff(user)) {
@@ -557,21 +578,44 @@ async function tomarTicket(id, user) {
   requireSupportStaff(user);
   const supabase = getSupportClient();
   const current = await obtenerTicket(id, user);
+  if (['resolved', 'closed'].includes(current.estadoRaw)) {
+    const err = new Error('No se puede tomar un ticket resuelto o cerrado');
+    err.status = 409;
+    throw err;
+  }
+  if (current.agente) {
+    const err = new Error(current.agente === actorName(user)
+      ? 'Ya tienes asignado este ticket'
+      : `Este ticket ya fue tomado por ${current.agente}`);
+    err.status = 409;
+    throw err;
+  }
+  const now = new Date().toISOString();
   const { data, error } = await supabase
     .from('tickets')
     .update({
       status: 'open',
+      assigned_agent_id: user.supabaseUserId || null,
       assigned_agent_name: actorName(user),
-      assigned_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      assigned_at: now,
+      updated_at: now,
     })
     .eq('id', current.id)
+    .is('assigned_agent_name', null)
     .select(ticketSelect())
-    .single();
+    .maybeSingle();
 
   if (error) {
     logDbError('tomarTicket.update', error);
     throw error;
+  }
+  if (!data) {
+    const latest = await obtenerTicket(id, user);
+    const err = new Error(latest.agente
+      ? `Este ticket ya fue tomado por ${latest.agente}`
+      : 'No se pudo tomar el ticket');
+    err.status = 409;
+    throw err;
   }
   logDbSuccess('tomarTicket.update', { id: data.id, assigned_agent_name: actorName(user) });
   await registrarHistorial(current.id, 'assigned', user, {
@@ -592,13 +636,29 @@ async function cambiarEstado(id, estado, user, comentario = '') {
     err.status = 400;
     throw err;
   }
+  if (current.estadoRaw === 'closed') {
+    const err = new Error('El ticket esta cerrado y no permite mas cambios');
+    err.status = 409;
+    throw err;
+  }
+  if (current.estadoRaw === 'resolved' && nextStatus === 'resolved') {
+    const err = new Error('El ticket ya esta resuelto');
+    err.status = 409;
+    throw err;
+  }
 
   const now = new Date().toISOString();
   const patch = { status: nextStatus, updated_at: now };
-  if (nextStatus === 'resolved') patch.resolved_at = now;
-  if (nextStatus === 'closed') patch.closed_at = now;
-  if (current.estadoRaw === 'closed' && nextStatus !== 'closed') patch.reopened_at = now;
-
+  const cleanComment = String(comentario || '').trim();
+  const autoSolution = `Ticket ${nextStatus === 'closed' ? 'cerrado' : 'resuelto'} por ${actorName(user)} (${now})`;
+  if (nextStatus === 'resolved') {
+    patch.resolved_at = now;
+    patch.solution_description = cleanComment || autoSolution;
+  }
+  if (nextStatus === 'closed') {
+    patch.closed_at = now;
+    patch.solution_description = cleanComment || current.descripcion || autoSolution;
+  }
   const { data, error } = await supabase
     .from('tickets')
     .update(patch)
@@ -622,6 +682,11 @@ async function cambiarEstado(id, estado, user, comentario = '') {
 async function agregarComentario(id, body, isInternal, user) {
   const supabase = getSupportClient();
   const ticket = await obtenerTicket(id, user);
+  if (ticket.estadoRaw === 'closed') {
+    const err = new Error('No se puede responder un ticket cerrado');
+    err.status = 409;
+    throw err;
+  }
   if (isInternal) requireSupportStaff(user);
 
   const text = String(body || '').trim();
@@ -650,6 +715,11 @@ async function registrarTiempo(id, minutes, note, user) {
   requireSupportStaff(user);
   const supabase = getSupportClient();
   const ticket = await obtenerTicket(id, user);
+  if (ticket.estadoRaw === 'closed') {
+    const err = new Error('No se puede registrar tiempo en un ticket cerrado');
+    err.status = 409;
+    throw err;
+  }
   const value = Number(minutes);
   if (!Number.isFinite(value) || value <= 0) {
     const err = new Error('Los minutos deben ser mayores a cero');

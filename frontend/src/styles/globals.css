@@ -1434,3 +1434,106 @@ body {
   background: var(--bg-card-hover);
   border-color: var(--border-glow);
 }
+
+/* ── DROPDOWN MENUS ────────────────────────────── */
+.dropdown-menu {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+.dropdown-header {
+  border-bottom: 1px solid var(--border-color);
+}
+.dropdown-header strong {
+  color: var(--text-primary);
+}
+.dropdown-header span {
+  color: var(--text-muted);
+}
+.dropdown-section-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  padding: 0.375rem 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+.dropdown-item {
+  color: var(--text-secondary);
+  transition: all 0.15s;
+}
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background: var(--bg-glass-strong);
+  color: var(--text-primary);
+}
+.dropdown-item.active {
+  background: var(--button-primary-bg);
+  color: #fff;
+}
+
+/* ── NAVBAR ────────────────────────────────────── */
+.main-nav {
+  background: var(--bg-sidebar);
+  border-bottom: 1px solid var(--border-color);
+}
+.main-nav h2 {
+  color: var(--accent-primary);
+}
+.main-nav-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  display: none;
+}
+@media (min-width: 640px) {
+  .main-nav-label { display: block; }
+}
+.mobile-menu-btn:hover {
+  background: var(--bg-glass-strong);
+}
+
+/* ── MOBILE SIDEBAR ────────────────────────────── */
+.mobile-sidebar {
+  background: var(--bg-sidebar);
+  border-left: 1px solid var(--border-color);
+}
+.mobile-header {
+  border-bottom: 1px solid var(--border-color);
+}
+.mobile-header h2 {
+  color: var(--accent-primary);
+}
+.mobile-close-btn:hover {
+  background: var(--bg-glass-strong);
+}
+.mobile-section-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  padding: 0 0.5rem 0.5rem;
+}
+.mobile-nav-link {
+  color: var(--text-secondary);
+}
+.mobile-nav-link:hover {
+  background: var(--bg-glass-strong);
+  color: var(--text-primary);
+}
+.mobile-nav-link.active {
+  background: var(--button-primary-bg);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* ── DROPDOWN TOGGLE ───────────────────────────── */
+.dropdown-toggle {
+  color: var(--text-secondary);
+}
+.dropdown-toggle:hover {
+  background: var(--bg-glass-strong);
+  color: var(--text-primary);
+}

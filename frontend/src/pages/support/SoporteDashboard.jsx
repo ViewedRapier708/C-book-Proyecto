@@ -77,8 +77,8 @@ export default function SoporteDashboard() {
               Reportar
             </button>
             {isSupportAdmin(user?.rol) && (
-              <button className="px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)]" onClick={() => navigate('/soporte/config')}>
-                Configuracion
+              <button className="px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)]" onClick={() => navigate('/soporte/agregar-agente')}>
+                Agregar agente
               </button>
             )}
             <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)]" onClick={load} disabled={loading}>

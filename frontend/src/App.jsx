@@ -36,7 +36,7 @@ const BandejaTickets       = lazy(() => import('./pages/support/BandejaTickets')
 const DetalleTicket        = lazy(() => import('./pages/support/DetalleTicket'));
 const ReportarError        = lazy(() => import('./pages/support/ReportarError'));
 const MisReportes          = lazy(() => import('./pages/support/MisReportes'));
-const ConfiguracionSoporte = lazy(() => import('./pages/support/ConfiguracionSoporte'));
+const AgregarAgenteSoporte = lazy(() => import('./pages/support/AgregarAgenteSoporte'));
 
 export default function App() {
   return (
@@ -110,10 +110,10 @@ export default function App() {
                 <Route path="tickets/:id" element={<DetalleTicket />} />
                 <Route path="reportar" element={<ReportarError />} />
                 <Route
-                  path="config"
+                  path="agregar-agente"
                   element={
                     <ProtectedRoute role="support_admin">
-                      <ConfiguracionSoporte />
+                      <AgregarAgenteSoporte />
                     </ProtectedRoute>
                   }
                 />

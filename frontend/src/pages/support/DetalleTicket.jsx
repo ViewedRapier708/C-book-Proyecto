@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft, ArrowUp, Clock, Calendar, User,
-  CheckCircle2, PauseCircle, Lock, RefreshCcw,
+  CheckCircle2, PauseCircle, Lock,
   Send, Activity, Hand, Bug, AlertCircle, Timer,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -103,6 +103,15 @@ export default function DetalleTicket() {
       </AnimatedPage>
     );
   }
+  const isClosed = ticket.estadoRaw === 'closed' || ticket.estado === 'Cerrado';
+  const isResolved = ticket.estadoRaw === 'resolved' || ticket.estado === 'Resuelto';
+  const canTake = isSupport && !busy && !isClosed && !isResolved && !ticket.agente;
+  const canResolve = isSupport && !busy && !isClosed && !isResolved;
+  const canClose = isSupport && !busy && !isClosed;
+  const canReply = !isClosed;
+  const stateOptions = isClosed
+    ? [ticket.estado]
+    : (isResolved ? ['Cerrado'] : ESTADOS.filter((s) => s !== 'Cerrado' || ticket.estado !== 'Cerrado'));
 
   return (
     <AnimatedPage>
@@ -136,17 +145,14 @@ export default function DetalleTicket() {
 
               {isSupport && (
                 <div className="flex flex-wrap gap-2 pt-3 border-t border-[var(--border-color)]">
-                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#c46f21' }} disabled={busy} onClick={() => runAction(() => soporteApi.takeTicket(ticket.id), 'Ticket tomado')}>
+                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#c46f21' }} disabled={!canTake} onClick={() => runAction(() => soporteApi.takeTicket(ticket.id), 'Ticket tomado')}>
                     <Hand size={14} /> Tomar ticket
                   </button>
-                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#1f9d74' }} disabled={busy} onClick={() => runAction(() => soporteApi.changeStatus(ticket.id, 'Resuelto', 'Ticket marcado como resuelto'), 'Ticket resuelto')}>
+                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#1f9d74' }} disabled={!canResolve} onClick={() => runAction(() => soporteApi.changeStatus(ticket.id, 'Resuelto', 'Ticket marcado como resuelto'), 'Ticket resuelto')}>
                     <CheckCircle2 size={14} /> Resolver
                   </button>
-                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)] disabled:opacity-50" disabled={busy} onClick={() => runAction(() => soporteApi.changeStatus(ticket.id, 'Cerrado', 'Ticket cerrado'), 'Ticket cerrado')}>
+                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)] disabled:opacity-50" disabled={!canClose} onClick={() => runAction(() => soporteApi.changeStatus(ticket.id, 'Cerrado', 'Ticket cerrado'), 'Ticket cerrado')}>
                     <Lock size={14} /> Cerrar
-                  </button>
-                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)] disabled:opacity-50" disabled={busy} onClick={() => runAction(() => soporteApi.changeStatus(ticket.id, 'Abierto', 'Ticket reabierto'), 'Ticket reabierto')}>
-                    <RefreshCcw size={14} /> Reabrir
                   </button>
                 </div>
               )}
@@ -191,9 +197,9 @@ export default function DetalleTicket() {
                   </label>
                 )}
               </div>
-              <textarea className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none resize-none min-h-[90px]" placeholder="Escribe una respuesta o informacion adicional." value={comentario} onChange={(e) => setComentario(e.target.value)} />
+              <textarea className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none resize-none min-h-[90px] disabled:opacity-60" placeholder={isClosed ? 'Ticket cerrado: respuestas deshabilitadas.' : 'Escribe una respuesta o informacion adicional.'} value={comentario} onChange={(e) => setComentario(e.target.value)} disabled={!canReply} />
               <div className="flex justify-end mt-3">
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#c46f21' }} disabled={busy || !comentario.trim()} onClick={() => runAction(() => soporteApi.addComment(ticket.id, comentario, interno), 'Comentario guardado').then(() => setComentario(''))}>
+                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#c46f21' }} disabled={busy || !comentario.trim() || !canReply} onClick={() => runAction(() => soporteApi.addComment(ticket.id, comentario, interno), 'Comentario guardado').then(() => setComentario(''))}>
                   <Send size={12} /> Enviar respuesta
                 </button>
               </div>
@@ -215,19 +221,19 @@ export default function DetalleTicket() {
               <>
                 <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4">
                   <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 mb-3"><PauseCircle size={14} /> Cambiar estado</h3>
-                  <select className="w-full px-3 py-2 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] mb-2" value={estado} onChange={(e) => setEstado(e.target.value)}>
-                    {ESTADOS.map((s) => <option key={s}>{s}</option>)}
+                  <select className="w-full px-3 py-2 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] mb-2 disabled:opacity-60" value={estado} onChange={(e) => setEstado(e.target.value)} disabled={isClosed}>
+                    {stateOptions.map((s) => <option key={s}>{s}</option>)}
                   </select>
-                  <button className="w-full px-3 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#d97706' }} disabled={busy || estado === ticket.estado} onClick={() => runAction(() => soporteApi.changeStatus(ticket.id, estado, `Estado cambiado a ${estado}`), 'Estado actualizado')}>
+                  <button className="w-full px-3 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#d97706' }} disabled={busy || estado === ticket.estado || isClosed} onClick={() => runAction(() => soporteApi.changeStatus(ticket.id, estado, `Estado cambiado a ${estado}`), 'Estado actualizado')}>
                     Guardar estado
                   </button>
                 </div>
 
                 <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4">
                   <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 mb-3"><Timer size={14} /> Registrar tiempo</h3>
-                  <input type="number" min="1" className="w-full px-3 py-2 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] mb-2" value={minutes} onChange={(e) => setMinutes(e.target.value)} />
-                  <input className="w-full px-3 py-2 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] mb-2" placeholder="Nota opcional" value={timeNote} onChange={(e) => setTimeNote(e.target.value)} />
-                  <button className="w-full px-3 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#1f9d74' }} disabled={busy} onClick={() => runAction(() => soporteApi.logTime(ticket.id, minutes, timeNote), 'Tiempo registrado')}>
+                  <input type="number" min="1" className="w-full px-3 py-2 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] mb-2 disabled:opacity-60" value={minutes} onChange={(e) => setMinutes(e.target.value)} disabled={isClosed} />
+                  <input className="w-full px-3 py-2 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] mb-2 disabled:opacity-60" placeholder="Nota opcional" value={timeNote} onChange={(e) => setTimeNote(e.target.value)} disabled={isClosed} />
+                  <button className="w-full px-3 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#1f9d74' }} disabled={busy || isClosed} onClick={() => runAction(() => soporteApi.logTime(ticket.id, minutes, timeNote), 'Tiempo registrado')}>
                     Registrar
                   </button>
                 </div>
