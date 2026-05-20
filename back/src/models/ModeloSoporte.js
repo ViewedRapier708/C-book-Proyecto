@@ -75,6 +75,48 @@ function actorName(user = {}) {
   return user.nombre || user.full_name || user.email || user.correo || user.boleta || 'Usuario';
 }
 
+function normalizeText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function includesAny(text, terms) {
+  return terms.some((term) => text.includes(term));
+}
+
+function clasificarPrioridadAutomatica(tipo, descripcion) {
+  const tipoNorm = normalizeText(tipo);
+  const descNorm = normalizeText(descripcion);
+  const content = `${tipoNorm} ${descNorm}`;
+
+  const urgentTerms = [
+    'caido', 'caida', 'caido', 'no sirve', 'no funciona nada', 'sistema caido',
+    'produccion detenida', 'bloqueado', 'bloquea', 'urgente', 'critico', 'critica',
+    'sin acceso', 'no puedo entrar', 'no inicia sesion', 'no inicia sesion',
+    'no deja iniciar sesion', 'error 500', 'error 503', 'timeout total',
+  ];
+  const highTerms = [
+    'no funciona', 'falla', 'falla al', 'error', 'se rompe', 'no carga',
+    'imposible', 'no permite', 'no deja', 'datos incorrectos', 'duplicado',
+    'perdida de datos', 'lento', 'muy lento',
+  ];
+  const lowTerms = [
+    'detalle visual', 'alineacion', 'alineado', 'texto cortado', 'typo',
+    'ortografia', 'color', 'icono', 'diseno', 'mejora', 'sugerencia',
+  ];
+
+  if (includesAny(content, urgentTerms)) return 'Urgente';
+  if (includesAny(tipoNorm, ['acceso', 'login', 'sesion', 'seguridad']) && includesAny(descNorm, ['no puedo', 'no deja', 'bloquea', 'error'])) {
+    return 'Urgente';
+  }
+  if (includesAny(content, highTerms)) return 'Alta';
+  if (includesAny(tipoNorm, ['rendimiento', 'funcional', 'datos'])) return 'Alta';
+  if (includesAny(content, lowTerms) || includesAny(tipoNorm, ['visual'])) return 'Baja';
+  return 'Media';
+}
+
 function logDbSuccess(operation, details = {}) {
   console.log(`[SoporteDB:${operation}] OK`, details);
 }
@@ -452,6 +494,7 @@ async function crearTicket(payload, user) {
   const requesterEmail = user.email || user.correo || payload.correo || payload.email || null;
   const requesterName = user.nombre || payload.nombre || requesterEmail || 'Usuario externo';
   const requesterRole = user.rol || payload.rol || 'externo';
+  const prioridadCalculada = clasificarPrioridadAutomatica(tipo?.name || payload.tipo, description);
 
   if (!requesterEmail && !user.boleta) {
     const err = new Error('El correo es obligatorio para reportar soporte');
@@ -466,7 +509,7 @@ async function crearTicket(payload, user) {
       title: title || 'Reporte sin titulo',
       module: payload.modulo || 'Otro modulo',
       description,
-      priority: PRIORITY_TO_DB[payload.prioridad] || 'medium',
+      priority: PRIORITY_TO_DB[prioridadCalculada] || 'medium',
       requester_name: requesterName,
       requester_email: requesterEmail,
       requester_boleta: user.boleta || null,

@@ -174,21 +174,6 @@ export default function EditarPerfil() {
                   <><Save size={16} /> Guardar cambios</>
                 )}
               </motion.button>
-
-              <button
-                type="button"
-                onClick={() => navigate('/user/cuenta')}
-                style={{
-                  padding: '0.65rem', borderRadius: 'var(--radius-sm)',
-                  border: '1px solid var(--border)', background: 'transparent',
-                  color: 'var(--text-muted)', fontSize: '0.85rem', cursor: 'pointer',
-                  transition: 'all 0.2s', width: '100%',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-glass)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
-              >
-                Cambiar contraseña
-              </button>
             </div>
           </form>
         </motion.div>

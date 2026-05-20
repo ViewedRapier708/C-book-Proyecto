@@ -170,7 +170,7 @@ export default function MisSolicitudesLibros() {
   return (
     <AnimatedPage>
       <div className="page-header">
-        <h1>Mis Solicitudes de Libros</h1>
+        <h1>Mis solicitudes de libros</h1>
         <p>Revisa el estado de tus solicitudes de libros</p>
       </div>
 
@@ -179,7 +179,12 @@ export default function MisSolicitudesLibros() {
           <Search size={16} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
           <input className="search-input" style={{ paddingLeft: 34 }} placeholder="Buscar por título..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>
-        <select value={filterEstado} onChange={(e) => { setFilterEstado(e.target.value); setPage(1); }} style={{ maxWidth: 160 }}>
+        <select
+          className="search-input"
+          value={filterEstado}
+          onChange={(e) => { setFilterEstado(e.target.value); setPage(1); }}
+          style={{ maxWidth: 180, color: 'var(--text-primary)' }}
+        >
           <option value="">Todos los estados</option>
           <option value="1">Pendiente</option>
           <option value="2">Aprobada</option>
@@ -232,45 +237,22 @@ export default function MisSolicitudesLibros() {
                   {/* Fecha solicitud — siempre visible */}
                   <DateRow label="Fecha solicitud" value={s.fecha_solicitud} />
 
-                  {/* === PENDIENTE (1): mostrar fecha límite de respuesta === */}
-                  {estado === 1 && (
-                    <DateRow label="Límite respuesta" value={s.fecha_limite_respuesta} warn />
-                  )}
+                  <DateRow label="Límite respuesta" value={s.fecha_limite_respuesta} warn />
+                  <DateRow label="Fecha aprobación" value={s.fecha_aprobacion} />
+                  <DateRow label="Límite recolección" value={s.fecha_limite_recoleccion} warn />
+                  <DateRow label="Fecha entrega" value={s.fecha_inicio_prestamo} />
+                  <DateRow label="Límite devolución" value={s.fecha_limite_devolucion} warn />
+                  <DateRow label="Devuelto el" value={s.fecha_devolucion_real} />
 
-                  {/* === APROBADA (2): mostrar fecha aprobación + límite recolección === */}
-                  {estado === 2 && (
-                    <>
-                      <DateRow label="Fecha aprobación" value={s.fecha_aprobacion} />
-                      <DateRow label="Límite recolección" value={s.fecha_limite_recoleccion} warn />
-                    </>
-                  )}
-
-                  {/* === RECHAZADA (3): mostrar motivo === */}
-                  {estado === 3 && s.motivo_rechazo && (
+                  {s.motivo_rechazo && (
                     <div className="resource-card-row" style={{ background: 'rgba(239,68,68,0.06)', borderRadius: 6, padding: '0.45rem 0.5rem', margin: '4px -0.4rem' }}>
                       <span className="resource-card-label">Motivo</span>
                       <span className="resource-card-value" style={{ color: 'var(--danger)', fontSize: '0.78rem' }}>{s.motivo_rechazo}</span>
                     </div>
                   )}
-
-                  {/* === ENTREGADO (5): mostrar fechas de préstamo + límite devolución === */}
-                  {estado === 5 && (
-                    <>
-                      <DateRow label="Fecha entrega" value={s.fecha_inicio_prestamo} />
-                      <DateRow label="Límite devolución" value={s.fecha_limite_devolucion} warn />
-                    </>
-                  )}
-
-                  {/* === DEVUELTO (6): mostrar fechas completas del ciclo === */}
-                  {estado === 6 && (
-                    <>
-                      <DateRow label="Fecha entrega" value={s.fecha_inicio_prestamo} />
-                      <DateRow label="Devuelto el" value={s.fecha_devolucion_real} />
-                    </>
-                  )}
                 </div>
 
-                {/* Actions — solo para pendientes */}
+                {/* Actions - solo para pendientes */}
                 {estado === 1 && (
                   <div className="resource-card-actions">
                     <button className="btn btn-danger btn-sm" style={{ flex: 1 }} onClick={() => setCancelModal(s)}>
@@ -321,3 +303,4 @@ export default function MisSolicitudesLibros() {
     </AnimatedPage>
   );
 }
+

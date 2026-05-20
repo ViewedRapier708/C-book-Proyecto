@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { solicitudesApi } from '../../api/recursos';
-import StatCard from '../../components/ui/StatCard';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 import { Spinner } from '../../components/ui/Feedback';
 import { DOCUMENTACION_REQUERIDA_MENSAJE } from '../../constants/documentacion';
@@ -57,19 +56,47 @@ function getEstadoStr(s) {
 // Solicitud activa = está en uso actualmente
 function isActiva(s) {
   const estado = getEstadoStr(s);
-  // Activa = tiene libro (aprobada, entregado, en_espera_recoleccion, recogido)
-  return ['aprobada', 'entregado', 'en_espera_recoleccion', 'recogido'].includes(estado);
+  return ['pendiente', 'aprobada', 'en_espera_recoleccion', 'recogido', 'entregado'].includes(estado);
 }
 
 // Solicitud pendiente = esperando respuesta/acción
-function isPendiente(s) {
-  const estado = getEstadoStr(s);
-  return estado === 'pendiente';
-}
-
 function getTipoLabel(s) {
   const tipo = getTipoSolicitud(s);
   return TIPO_MAP[tipo] || tipo || 'Solicitud';
+}
+
+function getSolicitudNombre(s) {
+  const titulo = String(s?.titulo || '').trim();
+  if (titulo) return titulo;
+  const tipo = getTipoLabel(s);
+  const numero = s?.numero_material ?? s?.ejemplar_id ?? s?.recurso_id ?? s?.id ?? '';
+  return `${tipo}${numero ? ` #${numero}` : ''}`.trim();
+}
+
+function getEstadoLabel(estado) {
+  const map = {
+    pendiente: 'Pendiente',
+    aprobada: 'Aprobada',
+    rechazada: 'Rechazada',
+    cancelada: 'Cancelada',
+    entregado: 'Entregado',
+    en_espera_recoleccion: 'En espera de recoleccion',
+    recogido: 'Recogido',
+    devuelto: 'Devuelto',
+    perdido: 'Perdido',
+  };
+  return map[estado] || estado || '-';
+}
+
+function formatFecha(iso) {
+  if (!iso) return '-';
+  return new Date(iso).toLocaleString('es-MX', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 export default function UserHome() {
@@ -120,8 +147,11 @@ export default function UserHome() {
 
   const services = [
     { icon: BookOpen, label: 'Libros', desc: 'Busca y solicita libros del acervo', to: '/user/libros', color: '#1f8a70' },
-    { icon: Package, label: 'Mis Solicitudes', desc: 'Revisa el estado de tus solicitudes', to: '/user/mis-solicitudes', color: '#d97706' },
+    { icon: Package, label: 'Mis solicitudes de libros', desc: 'Revisa el estado de tus solicitudes de libros', to: '/user/mis-solicitudes-libros', color: '#d97706' },
   ];
+
+  const solicitudesActivas = solicitudes.filter(isActiva).slice(0, 3);
+  const totalActivas = solicitudes.filter(isActiva).length;
 
   return (
     <AnimatedPage>
@@ -147,7 +177,58 @@ export default function UserHome() {
       ) : (
         <>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-            <StatCard icon={Activity} label="Total Solicitudes" value={solicitudes.length} color="#1f8a70" delay={0} />
+            <motion.div
+              className="card"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              style={{ width: 'min(100%, 1180px)' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.9rem' }}>
+                <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Activity size={18} /> Solicitudes activas
+                </h3>
+                <span className="badge badge-info">{Math.min(totalActivas, 3)} / 3</span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '0.75rem' }}>
+                {[0, 1, 2].map((idx) => {
+                  const solicitud = solicitudesActivas[idx];
+                  const estado = solicitud ? getEstadoStr(solicitud) : '';
+                  const numeroMaterial = solicitud?.numero_material ?? solicitud?.ejemplar_id ?? solicitud?.recurso_id ?? solicitud?.id ?? '-';
+                  return (
+                    <div key={idx} style={{ padding: '0.7rem', borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-color)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.55rem', marginBottom: '0.55rem' }}>
+                        <span style={{ fontSize: '0.9rem', fontWeight: 700, color: solicitud ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                          Solicitud {idx + 1}
+                        </span>
+                        <span className={`badge ${estado === 'aprobada' || estado === 'entregado' || estado === 'recogido' ? 'badge-success' : estado === 'rechazada' || estado === 'cancelada' ? 'badge-danger' : 'badge-warning'}`}>
+                          {solicitud ? getEstadoLabel(estado) : 'Sin activa'}
+                        </span>
+                      </div>
+
+                      {!solicitud ? (
+                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Sin solicitud activa.</p>
+                      ) : (
+                        <div style={{ display: 'grid', gap: '0.3rem' }}>
+                          <div style={{ fontSize: '0.92rem', color: 'var(--text-primary)', fontWeight: 700, lineHeight: 1.3 }}>{getSolicitudNombre(solicitud)}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Tipo: {getTipoLabel(solicitud)}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Autor: {solicitud.autor || '-'}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ejemplar: {numeroMaterial}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Fecha solicitud: {formatFecha(solicitud.fecha_solicitud)}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Limite respuesta: {formatFecha(solicitud.fecha_limite_respuesta)}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Fecha aprobacion: {formatFecha(solicitud.fecha_aprobacion)}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Limite recoleccion: {formatFecha(solicitud.fecha_limite_recoleccion)}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Fecha entrega: {formatFecha(solicitud.fecha_inicio_prestamo)}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Limite devolucion: {formatFecha(solicitud.fecha_limite_devolucion)}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Fecha devolucion: {formatFecha(solicitud.fecha_devolucion_real)}</div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
           </div>
 
           {user?.tiene_documentos === false && (
@@ -188,7 +269,7 @@ export default function UserHome() {
           <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Activity size={18} /> Actividad Reciente
           </h3>
-          <button className="btn btn-ghost btn-sm" onClick={() => navigate('/user/mis-solicitudes')}>
+          <button className="btn btn-ghost btn-sm" onClick={() => navigate('/user/mis-solicitudes-libros')}>
             Ver todas <ArrowRight size={14} />
           </button>
         </div>

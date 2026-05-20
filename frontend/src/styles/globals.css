@@ -684,6 +684,21 @@ body {
 }
 .search-input::placeholder { color: var(--text-muted); }
 
+/* Ensure filter controls keep dark styling (some browsers force white native selects) */
+[data-theme="dark"] .toolbar select,
+[data-theme="dark"] .search-input,
+[data-theme="dark"] .form-group select,
+[data-theme="dark"] select {
+  background-color: var(--bg-input) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] select option {
+  background-color: #111821;
+  color: var(--text-primary);
+}
+
 /* ── TABLE ─────────────────────────────────────── */
 .data-table-wrapper {
   background: var(--bg-card);
@@ -1459,7 +1474,7 @@ body {
   border-bottom: 1px solid var(--border-color);
 }
 .dropdown-item {
-  color: var(--text-secondary);
+  color: var(--text-primary);
   transition: all 0.15s;
 }
 .dropdown-item:hover,
@@ -1517,7 +1532,7 @@ body {
   padding: 0 0.5rem 0.5rem;
 }
 .mobile-nav-link {
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 .mobile-nav-link:hover {
   background: var(--bg-glass-strong);

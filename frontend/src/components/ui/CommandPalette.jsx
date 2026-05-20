@@ -3,24 +3,22 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   Search, LayoutDashboard, BookOpen, Users,
-  FileText, ClipboardList, BookCheck, Package, BarChart3, Settings, Headphones,
+  FileText, ClipboardList, BookCheck, Settings, Headphones,
 } from 'lucide-react';
 
 const allCommands = [
   { label: 'Inicio', to: '/admin', icon: LayoutDashboard, role: 'Admin' },
-  { label: 'Analytics', to: '/admin/analytics', icon: BarChart3, role: 'Admin' },
   { label: 'Libros (Alta)', to: '/admin/libros', icon: BookOpen, role: 'Admin' },
   { label: 'Usuarios', to: '/admin/usuarios', icon: Users, role: 'Admin' },
   { label: 'Documentos', to: '/admin/documentos', icon: FileText, role: 'Admin' },
-  { label: 'Solicitudes Libros', to: '/admin/solicitudes-libros', icon: ClipboardList, role: 'Admin' },
+  { label: 'Solicitudes de libros', to: '/admin/solicitudes-libros', icon: ClipboardList, role: 'Admin' },
   { label: 'Prestamos Libros', to: '/admin/prestamos-libros', icon: BookCheck, role: 'Admin' },
   { label: 'Reportes', to: '/admin/reportes', icon: FileText, role: 'Admin' },
   { label: 'Reportar error', to: '/admin/soporte/reportar', icon: Headphones, role: 'Admin' },
 
   { label: 'Inicio', to: '/user', icon: LayoutDashboard, role: 'alumno' },
   { label: 'Libros', to: '/user/libros', icon: BookOpen, role: 'alumno' },
-  { label: 'Mis Solicitudes', to: '/user/mis-solicitudes', icon: Package, role: 'alumno' },
-  { label: 'Solicitudes Libros', to: '/user/mis-solicitudes-libros', icon: BookOpen, role: 'alumno' },
+  { label: 'Mis solicitudes de libros', to: '/user/mis-solicitudes-libros', icon: BookOpen, role: 'alumno' },
   { label: 'Mi Perfil', to: '/user/perfil', icon: Settings, role: 'alumno' },
   { label: 'Reportar error', to: '/user/soporte/reportar', icon: Headphones, role: 'alumno' },
   { label: 'Mis reportes', to: '/user/soporte/mis-reportes', icon: ClipboardList, role: 'alumno' },

@@ -3,16 +3,15 @@ import { useAuth } from '../../context/AuthContext';
 import { useState, useRef, useEffect } from 'react';
 import {
   LayoutDashboard, BookOpen, Users,
-  FileText, ClipboardList, LogOut, Package,
-  BarChart3, FileBarChart, UserCircle, Settings,
-  ChevronDown, Menu, X, GraduationCap,
+  FileText, ClipboardList, LogOut,
+  FileBarChart, UserCircle,
+  ChevronDown, Menu, X, GraduationCap, Headphones,
 } from 'lucide-react';
 import { isSupportAdmin, isSupportRole } from '../../utils/authRoutes';
 
 const adminLinks = [
   { section: 'General' },
   { to: '/admin', icon: LayoutDashboard, label: 'Inicio', end: true },
-  { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
   { to: '/admin/reportes', icon: FileBarChart, label: 'Reportes' },
   { section: 'Altas' },
   { to: '/admin/alumnos', icon: GraduationCap, label: 'Alumnos' },
@@ -20,7 +19,7 @@ const adminLinks = [
   { section: 'Gestion' },
   { to: '/admin/usuarios', icon: Users, label: 'Usuarios' },
   { to: '/admin/documentos', icon: FileText, label: 'Documentos' },
-  { to: '/admin/solicitudes-libros', icon: ClipboardList, label: 'Solicitudes Libros' },
+  { to: '/admin/solicitudes-libros', icon: ClipboardList, label: 'Solicitudes de libros' },
   { to: '/admin/prestamos-libros', icon: BookOpen, label: 'Prestamos Libros' },
 ];
 
@@ -30,11 +29,9 @@ const userLinks = [
   { section: 'Servicios' },
   { to: '/user/libros', icon: BookOpen, label: 'Libros' },
   { section: 'Mis Solicitudes' },
-  { to: '/user/mis-solicitudes', icon: Package, label: 'Solicitudes' },
-  { to: '/user/mis-solicitudes-libros', icon: BookOpen, label: 'Solicitudes Libros' },
+  { to: '/user/mis-solicitudes-libros', icon: BookOpen, label: 'Mis solicitudes de libros' },
   { section: 'Cuenta' },
   { to: '/user/perfil', icon: UserCircle, label: 'Mi Perfil' },
-  { to: '/user/cuenta', icon: Settings, label: 'Cambiar Contrasena' },
 ];
 
 function supportLinks(role) {

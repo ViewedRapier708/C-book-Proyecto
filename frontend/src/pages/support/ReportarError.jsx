@@ -42,12 +42,6 @@ function colorForType(name = '') {
   return COLORS[name] || '#64748b';
 }
 
-const PRIORIDADES = [
-  { v: 'Baja', d: 'Puedo seguir trabajando', color: '#1f9d74' },
-  { v: 'Media', d: 'Afecta una tarea', color: '#d97706' },
-  { v: 'Alta', d: 'Bloquea operacion de la biblioteca', color: '#dc4c3f' },
-];
-
 const MODULOS = [
   'Prestamos - Nuevo prestamo',
   'Catalogo - Busqueda',
@@ -64,7 +58,6 @@ export default function ReportarError() {
   const [tipos, setTipos] = useState(FALLBACK_TYPES);
   const [tipo, setTipo] = useState('Funcional');
   const [modulo, setModulo] = useState(MODULOS[0]);
-  const [prioridad, setPrioridad] = useState('Media');
   const [titulo, setTitulo] = useState('');
   const [correo, setCorreo] = useState('');
   const [nombre, setNombre] = useState('');
@@ -110,7 +103,7 @@ export default function ReportarError() {
     setSubmitting(true);
     setError('');
     try {
-      const payload = { tipo, modulo, prioridad, titulo, descripcion, correo, nombre };
+      const payload = { tipo, modulo, titulo, descripcion, correo, nombre };
       const { ticket } = user
         ? await soporteApi.createTicket(payload)
         : await soporteApi.createPublicTicket(payload);
@@ -216,18 +209,6 @@ export default function ReportarError() {
                 </div>
               </div>
             )}
-
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-[var(--text-primary)]">Prioridad sugerida</label>
-              <div className="flex gap-2">
-                {PRIORIDADES.map((p) => (
-                  <button type="button" key={p.v} className={`sup-prio-card text-left ${prioridad === p.v ? 'selected' : ''}`} style={{ '--prio-color': p.color }} onClick={() => setPrioridad(p.v)}>
-                    <span className="block text-sm font-bold text-[var(--text-primary)]">{p.v}</span>
-                    <span className="block text-xs text-[var(--text-muted)] mt-0.5">{p.d}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
 
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-[var(--text-primary)]">Asunto</label>
