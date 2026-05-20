@@ -19,9 +19,10 @@ export default function ForgotPassword() {
 
     setLoading(true);
     try {
-      const data = await authApi.forgotPassword(boleta);
+      await authApi.forgotPassword(boleta);
+
       setSent(true);
-      setMsg({ type: 'success', text: data.message || 'Revisa tu correo para continuar.' });
+      setMsg({ type: 'success', text: 'Revisa tu correo para continuar.' });
     } catch (err) {
       setMsg({ type: 'error', text: err.message || 'No se pudo procesar la solicitud' });
     } finally {

@@ -8,12 +8,38 @@ const {
   loginConAuth,
   traerUsuarioInfo,
   revocarSesionesSupabase,
-  CambiarContraseña,
+  cambiarContrasenaRecovery,
   CambioCorreo,
-  ActualizarContraseñaConToken,
+  actualizarContrasenaConToken,
   actualizarContrasenaPropia
 } = require('../models/ModeloUsuario.js');
+const { revocarSesionSoporte, loginSoporte: loginSoporteModel } = require('../models/ModeloSoporte.js');
 const jwt = require('jsonwebtoken');
+
+function buildSupportSessionUser(loginResult, secret, cookieSettings) {
+  const { session, user, profile } = loginResult;
+  const sessionUser = {
+    authProvider: 'support',
+    tipoCuenta: 'soporte',
+    supabaseUserId: user.id,
+    userId: profile.user_id,
+    nombre: profile.full_name,
+    email: profile.email,
+    correo: profile.email,
+    telefono: profile.phone || '',
+    rol: profile.role,
+    estado: profile.status,
+    tokens: {
+      accessToken: session.access_token,
+      refreshToken: session.refresh_token,
+      expiresAt: session.expires_at ? session.expires_at * 1000 : null,
+      expiresIn: session.expires_in,
+    },
+  };
+
+  const token = jwt.sign(sessionUser, secret, { expiresIn: '2h' });
+  return { sessionUser, token };
+}
 
 const SESSION_SAFETY_WINDOW_MS = Number(process.env.SESSION_REFRESH_THRESHOLD_MS) || 60000; // 1 min por defecto
 
@@ -162,60 +188,88 @@ async function login(req, res) {
       return res.status(400).json({ error: "Boleta debe tener 10 dígitos" });
     }
 
-    // Buscar correo por boleta
-    const busqueda = await buscarCorreoPorBoleta(boleta);
-    
-    if (!busqueda.success) {
-      return res.status(400).json({ error: busqueda.error || 'Usuario no encontrado' });
-    }
+    const secret = req.app.locals.sessionSecret || process.env.SESSION_SECRET || 'dev_session_secret_change_me';
 
-    // Iniciar sesión con Supabase Auth
-    const loginResult = await loginConAuth(busqueda.correo, password);
-    
-    if (!loginResult.success) {
-      return res.status(400).json({ error: loginResult.error || 'Error al iniciar sesión' });
-    }
-    const userData = await traerUsuarioInfo(boleta);
+    // First try normal user login
+    try {
+      // Buscar correo por boleta
+      const busqueda = await buscarCorreoPorBoleta(boleta);
+      
+      if (busqueda.success) {
+        // Iniciar sesión con Supabase Auth
+        const loginResult = await loginConAuth(busqueda.correo, password);
+        
+        if (loginResult.success) {
+          const userData = await traerUsuarioInfo(boleta);
 
-    const nombre = (userData.data?.boletas?.nombre ).trim();
-    const grupo = userData.data?.boletas?.Grupo ;
-    const rol= userData.data?.rol ;
+          const nombre = (userData.data?.boletas?.nombre).trim();
+          const grupo = userData.data?.boletas?.Grupo;
+          const rol = userData.data?.rol;
+          const tiene_documentos = Boolean(userData.data?.tiene_documentos);
 
-    const supabaseSession = loginResult.session;
+          const supabaseSession = loginResult.session;
 
-    if (!supabaseSession) {
-      return res.status(500).json({ error: 'No se pudo crear la sesión en Supabase' });
-    }
+          if (!supabaseSession) {
+            return res.status(500).json({ error: 'No se pudo crear la sesión en Supabase' });
+          }
 
-    const sessionUser = {
-      supabaseUserId: loginResult.user.id,
-      nombre,
-      email: loginResult.user.email,
-      boleta,
-      grupo,
-      rol,
-      tokens: {
-        accessToken: supabaseSession.access_token,
-        refreshToken: supabaseSession.refresh_token,
-        expiresAt: supabaseSession.expires_at ? supabaseSession.expires_at * 1000 : null,
-        expiresIn: supabaseSession.expires_in
+          const sessionUser = {
+            authProvider: 'main',
+            tipoCuenta: 'principal',
+            supabaseUserId: loginResult.user.id,
+            nombre,
+            email: loginResult.user.email,
+            boleta,
+            grupo,
+            rol,
+            tiene_documentos,
+            tokens: {
+              accessToken: supabaseSession.access_token,
+              refreshToken: supabaseSession.refresh_token,
+              expiresAt: supabaseSession.expires_at ? supabaseSession.expires_at * 1000 : null,
+              expiresIn: supabaseSession.expires_in
+            }
+          };
+
+          // Crear JWT propio con la info de sesión
+          const token = jwt.sign(sessionUser, secret, { expiresIn: '2h' });
+          
+          // Guardar token en cookie
+          res.cookie('app_session', token, req.app.locals.cookieSettings);
+
+          return res.status(200).json({
+            success: true,
+            mensaje: 'Inicio de sesión exitoso',
+            user: sanitizeSessionUser(sessionUser),
+            rol: rol
+          });
+        }
       }
-    };
+    } catch (err) {
+      // Normal user login failed, continue to try support login
+    }
 
-    // Crear JWT propio con la info de sesión
-    const token = jwt.sign(sessionUser, req.app.locals.sessionSecret || process.env.SESSION_SECRET || 'dev_session_secret_change_me', { expiresIn: '2h' });
-    
-    // Guardar token en cookie
-    res.cookie('app_session', token, req.app.locals.cookieSettings);
+    // Try support login - lookup support user by boleta
+    try {
+      const supportLoginResult = await loginSoporteModel(boleta, password);
+      const { sessionUser, token } = buildSupportSessionUser(supportLoginResult, secret, req.app.locals.cookieSettings);
+      
+      res.cookie('app_session', token, req.app.locals.cookieSettings);
 
-    return res.status(200).json({
-      success: true,
-      mensaje: 'Inicio de sesión exitoso',
-      user: sanitizeSessionUser(sessionUser),
-      rol: rol
-    });
+      return res.status(200).json({
+        success: true,
+        mensaje: 'Inicio de sesión de soporte exitoso',
+        user: sanitizeSessionUser(sessionUser),
+        rol: sessionUser.rol,
+        tipoCuenta: sessionUser.tipoCuenta,
+      });
+    } catch (supportErr) {
+      // Support login also failed
+    }
+
+    // If both logins fail
+    return res.status(400).json({ error: 'Boleta o contraseña incorrectos' });
   } catch (err) {
-  //  console.error("Error en login:", err);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
@@ -236,9 +290,22 @@ async function verificarSesion(req, res) {
       return res.status(200).json({ autenticado: false, user: null });
     }
 
+    if (sessionUser.authProvider === 'support' || sessionUser.tipoCuenta === 'soporte') {
+      return res.status(200).json({
+        autenticado: true,
+        user: sanitizeSessionUser(sessionUser)
+      });
+    }
+
+    const userData = await traerUsuarioInfo(sessionUser.boleta);
+    const publicUser = sanitizeSessionUser({
+      ...sessionUser,
+      tiene_documentos: userData.success ? Boolean(userData.data?.tiene_documentos) : sessionUser.tiene_documentos
+    });
+
     return res.status(200).json({
       autenticado: true,
-      user: sanitizeSessionUser(sessionUser)
+      user: publicUser
     });
   } catch (err) {
    // console.error('Error en verificarSesion:', err);
@@ -258,7 +325,9 @@ async function cerrarSesion(req, res) {
         const accessToken = sessionUser?.tokens?.accessToken;
         
         if (accessToken) {
-          const revocado = await revocarSesionesSupabase(accessToken);
+          const revocado = sessionUser.authProvider === 'support'
+            ? await revocarSesionSoporte(accessToken)
+            : await revocarSesionesSupabase(accessToken);
           if (!revocado.success) {
            // console.warn('No se pudo revocar la sesión en Supabase:', revocado.error);
           }
@@ -302,7 +371,7 @@ async function CambioDatos(req , res) {
         if (!boleta || !nuevaContraseña) {
           return res.status(400).json({ error: 'Faltan datos para actualizar contraseña' });
         }
-        const resultadoContraseña = await CambiarContraseña(boleta, nuevaContraseña);
+        const resultadoContraseña = await cambiarContrasenaRecovery(boleta, nuevaContraseña);
         if (!resultadoContraseña.success) {
           return res.status(400).json({ error: resultadoContraseña.error || 'Error al cambiar contraseña' });
         } 
@@ -336,9 +405,9 @@ async function solicitarRecuperacion(req, res) {
       return res.status(400).json({ error: 'No existe ninguna cuenta con esa boleta' });
     }
 
-    const resultado = await CambiarContraseña(busqueda.correo);
+    const resultado = await cambiarContrasenaRecovery(busqueda.correo);
     if (!resultado.success) {
-      return res.status(500).json({ error: 'No se pudo enviar el correo de recuperación' });
+      return res.status(500).json({ error: resultado.error || 'No se pudo enviar el correo de recuperación' });
     }
 
     return res.status(200).json({ success: true, message: 'Revisa tu correo para continuar con el cambio de contraseña.' });
@@ -365,7 +434,7 @@ async function actualizarContraseña(req, res) {
       return res.status(400).json({ error: 'Las contraseñas no coinciden' });
     }
 
-    const resultado = await ActualizarContraseñaConToken(access_token, newPassword);
+    const resultado = await actualizarContrasenaConToken(access_token, newPassword);
     if (!resultado.success) {
       return res.status(400).json({ error: resultado.error || 'No se pudo actualizar la contraseña' });
     }
@@ -420,4 +489,21 @@ async function cambiarContrasenaPropia(req, res) {
   }
 }
 
-module.exports = { registro, verificarCorreo, login, cerrarSesion, verificarSesion, CambioDatos, solicitarRecuperacion, actualizarContraseña, cambiarContrasenaPropia };
+async function obtenerCorreoPorBoleta(req, res) {
+  try {
+    const { boleta } = req.body;
+    if (!boleta || !/^\d{10}$/.test(boleta)) {
+      return res.status(400).json({ error: 'Boleta inválida' });
+    }
+    const busqueda = await buscarCorreoPorBoleta(boleta);
+    if (!busqueda.success) {
+      return res.status(404).json({ error: 'No existe ninguna cuenta con esa boleta' });
+    }
+    return res.json({ correo: busqueda.correo });
+  } catch (err) {
+    console.error('Error en obtenerCorreoPorBoleta:', err);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+module.exports = { registro, verificarCorreo, login, cerrarSesion, verificarSesion, CambioDatos, solicitarRecuperacion, actualizarContraseña, cambiarContrasenaPropia, obtenerCorreoPorBoleta };

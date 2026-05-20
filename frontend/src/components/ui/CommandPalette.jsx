@@ -2,26 +2,36 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-  Search, LayoutDashboard, BookOpen, Monitor, PenTool, Users,
-  FileText, ClipboardList, BookCheck, Package, BarChart3, Settings
+  Search, LayoutDashboard, BookOpen, Users,
+  FileText, ClipboardList, BookCheck, Package, BarChart3, Settings, Headphones,
 } from 'lucide-react';
 
 const allCommands = [
-  // Admin
   { label: 'Inicio', to: '/admin', icon: LayoutDashboard, role: 'Admin' },
   { label: 'Analytics', to: '/admin/analytics', icon: BarChart3, role: 'Admin' },
   { label: 'Libros (Alta)', to: '/admin/libros', icon: BookOpen, role: 'Admin' },
   { label: 'Usuarios', to: '/admin/usuarios', icon: Users, role: 'Admin' },
   { label: 'Documentos', to: '/admin/documentos', icon: FileText, role: 'Admin' },
   { label: 'Solicitudes Libros', to: '/admin/solicitudes-libros', icon: ClipboardList, role: 'Admin' },
-  { label: 'Préstamos Libros', to: '/admin/prestamos-libros', icon: BookCheck, role: 'Admin' },
+  { label: 'Prestamos Libros', to: '/admin/prestamos-libros', icon: BookCheck, role: 'Admin' },
   { label: 'Reportes', to: '/admin/reportes', icon: FileText, role: 'Admin' },
-  // User
+  { label: 'Reportar error', to: '/admin/soporte/reportar', icon: Headphones, role: 'Admin' },
+
   { label: 'Inicio', to: '/user', icon: LayoutDashboard, role: 'alumno' },
   { label: 'Libros', to: '/user/libros', icon: BookOpen, role: 'alumno' },
   { label: 'Mis Solicitudes', to: '/user/mis-solicitudes', icon: Package, role: 'alumno' },
   { label: 'Solicitudes Libros', to: '/user/mis-solicitudes-libros', icon: BookOpen, role: 'alumno' },
   { label: 'Mi Perfil', to: '/user/perfil', icon: Settings, role: 'alumno' },
+  { label: 'Reportar error', to: '/user/soporte/reportar', icon: Headphones, role: 'alumno' },
+  { label: 'Mis reportes', to: '/user/soporte/mis-reportes', icon: ClipboardList, role: 'alumno' },
+
+  { label: 'Dashboard soporte', to: '/soporte', icon: LayoutDashboard, role: 'support_admin' },
+  { label: 'Tickets', to: '/soporte/tickets', icon: ClipboardList, role: 'support_admin' },
+  { label: 'Configuracion', to: '/soporte/config', icon: Settings, role: 'support_admin' },
+  { label: 'Reportar error', to: '/soporte/reportar', icon: Headphones, role: 'support_admin' },
+  { label: 'Dashboard soporte', to: '/soporte', icon: LayoutDashboard, role: 'support_agent' },
+  { label: 'Tickets', to: '/soporte/tickets', icon: ClipboardList, role: 'support_agent' },
+  { label: 'Reportar error', to: '/soporte/reportar', icon: Headphones, role: 'support_agent' },
 ];
 
 export default function CommandPalette({ open, onClose }) {
@@ -82,7 +92,7 @@ export default function CommandPalette({ open, onClose }) {
             ref={inputRef}
             className="cmd-palette-input"
             style={{ paddingLeft: 0, borderBottom: 'none' }}
-            placeholder="Buscar páginas y acciones..."
+            placeholder="Buscar paginas y acciones..."
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -98,7 +108,7 @@ export default function CommandPalette({ open, onClose }) {
           ) : (
             commands.map((cmd, i) => (
               <div
-                key={cmd.to}
+                key={`${cmd.role}-${cmd.to}`}
                 className={`cmd-palette-item ${i === selected ? 'selected' : ''}`}
                 onClick={() => go(cmd.to)}
                 onMouseEnter={() => setSelected(i)}

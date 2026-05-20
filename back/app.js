@@ -9,7 +9,7 @@ const authRoutes = require('./src/routes/Rutas.js');
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const isProduction = NODE_ENV === 'production';
 const sessionSecret = process.env.SESSION_SECRET || 'dev_session_secret_change_me';
-const rawSameSite = (process.env.SESSION_COOKIE_SAME_SITE || 'lax').toLowerCase();
+const rawSameSite = (process.env.SESSION_COOKIE_SAME_SITE || (isProduction ? 'none' : 'lax')).toLowerCase();
 const configuredSameSite = ['lax', 'strict', 'none'].includes(rawSameSite) ? rawSameSite : 'lax';
 const configuredSecure = process.env.SESSION_COOKIE_SECURE
   ? process.env.SESSION_COOKIE_SECURE === 'true'
@@ -19,9 +19,11 @@ const configuredSecure = process.env.SESSION_COOKIE_SECURE
 const cookieSecure = configuredSameSite === 'none' ? true : configuredSecure;
 
 if (isProduction) {
-  // Necesario para cookies secure detrás de proxy (Vercel)
+  // Necesario para cookies secure detras de proxies como Azure App Service/Vercel.
   app.set('trust proxy', 1);
 }
+
+app.disable('x-powered-by');
 
 // Middleware para leer JSON
 app.use(express.json());
@@ -39,12 +41,35 @@ const defaultOrigins = [
   'https://c-book-proyecto.vercel.app'
 ];
 
+function parseOrigins(value) {
+  return String(value || '')
+    .split(',')
+    .map(origin => origin.trim().replace(/\/+$/, ''))
+    .filter(Boolean);
+}
+
 const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
-  ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
-  : defaultOrigins;
+  ? parseOrigins(process.env.CORS_ALLOWED_ORIGINS)
+  : [...defaultOrigins, ...parseOrigins(process.env.FRONTEND_URL)];
+
+const allowedOriginPatterns = [
+  /^https:\/\/c-book-proyecto(?:-[a-z0-9-]+)?\.vercel\.app$/i,
+  /^https:\/\/c-book-proyecto-git-[a-z0-9-]+-[a-z0-9-]+\.vercel\.app$/i
+];
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  return allowedOrigins.includes(origin) || allowedOriginPatterns.some(pattern => pattern.test(origin));
+}
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin(origin, callback) {
+    if (isAllowedOrigin(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`Origen no permitido por CORS: ${origin}`));
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -67,6 +92,16 @@ app.get('/', (req, res) => {
   res.status(200).json({ mensaje: 'API de C-Book funcionando' });
 }
 );
+
+// Health check para Azure App Service.
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'c-book-api',
+    environment: NODE_ENV,
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Rutas de autenticación
 app.use('/auth', authRoutes);

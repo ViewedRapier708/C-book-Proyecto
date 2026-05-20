@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, BookOpen, Users,
   FileText, ClipboardList, LogOut, BookCheck, Package,
-  BarChart3, FileBarChart, UserCircle, Settings, GraduationCap
+  BarChart3, FileBarChart, UserCircle, Settings, GraduationCap,
 } from 'lucide-react';
 
 const adminLinks = [

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { BookOpen, Package, Activity, ArrowRight, RefreshCw } from 'lucide-react';
+import { BookOpen, Package, Activity, ArrowRight, RefreshCw, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
@@ -9,6 +9,7 @@ import { solicitudesApi } from '../../api/recursos';
 import StatCard from '../../components/ui/StatCard';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 import { Spinner } from '../../components/ui/Feedback';
+import { DOCUMENTACION_REQUERIDA_MENSAJE } from '../../constants/documentacion';
 
 const ESTADO_SOLICITUD = {
   1: 'pendiente',
@@ -148,6 +149,13 @@ export default function UserHome() {
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
             <StatCard icon={Activity} label="Total Solicitudes" value={solicitudes.length} color="#1f8a70" delay={0} />
           </div>
+
+          {user?.tiene_documentos === false && (
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', padding: '0.9rem 1rem', borderRadius: 'var(--radius-sm)', background: '#f59e0b18', border: '1px solid #f59e0b44', marginBottom: '1.5rem', color: '#b45309' }}>
+              <AlertCircle size={18} style={{ flexShrink: 0, marginTop: 2 }} />
+              <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5 }}>{DOCUMENTACION_REQUERIDA_MENSAJE}</p>
+            </div>
+          )}
 
       {/* Services */}
       <h3 style={{ marginBottom: '0.75rem' }}>Servicios Disponibles</h3>
