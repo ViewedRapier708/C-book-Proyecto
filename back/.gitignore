@@ -4,6 +4,7 @@ node_modules/
 # Archivos de variables de entorno
 .env
 .env.*
+!.env.example
 
 # Archivos de compilación
 build/

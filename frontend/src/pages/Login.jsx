@@ -1,19 +1,20 @@
 import { useState } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getHomePath } from '../utils/authRoutes';
 import toast from 'react-hot-toast';
 
 const CORREO_IPN_REGEX = /^[\w.-]+@alumno\.ipn\.mx$/;
 
 function validarPassword(password) {
   if (!password || password.length < 6 || password.length > 16)
-    return 'La contraseña debe tener entre 6 y 16 caracteres';
+    return 'La contrasena debe tener entre 6 y 16 caracteres';
   if (!/[a-z]/.test(password))
-    return 'La contraseña debe contener al menos una letra minúscula';
+    return 'La contrasena debe contener al menos una letra minuscula';
   if (!/[A-Z]/.test(password))
-    return 'La contraseña debe contener al menos una letra mayúscula';
+    return 'La contrasena debe contener al menos una letra mayuscula';
   if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
-    return 'La contraseña debe contener al menos un carácter especial';
+    return 'La contrasena debe contener al menos un caracter especial';
   return null;
 }
 
@@ -27,7 +28,7 @@ export default function Login() {
   const [msg, setMsg] = useState(null);
 
   if (user) {
-    return <Navigate to={user.rol === 'Admin' ? '/admin' : '/user'} replace />;
+    return <Navigate to={getHomePath(user)} replace />;
   }
 
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
@@ -35,19 +36,22 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setMsg(null);
+
     if (!/^\d{10}$/.test(form.boleta)) {
-      setMsg({ type: 'error', text: 'La boleta debe tener 10 dígitos' });
+      setMsg({ type: 'error', text: 'La boleta debe tener 10 digitos' });
       return;
     }
+
     if (!form.password) {
-      setMsg({ type: 'error', text: 'Ingrese su contraseña' });
+      setMsg({ type: 'error', text: 'Ingrese su contrasena' });
       return;
     }
+
     setLoading(true);
     try {
       const data = await login(form.boleta, form.password);
-      toast.success('¡Bienvenido!');
-      navigate(data.rol === 'Admin' ? '/admin' : '/user', { replace: true });
+      toast.success('Bienvenido');
+      navigate(getHomePath(data.user), { replace: true });
     } catch (err) {
       setMsg({ type: 'error', text: err.message });
     } finally {
@@ -59,7 +63,7 @@ export default function Login() {
     e.preventDefault();
     setMsg(null);
     if (!/^\d{10}$/.test(form.boleta)) {
-      setMsg({ type: 'error', text: 'La boleta debe tener 10 dígitos' });
+      setMsg({ type: 'error', text: 'La boleta debe tener 10 digitos' });
       return;
     }
     if (!CORREO_IPN_REGEX.test(form.correo)) {
@@ -72,7 +76,7 @@ export default function Login() {
       return;
     }
     if (form.password !== form.confPsw) {
-      setMsg({ type: 'error', text: 'Las contraseñas no coinciden' });
+      setMsg({ type: 'error', text: 'Las contrasenas no coinciden' });
       return;
     }
     setLoading(true);
@@ -98,21 +102,21 @@ export default function Login() {
       <div className="auth-left">
         <div className="auth-hero">
           <h1>C-Book</h1>
-          <p>Plataforma digital creada para facilitar el acceso a recursos educativos. Solicita libros de forma rápida.</p>
+          <p>Plataforma digital creada para facilitar el acceso a recursos educativos, solicitudes de libros y seguimiento de soporte.</p>
         </div>
       </div>
       <div className="auth-right">
         <div className="auth-form">
-          <h2>{mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}</h2>
+          <h2>{mode === 'login' ? 'Iniciar Sesion' : 'Crear Cuenta'}</h2>
           <p className="subtitle">
-            {mode === 'login' ? 'Accede a tu biblioteca digital' : 'Solo correos @alumno.ipn.mx'}
+            {mode === 'login' ? 'Ingresa tu boleta y contrasena' : 'Solo correos @alumno.ipn.mx'}
           </p>
 
           {msg && <div className={`msg msg-${msg.type}`}>{msg.text}</div>}
 
           <form onSubmit={mode === 'login' ? handleLogin : handleRegister}>
             <div className="form-group">
-              <label>Número de boleta</label>
+              <label>Numero de boleta</label>
               <input
                 type="text"
                 placeholder="Ej: 2023630001"
@@ -138,10 +142,10 @@ export default function Login() {
             )}
 
             <div className="form-group">
-              <label>Contraseña</label>
+              <label>Contrasena</label>
               <input
                 type={showPw ? 'text' : 'password'}
-                placeholder="Ingrese su contraseña"
+                placeholder="Ingrese su contrasena"
                 maxLength={16}
                 value={form.password}
                 onChange={set('password')}
@@ -151,10 +155,10 @@ export default function Login() {
 
             {mode === 'register' && (
               <div className="form-group">
-                <label>Confirmar contraseña</label>
+                <label>Confirmar contrasena</label>
                 <input
                   type={showPw ? 'text' : 'password'}
-                  placeholder="Confirme su contraseña"
+                  placeholder="Confirme su contrasena"
                   maxLength={16}
                   value={form.confPsw}
                   onChange={set('confPsw')}
@@ -165,7 +169,7 @@ export default function Login() {
 
             <label className="show-password">
               <input type="checkbox" checked={showPw} onChange={() => setShowPw(!showPw)} />
-              Mostrar contraseña
+              Mostrar contrasena
             </label>
 
             <button className="btn-submit" type="submit" disabled={loading}>
@@ -175,7 +179,7 @@ export default function Login() {
 
           {mode === 'login' && (
             <p className="toggle-link" style={{ marginTop: '0.5rem' }}>
-              <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
+              <Link to="/forgot-password">Olvidaste tu contrasena?</Link>
             </p>
           )}
 
@@ -183,9 +187,9 @@ export default function Login() {
 
           <p className="toggle-link">
             {mode === 'login' ? (
-              <>¿No tienes cuenta? <a onClick={toggleMode}>Crear cuenta</a></>
+              <>No tienes cuenta? <a onClick={toggleMode}>Crear cuenta</a></>
             ) : (
-              <>¿Ya tienes cuenta? <a onClick={toggleMode}>Iniciar sesión</a></>
+              <>Ya tienes cuenta? <a onClick={toggleMode}>Iniciar sesion</a></>
             )}
           </p>
         </div>

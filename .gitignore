@@ -6,6 +6,9 @@ node_modules/
 .env.*
 back/.env
 back/.env.*
+!/.env.example
+!/back/.env.example
+!/frontend/.env.example
 
 # Logs
 npm-debug.log*

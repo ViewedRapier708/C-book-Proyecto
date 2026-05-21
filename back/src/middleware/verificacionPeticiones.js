@@ -2,6 +2,7 @@
 
 const { ObtenerSolicitudesActivasPorBoleta } = require('../models/ModeloSolicitudes.js');
 const { VerificarDisponibilidadRecurso } = require('../models/ModeloSolicitudes.js');
+const { getClient } = require('../config/db');
 
 const tipos = ['libro'];
 
@@ -29,6 +30,27 @@ async function verificarDisponibilidad(req, res, next) {
                 error: 'La boleta del usuario es invǭlida'
             });
         }
+        const supabase = getClient();
+        const { data: usuarioDoc, error: errorDoc } = await supabase
+            .from('usuarios_web_movil')
+            .select('tiene_documentos')
+            .eq('boleta', numeroBoleta)
+            .maybeSingle();
+
+        if (errorDoc || !usuarioDoc) {
+            return res.status(500).json({
+                success: false,
+                error: 'No se pudo validar la documentación del usuario'
+            });
+        }
+
+        if (!usuarioDoc.tiene_documentos) {
+            return res.status(403).json({
+                success: false,
+                error: 'No tienes documentación habilitada. Acude a la escuela para entregar tu recibo o comprobante de vivienda (luz, agua, etc.) y tu comprobante de horario actual.'
+            });
+        }
+
         // Ejecutar ambas verificaciones en paralelo para libros
         const [pendientes, disponibilidad] = await Promise.all([
             ObtenerSolicitudesActivasPorBoleta(tipo, numeroBoleta),

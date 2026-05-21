@@ -2,10 +2,11 @@ import { Link } from 'react-router-dom';
 import { Home, ArrowLeft, Search } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import AnimatedPage from '../components/layout/AnimatedPage';
+import { getHomePath } from '../utils/authRoutes';
 
 export default function NotFound() {
   const { user } = useAuth();
-  const homePath = user ? (user.rol === 'Admin' ? '/admin' : '/user') : '/';
+  const homePath = getHomePath(user);
 
   return (
     <AnimatedPage>

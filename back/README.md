@@ -1,107 +1,108 @@
-# Backend (back)
+# Backend C-Book
 
-Este directorio contiene la parte de servidor (backend) del proyecto. Aquí tienes la estructura inicial y una guía rápida de qué va en cada carpeta, buenas prácticas y comandos para arrancar el servidor.
+API Express de C-Book. El entrypoint real es `app.js` y las rutas principales se montan bajo `/auth`.
 
-Contenido y propósito de carpetas
+## Requisitos
 
-- `src/`
-  - Carpeta raíz del código fuente del backend.
-  - Contiene el entrypoint (`index.js`) y las subcarpetas descritas abajo.
+- Node.js 20 o superior.
+- npm.
+- Variables de entorno basadas en `.env.example`.
 
-- `src/controllers/`
-  - Controladores que manejan las peticiones HTTP (reciben `req` y `res`).
-  - Ejemplos: `authController.js`, `userController.js`, `solicitudesController.js`.
-  - Deben mantener la lógica de respuesta y delegar la lógica de negocio a `services`.
-
-- `src/routes/`
-  - Definición y agrupación de rutas por recursos (ej. `/api/auth`, `/api/users`).
-  - Cada archivo exporta un router de Express que enlaza rutas con controladores.
-
-- `src/models/`
-  - Definición de esquemas / modelos para la base de datos (Mongoose, Sequelize, TypeORM, etc.).
-  - Ejemplo: `User.js`, `Solicitud.js`.
-
-- `src/services/`
-  - Lógica de negocio reutilizable y operaciones complejas (consultas a la BD, transacciones).
-  - Los controladores llaman a los servicios para mantenerlos delgados.
-
-- `src/config/`
-  - Configuraciones y helpers de entorno (conexión a BD, variables, configuración de CORS, etc.).
-  - Ejemplo: `db.js`, `index.js` que exponga la configuración por entorno.
-
-- `src/middleware/`
-  - Middlewares de Express reutilizables (auth, validación, logging, manejo de errores).
-  - Ejemplo: `authMiddleware.js`, `errorHandler.js`.
-
-- `src/utils/`
-  - Utilitarios y helpers puros (logger, formateadores, helpers de email).
-  - Ejemplo: `logger.js`, `formatDate.js`.
-
-- `tests/`
-  - Pruebas unitarias/integración organizadas por módulo.
-  - Recomendado: `jest` o `mocha`+`chai`.
-
-- `scripts/`
-  - Scripts de utilidad (seed, migraciones, tareas ajenas al servidor).
-
-Archivos importantes en la raíz de `back/`
-
-- `package.json` — aquí se deben añadir scripts útiles (`start`, `dev`, `test`).
-- `.env` / `.env.example` — variables de entorno (NO subir `.env` al repositorio público).
-- `README.md` — (este archivo) guía rápida para desarrolladores.
-
-Buenas prácticas y recomendaciones
-
-- Mantener los controladores delgados: mover la lógica compleja a `services`.
-- Manejar errores centralizadamente con un middleware (`errorHandler`).
-- Validar entrada (usando `Joi` o `express-validator`) desde middleware o servicios.
-- Usar async/await y capturar errores con try/catch, delegando al middleware de errores.
-- Centralizar la configuración (leer `process.env` en `src/config/index.js`).
-
-Comandos rápidos para arrancar el backend (PowerShell)
-
-1) Ir a la carpeta `back`:
+## Desarrollo local
 
 ```powershell
-cd c:\Users\jbeto\OneDrive\Escritorio\ProyectoLDS\back
-```
-
-2) Instalar dependencias mínimas:
-
-```powershell
-npm install express dotenv
-```
-
-3) Ejecutar el servidor (entrypoint `src/index.js`):
-
-```powershell
-node src/index.js
-```
-
-4) Recomendado en desarrollo (con `nodemon`):
-
-```powershell
-npm install --save-dev nodemon
-# y en package.json agregar:
-# "scripts": { "start": "node src/index.js", "dev": "nodemon src/index.js" }
-
+cd back
+npm install
+Copy-Item .env.example .env
 npm run dev
 ```
 
-Comprobación rápida
-- Después de ejecutar `node src/index.js` o `npm run dev`, la ruta `http://localhost:3000/health` (o `GET /api/health` si montas rutas con prefijo `/api`) debería devolver un JSON con estado.
+Comprobacion rapida:
 
-Sugerencias para siguientes pasos (puedo implementarlas si quieres):
+```powershell
+Invoke-WebRequest http://localhost:3000/health
+```
 
-- Añadir `dotenv` y cargar variables de entorno en `src/index.js`.
-- Añadir scripts `start` y `dev` en `package.json` y opcionalmente `lint` y `test`.
-- Instalar y configurar una base de datos (MongoDB con Mongoose o Postgres con Sequelize/pg), y crear modelos básicos (`User`).
-- Crear endpoints de `auth` (registro/login) y conectar el front (validación de boleta/contraseña).
-- Añadir tests básicos con Jest y un pipeline de CI.
+## Scripts
 
-Contacto rápido
-Si quieres que implemente alguno de los pasos anteriores (p. ej. `dotenv` + `package.json` scripts o un endpoint `auth` básico), dime cuál y lo hago.
+- `npm start`: arranca `node app.js`.
+- `npm run start:azure`: alias explicito para Azure.
+- `npm run dev`: arranca con `nodemon`.
+- `npm run check`: valida sintaxis del entrypoint.
 
----
-Actualizado automáticamente por la herramienta de scaffolding del proyecto.
+## Despliegue en Azure App Service
 
+El repositorio tiene el backend dentro de `back/`. El archivo `../.deployment` apunta Kudu/Azure a esta subcarpeta:
+
+```ini
+[config]
+project = back
+```
+
+Configura el App Service como Node.js y usa como startup command:
+
+```text
+npm start
+```
+
+Para Linux App Service, usa Node 24 LTS cuando este disponible:
+
+```powershell
+az webapp config set --resource-group <grupo> --name <app> --linux-fx-version "NODE|24-lts"
+az webapp config set --resource-group <grupo> --name <app> --startup-file "npm start"
+```
+
+Variables de entorno obligatorias en Azure App Settings:
+
+```text
+NODE_ENV=production
+SUPABASE_URL=<url_de_supabase>
+SUPABASE_SERVICE_KEY=<service_role_key>
+FRONTEND_URL=https://<frontend>
+CORS_ALLOWED_ORIGINS=https://<frontend>
+SESSION_SECRET=<clave_larga>
+RESET_PASSWORD_SECRET=<clave_larga_diferente>
+SESSION_COOKIE_SAME_SITE=none
+SESSION_COOKIE_SECURE=true
+SMTP_SERVICE=gmail
+SMTP_USER=<correo>
+SMTP_PASS=<app_password>
+SMTP_FROM=C-Book System <correo>
+WEBSITE_NODE_DEFAULT_VERSION=~24
+```
+
+Notas:
+
+- `FRONTEND_URL` se usa para links de recuperacion de contrasena y tambien como origen CORS permitido cuando no defines `CORS_ALLOWED_ORIGINS`.
+- En `NODE_ENV=production`, la cookie de sesion usa `SameSite=None` y `Secure=true` por defecto para funcionar entre Azure Static Web Apps y Azure App Service.
+- Si defines `CORS_ALLOWED_ORIGINS`, incluye todos los dominios reales del frontend separados por coma, sin slash final.
+
+Si usas un proveedor SMTP que no sea Gmail, usa `SMTP_HOST`, `SMTP_PORT` y `SMTP_SECURE` en lugar de `SMTP_SERVICE`.
+
+## Health check
+
+Azure puede usar esta ruta para validar que el backend esta vivo:
+
+```text
+GET /health
+```
+
+Respuesta esperada:
+
+```json
+{
+  "status": "ok",
+  "service": "c-book-api",
+  "environment": "production"
+}
+```
+
+## Despues del despliegue
+
+Actualiza el frontend para apuntar a:
+
+```text
+https://<nombre-app>.azurewebsites.net
+```
+
+Tambien agrega ese dominio al origen permitido del frontend si lo mueves a Azure Static Web Apps u otro hosting.

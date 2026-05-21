@@ -5,8 +5,9 @@ import { Spinner, EmptyState } from '../../components/ui/Feedback';
 import Pagination from '../../components/ui/Pagination';
 import Modal from '../../components/ui/Modal';
 import toast from 'react-hot-toast';
-import { Search, TrendingUp, Star } from 'lucide-react';
+import { AlertCircle, Search, TrendingUp, Star } from 'lucide-react';
 import AnimatedPage from '../../components/layout/AnimatedPage';
+import { DOCUMENTACION_REQUERIDA_MENSAJE } from '../../constants/documentacion';
 
 const MAX_LIBROS = 3;
 
@@ -45,6 +46,7 @@ export default function SolicitudLibros() {
   useEffect(() => { load(); }, [load]);
 
   const tipos = useMemo(() => [...new Set(items.map((b) => b.libros?.tipo_material || b.tipo_material).filter(Boolean))], [items]);
+  const sinDocumentos = user?.tiene_documentos === false;
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -96,6 +98,13 @@ export default function SolicitudLibros() {
       {activasCount >= MAX_LIBROS && (
         <div style={{ padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', background: '#f59e0b18', border: '1px solid #f59e0b44', marginBottom: '1rem', fontSize: '0.85rem', color: '#f59e0b' }}>
           Ya tienes {activasCount} solicitudes de libros activas (máximo {MAX_LIBROS}). Debes concluir alguna antes de solicitar otro.
+        </div>
+      )}
+
+      {sinDocumentos && (
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', padding: '0.9rem 1rem', borderRadius: 'var(--radius-sm)', background: '#f59e0b18', border: '1px solid #f59e0b44', marginBottom: '1rem', color: '#b45309' }}>
+          <AlertCircle size={18} style={{ flexShrink: 0, marginTop: 2 }} />
+          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5 }}>{DOCUMENTACION_REQUERIDA_MENSAJE}</p>
         </div>
       )}
 
@@ -187,10 +196,10 @@ export default function SolicitudLibros() {
                 <button
                   className="btn btn-primary btn-sm"
                   style={{ flex: 1 }}
-                  disabled={!(b.Disponible ?? b.disponible) || activasCount >= MAX_LIBROS}
+                  disabled={sinDocumentos || !(b.Disponible ?? b.disponible) || activasCount >= MAX_LIBROS}
                   onClick={() => setConfirm(b)}
                 >
-                  {activasCount >= MAX_LIBROS ? 'Límite alcanzado' : 'Solicitar'}
+                  {sinDocumentos ? 'Documentos pendientes' : activasCount >= MAX_LIBROS ? 'Límite alcanzado' : 'Solicitar'}
                 </button>
               </div>
             </div>

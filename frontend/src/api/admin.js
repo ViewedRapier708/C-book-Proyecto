@@ -1,6 +1,4 @@
-import { api } from './client';
-
-const API_BASE = import.meta.env.VITE_API_URL || '';
+import { AUTH_UNAUTHORIZED_EVENT, api, authUrl } from './client';
 
 export const adminApi = {
   // Materials CRUD
@@ -29,13 +27,18 @@ export const adminApi = {
   deleteBoleta: (boleta) => api.delete(`/admin/boletas/${boleta}`),
   confirmBulkBoletas: (data) => api.post('/admin/boletas/bulk', data),
   previewBulkBoletas: async (formData) => {
-    const res = await fetch(`${API_BASE}/auth/admin/boletas/preview`, {
+    const res = await fetch(authUrl('/admin/boletas/preview'), {
       method: 'POST',
       credentials: 'include',
       body: formData,
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || data.message || `Error ${res.status}`);
+    if (!res.ok) {
+      if (res.status === 401) {
+        window.dispatchEvent(new CustomEvent(AUTH_UNAUTHORIZED_EVENT));
+      }
+      throw new Error(data.error || data.message || `Error ${res.status}`);
+    }
     return data;
   },
 };

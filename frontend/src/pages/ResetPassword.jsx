@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
+import { authApi } from '../api/auth';
 import toast from 'react-hot-toast';
 
 function validarPassword(password) {
@@ -17,56 +17,28 @@ function validarPassword(password) {
 
 export default function ResetPassword() {
   const navigate = useNavigate();
-  const [status, setStatus] = useState('checking'); // 'checking' | 'ready' | 'error'
+  const [ready, setReady] = useState(false);
+  const [status, setStatus] = useState('checking');
+  const [errorMsg, setErrorMsg] = useState('');
   const [form, setForm] = useState({ newPassword: '', confPassword: '' });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState(null);
+  const [resetToken, setResetToken] = useState('');
 
   useEffect(() => {
-    const establecerSesion = async () => {
-      // Flujo implícito: Supabase pone los tokens en el hash de la URL
-      // Ej: /reset-password#access_token=xxx&refresh_token=yyy&type=recovery
-      const hash = window.location.hash.substring(1);
-      const hashParams = new URLSearchParams(hash);
-      const accessToken = hashParams.get('access_token');
-      const refreshToken = hashParams.get('refresh_token');
-      const type = hashParams.get('type');
+    const searchParams = new URLSearchParams(window.location.search);
+    const token = searchParams.get('token');
 
-      if (type === 'recovery' && accessToken) {
-        const { error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken || '',
-        });
-        setStatus(error ? 'error' : 'ready');
-        return;
-      }
-
-      // Flujo PKCE: Supabase pone el código en query params
-      // Ej: /reset-password?code=xxx
-      const searchParams = new URLSearchParams(window.location.search);
-      const code = searchParams.get('code');
-
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        setStatus(error ? 'error' : 'ready');
-        return;
-      }
-
-      // No se encontró ningún token
+    if (!token) {
+      setErrorMsg('No se encontró un token de recuperación válido en el enlace.');
       setStatus('error');
-    };
+      return;
+    }
 
-    // onAuthStateChange también detecta PASSWORD_RECOVERY (respaldo)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setStatus('ready');
-      }
-    });
-
-    establecerSesion();
-
-    return () => subscription.unsubscribe();
+    setResetToken(token);
+    setReady(true);
+    setStatus('ready');
   }, []);
 
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
@@ -87,10 +59,7 @@ export default function ResetPassword() {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password: form.newPassword });
-      if (error) throw new Error(error.message);
-
-      await supabase.auth.signOut();
+      await authApi.resetPassword(resetToken, form.newPassword, form.confPassword);
       toast.success('¡Contraseña actualizada! Inicia sesión con tu nueva contraseña.');
       navigate('/', { replace: true });
     } catch (err) {
@@ -115,7 +84,7 @@ export default function ResetPassword() {
 
           {msg && <div className={`msg msg-${msg.type}`}>{msg.text}</div>}
 
-          {status === 'checking' && (
+          {!ready && !errorMsg && (
             <p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '1rem 0' }}>
               Verificando enlace...
             </p>
@@ -124,7 +93,7 @@ export default function ResetPassword() {
           {status === 'error' && (
             <div style={{ textAlign: 'center' }}>
               <div className="msg msg-error">
-                El enlace de recuperación es inválido o ha expirado.
+                {errorMsg || 'El enlace de recuperación es inválido o ha expirado.'}
               </div>
               <p className="toggle-link" style={{ marginTop: '1rem' }}>
                 <Link to="/forgot-password">Solicitar un nuevo enlace</Link>
@@ -132,7 +101,7 @@ export default function ResetPassword() {
             </div>
           )}
 
-          {status === 'ready' && (
+          {ready && (
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label>Nueva contraseña</label>
