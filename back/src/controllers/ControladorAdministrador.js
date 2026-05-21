@@ -902,6 +902,12 @@ async function marcarPrestamoDevuelto(req, res) {
 
 const BOLETA_FORMAT_RE = /^\d{10}$/;
 const GRUPO_FORMAT_RE = /^\d[A-Z]{2,4}\d?[A-Z]?$/;
+const PROTECTED_BOLETAS = new Set([10000000001]);
+
+function esBoletaProtegida(boleta) {
+    const boletaNum = Number(boleta);
+    return Number.isFinite(boletaNum) && PROTECTED_BOLETAS.has(boletaNum);
+}
 
 async function obtenerBoletas(req, res) {
     try {
@@ -924,6 +930,9 @@ async function crearBoleta(req, res) {
 
         if (!BOLETA_FORMAT_RE.test(boletaStr)) {
             return res.status(400).json({ success: false, message: 'La boleta debe tener exactamente 10 dígitos numéricos' });
+        }
+        if (esBoletaProtegida(boletaStr)) {
+            return res.status(403).json({ success: false, message: `La boleta ${boletaStr} es protegida y no se puede crear o modificar desde este apartado` });
         }
         if (!nombreTrim) {
             return res.status(400).json({ success: false, message: 'El nombre es requerido' });
@@ -966,6 +975,9 @@ async function actualizarBoleta(req, res) {
         if (!boletaParam || Number.isNaN(boletaNum)) {
             return res.status(400).json({ success: false, message: 'Boleta inválida' });
         }
+        if (esBoletaProtegida(boletaNum)) {
+            return res.status(403).json({ success: false, message: `La boleta ${boletaNum} es de administrador y no se puede modificar` });
+        }
 
         const nombreTrim = String(nombre ?? '').trim();
         const grupoTrim = String(Grupo ?? '').trim().toUpperCase();
@@ -997,6 +1009,9 @@ async function eliminarBoleta(req, res) {
 
         if (!boletaParam || Number.isNaN(boletaNum)) {
             return res.status(400).json({ success: false, message: 'Boleta inválida' });
+        }
+        if (esBoletaProtegida(boletaNum)) {
+            return res.status(403).json({ success: false, message: `La boleta ${boletaNum} es de administrador y no se puede eliminar` });
         }
 
         const resultado = await EliminarBoleta(boletaNum);
@@ -1057,6 +1072,14 @@ async function previewCargaMasiva(req, res) {
             }
 
             const boletaNum = parseInt(boletaStr, 10);
+            if (esBoletaProtegida(boletaNum)) {
+                return {
+                    boleta: boletaNum,
+                    nombre,
+                    Grupo: grupo,
+                    status: 'invalid',
+                };
+            }
             return {
                 boleta: boletaNum,
                 nombre,
@@ -1098,17 +1121,27 @@ async function confirmarCargaMasiva(req, res) {
             return res.status(400).json({ success: false, message: 'No hay filas con formato válido para importar' });
         }
 
+        const skippedProtected = validRows.filter((r) => esBoletaProtegida(r.boleta)).length;
+        const importableRows = validRows.filter((r) => !esBoletaProtegida(r.boleta));
+
+        if (importableRows.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Todas las filas válidas corresponden a boletas protegidas y no se pueden modificar',
+            });
+        }
+
         // Pre-check which already exist so we can report accurate counts
-        const boletaNums = validRows.map(r => r.boleta);
+        const boletaNums = importableRows.map(r => r.boleta);
         const existingResult = await BoletasExistentes(boletaNums);
         const existingSet = new Set(existingResult.data || []);
 
-        const inserted = validRows.filter(r => !existingSet.has(r.boleta)).length;
-        const dupCount = validRows.filter(r => existingSet.has(r.boleta)).length;
+        const inserted = importableRows.filter(r => !existingSet.has(r.boleta)).length;
+        const dupCount = importableRows.filter(r => existingSet.has(r.boleta)).length;
         const updated = overwriteDuplicates ? dupCount : 0;
-        const skipped = overwriteDuplicates ? 0 : dupCount;
+        const skipped = (overwriteDuplicates ? 0 : dupCount) + skippedProtected;
 
-        const resultado = await BulkUpsertBoletas(validRows, overwriteDuplicates);
+        const resultado = await BulkUpsertBoletas(importableRows, overwriteDuplicates);
 
         if (!resultado.success) return res.status(400).json(resultado);
 
@@ -1138,3 +1171,4 @@ module.exports = {
     previewCargaMasiva,
     confirmarCargaMasiva,
 };
+

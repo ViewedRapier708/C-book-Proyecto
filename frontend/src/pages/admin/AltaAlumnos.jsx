@@ -17,9 +17,14 @@ const EXPORT_COLS = [
 
 const EMPTY_FORM = { boleta: '', nombre: '', Grupo: '' };
 const PER_PAGE = 12;
+const PROTECTED_BOLETAS = new Set(['10000000001']);
 
 const STATUS_BG = { valid: '#dcfce7', duplicate: '#fef9c3', invalid: '#fee2e2' };
 const STATUS_BADGE = { valid: 'badge-success', duplicate: 'badge-warning', invalid: 'badge-danger' };
+
+function esBoletaProtegida(boleta) {
+  return PROTECTED_BOLETAS.has(String(boleta || '').trim());
+}
 const STATUS_LABEL = { valid: 'Válida', duplicate: 'Duplicada', invalid: 'Inválida' };
 
 // ── Carga Masiva Modal ──────────────────────────────────────────────────────
@@ -233,6 +238,10 @@ export default function AltaAlumnos() {
 
   const openNew = () => { setEditing(null); setForm(EMPTY_FORM); setModalOpen(true); };
   const openEdit = (item) => {
+    if (esBoletaProtegida(item?.boleta)) {
+      toast.error(`La boleta ${item.boleta} esta protegida y no se puede editar`);
+      return;
+    }
     setEditing(item);
     setForm({ boleta: String(item.boleta), nombre: item.nombre || '', Grupo: item.Grupo || '' });
     setModalOpen(true);
@@ -241,6 +250,11 @@ export default function AltaAlumnos() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const boletaObjetivo = editing ? editing.boleta : form.boleta;
+    if (esBoletaProtegida(boletaObjetivo)) {
+      toast.error(`La boleta ${boletaObjetivo} esta protegida y no se puede modificar`);
+      return;
+    }
     setSubmitting(true);
     try {
       if (editing) {
@@ -257,6 +271,10 @@ export default function AltaAlumnos() {
   };
 
   const handleDelete = async () => {
+    if (esBoletaProtegida(deleteModal?.boleta)) {
+      toast.error(`La boleta ${deleteModal?.boleta} esta protegida y no se puede eliminar`);
+      return;
+    }
     setSubmitting(true);
     try {
       await adminApi.deleteBoleta(deleteModal.boleta);
@@ -327,12 +345,14 @@ export default function AltaAlumnos() {
         <EmptyState message="No se encontraron alumnos" />
       ) : (
         <div className="resource-grid">
-          {paged.map((item) => (
+          {paged.map((item) => {
+            const protegida = esBoletaProtegida(item.boleta);
+            return (
             <div key={item.boleta} className="resource-card">
               <div className="resource-card-title">
                 <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{item.boleta}</span>
-                <span className={`badge ${item.registrado ? 'badge-success' : 'badge-warning'}`}>
-                  {item.registrado ? 'Registrado' : 'Pendiente'}
+                <span className={`badge ${protegida ? 'badge-danger' : item.registrado ? 'badge-success' : 'badge-warning'}`}>
+                  {protegida ? 'Admin protegido' : item.registrado ? 'Registrado' : 'Pendiente'}
                 </span>
               </div>
               <div className="resource-card-body">
@@ -346,15 +366,26 @@ export default function AltaAlumnos() {
                 </div>
               </div>
               <div className="resource-card-actions">
-                <button className="btn btn-outline btn-sm" onClick={() => openEdit(item)}>
+                <button
+                  className="btn btn-outline btn-sm"
+                  onClick={() => openEdit(item)}
+                  disabled={protegida}
+                  title={protegida ? 'Boleta protegida: no editable' : 'Editar'}
+                >
                   <Pencil size={14} /> Editar
                 </button>
-                <button className="btn btn-danger btn-sm" onClick={() => setDeleteModal(item)}>
+                <button
+                  className="btn btn-danger btn-sm"
+                  onClick={() => setDeleteModal(item)}
+                  disabled={protegida}
+                  title={protegida ? 'Boleta protegida: no eliminable' : 'Eliminar'}
+                >
                   <Trash2 size={14} />
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -417,7 +448,7 @@ export default function AltaAlumnos() {
         footer={
           <>
             <button className="btn btn-ghost" onClick={() => setDeleteModal(null)}>Cancelar</button>
-            <button className="btn btn-danger" disabled={submitting} onClick={handleDelete}>
+            <button className="btn btn-danger" disabled={submitting || esBoletaProtegida(deleteModal?.boleta)} onClick={handleDelete}>
               {submitting ? 'Eliminando...' : 'Eliminar'}
             </button>
           </>

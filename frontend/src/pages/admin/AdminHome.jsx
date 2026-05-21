@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
-  BookOpen, Users, FileText,
+  BookOpen, Users, FileText, GraduationCap,
   ClipboardList, BookCheck, TrendingUp, Activity,
-  ArrowRight, BarChart3, AlertCircle
+  BarChart3, AlertCircle
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -22,10 +22,14 @@ const COLORS = ['#1f8a70', '#0ea5e9', '#1f9d74', '#d97706', '#d4654a', '#c46f21'
 
 const quickLinks = [
   { icon: BookOpen, label: 'Libros', to: '/admin/libros', color: '#1f8a70' },
-  { icon: Users, label: 'Usuarios', to: '/admin/usuarios', color: '#c46f21' },
   { icon: FileText, label: 'Documentos', to: '/admin/documentos', color: '#d97706' },
-  { icon: ClipboardList, label: 'Solicitudes', to: '/admin/solicitudes-libros', color: '#d4654a' },
+  { icon: ClipboardList, label: 'Solicitudes de libros', to: '/admin/solicitudes-libros', color: '#d4654a' },
   { icon: BookCheck, label: 'Préstamos', to: '/admin/prestamos-libros', color: '#176d5a' },
+];
+
+const managementLinks = [
+  { icon: GraduationCap, label: 'Alumnos', to: '/admin/alumnos', color: '#1f8a70' },
+  { icon: Users, label: 'Usuarios', to: '/admin/usuarios', color: '#c46f21' },
 ];
 
 export default function AdminHome() {
@@ -90,9 +94,6 @@ export default function AdminHome() {
             <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
               <TrendingUp size={18} /> Solicitudes (30 días)
             </h3>
-            <button className="btn btn-ghost btn-sm" onClick={() => navigate('/admin/analytics')}>
-              Ver más <ArrowRight size={14} />
-            </button>
           </div>
           {trends.length > 0 ? (
             <div className="chart-container">
@@ -191,6 +192,59 @@ export default function AdminHome() {
         <motion.div className="card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
           <h3 style={{ margin: '0 0 1rem' }}>Accesos Rápidos</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
+            <div
+              className="service-card"
+              style={{
+                gridColumn: '1 / -1',
+                cursor: 'default',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'stretch',
+                gap: '0.75rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+                <div className="service-card-icon" style={{ background: '#c46f2118' }}>
+                  <Users size={20} color="#c46f21" />
+                </div>
+                <span className="service-card-label">Alumnos y Usuarios</span>
+              </div>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 0,
+                  border: '1px solid var(--border)',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  background: 'var(--bg-secondary)',
+                }}
+              >
+                {managementLinks.map((item, index) => (
+                  <button
+                    key={item.to}
+                    type="button"
+                    onClick={() => navigate(item.to)}
+                    style={{
+                      border: 'none',
+                      borderRight: index === 0 ? '1px solid var(--border)' : 'none',
+                      background: 'transparent',
+                      color: 'var(--text-primary)',
+                      padding: '0.65rem 0.8rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.35rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <item.icon size={16} color={item.color} />
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             {quickLinks.map((s) => (
               <div
                 key={s.to}

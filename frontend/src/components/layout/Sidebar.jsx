@@ -2,14 +2,13 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, BookOpen, Users,
-  FileText, ClipboardList, LogOut, BookCheck, Package,
-  BarChart3, FileBarChart, UserCircle, Settings, GraduationCap,
+  FileText, ClipboardList, LogOut, BookCheck,
+  FileBarChart, UserCircle, GraduationCap,
 } from 'lucide-react';
 
 const adminLinks = [
   { section: 'General' },
   { to: '/admin', icon: LayoutDashboard, label: 'Inicio', end: true },
-  { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
   { to: '/admin/reportes', icon: FileBarChart, label: 'Reportes' },
   { section: 'Altas' },
   { to: '/admin/alumnos', icon: GraduationCap, label: 'Alumnos' },
@@ -17,7 +16,7 @@ const adminLinks = [
   { section: 'Gestión' },
   { to: '/admin/usuarios', icon: Users, label: 'Usuarios' },
   { to: '/admin/documentos', icon: FileText, label: 'Documentos' },
-  { to: '/admin/solicitudes-libros', icon: ClipboardList, label: 'Solicitudes Libros' },
+  { to: '/admin/solicitudes-libros', icon: ClipboardList, label: 'Solicitudes de libros' },
   { to: '/admin/prestamos-libros', icon: BookCheck, label: 'Préstamos Libros' },
 ];
 
@@ -27,11 +26,9 @@ const userLinks = [
   { section: 'Servicios' },
   { to: '/user/libros', icon: BookOpen, label: 'Libros' },
   { section: 'Mis Solicitudes' },
-  { to: '/user/mis-solicitudes', icon: Package, label: 'Solicitudes' },
-  { to: '/user/mis-solicitudes-libros', icon: BookOpen, label: 'Solicitudes Libros' },
+  { to: '/user/mis-solicitudes-libros', icon: BookOpen, label: 'Mis solicitudes de libros' },
   { section: 'Cuenta' },
   { to: '/user/perfil', icon: UserCircle, label: 'Mi Perfil' },
-  { to: '/user/cuenta', icon: Settings, label: 'Cambiar Contraseña' },
 ];
 
 export default function Sidebar({ open, onClose }) {
