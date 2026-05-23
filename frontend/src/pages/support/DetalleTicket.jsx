@@ -1,21 +1,42 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-  ArrowLeft, ArrowUp, Clock, Calendar, User,
-  CheckCircle2, PauseCircle, Lock,
-  Send, Activity, Hand, Bug, AlertCircle, Timer,
+  Activity,
+  AlertCircle,
+  ArrowLeft,
+  ArrowUp,
+  Bug,
+  Calendar,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Hand,
+  Lock,
+  PauseCircle,
+  RefreshCcw,
+  Send,
+  User,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AnimatedPage from '../../components/layout/AnimatedPage';
+import Modal from '../../components/ui/Modal';
 import { useAuth } from '../../context/AuthContext';
 import { soporteApi } from '../../api/soporte';
 import { isSupportRole } from '../../utils/authRoutes';
 import '../../styles/support.css';
 
-const ESTADOS = ['Nuevo', 'Abierto', 'Pendiente', 'En espera', 'Resuelto', 'Cerrado'];
+const BASE_STATE_OPTIONS = ['Nuevo', 'Abierto', 'Pendiente', 'En espera'];
 
 function EstadoBadge({ estado }) {
-  const map = { Nuevo: 'sup-estado-nuevo', Abierto: 'sup-estado-abierto', Pendiente: 'sup-estado-pendiente', 'En espera': 'sup-estado-espera', Resuelto: 'sup-estado-resuelto', Cerrado: 'sup-estado-cerrado' };
+  const map = {
+    Nuevo: 'sup-estado-nuevo',
+    Abierto: 'sup-estado-abierto',
+    Pendiente: 'sup-estado-pendiente',
+    'En espera': 'sup-estado-espera',
+    Resuelto: 'sup-estado-resuelto',
+    Cerrado: 'sup-estado-cerrado',
+  };
   return <span className={`sup-badge sup-badge--dot ${map[estado] ?? 'sup-badge-neutral'}`}>{estado}</span>;
 }
 
@@ -40,6 +61,52 @@ function formatMinutes(minutes) {
   return h ? `${h}h ${m}m` : `${m}m`;
 }
 
+function actorName(user = {}) {
+  return user?.nombre || user?.full_name || user?.email || user?.correo || user?.boleta || '';
+}
+
+function isTicketAssignedToUser(ticket = {}, user = {}) {
+  if (!ticket?.agente) return false;
+  if (ticket?.assignedAgentId && user?.supabaseUserId) {
+    return ticket.assignedAgentId === user.supabaseUserId;
+  }
+  return ticket.agente === actorName(user);
+}
+
+function isTicketClosed(ticket = {}) {
+  return ticket.estadoRaw === 'closed' || ticket.estado === 'Cerrado';
+}
+
+function isTicketResolved(ticket = {}) {
+  return ticket.estadoRaw === 'resolved' || ticket.estado === 'Resuelto';
+}
+
+function getStateOptions(ticket = {}) {
+  if (isTicketClosed(ticket)) return ['Cerrado', 'Reabrir'];
+  if (isTicketResolved(ticket)) return ['Resuelto', 'Cerrado', 'Reabrir'];
+  const options = [...BASE_STATE_OPTIONS];
+  if (ticket.agente) {
+    options.push('Resuelto', 'Cerrado');
+  }
+  return options;
+}
+
+function getSelectedState(ticket = {}) {
+  const options = getStateOptions(ticket);
+  return options.includes(ticket.estado) ? ticket.estado : (options[0] || ticket.estado || 'Abierto');
+}
+
+function getHistoryAppearance(tipo) {
+  const appearances = {
+    created: { label: 'Creado', bg: 'rgba(34,197,94,0.12)', color: '#86efac' },
+    assigned: { label: 'Asignado', bg: 'rgba(196,111,33,0.14)', color: '#f6ad55' },
+    status_changed: { label: 'Estado', bg: 'rgba(37,99,235,0.14)', color: '#93c5fd' },
+    time_logged: { label: 'Tiempo', bg: 'rgba(168,85,247,0.14)', color: '#d8b4fe' },
+    comment_added: { label: 'Sistema', bg: 'rgba(148,163,184,0.14)', color: '#cbd5e1' },
+  };
+  return appearances[tipo] || { label: 'Evento', bg: 'rgba(148,163,184,0.14)', color: '#cbd5e1' };
+}
+
 export default function DetalleTicket() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -49,21 +116,29 @@ export default function DetalleTicket() {
   const [comentario, setComentario] = useState('');
   const [interno, setInterno] = useState(false);
   const [estado, setEstado] = useState('Abierto');
-  const [minutes, setMinutes] = useState(15);
-  const [timeNote, setTimeNote] = useState('');
+  const [solutionDescription, setSolutionDescription] = useState('');
+  const [reopenReason, setReopenReason] = useState('');
+  const [solutionModalAction, setSolutionModalAction] = useState(null);
+  const [showHistory, setShowHistory] = useState(true);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
   const backPath = isSupport ? '/soporte/tickets' : '/user/soporte/mis-reportes';
 
+  const syncTicketState = (data) => {
+    setTicket(data);
+    setEstado(getSelectedState(data));
+    setSolutionDescription(data?.solucion || '');
+    setSolutionModalAction(null);
+  };
+
   const load = async () => {
     setLoading(true);
     setError('');
     try {
       const { ticket: data } = await soporteApi.getTicket(id);
-      setTicket(data);
-      setEstado(data.estado || 'Abierto');
+      syncTicketState(data);
     } catch (err) {
       setError(err.message || 'No se pudo cargar el ticket');
     } finally {
@@ -80,15 +155,19 @@ export default function DetalleTicket() {
     setError('');
     try {
       const { ticket: updated } = await action();
-      setTicket(updated);
-      setEstado(updated.estado);
+      syncTicketState(updated);
       toast.success(okMessage);
+      return updated;
     } catch (err) {
       setError(err.message || 'No se pudo actualizar el ticket');
+      return null;
     } finally {
       setBusy(false);
     }
   };
+
+  const historyItems = useMemo(() => ticket?.history || [], [ticket]);
+  const messageItems = useMemo(() => ticket?.comentarios || [], [ticket]);
 
   if (loading) {
     return <AnimatedPage><div className="py-16 text-center text-sm text-[var(--text-muted)]">Cargando ticket...</div></AnimatedPage>;
@@ -103,15 +182,114 @@ export default function DetalleTicket() {
       </AnimatedPage>
     );
   }
-  const isClosed = ticket.estadoRaw === 'closed' || ticket.estado === 'Cerrado';
-  const isResolved = ticket.estadoRaw === 'resolved' || ticket.estado === 'Resuelto';
-  const canTake = isSupport && !busy && !isClosed && !isResolved && !ticket.agente;
-  const canResolve = isSupport && !busy && !isClosed && !isResolved;
-  const canClose = isSupport && !busy && !isClosed;
-  const canReply = !isClosed;
-  const stateOptions = isClosed
-    ? [ticket.estado]
-    : (isResolved ? ['Cerrado'] : ESTADOS.filter((s) => s !== 'Cerrado' || ticket.estado !== 'Cerrado'));
+
+  const isClosed = isTicketClosed(ticket);
+  const isResolved = isTicketResolved(ticket);
+  const ticketTaken = Boolean(ticket.agente);
+  const assignedToCurrentUser = isSupport && isTicketAssignedToUser(ticket, user);
+  const assignedToOtherUser = isSupport && ticketTaken && !assignedToCurrentUser;
+  const canMutateSupportTicket = isSupport && !busy && !assignedToOtherUser;
+  const canTake = canMutateSupportTicket && !isClosed && !isResolved && !ticketTaken;
+  const canResolve = canMutateSupportTicket && !isClosed && !isResolved && ticketTaken;
+  const canClose = canMutateSupportTicket && !isClosed && ticketTaken;
+  const canReopen = canMutateSupportTicket && ticketTaken && (isClosed || isResolved);
+  const canReply = isSupport ? canMutateSupportTicket && !isClosed : !isClosed;
+  const stateOptions = getStateOptions(ticket);
+  const canManageState = canMutateSupportTicket && stateOptions.length > 0 && (!isClosed || canReopen);
+  const selectedStateNeedsReopenReason = estado === 'Reabrir';
+  const selectedStateBlockedByMissingAssignment = ['Resuelto', 'Cerrado', 'Reabrir'].includes(estado) && !ticketTaken;
+  const stateSaveDisabled = busy
+    || !canManageState
+    || estado === ticket.estado
+    || (selectedStateNeedsReopenReason && !reopenReason.trim())
+    || selectedStateBlockedByMissingAssignment;
+  const isSolutionModalOpen = Boolean(solutionModalAction);
+  const isCloseSolutionModal = solutionModalAction === 'Cerrado';
+
+  const resolveStatusPayload = (nextEstado, overrideComment = '') => {
+    if (['Resuelto', 'Cerrado'].includes(nextEstado)) {
+      if (!ticketTaken) {
+        setError(nextEstado === 'Resuelto'
+          ? 'Debes tomar el ticket antes de resolverlo'
+          : 'Debes tomar el ticket antes de cerrarlo');
+        return null;
+      }
+      const finalSolution = String(overrideComment || solutionDescription || '').trim();
+      if (!finalSolution) {
+        setError('Debes escribir la descripcion final de la solucion');
+        return null;
+      }
+      return finalSolution;
+    }
+
+    if (nextEstado === 'Reabrir') {
+      if (!ticketTaken) {
+        setError('Debes tomar el ticket antes de reabrirlo');
+        return null;
+      }
+      if (!reopenReason.trim()) {
+        setError('Debes escribir la razon por la que se reabrio el ticket');
+        return null;
+      }
+      return reopenReason.trim();
+    }
+
+    return '';
+  };
+
+  const handleStatusChange = async (nextEstado, okMessage, overrideComment = '') => {
+    const payload = resolveStatusPayload(nextEstado, overrideComment);
+    if (payload === null) return null;
+
+    const updated = await runAction(
+      () => soporteApi.changeStatus(ticket.id, nextEstado, payload),
+      okMessage,
+    );
+
+    if (!updated) return null;
+    if (nextEstado === 'Reabrir') {
+      setReopenReason('');
+    }
+    return updated;
+  };
+
+  const handleCommentSubmit = async () => {
+    const updated = await runAction(
+      () => soporteApi.addComment(ticket.id, comentario, interno),
+      'Comentario guardado',
+    );
+    if (updated) {
+      setComentario('');
+    }
+  };
+
+  const openSolutionModal = (action) => {
+    setError('');
+    setSolutionModalAction(action);
+  };
+
+  const closeSolutionModal = () => {
+    if (!busy) setSolutionModalAction(null);
+  };
+
+  const handleSolutionModalConfirm = async () => {
+    if (!solutionModalAction) return;
+    const okMessage = solutionModalAction === 'Cerrado' ? 'Ticket cerrado' : 'Ticket resuelto';
+    const updated = await handleStatusChange(solutionModalAction, okMessage, solutionDescription.trim());
+    if (!updated) return;
+    setSolutionModalAction(null);
+  };
+
+  const handleQuickClose = () => openSolutionModal('Cerrado');
+  const handleQuickResolve = () => openSolutionModal('Resuelto');
+
+  const handleStateSave = async () => {
+    if (estado === 'Resuelto' || estado === 'Cerrado') {
+      openSolutionModal(estado);
+      return;
+    }
+    await handleStatusChange(estado, estado === 'Reabrir' ? 'Ticket reabierto' : 'Estado actualizado');
+  };
 
   return (
     <AnimatedPage>
@@ -144,16 +322,41 @@ export default function DetalleTicket() {
               </div>
 
               {isSupport && (
-                <div className="flex flex-wrap gap-2 pt-3 border-t border-[var(--border-color)]">
-                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#c46f21' }} disabled={!canTake} onClick={() => runAction(() => soporteApi.takeTicket(ticket.id), 'Ticket tomado')}>
-                    <Hand size={14} /> Tomar ticket
-                  </button>
-                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#1f9d74' }} disabled={!canResolve} onClick={() => runAction(() => soporteApi.changeStatus(ticket.id, 'Resuelto', 'Ticket marcado como resuelto'), 'Ticket resuelto')}>
-                    <CheckCircle2 size={14} /> Resolver
-                  </button>
-                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)] disabled:opacity-50" disabled={!canClose} onClick={() => runAction(() => soporteApi.changeStatus(ticket.id, 'Cerrado', 'Ticket cerrado'), 'Ticket cerrado')}>
-                    <Lock size={14} /> Cerrar
-                  </button>
+                <div className="space-y-3 pt-3 border-t border-[var(--border-color)]">
+                  {assignedToOtherUser && (
+                    <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                      Este ticket ya fue tomado por {ticket.agente}. El detalle queda en solo lectura para el resto del equipo.
+                    </div>
+                  )}
+                  {!ticketTaken && (
+                    <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-glass)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+                      Toma el ticket antes de resolverlo o cerrarlo.
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    {!isResolved && !isClosed && (
+                      <>
+                        {!ticketTaken && (
+                          <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#c46f21' }} disabled={!canTake} onClick={() => runAction(() => soporteApi.takeTicket(ticket.id), 'Ticket tomado')}>
+                            <Hand size={14} /> Tomar ticket
+                          </button>
+                        )}
+                        <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#1f9d74' }} disabled={!canResolve} onClick={handleQuickResolve}>
+                          <CheckCircle2 size={14} /> Resolver
+                        </button>
+                      </>
+                    )}
+                    {!isClosed && (
+                      <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)] disabled:opacity-50" disabled={!canClose} onClick={handleQuickClose}>
+                        <Lock size={14} /> Cerrar
+                      </button>
+                    )}
+                    {(isResolved || isClosed) && (
+                      <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#2563eb' }} disabled={!canReopen || !reopenReason.trim()} onClick={() => handleStatusChange('Reabrir', 'Ticket reabierto')}>
+                        <RefreshCcw size={14} /> Reabrir
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -165,43 +368,98 @@ export default function DetalleTicket() {
             </div>
 
             <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2"><Activity size={15} /> Historial</h3>
-              </div>
-              <div className="sup-timeline">
-                {(ticket.history || []).map((h) => (
-                  <div key={h.id} className="sup-tl-item" data-kind={h.tipo}>
-                    <div className="text-xs text-[var(--text-muted)] mb-1">{formatDate(h.creado)}</div>
-                    <div className="text-sm text-[var(--text-secondary)] leading-relaxed">{h.texto || `Evento: ${h.tipo}`}</div>
-                  </div>
-                ))}
-                {(ticket.comentarios || []).map((c) => (
-                  <div key={c.id} className="sup-tl-item" data-kind="comment">
-                    <div className="text-xs text-[var(--text-muted)] mb-1">{formatDate(c.creado)} {c.interno ? '- nota interna' : '- comentario'}</div>
-                    <div className="text-sm text-[var(--text-secondary)] leading-relaxed">{c.texto}</div>
-                  </div>
-                ))}
-                {(ticket.history || []).length === 0 && (ticket.comentarios || []).length === 0 && (
-                  <div className="text-sm text-[var(--text-muted)]">Sin historial registrado.</div>
-                )}
-              </div>
+              <button
+                type="button"
+                className="w-full flex items-center justify-between gap-3 text-left"
+                onClick={() => setShowHistory((value) => !value)}
+              >
+                <div className="flex items-center gap-2">
+                  <Activity size={15} className="text-[var(--text-primary)]" />
+                  <span className="text-sm font-bold text-[var(--text-primary)]">Historial del ticket</span>
+                  <span className="text-xs text-[var(--text-muted)]">{historyItems.length} eventos</span>
+                </div>
+                {showHistory ? <ChevronUp size={16} className="text-[var(--text-muted)]" /> : <ChevronDown size={16} className="text-[var(--text-muted)]" />}
+              </button>
+
+              {showHistory && (
+                <div className="mt-4 space-y-3">
+                  {historyItems.length > 0 ? historyItems.map((item) => {
+                    const appearance = getHistoryAppearance(item.tipo);
+                    return (
+                      <div key={item.id} className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-glass)] px-4 py-3">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <span className="sup-badge" style={{ background: appearance.bg, color: appearance.color }}>{appearance.label}</span>
+                          {item.estadoNuevo && <EstadoBadge estado={item.estadoNuevo} />}
+                          <span className="ml-auto text-xs text-[var(--text-muted)]">{formatDate(item.creado)}</span>
+                        </div>
+                        <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-line">
+                          {item.texto || `Evento: ${appearance.label}`}
+                        </div>
+                        {item.estadoAnterior && item.estadoNuevo && item.estadoAnterior !== item.estadoNuevo && (
+                          <div className="mt-2 text-xs text-[var(--text-muted)]">
+                            Cambio: {item.estadoAnterior} {'->'} {item.estadoNuevo}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }) : (
+                    <div className="text-sm text-[var(--text-muted)]">Sin historial registrado.</div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-bold text-[var(--text-primary)]">Responder</h3>
-                {isSupport && (
-                  <label className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-                    <input type="checkbox" checked={interno} onChange={(e) => setInterno(e.target.checked)} />
-                    Nota interna
-                  </label>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-[var(--text-primary)]">Mensajes del ticket</h3>
+                <span className="text-xs text-[var(--text-muted)]">{messageItems.length} mensajes</span>
+              </div>
+
+              <div className="space-y-3">
+                {messageItems.length > 0 ? messageItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded-2xl border px-4 py-3"
+                    style={item.interno
+                      ? { borderColor: 'rgba(245, 158, 11, 0.35)', background: 'rgba(245, 158, 11, 0.08)' }
+                      : { borderColor: 'var(--border-color)', background: 'var(--bg-glass)' }}
+                  >
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <span
+                        className="sup-badge"
+                        style={item.interno
+                          ? { background: 'rgba(245, 158, 11, 0.16)', color: '#fbbf24' }
+                          : { background: 'rgba(37, 99, 235, 0.14)', color: '#93c5fd' }}
+                      >
+                        {item.interno ? 'Nota interna' : 'Mensaje'}
+                      </span>
+                      <span className="ml-auto text-xs text-[var(--text-muted)]">{formatDate(item.creado)}</span>
+                    </div>
+                    <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-line">
+                      {item.texto}
+                    </div>
+                  </div>
+                )) : (
+                  <div className="text-sm text-[var(--text-muted)]">Aun no hay mensajes en este ticket.</div>
                 )}
               </div>
-              <textarea className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none resize-none min-h-[90px] disabled:opacity-60" placeholder={isClosed ? 'Ticket cerrado: respuestas deshabilitadas.' : 'Escribe una respuesta o informacion adicional.'} value={comentario} onChange={(e) => setComentario(e.target.value)} disabled={!canReply} />
-              <div className="flex justify-end mt-3">
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#c46f21' }} disabled={busy || !comentario.trim() || !canReply} onClick={() => runAction(() => soporteApi.addComment(ticket.id, comentario, interno), 'Comentario guardado').then(() => setComentario(''))}>
-                  <Send size={12} /> Enviar respuesta
-                </button>
+
+              <div className="mt-5 pt-4 border-t border-[var(--border-color)]">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-bold text-[var(--text-primary)]">Responder</h4>
+                  {isSupport && (
+                    <label className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
+                      <input type="checkbox" checked={interno} onChange={(e) => setInterno(e.target.checked)} />
+                      Nota interna
+                    </label>
+                  )}
+                </div>
+                <textarea className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none resize-none min-h-[90px] disabled:opacity-60" placeholder={isClosed ? 'Ticket cerrado: respuestas deshabilitadas.' : (isSupport && assignedToOtherUser ? 'Solo el agente asignado puede responder este ticket.' : 'Escribe una respuesta o informacion adicional.')} value={comentario} onChange={(e) => setComentario(e.target.value)} disabled={!canReply} />
+                <div className="flex justify-end mt-3">
+                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#c46f21' }} disabled={busy || !comentario.trim() || !canReply} onClick={handleCommentSubmit}>
+                    <Send size={12} /> Enviar respuesta
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -219,22 +477,27 @@ export default function DetalleTicket() {
 
             {isSupport && (
               <>
-                <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4">
-                  <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 mb-3"><PauseCircle size={14} /> Cambiar estado</h3>
-                  <select className="w-full px-3 py-2 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] mb-2 disabled:opacity-60" value={estado} onChange={(e) => setEstado(e.target.value)} disabled={isClosed}>
-                    {stateOptions.map((s) => <option key={s}>{s}</option>)}
-                  </select>
-                  <button className="w-full px-3 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#d97706' }} disabled={busy || estado === ticket.estado || isClosed} onClick={() => runAction(() => soporteApi.changeStatus(ticket.id, estado, `Estado cambiado a ${estado}`), 'Estado actualizado')}>
-                    Guardar estado
-                  </button>
-                </div>
+                {(isResolved || isClosed) && (
+                  <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4">
+                    <h3 className="text-sm font-bold text-[var(--text-primary)] mb-3">Razon de reapertura</h3>
+                    <textarea
+                      className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none resize-none min-h-[110px] disabled:opacity-60"
+                      placeholder="Indica por que este ticket debe volver a abrirse."
+                      value={reopenReason}
+                      onChange={(e) => setReopenReason(e.target.value)}
+                      disabled={!canMutateSupportTicket}
+                    />
+                    <p className="mt-2 text-xs text-[var(--text-muted)]">Obligatoria para la accion Reabrir.</p>
+                  </div>
+                )}
 
                 <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4">
-                  <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 mb-3"><Timer size={14} /> Registrar tiempo</h3>
-                  <input type="number" min="1" className="w-full px-3 py-2 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] mb-2 disabled:opacity-60" value={minutes} onChange={(e) => setMinutes(e.target.value)} disabled={isClosed} />
-                  <input className="w-full px-3 py-2 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] mb-2 disabled:opacity-60" placeholder="Nota opcional" value={timeNote} onChange={(e) => setTimeNote(e.target.value)} disabled={isClosed} />
-                  <button className="w-full px-3 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#1f9d74' }} disabled={busy || isClosed} onClick={() => runAction(() => soporteApi.logTime(ticket.id, minutes, timeNote), 'Tiempo registrado')}>
-                    Registrar
+                  <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 mb-3"><PauseCircle size={14} /> Cambiar estado</h3>
+                  <select className="w-full px-3 py-2 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] mb-2 disabled:opacity-60" value={estado} onChange={(e) => setEstado(e.target.value)} disabled={!canManageState}>
+                    {stateOptions.map((item) => <option key={item}>{item}</option>)}
+                  </select>
+                  <button className="w-full px-3 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#d97706' }} disabled={stateSaveDisabled} onClick={handleStateSave}>
+                    Guardar estado
                   </button>
                 </div>
               </>
@@ -242,6 +505,47 @@ export default function DetalleTicket() {
           </div>
         </div>
       </div>
+      <Modal
+        open={isSolutionModalOpen}
+        onClose={closeSolutionModal}
+        title={isCloseSolutionModal ? 'Finalizar ticket' : 'Solucion del ticket'}
+        footer={(
+          <>
+            <button
+              type="button"
+              className="px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-glass)] text-sm font-medium text-[var(--text-secondary)] disabled:opacity-50"
+              onClick={closeSolutionModal}
+              disabled={busy}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className="px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50"
+              style={{ background: isCloseSolutionModal ? '#c46f21' : '#1f9d74' }}
+              onClick={handleSolutionModalConfirm}
+              disabled={busy || !solutionDescription.trim()}
+            >
+              {isCloseSolutionModal ? 'Cerrar ticket' : 'Confirmar resolucion'}
+            </button>
+          </>
+        )}
+      >
+        <div className="space-y-3">
+          <p className="text-sm text-[var(--text-secondary)]">
+            {isCloseSolutionModal
+              ? 'Estas seguro de finalizar este ticket? Describe la solucion final antes de cerrarlo.'
+              : 'Indica cual fue la solucion aplicada a este ticket antes de marcarlo como resuelto.'}
+          </p>
+          <textarea
+            className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none resize-none min-h-[140px] disabled:opacity-60"
+            placeholder={isCloseSolutionModal ? 'Describe la solucion final del ticket.' : 'Describe con detalle la solucion aplicada.'}
+            value={solutionDescription}
+            onChange={(e) => setSolutionDescription(e.target.value)}
+            disabled={busy}
+          />
+        </div>
+      </Modal>
     </AnimatedPage>
   );
 }

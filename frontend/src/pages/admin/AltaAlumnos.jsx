@@ -26,29 +26,64 @@ function esBoletaProtegida(boleta) {
   return PROTECTED_BOLETAS.has(String(boleta || '').trim());
 }
 const STATUS_LABEL = { valid: 'Válida', duplicate: 'Duplicada', invalid: 'Inválida' };
+const STAGE_META = {
+  idle: { label: 'Esperando archivo', percent: 0, color: '#94a3b8' },
+  uploading: { label: 'Subiendo archivo', percent: 30, color: '#3b82f6' },
+  analyzing: { label: 'Analizando datos', percent: 65, color: '#6366f1' },
+  ready: { label: 'Listo para confirmar', percent: 85, color: '#14b8a6' },
+  importing: { label: 'Importando en boletas', percent: 92, color: '#f59e0b' },
+  completed: { label: 'Carga finalizada', percent: 100, color: '#22c55e' },
+};
 
 // ── Carga Masiva Modal ──────────────────────────────────────────────────────
 function ModalCargaMasiva({ open, onClose, onSuccess }) {
   const [estado, setEstado] = useState('idle'); // idle | loading | preview | submitting
   const [previewData, setPreviewData] = useState(null);
   const [overwrite, setOverwrite] = useState(false);
+  const [stage, setStage] = useState('idle');
+  const [completionMessage, setCompletionMessage] = useState('');
   const fileRef = useRef(null);
+  const stageTimeoutRef = useRef(null);
 
-  const reset = () => { setEstado('idle'); setPreviewData(null); setOverwrite(false); };
+  const clearStageTimer = () => {
+    if (stageTimeoutRef.current) {
+      clearTimeout(stageTimeoutRef.current);
+      stageTimeoutRef.current = null;
+    }
+  };
+
+  useEffect(() => () => clearStageTimer(), []);
+
+  const reset = () => {
+    clearStageTimer();
+    setEstado('idle');
+    setPreviewData(null);
+    setOverwrite(false);
+    setStage('idle');
+    setCompletionMessage('');
+  };
   const handleClose = () => { reset(); onClose(); };
 
   const processFile = async (file) => {
     if (!file) return;
     setEstado('loading');
+    setStage('uploading');
+    setCompletionMessage('');
+    clearStageTimer();
+    stageTimeoutRef.current = setTimeout(() => setStage('analyzing'), 500);
     try {
       const fd = new FormData();
       fd.append('file', file);
       const result = await adminApi.previewBulkBoletas(fd);
+      clearStageTimer();
       setPreviewData(result);
       setEstado('preview');
+      setStage('ready');
     } catch (err) {
+      clearStageTimer();
       toast.error(err.message || 'Error al procesar el archivo');
       setEstado('idle');
+      setStage('idle');
     }
   };
 
@@ -62,20 +97,29 @@ function ModalCargaMasiva({ open, onClose, onSuccess }) {
   const handleConfirm = async () => {
     if (rowsToConfirm.length === 0) { toast.error('No hay filas válidas para importar'); return; }
     setEstado('submitting');
+    setStage('importing');
+    setCompletionMessage('');
     try {
       const result = await adminApi.confirmBulkBoletas({ rows: rowsToConfirm, overwriteDuplicates: overwrite });
       const parts = [];
       if (result.inserted) parts.push(`${result.inserted} agregados`);
       if (result.updated) parts.push(`${result.updated} actualizados`);
       if (result.skipped) parts.push(`${result.skipped} omitidos`);
-      toast.success(parts.join(', ') || 'Importación completada');
+      const summaryText = parts.join(', ') || 'Importación completada';
+      setCompletionMessage(`Carga finalizada: ${summaryText}.`);
+      toast.success(summaryText);
       onSuccess();
-      handleClose();
+      setEstado('preview');
+      setStage('completed');
     } catch (err) {
       toast.error(err.message || 'Error al importar alumnos');
       setEstado('preview');
+      setStage('ready');
     }
   };
+
+  const stageInfo = STAGE_META[stage] || STAGE_META.idle;
+  const showProgress = estado !== 'idle';
 
   return (
     <Modal
@@ -86,20 +130,43 @@ function ModalCargaMasiva({ open, onClose, onSuccess }) {
       footer={
         estado === 'preview' || estado === 'submitting' ? (
           <>
-            <button className="btn btn-ghost" onClick={handleClose} disabled={estado === 'submitting'}>Cancelar</button>
-            <button
-              className="btn btn-primary"
-              onClick={handleConfirm}
-              disabled={estado === 'submitting' || rowsToConfirm.length === 0}
-            >
-              {estado === 'submitting' ? 'Importando...' : `Confirmar carga (${rowsToConfirm.length})`}
+            <button className="btn btn-ghost" onClick={handleClose} disabled={estado === 'submitting'}>
+              {stage === 'completed' ? 'Cerrar' : 'Cancelar'}
             </button>
+            {stage !== 'completed' && (
+              <button
+                className="btn btn-primary"
+                onClick={handleConfirm}
+                disabled={estado === 'submitting' || rowsToConfirm.length === 0}
+              >
+                {estado === 'submitting' ? 'Importando...' : `Confirmar carga (${rowsToConfirm.length})`}
+              </button>
+            )}
           </>
         ) : (
           <button className="btn btn-ghost" onClick={handleClose}>Cerrar</button>
         )
       }
     >
+      {showProgress && (
+        <div style={{ marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{stageInfo.label}</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{stageInfo.percent}%</span>
+          </div>
+          <div style={{ height: 8, borderRadius: 999, background: 'var(--bg-glass-strong)', overflow: 'hidden' }}>
+            <div
+              style={{
+                height: '100%',
+                width: `${stageInfo.percent}%`,
+                background: stageInfo.color,
+                transition: 'width 250ms ease',
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Drop zone */}
       {estado === 'idle' && (
         <div
@@ -120,12 +187,18 @@ function ModalCargaMasiva({ open, onClose, onSuccess }) {
           <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Arrastra tu archivo aquí</p>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>o haz clic para seleccionar</p>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.75rem' }}>
-            Formatos soportados: PDF, CSV, XLSX — máx. 10 MB
+            Formatos soportados: CSV y Excel (.xlsx/.xls) - max. 10 MB
+          </p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.35rem' }}>
+            Encabezados obligatorios: Nombres, Boleta, Grupos
+          </p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.35rem' }}>
+            Ejemplo: JUAN PEREZ LOPEZ, 2026090628, 2IM1
           </p>
           <input
             ref={fileRef}
             type="file"
-            accept=".pdf,.csv,.xlsx,.xls"
+            accept=".csv,.xlsx,.xls"
             style={{ display: 'none' }}
             onChange={handleFileInput}
           />
@@ -136,13 +209,29 @@ function ModalCargaMasiva({ open, onClose, onSuccess }) {
       {estado === 'loading' && (
         <div style={{ textAlign: 'center', padding: '3rem' }}>
           <Spinner />
-          <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>Analizando archivo...</p>
+          <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>Procesando archivo...</p>
         </div>
       )}
 
       {/* Preview table */}
       {(estado === 'preview' || estado === 'submitting') && previewData && (
         <div>
+          {completionMessage && (
+            <div
+              style={{
+                marginBottom: '1rem',
+                padding: '0.75rem 1rem',
+                border: '1px solid #86efac',
+                background: '#f0fdf4',
+                color: '#166534',
+                borderRadius: 8,
+                fontWeight: 600,
+              }}
+            >
+              {completionMessage}
+            </div>
+          )}
+
           <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
             <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
               Archivo: <strong>{previewData.fileName}</strong>
@@ -153,7 +242,7 @@ function ModalCargaMasiva({ open, onClose, onSuccess }) {
           </div>
 
           <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', cursor: 'pointer', userSelect: 'none' }}>
-            <input type="checkbox" checked={overwrite} onChange={(e) => setOverwrite(e.target.checked)} />
+            <input type="checkbox" checked={overwrite} onChange={(e) => setOverwrite(e.target.checked)} disabled={stage === 'completed'} />
             <span style={{ fontSize: '0.875rem' }}>Sobrescribir duplicados con datos del archivo</span>
           </label>
 

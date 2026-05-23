@@ -1032,20 +1032,18 @@ async function previewCargaMasiva(req, res) {
             return res.status(400).json({ success: false, message: 'No se recibió ningún archivo' });
         }
 
-        const { parsePDF, parseCSV, parseXLSX } = require('../utils/parserAlumnos');
+        const { parseCSV, parseXLSX } = require('../utils/parserAlumnos');
         const ext = path.extname(file.originalname).toLowerCase();
         const mime = (file.mimetype || '').toLowerCase();
 
         let parsedRows = [];
         try {
-            if (ext === '.pdf' || mime === 'application/pdf') {
-                parsedRows = await parsePDF(file.buffer);
-            } else if (ext === '.csv' || mime === 'text/csv' || mime === 'application/csv') {
+            if (ext === '.csv' || mime === 'text/csv' || mime === 'application/csv') {
                 parsedRows = parseCSV(file.buffer);
             } else if (['.xlsx', '.xls'].includes(ext) || mime.includes('spreadsheetml') || mime.includes('ms-excel')) {
                 parsedRows = parseXLSX(file.buffer);
             } else {
-                return res.status(400).json({ success: false, message: 'Formato no soportado. Use PDF, CSV o XLSX.' });
+                return res.status(400).json({ success: false, message: 'Formato no soportado. Use CSV o Excel (.xlsx/.xls).' });
             }
         } catch (parseError) {
             console.error('Error parseando archivo:', parseError);

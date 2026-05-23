@@ -7,6 +7,7 @@ const STATUS_TO_DB = {
   'En espera': 'waiting',
   Resuelto: 'resolved',
   Cerrado: 'closed',
+  Reabrir: 'open',
   new: 'new',
   open: 'open',
   pending: 'pending',
@@ -75,11 +76,43 @@ function actorName(user = {}) {
   return user.nombre || user.full_name || user.email || user.correo || user.boleta || 'Usuario';
 }
 
+function isTicketAssignedToUser(ticket = {}, user = {}) {
+  if (!ticket.agente) return false;
+  if (ticket.assignedAgentId && user?.supabaseUserId) {
+    return ticket.assignedAgentId === user.supabaseUserId;
+  }
+  return ticket.agente === actorName(user);
+}
+
+function requireAssignedTicket(ticket, message) {
+  if (ticket?.agente) return;
+  const err = new Error(message);
+  err.status = 409;
+  throw err;
+}
+
+function requireTicketOwner(ticket, user) {
+  if (!ticket?.agente) return;
+  if (isTicketAssignedToUser(ticket, user)) return;
+  const err = new Error('Solo el agente asignado puede modificar este ticket');
+  err.status = 403;
+  throw err;
+}
+
 function normalizeText(value) {
   return String(value || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
+}
+
+function calculateElapsedMinutes(startValue, endValue = new Date().toISOString()) {
+  const start = new Date(startValue);
+  const end = new Date(endValue);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 0;
+  const diffMs = end.getTime() - start.getTime();
+  if (diffMs <= 0) return 0;
+  return Math.max(1, Math.round(diffMs / 60000));
 }
 
 function includesAny(text, terms) {
@@ -142,6 +175,10 @@ function ticketSelect() {
 function mapTicket(row = {}) {
   const history = [...(row.ticket_history || [])].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
   const comments = [...(row.ticket_comments || [])].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  const baseMinutes = Number(row.total_work_minutes) || 0;
+  const activeMinutes = row.assigned_at && row.status !== 'closed'
+    ? calculateElapsedMinutes(row.assigned_at)
+    : 0;
 
   return {
     id: row.id,
@@ -159,12 +196,16 @@ function mapTicket(row = {}) {
     solicitanteRol: row.requester_role || '',
     solicitanteCorreo: row.requester_email || '',
     solicitanteBoleta: row.requester_boleta || '',
+    assignedAgentId: row.assigned_agent_id || null,
+    assignedAt: row.assigned_at || null,
     agente: row.assigned_agent_name || null,
     creado: row.created_at,
     actualizado: row.updated_at,
     resuelto: row.resolved_at,
     cerrado: row.closed_at,
-    tiempoMinutos: row.total_work_minutes || 0,
+    tiempoBaseMinutos: baseMinutes,
+    tiempoMinutos: baseMinutes + activeMinutes,
+    solucion: row.solution_description || '',
     history: history.map(mapHistory),
     comentarios: comments.map(mapComment),
   };
@@ -352,7 +393,7 @@ async function listarAgentes(user) {
   const supabase = getSupportClient();
   const { data, error } = await supabase
     .from('support_profiles')
-    .select('user_id,full_name,email,phone,role,status,created_at,updated_at')
+    .select('user_id,full_name,email,phone,boleta,role,status,created_at,updated_at')
     .in('role', [SUPPORT_ROLES.ADMIN, SUPPORT_ROLES.AGENT])
     .order('created_at', { ascending: false });
 
@@ -444,6 +485,54 @@ async function crearAgente(payload, user) {
   if (error) {
     logDbError('crearAgente.profile', error);
     await supabase.auth.admin.deleteUser(authData.user.id).catch(() => {});
+    throw error;
+  }
+
+  return mapSupportProfile(data);
+}
+
+
+async function actualizarEstadoAgente(agentUserId, estado, user) {
+  requireSupportAdmin(user);
+  const supabase = getSupportClient();
+  const targetUserId = String(agentUserId || '').trim();
+  const nextStatus = String(estado || '').trim().toLowerCase();
+
+  if (!targetUserId) {
+    const err = new Error('Debes indicar el agente de soporte');
+    err.status = 400;
+    throw err;
+  }
+  if (!['active', 'inactive'].includes(nextStatus)) {
+    const err = new Error('Estado de agente no valido');
+    err.status = 400;
+    throw err;
+  }
+
+  const profile = await buscarPerfilSoporte(targetUserId);
+  if (!profile) {
+    const err = new Error('Agente de soporte no encontrado');
+    err.status = 404;
+    throw err;
+  }
+  if (![SUPPORT_ROLES.ADMIN, SUPPORT_ROLES.AGENT].includes(profile.role)) {
+    const err = new Error('El usuario no pertenece al modulo de soporte');
+    err.status = 409;
+    throw err;
+  }
+  if (profile.status === nextStatus) {
+    return mapSupportProfile(profile);
+  }
+
+  const { data, error } = await supabase
+    .from('support_profiles')
+    .update({ status: nextStatus, updated_at: new Date().toISOString() })
+    .eq('user_id', targetUserId)
+    .select('user_id,full_name,email,phone,boleta,role,status,created_at,updated_at')
+    .single();
+
+  if (error) {
+    logDbError('actualizarEstadoAgente.update', error);
     throw error;
   }
 
@@ -673,13 +762,18 @@ async function cambiarEstado(id, estado, user, comentario = '') {
   requireSupportStaff(user);
   const supabase = getSupportClient();
   const current = await obtenerTicket(id, user);
-  const nextStatus = STATUS_TO_DB[estado];
+  const action = String(estado || '').trim();
+  const nextStatus = STATUS_TO_DB[action];
+  const isReopenAction = action === 'Reabrir';
   if (!nextStatus) {
     const err = new Error('Estado no valido');
     err.status = 400;
     throw err;
   }
-  if (current.estadoRaw === 'closed') {
+  if (current.agente) {
+    requireTicketOwner(current, user);
+  }
+  if (current.estadoRaw === 'closed' && !isReopenAction) {
     const err = new Error('El ticket esta cerrado y no permite mas cambios');
     err.status = 409;
     throw err;
@@ -693,14 +787,51 @@ async function cambiarEstado(id, estado, user, comentario = '') {
   const now = new Date().toISOString();
   const patch = { status: nextStatus, updated_at: now };
   const cleanComment = String(comentario || '').trim();
-  const autoSolution = `Ticket ${nextStatus === 'closed' ? 'cerrado' : 'resuelto'} por ${actorName(user)} (${now})`;
-  if (nextStatus === 'resolved') {
+  if (isReopenAction) {
+    if (!['resolved', 'closed'].includes(current.estadoRaw)) {
+      const err = new Error('Solo se puede reabrir un ticket resuelto o cerrado');
+      err.status = 409;
+      throw err;
+    }
+    requireAssignedTicket(current, 'Debes tomar el ticket antes de reabrirlo');
+    if (!cleanComment) {
+      const err = new Error('Debes escribir la razon por la que se reabrio el ticket');
+      err.status = 400;
+      throw err;
+    }
+    patch.resolved_at = null;
+    patch.closed_at = null;
+    if (current.estadoRaw === 'closed') {
+      patch.assigned_at = now;
+    }
+  } else if (nextStatus === 'resolved') {
+    requireAssignedTicket(current, 'Debes tomar el ticket antes de resolverlo');
+    if (!cleanComment) {
+      const err = new Error('Debes escribir la descripcion final de la solucion');
+      err.status = 400;
+      throw err;
+    }
     patch.resolved_at = now;
-    patch.solution_description = cleanComment || autoSolution;
-  }
-  if (nextStatus === 'closed') {
+    patch.closed_at = null;
+    patch.solution_description = cleanComment;
+  } else if (nextStatus === 'closed') {
+    requireAssignedTicket(current, 'Debes tomar el ticket antes de cerrarlo');
+    if (!cleanComment) {
+      const err = new Error('Debes escribir la descripcion final de la solucion');
+      err.status = 400;
+      throw err;
+    }
+    const tramoMinutos = current.assignedAt
+      ? calculateElapsedMinutes(current.assignedAt, now)
+      : 0;
     patch.closed_at = now;
-    patch.solution_description = cleanComment || current.descripcion || autoSolution;
+    patch.assigned_at = null;
+    patch.total_work_minutes = current.tiempoBaseMinutos + tramoMinutos;
+    patch.solution_description = cleanComment;
+  } else if (['resolved', 'closed'].includes(current.estadoRaw) && nextStatus === 'open') {
+    const err = new Error('Debes escribir la razon por la que se reabrio el ticket');
+    err.status = 400;
+    throw err;
   }
   const { data, error } = await supabase
     .from('tickets')
@@ -717,7 +848,7 @@ async function cambiarEstado(id, estado, user, comentario = '') {
   await registrarHistorial(current.id, 'status_changed', user, {
     old_status: current.estadoRaw,
     new_status: nextStatus,
-    comment: comentario || `Estado cambiado a ${STATUS_FROM_DB[nextStatus]}`,
+    comment: cleanComment || `Estado cambiado a ${STATUS_FROM_DB[nextStatus]}`,
   });
   return mapTicket(data);
 }
@@ -731,6 +862,9 @@ async function agregarComentario(id, body, isInternal, user) {
     throw err;
   }
   if (isInternal) requireSupportStaff(user);
+  if (isSupportStaff(user) && ticket.agente) {
+    requireTicketOwner(ticket, user);
+  }
 
   const text = String(body || '').trim();
   if (!text) {
@@ -756,42 +890,9 @@ async function agregarComentario(id, body, isInternal, user) {
 
 async function registrarTiempo(id, minutes, note, user) {
   requireSupportStaff(user);
-  const supabase = getSupportClient();
-  const ticket = await obtenerTicket(id, user);
-  if (ticket.estadoRaw === 'closed') {
-    const err = new Error('No se puede registrar tiempo en un ticket cerrado');
-    err.status = 409;
-    throw err;
-  }
-  const value = Number(minutes);
-  if (!Number.isFinite(value) || value <= 0) {
-    const err = new Error('Los minutos deben ser mayores a cero');
-    err.status = 400;
-    throw err;
-  }
-
-  const { error: insertError } = await supabase
-    .from('ticket_time_entries')
-    .insert({ ticket_id: ticket.id, minutes: Math.round(value), note: note || null, agent_user_id: null });
-  if (insertError) {
-    logDbError('registrarTiempo.insert', insertError);
-    throw insertError;
-  }
-
-  const { error: updateError } = await supabase
-    .from('tickets')
-    .update({ total_work_minutes: ticket.tiempoMinutos + Math.round(value), updated_at: new Date().toISOString() })
-    .eq('id', ticket.id);
-  if (updateError) {
-    logDbError('registrarTiempo.updateTicket', updateError);
-    throw updateError;
-  }
-  logDbSuccess('registrarTiempo', { ticket_id: ticket.id, minutes: Math.round(value) });
-
-  await registrarHistorial(ticket.id, 'time_logged', user, {
-    comment: `${actorName(user)} registro ${Math.round(value)} min${note ? `: ${note}` : ''}`,
-  });
-  return obtenerTicket(ticket.id, user);
+  const err = new Error('El tiempo del ticket se calcula automaticamente');
+  err.status = 409;
+  throw err;
 }
 
 async function dashboard(user) {
@@ -913,3 +1014,4 @@ module.exports = {
   dashboard,
   configuracion,
 };
+

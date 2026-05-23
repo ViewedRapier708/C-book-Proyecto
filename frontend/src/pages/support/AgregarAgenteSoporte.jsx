@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AlertCircle, Plus, RefreshCcw, Users } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, Plus, RefreshCcw, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 import { soporteApi } from '../../api/soporte';
@@ -18,6 +18,7 @@ export default function AgregarAgenteSoporte() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [showPasswords, setShowPasswords] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -98,8 +99,16 @@ export default function AgregarAgenteSoporte() {
               <input className="px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" placeholder="correo@soporte.com" type="email" value={form.email} onChange={setField('email')} required />
               <input className="px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" placeholder="Numero de boleta" value={form.boleta} onChange={setField('boleta')} maxLength={10} onKeyPress={(e) => e.key !== 'Enter' && !/\d/.test(e.key) && e.preventDefault()} />
               <input className="px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" placeholder="Telefono" value={form.telefono} onChange={setField('telefono')} />
-              <input className="px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" placeholder="Contrasena temporal" type="password" value={form.password} onChange={setField('password')} required />
-              <input className="px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" placeholder="Confirmar contrasena" type="password" value={form.confirmPassword} onChange={setField('confirmPassword')} required />
+              <input className="px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" placeholder="Contrasena temporal" type={showPasswords ? 'text' : 'password'} value={form.password} onChange={setField('password')} required />
+              <input className="px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" placeholder="Confirmar contrasena" type={showPasswords ? 'text' : 'password'} value={form.confirmPassword} onChange={setField('confirmPassword')} required />
+              <button
+                type="button"
+                className="md:col-span-2 inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-glass)] px-3 py-2 text-sm font-medium text-[var(--text-secondary)]"
+                onClick={() => setShowPasswords((value) => !value)}
+              >
+                {showPasswords ? <EyeOff size={14} /> : <Eye size={14} />}
+                {showPasswords ? 'Ocultar contrasenas' : 'Mostrar contrasenas'}
+              </button>
               <button className="md:col-span-2 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#c46f21' }} disabled={saving}>
                 <Plus size={14} /> {saving ? 'Guardando...' : 'Crear agente'}
               </button>
