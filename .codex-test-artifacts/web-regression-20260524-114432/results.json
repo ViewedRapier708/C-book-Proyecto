@@ -1,0 +1,267 @@
+{
+  "base_url": "https://c-book-proyecto.vercel.app",
+  "generated_at": "2026-05-24T11:47:13.731641",
+  "summary": {
+    "PASS": 20,
+    "FAIL": 27,
+    "PENDING": 4
+  },
+  "results": {
+    "WEB-REG-001": {
+      "status": "PENDING",
+      "obtained": "Pendiente manual. El flujo positivo de registro depende de verificacion por correo y no se ejecuto por instruccion del usuario.",
+      "screenshot": null
+    },
+    "WEB-REG-002": {
+      "status": "PASS",
+      "obtained": "El frontend bloqueo el registro y mostro el mensaje 'La boleta debe tener 10 digitos'.",
+      "screenshot": null
+    },
+    "WEB-REG-003": {
+      "status": "PASS",
+      "obtained": "El frontend impidio el registro con correo externo y mostro el mensaje institucional.",
+      "screenshot": null
+    },
+    "WEB-REG-004": {
+      "status": "PASS",
+      "obtained": "El frontend detecto la diferencia entre password y confirmacion.",
+      "screenshot": null
+    },
+    "WEB-LOG-001": {
+      "status": "FAIL",
+      "obtained": "Con las credenciales proporcionadas para alumno, el despliegue respondio 'Boleta o contraseña incorrectos' y no abrio /user.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-LOG-001.png"
+    },
+    "WEB-LOG-002": {
+      "status": "FAIL",
+      "obtained": "Con las credenciales proporcionadas para administrador, el despliegue respondio 'Boleta o contraseña incorrectos' y no abrio /admin.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-LOG-002.png"
+    },
+    "WEB-LOG-003": {
+      "status": "PASS",
+      "obtained": "El login rechazo credenciales incorrectas y mostro el mensaje de error esperado.",
+      "screenshot": null
+    },
+    "WEB-LOG-004": {
+      "status": "PASS",
+      "obtained": "La cuenta de soporte autentico correctamente y redirigio a /soporte.",
+      "screenshot": null
+    },
+    "WEB-VER-001": {
+      "status": "PENDING",
+      "obtained": "Pendiente manual. El caso depende de abrir y aprobar un correo de verificacion.",
+      "screenshot": null
+    },
+    "WEB-VER-002": {
+      "status": "PENDING",
+      "obtained": "Pendiente manual. El caso depende del estado de confirmacion por correo.",
+      "screenshot": null
+    },
+    "WEB-REC-001": {
+      "status": "PENDING",
+      "obtained": "Pendiente manual. El caso positivo de recuperacion requiere correo y token de restablecimiento.",
+      "screenshot": null
+    },
+    "WEB-REC-002": {
+      "status": "PASS",
+      "obtained": "El sistema informo que no existe una cuenta para la boleta no registrada.",
+      "screenshot": null
+    },
+    "WEB-REC-003": {
+      "status": "PASS",
+      "obtained": "La pantalla bloqueo el flujo y mostro que el enlace no trae un token valido.",
+      "screenshot": null
+    },
+    "WEB-SES-001": {
+      "status": "PASS",
+      "obtained": "La sesion de soporte se mantuvo activa despues de recargar la pagina.",
+      "screenshot": null
+    },
+    "WEB-SES-002": {
+      "status": "PASS",
+      "obtained": "Sin sesion activa, la ruta protegida /admin redirigio correctamente a /.",
+      "screenshot": null
+    },
+    "WEB-SES-003": {
+      "status": "PASS",
+      "obtained": "La sesion se cerro desde la UI y el acceso protegido quedo bloqueado.",
+      "screenshot": null
+    },
+    "WEB-CUE-001": {
+      "status": "FAIL",
+      "obtained": "No fue posible abrir /user/perfil porque las credenciales de alumno proporcionadas fallaron en el despliegue.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-CUE-001.png"
+    },
+    "WEB-CUE-002": {
+      "status": "FAIL",
+      "obtained": "No fue posible probar el cambio de contraseña propia porque la sesion de alumno no autentica en el despliegue.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-CUE-002.png"
+    },
+    "WEB-BIB-001": {
+      "status": "FAIL",
+      "obtained": "No fue posible validar el catálogo de libros porque la cuenta de alumno no pudo autenticarse.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-BIB-001.png"
+    },
+    "WEB-BIB-002": {
+      "status": "FAIL",
+      "obtained": "No fue posible simular el fallo de carga desde la vista de libros porque la cuenta de alumno no autentica.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-BIB-002.png"
+    },
+    "WEB-SOL-001": {
+      "status": "FAIL",
+      "obtained": "No fue posible solicitar un libro porque la cuenta de alumno proporcionada no inicia sesión.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-SOL-001.png"
+    },
+    "WEB-SOL-002": {
+      "status": "FAIL",
+      "obtained": "No fue posible validar el bloqueo por documentación porque la cuenta de alumno no inicia sesión.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-SOL-002.png"
+    },
+    "WEB-SOL-003": {
+      "status": "FAIL",
+      "obtained": "No fue posible validar el límite de solicitudes porque la cuenta de alumno no inicia sesión.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-SOL-003.png"
+    },
+    "WEB-SOL-004": {
+      "status": "FAIL",
+      "obtained": "No fue posible cancelar solicitudes porque la cuenta de alumno no inicia sesión.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-SOL-004.png"
+    },
+    "WEB-LIB-001": {
+      "status": "FAIL",
+      "obtained": "No fue posible validar el alta de libros porque la cuenta admin proporcionada no autentica.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-LIB-001.png"
+    },
+    "WEB-LIB-002": {
+      "status": "FAIL",
+      "obtained": "No fue posible validar ISBN duplicado porque la cuenta admin proporcionada no autentica.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-LIB-002.png"
+    },
+    "WEB-LIB-003": {
+      "status": "FAIL",
+      "obtained": "No fue posible validar año fuera de rango porque la cuenta admin proporcionada no autentica.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-LIB-003.png"
+    },
+    "WEB-ALU-001": {
+      "status": "FAIL",
+      "obtained": "No fue posible validar la creación de boletas porque la cuenta admin proporcionada no autentica.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-ALU-001.png"
+    },
+    "WEB-ALU-002": {
+      "status": "FAIL",
+      "obtained": "No fue posible validar la boleta protegida porque la cuenta admin proporcionada no autentica.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-ALU-002.png"
+    },
+    "WEB-ALU-003": {
+      "status": "FAIL",
+      "obtained": "No fue posible probar la vista previa de Excel porque la cuenta admin proporcionada no autentica.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-ALU-003.png"
+    },
+    "WEB-ALU-004": {
+      "status": "FAIL",
+      "obtained": "No fue posible probar el rechazo de archivo no soportado porque la cuenta admin proporcionada no autentica.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-ALU-004.png"
+    },
+    "WEB-DOC-001": {
+      "status": "FAIL",
+      "obtained": "No fue posible probar la habilitación de documentación porque la cuenta admin proporcionada no autentica.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-DOC-001.png"
+    },
+    "WEB-DOC-002": {
+      "status": "FAIL",
+      "obtained": "No fue posible probar el bloqueo sin documentos porque la cuenta de alumno proporcionada no autentica.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-DOC-002.png"
+    },
+    "WEB-GES-001": {
+      "status": "FAIL",
+      "obtained": "No fue posible aprobar solicitudes porque la cuenta admin proporcionada no autentica.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-GES-001.png"
+    },
+    "WEB-GES-002": {
+      "status": "FAIL",
+      "obtained": "No fue posible rechazar solicitudes porque la cuenta admin proporcionada no autentica.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-GES-002.png"
+    },
+    "WEB-GES-003": {
+      "status": "FAIL",
+      "obtained": "No fue posible registrar la entrega del libro porque la cuenta admin proporcionada no autentica.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-GES-003.png"
+    },
+    "WEB-PRE-001": {
+      "status": "FAIL",
+      "obtained": "No fue posible consultar préstamos porque la cuenta admin proporcionada no autentica.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-PRE-001.png"
+    },
+    "WEB-PRE-002": {
+      "status": "FAIL",
+      "obtained": "No fue posible registrar devoluciones porque la cuenta admin proporcionada no autentica.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-PRE-002.png"
+    },
+    "WEB-ANA-001": {
+      "status": "FAIL",
+      "obtained": "No fue posible validar analytics porque la cuenta admin proporcionada no autentica.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-ANA-001.png"
+    },
+    "WEB-ANA-002": {
+      "status": "FAIL",
+      "obtained": "No fue posible validar la exportación de reportes porque la cuenta admin proporcionada no autentica.",
+      "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-ANA-002.png"
+    },
+    "WEB-SOP-001": {
+      "status": "PASS",
+      "obtained": "Se creo un ticket autenticado desde una sesion activa y la UI confirmo el folio en estado Nuevo.",
+      "screenshot": null
+    },
+    "WEB-SOP-002": {
+      "status": "PASS",
+      "obtained": "El formulario publico de soporte creo un ticket y mostro la confirmacion.",
+      "screenshot": null
+    },
+    "WEB-SOP-003": {
+      "status": "PASS",
+      "obtained": "La UI mantuvo deshabilitado el envio mientras la descripcion estaba vacia.",
+      "screenshot": null
+    },
+    "WEB-TIC-001": {
+      "status": "PASS",
+      "obtained": "La bandeja cargo tickets reales y permitio filtrarlos por titulo.",
+      "screenshot": null
+    },
+    "WEB-TIC-002": {
+      "status": "PASS",
+      "obtained": "El ticket nuevo quedo asignado al agente y cambio a estado Abierto.",
+      "screenshot": null
+    },
+    "WEB-TIC-003": {
+      "status": "PASS",
+      "obtained": "La UI bloqueo la resolucion mientras la descripcion final estaba vacia.",
+      "screenshot": null
+    },
+    "WEB-TIC-004": {
+      "status": "PASS",
+      "obtained": "En un ticket ya cerrado del sistema, la UI deshabilito la respuesta y dejo el detalle en solo lectura.",
+      "screenshot": null
+    },
+    "WEB-TIC-005": {
+      "status": "FAIL",
+      "obtained": "Al intentar reabrir un ticket cerrado, el despliegue mostro 'Failed to fetch' y el ticket permanecio cerrado.",
+      "screenshot": "C:\\Users\\jbeto\\OneDrive\\Escritorio\\C-book-Proyecto\\.codex-test-artifacts\\web-regression-20260524-114432\\WEB-TIC-005-fixed.png"
+    },
+    "WEB-AGE-001": {
+      "status": "PASS",
+      "obtained": "El administrador de soporte pudo crear un nuevo agente y este aparecio en la lista.",
+      "screenshot": null
+    },
+    "WEB-AGE-002": {
+      "status": "PASS",
+      "obtained": "La pantalla bloqueo el alta del agente cuando la confirmacion no coincidio.",
+      "screenshot": null
+    },
+    "WEB-AGE-003": {
+      "status": "PASS",
+      "obtained": "La cuenta support_agent fue redirigida a /soporte y no pudo entrar a la pantalla de crear agentes.",
+      "screenshot": null
+    }
+  },
+  "corrected_at": "2026-05-24T11:51:55.476155"
+}

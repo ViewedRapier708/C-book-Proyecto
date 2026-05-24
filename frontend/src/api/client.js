@@ -1,4 +1,41 @@
-const API_BASE = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
+function normalizeApiBase(value) {
+  return String(value || '').trim().replace(/\/+$/, '');
+}
+
+function isLocalHostname(hostname = '') {
+  return ['localhost', '127.0.0.1', '0.0.0.0', '[::1]'].includes(hostname);
+}
+
+export function resolveApiBase({ envApiBase, location } = {}) {
+  const normalizedBase = normalizeApiBase(envApiBase);
+
+  if (!location || !normalizedBase) {
+    return normalizedBase;
+  }
+
+  if (isLocalHostname(location.hostname)) {
+    return normalizedBase;
+  }
+
+  try {
+    const apiUrl = new URL(normalizedBase);
+    if (apiUrl.origin === location.origin) {
+      return normalizedBase;
+    }
+  } catch {
+    return normalizedBase;
+  }
+
+  // En despliegues web preferimos /auth same-origin para evitar cookies third-party.
+  return '';
+}
+
+const viteEnv = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env : {};
+const runtimeLocation = typeof window !== 'undefined' ? window.location : undefined;
+const API_BASE = resolveApiBase({
+  envApiBase: viteEnv.VITE_API_URL,
+  location: runtimeLocation,
+});
 export const AUTH_UNAUTHORIZED_EVENT = 'auth:unauthorized';
 
 export function authUrl(endpoint) {
