@@ -1,6 +1,3 @@
-const pdfParse = require('pdf-parse');
-const XLSX = require('xlsx');
-
 // Regex patterns
 // GRUPO supports: 6CM1, 7IM3, 7IM3A, 3IB3, etc.
 const BOLETA_RE = /\b(\d{10})\b/;
@@ -115,6 +112,7 @@ function extractRows(text) {
  * Parse PDF buffer -> student rows.
  */
 async function parsePDF(buffer) {
+  const pdfParse = require('pdf-parse');
   const data = await pdfParse(buffer);
   return extractRows(data.text);
 }
@@ -124,6 +122,7 @@ async function parsePDF(buffer) {
  * Expected columns: Nombres, Boleta, Grupos.
  */
 function parseCSV(buffer) {
+  const XLSX = require('xlsx');
   const csvText = buffer.toString('utf-8').replace(/^\uFEFF/, '');
   if (!csvText.trim()) return [];
 
@@ -138,6 +137,7 @@ function parseCSV(buffer) {
  * Expected columns: Nombres, Boleta, Grupos.
  */
 function parseXLSX(buffer) {
+  const XLSX = require('xlsx');
   const wb = XLSX.read(buffer, { type: 'buffer' });
   const ws = wb.Sheets[wb.SheetNames[0]];
   const matrix = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });

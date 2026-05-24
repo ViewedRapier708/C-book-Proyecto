@@ -1,0 +1,141 @@
+{
+  "base_url": "https://c-book-proyecto.vercel.app",
+  "generated_at": "2026-05-24T12:59:53.771644",
+  "summary": {
+    "PASS": 19,
+    "FAIL": 7,
+    "PENDING": 0
+  },
+  "results": {
+    "WEB-LOG-001": {
+      "status": "PASS",
+      "obtained": "El alumno autentico correctamente y entro a /user con la password corregida.",
+      "screenshot": null
+    },
+    "WEB-CUE-001": {
+      "status": "PASS",
+      "obtained": "La vista /user/perfil cargo datos del alumno y el resumen de solicitudes.",
+      "screenshot": null
+    },
+    "WEB-BIB-001": {
+      "status": "PASS",
+      "obtained": "La biblioteca cargo el catalogo de libros o el estado vacio sin error.",
+      "screenshot": null
+    },
+    "WEB-BIB-002": {
+      "status": "PASS",
+      "obtained": "Al fallar la API, la vista mostro el mensaje de error al cargar libros.",
+      "screenshot": null
+    },
+    "WEB-SOL-001": {
+      "status": "PASS",
+      "obtained": "Se creo una solicitud de libro para 'test' y se actualizo la disponibilidad visual.",
+      "screenshot": null
+    },
+    "WEB-SOL-003": {
+      "status": "PASS",
+      "obtained": "Con 3 solicitudes pendientes, la UI mostro el limite alcanzado y bloqueo nuevas solicitudes.",
+      "screenshot": null
+    },
+    "WEB-SOL-002": {
+      "status": "FAIL",
+      "obtained": "No fue posible validar el bloqueo por documentacion porque la cuenta proporcionada tiene_documentos=true.",
+      "screenshot": ".codex-test-artifacts\\login-blocked-rerun-20260524-125614\\WEB-SOL-002.png"
+    },
+    "WEB-DOC-002": {
+      "status": "FAIL",
+      "obtained": "No fue posible validar el bloqueo backend por falta de documentos porque no se proporciono una cuenta con tiene_documentos=false.",
+      "screenshot": ".codex-test-artifacts\\login-blocked-rerun-20260524-125614\\WEB-SOL-002.png"
+    },
+    "WEB-LOG-002": {
+      "status": "PASS",
+      "obtained": "El administrador autentico correctamente y entro a /admin con la boleta corregida.",
+      "screenshot": null
+    },
+    "WEB-LIB-001": {
+      "status": "PASS",
+      "obtained": "Se creo el libro temporal 'QA Libro 896560' desde /admin/libros.",
+      "screenshot": null
+    },
+    "WEB-LIB-002": {
+      "status": "PASS",
+      "obtained": "La UI mostro conflicto por ISBN duplicado al intentar guardar el segundo libro.",
+      "screenshot": null
+    },
+    "WEB-LIB-003": {
+      "status": "PASS",
+      "obtained": "La validacion del formulario bloqueo el año 999 fuera del rango permitido.",
+      "screenshot": null
+    },
+    "WEB-ALU-001": {
+      "status": "PASS",
+      "obtained": "Se creo la boleta temporal 8614896560 en el catalogo.",
+      "screenshot": null
+    },
+    "WEB-ALU-002": {
+      "status": "FAIL",
+      "obtained": "La boleta real del administrador no quedo protegida en la UI; el boton Editar siguio habilitado.",
+      "screenshot": ".codex-test-artifacts\\login-blocked-rerun-20260524-125614\\WEB-ALU-002.png"
+    },
+    "WEB-ALU-003": {
+      "status": "FAIL",
+      "obtained": "La vista previa de carga masiva no mostro el resumen esperado.",
+      "screenshot": ".codex-test-artifacts\\login-blocked-rerun-20260524-125614\\WEB-ALU-003.png"
+    },
+    "WEB-ALU-004": {
+      "status": "PASS",
+      "obtained": "La UI rechazo el archivo no soportado para la carga masiva.",
+      "screenshot": null
+    },
+    "WEB-DOC-001": {
+      "status": "FAIL",
+      "obtained": "No habia usuarios pendientes de documentacion para ejecutar el caso.",
+      "screenshot": ".codex-test-artifacts\\login-blocked-rerun-20260524-125614\\WEB-DOC-001.png"
+    },
+    "WEB-GES-001": {
+      "status": "PASS",
+      "obtained": "La solicitud seleccionada fue aprobada desde /admin/solicitudes-libros.",
+      "screenshot": null
+    },
+    "WEB-GES-002": {
+      "status": "FAIL",
+      "obtained": "La solicitud fue rechazada, pero la UI no solicito ni mostro un motivo de rechazo.",
+      "screenshot": ".codex-test-artifacts\\login-blocked-rerun-20260524-125614\\WEB-GES-002.png"
+    },
+    "WEB-GES-003": {
+      "status": "PASS",
+      "obtained": "La solicitud aprobada genero un prestamo activo al registrar la entrega.",
+      "screenshot": null
+    },
+    "WEB-PRE-001": {
+      "status": "PASS",
+      "obtained": "La vista de prestamos mostro el prestamo activo generado durante la prueba.",
+      "screenshot": null
+    },
+    "WEB-PRE-002": {
+      "status": "PASS",
+      "obtained": "El prestamo de prueba pudo marcarse como devuelto desde la UI.",
+      "screenshot": null
+    },
+    "WEB-ANA-001": {
+      "status": "FAIL",
+      "obtained": "La vista de analytics no mostro los bloques esperados de estadisticas.",
+      "screenshot": ".codex-test-artifacts\\login-blocked-rerun-20260524-125614\\WEB-ANA-001.png"
+    },
+    "WEB-ANA-002": {
+      "status": "PASS",
+      "obtained": "El modulo de reportes genero una descarga Excel (reporte_usuarios.xlsx).",
+      "screenshot": null
+    },
+    "WEB-SOL-004": {
+      "status": "PASS",
+      "obtained": "El alumno pudo cancelar una solicitud pendiente desde /user/mis-solicitudes-libros.",
+      "screenshot": null
+    },
+    "WEB-CUE-002": {
+      "status": "PASS",
+      "obtained": "La cuenta del alumno pudo cambiar la contraseña y restaurarla correctamente en la misma corrida.",
+      "screenshot": null
+    }
+  }
+}

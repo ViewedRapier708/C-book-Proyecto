@@ -20,6 +20,7 @@ const PER_PAGE = 12;
 const PROTECTED_BOLETAS = new Set(['10000000001']);
 
 const STATUS_BG = { valid: '#dcfce7', duplicate: '#fef9c3', invalid: '#fee2e2' };
+const STATUS_TEXT = { valid: '#166534', duplicate: '#854d0e', invalid: '#991b1b' };
 const STATUS_BADGE = { valid: 'badge-success', duplicate: 'badge-warning', invalid: 'badge-danger' };
 
 function esBoletaProtegida(boleta) {
@@ -258,10 +259,10 @@ function ModalCargaMasiva({ open, onClose, onSuccess }) {
               </thead>
               <tbody>
                 {previewData.rows.map((row, i) => (
-                  <tr key={i} style={{ background: STATUS_BG[row.status], borderBottom: '1px solid var(--border-color)' }}>
-                    <td style={{ padding: '0.4rem 0.75rem', fontFamily: 'monospace' }}>{row.boleta}</td>
-                    <td style={{ padding: '0.4rem 0.75rem' }}>{row.nombre}</td>
-                    <td style={{ padding: '0.4rem 0.75rem' }}>{row.Grupo}</td>
+                  <tr key={i} style={{ background: STATUS_BG[row.status], borderBottom: '1px solid var(--border-color)', color: STATUS_TEXT[row.status] }}>
+                    <td style={{ padding: '0.4rem 0.75rem', fontFamily: 'monospace', color: STATUS_TEXT[row.status] }}>{row.boleta}</td>
+                    <td style={{ padding: '0.4rem 0.75rem', color: STATUS_TEXT[row.status] }}>{row.nombre}</td>
+                    <td style={{ padding: '0.4rem 0.75rem', color: STATUS_TEXT[row.status] }}>{row.Grupo}</td>
                     <td style={{ padding: '0.4rem 0.75rem' }}>
                       <span className={`badge ${STATUS_BADGE[row.status]}`}>{STATUS_LABEL[row.status]}</span>
                     </td>

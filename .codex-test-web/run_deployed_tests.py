@@ -28,10 +28,10 @@ RED_FONT = Font(color="9C0006", bold=True)
 YELLOW_FILL = PatternFill(fill_type="solid", fgColor="FFEB9C")
 YELLOW_FONT = Font(color="9C6500", bold=True)
 
-STUDENT_CREDS = ("2024090192", "Patata1234")
-ADMIN_CREDS = ("10000000001", "n0m3l0")
+STUDENT_CREDS = ("2024090192", "Patata1234.")
+ADMIN_CREDS = ("1000000001", "n0m3l0")
 SUPPORT_ADMIN_CREDS = ("9999999999", "SupportAdm")
-SUPPORT_AGENT_CREDS = ("2222222222", "Patata1234")
+SUPPORT_AGENT_CREDS = ("2222222222", "Patata1234.")
 
 
 @dataclass
@@ -206,6 +206,21 @@ class TestRunner:
         (self.artifact_dir / "results.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
     def update_workbooks(self) -> None:
+        def clear_images_for_row(ws, row_number: int) -> None:
+            images = getattr(ws, "_images", None)
+            if not images:
+                return
+            kept = []
+            for image in images:
+                try:
+                    anchor_row = image.anchor._from.row + 1
+                except Exception:
+                    kept.append(image)
+                    continue
+                if anchor_row != row_number:
+                    kept.append(image)
+            ws._images = kept
+
         for workbook_path in WORKBOOK_PATHS:
             wb = openpyxl.load_workbook(workbook_path)
             for ws in wb.worksheets:
@@ -221,6 +236,7 @@ class TestRunner:
                     obtained_cell = ws.cell(row=row, column=8)
                     evidence_cell = ws.cell(row=row, column=9)
                     status_cell = ws.cell(row=row, column=10)
+                    clear_images_for_row(ws, row)
 
                     obtained_cell.value = result.obtained
                     obtained_cell.alignment = Alignment(wrap_text=True, vertical="top")

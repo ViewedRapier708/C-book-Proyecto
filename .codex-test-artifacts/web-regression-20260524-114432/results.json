@@ -29,12 +29,12 @@
     },
     "WEB-LOG-001": {
       "status": "FAIL",
-      "obtained": "Con las credenciales proporcionadas para alumno, el despliegue respondio 'Boleta o contraseña incorrectos' y no abrio /user.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}. La sesion ya no depende de cookie cross-site; el fallo actual es de autenticacion/datos para la cuenta de alumno.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-LOG-001.png"
     },
     "WEB-LOG-002": {
       "status": "FAIL",
-      "obtained": "Con las credenciales proporcionadas para administrador, el despliegue respondio 'Boleta o contraseña incorrectos' y no abrio /admin.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}. La sesion ya no depende de cookie cross-site; el fallo actual es de autenticacion/datos para la cuenta admin.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-LOG-002.png"
     },
     "WEB-LOG-003": {
@@ -89,122 +89,122 @@
     },
     "WEB-CUE-001": {
       "status": "FAIL",
-      "obtained": "No fue posible abrir /user/perfil porque las credenciales de alumno proporcionadas fallaron en el despliegue.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-CUE-001.png"
     },
     "WEB-CUE-002": {
       "status": "FAIL",
-      "obtained": "No fue posible probar el cambio de contraseña propia porque la sesion de alumno no autentica en el despliegue.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-CUE-002.png"
     },
     "WEB-BIB-001": {
       "status": "FAIL",
-      "obtained": "No fue posible validar el catálogo de libros porque la cuenta de alumno no pudo autenticarse.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-BIB-001.png"
     },
     "WEB-BIB-002": {
       "status": "FAIL",
-      "obtained": "No fue posible simular el fallo de carga desde la vista de libros porque la cuenta de alumno no autentica.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-BIB-002.png"
     },
     "WEB-SOL-001": {
       "status": "FAIL",
-      "obtained": "No fue posible solicitar un libro porque la cuenta de alumno proporcionada no inicia sesión.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-SOL-001.png"
     },
     "WEB-SOL-002": {
       "status": "FAIL",
-      "obtained": "No fue posible validar el bloqueo por documentación porque la cuenta de alumno no inicia sesión.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-SOL-002.png"
     },
     "WEB-SOL-003": {
       "status": "FAIL",
-      "obtained": "No fue posible validar el límite de solicitudes porque la cuenta de alumno no inicia sesión.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-SOL-003.png"
     },
     "WEB-SOL-004": {
       "status": "FAIL",
-      "obtained": "No fue posible cancelar solicitudes porque la cuenta de alumno no inicia sesión.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-SOL-004.png"
     },
     "WEB-LIB-001": {
       "status": "FAIL",
-      "obtained": "No fue posible validar el alta de libros porque la cuenta admin proporcionada no autentica.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-LIB-001.png"
     },
     "WEB-LIB-002": {
       "status": "FAIL",
-      "obtained": "No fue posible validar ISBN duplicado porque la cuenta admin proporcionada no autentica.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-LIB-002.png"
     },
     "WEB-LIB-003": {
       "status": "FAIL",
-      "obtained": "No fue posible validar año fuera de rango porque la cuenta admin proporcionada no autentica.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-LIB-003.png"
     },
     "WEB-ALU-001": {
       "status": "FAIL",
-      "obtained": "No fue posible validar la creación de boletas porque la cuenta admin proporcionada no autentica.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-ALU-001.png"
     },
     "WEB-ALU-002": {
       "status": "FAIL",
-      "obtained": "No fue posible validar la boleta protegida porque la cuenta admin proporcionada no autentica.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-ALU-002.png"
     },
     "WEB-ALU-003": {
       "status": "FAIL",
-      "obtained": "No fue posible probar la vista previa de Excel porque la cuenta admin proporcionada no autentica.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-ALU-003.png"
     },
     "WEB-ALU-004": {
       "status": "FAIL",
-      "obtained": "No fue posible probar el rechazo de archivo no soportado porque la cuenta admin proporcionada no autentica.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-ALU-004.png"
     },
     "WEB-DOC-001": {
       "status": "FAIL",
-      "obtained": "No fue posible probar la habilitación de documentación porque la cuenta admin proporcionada no autentica.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-DOC-001.png"
     },
     "WEB-DOC-002": {
       "status": "FAIL",
-      "obtained": "No fue posible probar el bloqueo sin documentos porque la cuenta de alumno proporcionada no autentica.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-DOC-002.png"
     },
     "WEB-GES-001": {
       "status": "FAIL",
-      "obtained": "No fue posible aprobar solicitudes porque la cuenta admin proporcionada no autentica.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-GES-001.png"
     },
     "WEB-GES-002": {
       "status": "FAIL",
-      "obtained": "No fue posible rechazar solicitudes porque la cuenta admin proporcionada no autentica.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-GES-002.png"
     },
     "WEB-GES-003": {
       "status": "FAIL",
-      "obtained": "No fue posible registrar la entrega del libro porque la cuenta admin proporcionada no autentica.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-GES-003.png"
     },
     "WEB-PRE-001": {
       "status": "FAIL",
-      "obtained": "No fue posible consultar préstamos porque la cuenta admin proporcionada no autentica.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-PRE-001.png"
     },
     "WEB-PRE-002": {
       "status": "FAIL",
-      "obtained": "No fue posible registrar devoluciones porque la cuenta admin proporcionada no autentica.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-PRE-002.png"
     },
     "WEB-ANA-001": {
       "status": "FAIL",
-      "obtained": "No fue posible validar analytics porque la cuenta admin proporcionada no autentica.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-ANA-001.png"
     },
     "WEB-ANA-002": {
       "status": "FAIL",
-      "obtained": "No fue posible validar la exportación de reportes porque la cuenta admin proporcionada no autentica.",
+      "obtained": "Reintento posterior al deploy con /auth same-origin: la autenticacion sigue bloqueada. POST /auth/login respondio 400 {\"error\":\"Boleta o contrase?a incorrectos\"}, por lo que el caso permanece fallido por acceso no disponible y no por cookie cross-site.",
       "screenshot": ".codex-test-artifacts\\web-regression-20260524-114432\\WEB-ANA-002.png"
     },
     "WEB-SOP-001": {
@@ -263,5 +263,6 @@
       "screenshot": null
     }
   },
-  "corrected_at": "2026-05-24T11:51:55.476155"
+  "corrected_at": "2026-05-24T11:51:55.476155",
+  "retested_login_blocked_cases_at": "2026-05-24T12:30:06.457588"
 }
