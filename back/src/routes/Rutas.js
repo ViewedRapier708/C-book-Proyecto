@@ -31,6 +31,8 @@ router.post('/cambiar-contrasena', sessionGuard, cambiarContrasenaPropia);
 // ==================== RUTAS DE ADMINISTRADOR ====================
 
 // Crear materiales
+router.post('/admin/libros/preview', sessionGuard, upload.single('file'), controladorAdministrador.previewCargaMasivaLibros);
+router.post('/admin/libros/bulk', sessionGuard, controladorAdministrador.confirmarCargaMasivaLibros);
 router.post('/admin/libros', sessionGuard, controladorAdministrador.crearLibro);
 
 // Eliminar materiales

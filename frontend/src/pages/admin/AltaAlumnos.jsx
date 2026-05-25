@@ -32,7 +32,7 @@ function normalizarGrupo(grupo) {
 }
 
 function esGrupoAdminProtegido(grupo) {
-  return normalizarGrupo(grupo) === 'ADMIN';
+  return ['ADMIN', 'ADMINISTRADOR'].includes(normalizarGrupo(grupo));
 }
 
 function esAlumnoProtegido(item) {
@@ -315,7 +315,7 @@ export default function AltaAlumnos() {
     setLoading(true);
     try {
       const data = await adminApi.getBoletas();
-      setItems(data.data || []);
+      setItems((data.data || []).filter((item) => !esGrupoAdminProtegido(item?.Grupo)));
     } catch { toast.error('Error al cargar alumnos'); }
     finally { setLoading(false); }
   }, []);

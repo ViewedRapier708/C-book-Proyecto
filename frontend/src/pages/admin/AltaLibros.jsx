@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { adminApi } from '../../api/admin';
 import { Spinner, EmptyState } from '../../components/ui/Feedback';
 import Pagination from '../../components/ui/Pagination';
 import Modal from '../../components/ui/Modal';
 import toast from 'react-hot-toast';
-import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, Upload } from 'lucide-react';
 import ExportButtons from '../../components/ui/ExportButtons';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 
@@ -15,6 +15,262 @@ const EXPORT_COLS = [
 ];
 
 const EMPTY = { titulo: '', autor: '', clasificacion: '', isbn: '', tipo_material: '', codigo_barras: '', numero_ejemplar: '', anio: '', estatus_item: '', disponible: true, coleccion: '' };
+const STATUS_BG = { valid: '#dcfce7', duplicate: '#fef9c3', invalid: '#fee2e2' };
+const STATUS_TEXT = { valid: '#166534', duplicate: '#854d0e', invalid: '#991b1b' };
+const STATUS_BADGE = { valid: 'badge-success', duplicate: 'badge-warning', invalid: 'badge-danger' };
+const STATUS_LABEL = { valid: 'Valida', duplicate: 'Duplicada', invalid: 'Invalida' };
+const STAGE_META = {
+  idle: { label: 'Esperando archivo', percent: 0, color: '#94a3b8' },
+  uploading: { label: 'Subiendo archivo', percent: 30, color: '#3b82f6' },
+  analyzing: { label: 'Analizando datos', percent: 65, color: '#6366f1' },
+  ready: { label: 'Listo para confirmar', percent: 85, color: '#14b8a6' },
+  importing: { label: 'Importando en libros', percent: 92, color: '#f59e0b' },
+  completed: { label: 'Carga finalizada', percent: 100, color: '#22c55e' },
+};
+
+function ModalCargaMasivaLibros({ open, onClose, onSuccess }) {
+  const [estado, setEstado] = useState('idle');
+  const [previewData, setPreviewData] = useState(null);
+  const [stage, setStage] = useState('idle');
+  const [completionMessage, setCompletionMessage] = useState('');
+  const fileRef = useRef(null);
+  const stageTimeoutRef = useRef(null);
+
+  const clearStageTimer = () => {
+    if (stageTimeoutRef.current) {
+      clearTimeout(stageTimeoutRef.current);
+      stageTimeoutRef.current = null;
+    }
+  };
+
+  useEffect(() => () => clearStageTimer(), []);
+
+  const reset = () => {
+    clearStageTimer();
+    setEstado('idle');
+    setPreviewData(null);
+    setStage('idle');
+    setCompletionMessage('');
+  };
+
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
+  const processFile = async (file) => {
+    if (!file) return;
+    setEstado('loading');
+    setStage('uploading');
+    setCompletionMessage('');
+    clearStageTimer();
+    stageTimeoutRef.current = setTimeout(() => setStage('analyzing'), 500);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const result = await adminApi.previewBulkLibros(fd);
+      clearStageTimer();
+      setPreviewData(result);
+      setEstado('preview');
+      setStage('ready');
+    } catch (err) {
+      clearStageTimer();
+      toast.error(err.message || 'Error al procesar el archivo');
+      setEstado('idle');
+      setStage('idle');
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    processFile(e.dataTransfer.files[0]);
+  };
+
+  const handleFileInput = (e) => processFile(e.target.files[0]);
+
+  const rowsToConfirm = previewData?.rows.filter((row) => row.status === 'valid') || [];
+
+  const handleConfirm = async () => {
+    if (rowsToConfirm.length === 0) {
+      toast.error('No hay filas validas para importar');
+      return;
+    }
+    setEstado('submitting');
+    setStage('importing');
+    setCompletionMessage('');
+    try {
+      const result = await adminApi.confirmBulkLibros({ rows: rowsToConfirm });
+      const summaryText = `${result.inserted || 0} libros agregados${result.skipped ? `, ${result.skipped} omitidos` : ''}`;
+      setCompletionMessage(`Carga finalizada: ${summaryText}.`);
+      toast.success(summaryText);
+      onSuccess();
+      setEstado('preview');
+      setStage('completed');
+    } catch (err) {
+      toast.error(err.message || 'Error al importar libros');
+      setEstado('preview');
+      setStage('ready');
+    }
+  };
+
+  const stageInfo = STAGE_META[stage] || STAGE_META.idle;
+  const showProgress = estado !== 'idle';
+
+  return (
+    <Modal
+      open={open}
+      onClose={handleClose}
+      title="Carga Masiva de Libros"
+      wide
+      footer={
+        estado === 'preview' || estado === 'submitting' ? (
+          <>
+            <button className="btn btn-ghost" onClick={handleClose} disabled={estado === 'submitting'}>
+              {stage === 'completed' ? 'Cerrar' : 'Cancelar'}
+            </button>
+            {stage !== 'completed' && (
+              <button
+                className="btn btn-primary"
+                onClick={handleConfirm}
+                disabled={estado === 'submitting' || rowsToConfirm.length === 0}
+              >
+                {estado === 'submitting' ? 'Importando...' : `Confirmar carga (${rowsToConfirm.length})`}
+              </button>
+            )}
+          </>
+        ) : (
+          <button className="btn btn-ghost" onClick={handleClose}>Cerrar</button>
+        )
+      }
+    >
+      {showProgress && (
+        <div style={{ marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{stageInfo.label}</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{stageInfo.percent}%</span>
+          </div>
+          <div style={{ height: 8, borderRadius: 999, background: 'var(--bg-glass-strong)', overflow: 'hidden' }}>
+            <div
+              style={{
+                height: '100%',
+                width: `${stageInfo.percent}%`,
+                background: stageInfo.color,
+                transition: 'width 250ms ease',
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {estado === 'idle' && (
+        <div
+          onDrop={handleDrop}
+          onDragOver={(e) => e.preventDefault()}
+          onClick={() => fileRef.current?.click()}
+          style={{
+            border: '2px dashed var(--border-color)',
+            borderRadius: 12,
+            padding: '3rem 2rem',
+            textAlign: 'center',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--accent-primary)')}
+          onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border-color)')}
+        >
+          <Upload size={40} style={{ margin: '0 auto 1rem', color: 'var(--text-muted)' }} />
+          <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Arrastra tu archivo aqui</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>o haz clic para seleccionar</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.75rem' }}>
+            Formatos soportados: Excel (.xlsx/.xls), CSV y PDF - max. 10 MB
+          </p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.35rem' }}>
+            Encabezados obligatorios: Codigo de barras, Titulo, Autor, No. de clasificacion, ISBN, Tipo de material, No. de ejemplar, Anio, Estatus de item, Coleccion
+          </p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.35rem' }}>
+            Pie de imprenta y Estado de proceso se ignoran porque no existen en el alta manual.
+          </p>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".csv,.xlsx,.xls,.pdf"
+            style={{ display: 'none' }}
+            onChange={handleFileInput}
+          />
+        </div>
+      )}
+
+      {estado === 'loading' && (
+        <div style={{ textAlign: 'center', padding: '3rem' }}>
+          <Spinner />
+          <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>Procesando archivo...</p>
+        </div>
+      )}
+
+      {(estado === 'preview' || estado === 'submitting') && previewData && (
+        <div>
+          {completionMessage && (
+            <div
+              style={{
+                marginBottom: '1rem',
+                padding: '0.75rem 1rem',
+                border: '1px solid #86efac',
+                background: '#f0fdf4',
+                color: '#166534',
+                borderRadius: 8,
+                fontWeight: 600,
+              }}
+            >
+              {completionMessage}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+              Archivo: <strong>{previewData.fileName}</strong>
+            </span>
+            <span className="badge badge-success">{previewData.summary.valid} validas</span>
+            <span className="badge badge-warning">{previewData.summary.duplicate} duplicadas</span>
+            <span className="badge badge-danger">{previewData.summary.invalid} con error</span>
+          </div>
+
+          <div style={{ maxHeight: 320, overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: 8 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem' }}>
+              <thead>
+                <tr style={{ background: 'var(--bg-glass-strong)', position: 'sticky', top: 0 }}>
+                  <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>Codigo</th>
+                  <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>Titulo</th>
+                  <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>Autor</th>
+                  <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>ISBN</th>
+                  <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>Ejemplar</th>
+                  <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>Anio</th>
+                  <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {previewData.rows.map((row, i) => (
+                  <tr key={i} style={{ background: STATUS_BG[row.status], borderBottom: '1px solid var(--border-color)', color: STATUS_TEXT[row.status] }}>
+                    <td style={{ padding: '0.4rem 0.75rem', fontFamily: 'monospace', color: STATUS_TEXT[row.status] }}>{row.codigo_barras || '-'}</td>
+                    <td style={{ padding: '0.4rem 0.75rem', color: STATUS_TEXT[row.status], maxWidth: 240, overflowWrap: 'anywhere' }}>{row.titulo || '-'}</td>
+                    <td style={{ padding: '0.4rem 0.75rem', color: STATUS_TEXT[row.status], maxWidth: 180, overflowWrap: 'anywhere' }}>{row.autor || '-'}</td>
+                    <td style={{ padding: '0.4rem 0.75rem', color: STATUS_TEXT[row.status] }}>{row.isbn || '-'}</td>
+                    <td style={{ padding: '0.4rem 0.75rem', color: STATUS_TEXT[row.status] }}>{row.numero_ejemplar || '-'}</td>
+                    <td style={{ padding: '0.4rem 0.75rem', color: STATUS_TEXT[row.status] }}>{row.anio || '-'}</td>
+                    <td style={{ padding: '0.4rem 0.75rem' }}>
+                      <span className={`badge ${STATUS_BADGE[row.status]}`}>{STATUS_LABEL[row.status]}</span>
+                      {row.message && (
+                        <span style={{ display: 'block', marginTop: 4, color: STATUS_TEXT[row.status], fontSize: '0.72rem' }}>{row.message}</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </Modal>
+  );
+}
 
 export default function AltaLibros() {
   const [items, setItems] = useState([]);
@@ -26,6 +282,7 @@ export default function AltaLibros() {
   const [form, setForm] = useState(EMPTY);
   const [submitting, setSubmitting] = useState(false);
   const [deleteModal, setDeleteModal] = useState(null);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const PER_PAGE = 12;
 
   const load = useCallback(async () => {
@@ -119,6 +376,7 @@ export default function AltaLibros() {
           <input className="search-input" style={{ paddingLeft: 34 }} placeholder="Buscar por título, autor, ISBN..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>
         <ExportButtons data={filtered} columns={EXPORT_COLS} filenameBase="libros" title="Reporte de Libros" />
+        <button className="btn btn-outline" onClick={() => setBulkOpen(true)}><Upload size={16} /> Carga masiva</button>
         <button className="btn btn-primary" onClick={openNew}><Plus size={16} /> Nuevo Libro</button>
       </div>
 
@@ -215,6 +473,8 @@ export default function AltaLibros() {
       >
         <p>¿Estás seguro de eliminar <strong>{deleteModal?.titulo}</strong>? Esta acción no se puede deshacer.</p>
       </Modal>
+
+      <ModalCargaMasivaLibros open={bulkOpen} onClose={() => setBulkOpen(false)} onSuccess={load} />
     </AnimatedPage>
   );
 }

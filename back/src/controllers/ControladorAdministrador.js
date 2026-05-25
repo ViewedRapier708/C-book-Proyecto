@@ -21,6 +21,9 @@ const {
     EliminarBoleta,
     BulkUpsertBoletas,
     BoletasExistentes,
+    LibrosExistentesPorIsbn,
+    EjemplaresExistentesPorCodigo,
+    BulkCrearLibrosConEjemplares,
 } = require('../models/ModeloAdministrador.js');
 const { enviarCorreo, plantillaCorreo } = require('../utils/servicioCorreo.js');
 const {
@@ -49,6 +52,101 @@ function validarEnteroSinDecimales(valor, campo) {
     }
 
     return { ok: true, value: numero };
+}
+
+const LIBRO_REGEX = {
+    titulo: /^[\p{L}\p{N}\s\-\.,;:Â¿?Â¡!'"()\[\]{}Â«Â»â€“â€”&@#$%*+=_\\/]*$/u,
+    clasificacion: /^[\p{L}\p{N}\s\.\-]*$/u,
+    tipo_material: /^[\p{L}\s]+$/u,
+    autor: /^[\p{L}\s'\-\.,]+$/u,
+    codigo_barras: /^[\p{L}\p{N}\-]+$/u,
+    coleccion: /^[\p{L}\p{N}\s\-\.,;:Â¿?Â¡!'"()&]*$/u,
+    estatus_item: /^[\p{L}\p{N}\s_\-]+$/u,
+};
+
+const LIBRO_LONGITUDES = {
+    titulo: { min: 1, max: 500 },
+    clasificacion: { min: 1, max: 50 },
+    tipo_material: { min: 1, max: 50 },
+    autor: { min: 1, max: 200 },
+    codigo_barras: { min: 3, max: 50 },
+    coleccion: { min: 1, max: 200 },
+    estatus_item: { min: 1, max: 50 },
+};
+
+function normalizarDisponible(value) {
+    if (typeof value === 'boolean') return value;
+    const text = String(value ?? '').trim().toLowerCase();
+    if (!text) return true;
+    return ['true', '1', 'si', 'sÃ­', 'disponible', 'yes'].includes(text);
+}
+
+function validarLibroEjemplarPayload(input, options = {}) {
+    const { isbnRequerido = true } = options;
+    const row = {
+        titulo: String(input?.titulo ?? '').trim(),
+        clasificacion: String(input?.clasificacion ?? '').trim(),
+        isbn: String(input?.isbn ?? '').trim(),
+        tipo_material: String(input?.tipo_material ?? '').trim(),
+        autor: String(input?.autor ?? '').trim(),
+        codigo_barras: String(input?.codigo_barras ?? '').trim(),
+        numero_ejemplar: String(input?.numero_ejemplar ?? '').trim(),
+        anio: String(input?.anio ?? '').trim(),
+        estatus_item: String(input?.estatus_item ?? '').trim(),
+        coleccion: String(input?.coleccion ?? '').trim(),
+        Disponible: normalizarDisponible(input?.Disponible),
+    };
+
+    if (!row.titulo || !row.clasificacion || !row.tipo_material || !row.autor || (isbnRequerido && !row.isbn)) {
+        return { ok: false, message: 'Todos los campos son requeridos', row };
+    }
+
+    if (!row.numero_ejemplar || !row.anio || !row.estatus_item || !row.coleccion || !row.codigo_barras) {
+        return { ok: false, message: 'Todos los campos del ejemplar son requeridos', row };
+    }
+
+    const validacionNumeroEjemplar = validarEnteroSinDecimales(row.numero_ejemplar, 'numero_ejemplar');
+    if (!validacionNumeroEjemplar.ok) return { ok: false, message: validacionNumeroEjemplar.message, row };
+
+    const validacionAnio = validarEnteroSinDecimales(row.anio, 'anio');
+    if (!validacionAnio.ok) return { ok: false, message: validacionAnio.message, row };
+
+    if (validacionAnio.value < 1000 || validacionAnio.value > 2100) {
+        return { ok: false, message: 'El aÃ±o debe estar entre 1000 y 2100', row };
+    }
+
+    const regexChecks = [
+        ['titulo', 'El tÃ­tulo contiene caracteres no permitidos (no se permiten emojis)'],
+        ['clasificacion', 'La clasificaciÃ³n solo puede contener letras, nÃºmeros, espacios, puntos y guiones'],
+        ['tipo_material', 'El tipo de material solo puede contener letras y espacios'],
+        ['autor', 'El autor solo puede contener letras, espacios, apÃ³strofes, puntos, comas y guiones'],
+        ['codigo_barras', 'El cÃ³digo de barras contiene caracteres no permitidos'],
+        ['coleccion', 'La colecciÃ³n contiene caracteres no permitidos'],
+        ['estatus_item', 'El estatus del item contiene caracteres no permitidos'],
+    ];
+
+    for (const [campo, message] of regexChecks) {
+        if (!LIBRO_REGEX[campo].test(row[campo])) {
+            return { ok: false, message, row };
+        }
+    }
+
+    for (const [campo, limites] of Object.entries(LIBRO_LONGITUDES)) {
+        const valor = row[campo];
+        if (valor.length < limites.min || valor.length > limites.max) {
+            return { ok: false, message: `El campo ${campo} debe tener entre ${limites.min} y ${limites.max} caracteres`, row };
+        }
+    }
+
+    return {
+        ok: true,
+        row: {
+            ...row,
+            isbn: row.isbn || null,
+            numero_ejemplar: validacionNumeroEjemplar.value,
+            anio: validacionAnio.value,
+        },
+    };
 }
 
 // ==================== CREAR MATERIALES ====================
@@ -150,7 +248,7 @@ const regex = {
     tipo_material: /^[\p{L}\s]+$/u,
     
     // Autor: letras, espacios, apóstrofes, guiones y acentos
-    autor: /^[\p{L}\s'\-\.]+$/u,
+    autor: /^[\p{L}\s'\-\.,]+$/u,
     
     // Código de barras: típicamente números, pero algunos sistemas usan letras
     codigo_barras: /^[\p{L}\p{N}\-]+$/u,
@@ -187,7 +285,7 @@ if (!regex.tipo_material.test(tipoMaterialTrim)) {
 if (!regex.autor.test(autorTrim)) {
     return res.status(400).json({
         success: false,
-        message: 'El autor solo puede contener letras, espacios, apóstrofes, puntos y guiones'
+        message: 'El autor solo puede contener letras, espacios, apóstrofes, puntos, comas y guiones'
     });
 }
 
@@ -1225,6 +1323,164 @@ async function confirmarCargaMasiva(req, res) {
     }
 }
 
+async function previewCargaMasivaLibros(req, res) {
+    try {
+        const file = req.file;
+        if (!file) {
+            return res.status(400).json({ success: false, message: 'No se recibiÃ³ ningÃºn archivo' });
+        }
+
+        const { parseCSV, parseXLSX, parsePDF } = require('../utils/parserLibros');
+        const ext = path.extname(file.originalname).toLowerCase();
+        const mime = (file.mimetype || '').toLowerCase();
+
+        let parsedRows = [];
+        try {
+            if (ext === '.csv' || mime === 'text/csv' || mime === 'application/csv') {
+                parsedRows = parseCSV(file.buffer);
+            } else if (['.xlsx', '.xls'].includes(ext) || mime.includes('spreadsheetml') || mime.includes('ms-excel')) {
+                parsedRows = parseXLSX(file.buffer);
+            } else if (ext === '.pdf' || mime.includes('pdf')) {
+                parsedRows = await parsePDF(file.buffer);
+            } else {
+                return res.status(400).json({ success: false, message: 'Formato no soportado. Use Excel (.xlsx/.xls), CSV o PDF.' });
+            }
+        } catch (parseError) {
+            console.error('Error parseando archivo de libros:', parseError);
+            return res.status(400).json({ success: false, message: 'Error al procesar el archivo: ' + parseError.message });
+        }
+
+        const validated = parsedRows.map((row, index) => {
+            const result = validarLibroEjemplarPayload(row, { isbnRequerido: false });
+            return {
+                index,
+                raw: row,
+                valid: result.ok,
+                row: result.row,
+                message: result.ok ? '' : result.message,
+            };
+        });
+
+        const isbnValues = validated
+            .filter((item) => item.valid && item.row.isbn)
+            .map((item) => item.row.isbn);
+        const codigoValues = validated
+            .filter((item) => item.valid)
+            .map((item) => item.row.codigo_barras);
+
+        const [existingIsbnResult, existingCodigoResult] = await Promise.all([
+            LibrosExistentesPorIsbn(isbnValues),
+            EjemplaresExistentesPorCodigo(codigoValues),
+        ]);
+
+        if (!existingIsbnResult.success) return res.status(400).json(existingIsbnResult);
+        if (!existingCodigoResult.success) return res.status(400).json(existingCodigoResult);
+
+        const existingIsbns = new Set(existingIsbnResult.data || []);
+        const existingCodigos = new Set(existingCodigoResult.data || []);
+        const seenIsbns = new Set();
+        const seenCodigos = new Set();
+
+        const rows = validated.map((item) => {
+            const row = item.row;
+            if (!item.valid) {
+                return { ...row, status: 'invalid', message: item.message };
+            }
+
+            const duplicatedReasons = [];
+            if (row.isbn && (existingIsbns.has(row.isbn) || seenIsbns.has(row.isbn))) {
+                duplicatedReasons.push('ISBN duplicado');
+            }
+            if (existingCodigos.has(row.codigo_barras) || seenCodigos.has(row.codigo_barras)) {
+                duplicatedReasons.push('cÃ³digo de barras duplicado');
+            }
+
+            if (row.isbn) seenIsbns.add(row.isbn);
+            seenCodigos.add(row.codigo_barras);
+
+            if (duplicatedReasons.length > 0) {
+                return { ...row, status: 'duplicate', message: duplicatedReasons.join(' y ') };
+            }
+
+            return { ...row, status: 'valid', message: '' };
+        });
+
+        const summary = {
+            valid: rows.filter(r => r.status === 'valid').length,
+            duplicate: rows.filter(r => r.status === 'duplicate').length,
+            invalid: rows.filter(r => r.status === 'invalid').length,
+        };
+
+        return res.status(200).json({ success: true, rows, summary, fileName: file.originalname });
+    } catch (error) {
+        console.error('Error en previewCargaMasivaLibros:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+}
+
+async function confirmarCargaMasivaLibros(req, res) {
+    try {
+        const { rows } = req.body;
+
+        if (!Array.isArray(rows) || rows.length === 0) {
+            return res.status(400).json({ success: false, message: 'No hay filas para importar' });
+        }
+
+        const validatedRows = rows
+            .map((row) => validarLibroEjemplarPayload(row, { isbnRequerido: false }))
+            .filter((result) => result.ok)
+            .map((result) => result.row);
+
+        if (validatedRows.length === 0) {
+            return res.status(400).json({ success: false, message: 'No hay filas con formato vÃ¡lido para importar' });
+        }
+
+        const [existingIsbnResult, existingCodigoResult] = await Promise.all([
+            LibrosExistentesPorIsbn(validatedRows.map((row) => row.isbn).filter(Boolean)),
+            EjemplaresExistentesPorCodigo(validatedRows.map((row) => row.codigo_barras)),
+        ]);
+
+        if (!existingIsbnResult.success) return res.status(400).json(existingIsbnResult);
+        if (!existingCodigoResult.success) return res.status(400).json(existingCodigoResult);
+
+        const existingIsbns = new Set(existingIsbnResult.data || []);
+        const existingCodigos = new Set(existingCodigoResult.data || []);
+        const seenIsbns = new Set();
+        const seenCodigos = new Set();
+        let skipped = 0;
+
+        const importableRows = validatedRows.filter((row) => {
+            const isDuplicated = Boolean(
+                (row.isbn && (existingIsbns.has(row.isbn) || seenIsbns.has(row.isbn))) ||
+                existingCodigos.has(row.codigo_barras) ||
+                seenCodigos.has(row.codigo_barras)
+            );
+
+            if (row.isbn) seenIsbns.add(row.isbn);
+            seenCodigos.add(row.codigo_barras);
+
+            if (isDuplicated) skipped += 1;
+            return !isDuplicated;
+        });
+
+        if (importableRows.length === 0) {
+            return res.status(400).json({ success: false, message: 'No hay filas nuevas para importar' });
+        }
+
+        const resultado = await BulkCrearLibrosConEjemplares(importableRows);
+        if (!resultado.success) return res.status(400).json(resultado);
+
+        return res.status(200).json({
+            success: true,
+            inserted: resultado.data.length,
+            skipped,
+        });
+    } catch (error) {
+        console.error('Error en confirmarCargaMasivaLibros:', error);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+}
+
 module.exports = {
     crearLibro,
     eliminarMaterial,
@@ -1243,5 +1499,7 @@ module.exports = {
     eliminarBoleta,
     previewCargaMasiva,
     confirmarCargaMasiva,
+    previewCargaMasivaLibros,
+    confirmarCargaMasivaLibros,
 };
 

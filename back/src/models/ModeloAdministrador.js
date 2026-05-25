@@ -667,6 +667,101 @@ async function BoletasExistentes(boletasArr) {
     }
 }
 
+async function LibrosExistentesPorIsbn(isbnsArr) {
+    try {
+        const isbns = (isbnsArr || []).filter(Boolean);
+        if (isbns.length === 0) return { success: true, data: [] };
+
+        const { data, error } = await supabase
+            .from('libros')
+            .select('isbn')
+            .in('isbn', isbns);
+
+        if (error) {
+            console.error('Error verificando ISBN existentes:', error);
+            return { success: false, message: error.message };
+        }
+
+        return { success: true, data: (data || []).map(r => r.isbn) };
+    } catch (error) {
+        console.error('Error interno en LibrosExistentesPorIsbn:', error);
+        return { success: false, message: 'Error interno del servidor' };
+    }
+}
+
+async function EjemplaresExistentesPorCodigo(codigosArr) {
+    try {
+        const codigos = (codigosArr || []).filter(Boolean);
+        if (codigos.length === 0) return { success: true, data: [] };
+
+        const { data, error } = await supabase
+            .from('ejemplares')
+            .select('codigo_barras')
+            .in('codigo_barras', codigos);
+
+        if (error) {
+            console.error('Error verificando codigos de barras existentes:', error);
+            return { success: false, message: error.message };
+        }
+
+        return { success: true, data: (data || []).map(r => r.codigo_barras) };
+    } catch (error) {
+        console.error('Error interno en EjemplaresExistentesPorCodigo:', error);
+        return { success: false, message: 'Error interno del servidor' };
+    }
+}
+
+async function BulkCrearLibrosConEjemplares(rows) {
+    const inserted = [];
+
+    try {
+        for (const row of rows) {
+            const resultadoLibro = await CrearLibro(
+                row.titulo,
+                row.clasificacion,
+                row.isbn || null,
+                row.tipo_material,
+                row.autor
+            );
+
+            if (!resultadoLibro.success) {
+                return { success: false, message: resultadoLibro.message, inserted };
+            }
+
+            const libroCreado = Array.isArray(resultadoLibro.data) ? resultadoLibro.data[0] : null;
+            const libroId = libroCreado?.id;
+            if (!libroId) {
+                return { success: false, message: 'No se pudo obtener el id del libro creado', inserted };
+            }
+
+            const resultadoEjemplar = await CrearEjemplar(
+                libroId,
+                row.codigo_barras,
+                row.numero_ejemplar,
+                row.anio,
+                row.estatus_item,
+                row.Disponible,
+                row.coleccion
+            );
+
+            if (!resultadoEjemplar.success) {
+                await supabase.from('libros').delete().eq('id', libroId);
+                return { success: false, message: resultadoEjemplar.message, inserted };
+            }
+
+            inserted.push({
+                libro: libroCreado,
+                ejemplar: Array.isArray(resultadoEjemplar.data) ? resultadoEjemplar.data[0] : null,
+            });
+        }
+
+        return { success: true, data: inserted };
+    } catch (error) {
+        console.error('Error interno en BulkCrearLibrosConEjemplares:', error);
+        return { success: false, message: 'Error interno del servidor', inserted };
+    }
+}
+
 module.exports = {
     CrearLibro,
     CrearEjemplar,
@@ -691,4 +786,7 @@ module.exports = {
     EliminarBoleta,
     BulkUpsertBoletas,
     BoletasExistentes,
+    LibrosExistentesPorIsbn,
+    EjemplaresExistentesPorCodigo,
+    BulkCrearLibrosConEjemplares,
 };

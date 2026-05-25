@@ -6,6 +6,22 @@ export const adminApi = {
   createBook: (data) => api.post('/admin/libros', data),
   updateBook: (data) => api.put('/admin/libros', data),
   deleteMaterial: (tipo, id) => api.delete(`/admin/materiales/${tipo}/${id}`),
+  confirmBulkLibros: (data) => api.post('/admin/libros/bulk', data),
+  previewBulkLibros: async (formData) => {
+    const res = await fetch(authUrl('/admin/libros/preview'), {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      if (res.status === 401) {
+        window.dispatchEvent(new CustomEvent(AUTH_UNAUTHORIZED_EVENT));
+      }
+      throw new Error(data.error || data.message || `Error ${res.status}`);
+    }
+    return data;
+  },
 
   // Users
   getUsers: () => api.get('/admin/usuarios'),
