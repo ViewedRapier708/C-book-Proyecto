@@ -17,7 +17,7 @@ const EXPORT_COLS = [
 
 const EMPTY_FORM = { boleta: '', nombre: '', Grupo: '' };
 const PER_PAGE = 12;
-const PROTECTED_BOLETAS = new Set(['10000000001']);
+const PROTECTED_BOLETAS = new Set(['10000000001', '1000000001']);
 
 const STATUS_BG = { valid: '#dcfce7', duplicate: '#fef9c3', invalid: '#fee2e2' };
 const STATUS_TEXT = { valid: '#166534', duplicate: '#854d0e', invalid: '#991b1b' };
@@ -26,6 +26,26 @@ const STATUS_BADGE = { valid: 'badge-success', duplicate: 'badge-warning', inval
 function esBoletaProtegida(boleta) {
   return PROTECTED_BOLETAS.has(String(boleta || '').trim());
 }
+
+function normalizarGrupo(grupo) {
+  return String(grupo || '').trim().toUpperCase();
+}
+
+function esGrupoAdminProtegido(grupo) {
+  return normalizarGrupo(grupo) === 'ADMIN';
+}
+
+function esAlumnoProtegido(item) {
+  return esBoletaProtegida(item?.boleta) || esGrupoAdminProtegido(item?.Grupo);
+}
+
+function mensajeProteccion(item, accion) {
+  if (esGrupoAdminProtegido(item?.Grupo)) {
+    return `La boleta ${item?.boleta} pertenece al grupo Admin y no se puede ${accion}`;
+  }
+  return `La boleta ${item?.boleta} esta protegida y no se puede ${accion}`;
+}
+
 const STATUS_LABEL = { valid: 'Válida', duplicate: 'Duplicada', invalid: 'Inválida' };
 const STAGE_META = {
   idle: { label: 'Esperando archivo', percent: 0, color: '#94a3b8' },
@@ -328,8 +348,8 @@ export default function AltaAlumnos() {
 
   const openNew = () => { setEditing(null); setForm(EMPTY_FORM); setModalOpen(true); };
   const openEdit = (item) => {
-    if (esBoletaProtegida(item?.boleta)) {
-      toast.error(`La boleta ${item.boleta} esta protegida y no se puede editar`);
+    if (esAlumnoProtegido(item)) {
+      toast.error(mensajeProteccion(item, 'editar'));
       return;
     }
     setEditing(item);
@@ -340,9 +360,8 @@ export default function AltaAlumnos() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const boletaObjetivo = editing ? editing.boleta : form.boleta;
-    if (esBoletaProtegida(boletaObjetivo)) {
-      toast.error(`La boleta ${boletaObjetivo} esta protegida y no se puede modificar`);
+    if (editing && esAlumnoProtegido(editing)) {
+      toast.error(mensajeProteccion(editing, 'modificar'));
       return;
     }
     setSubmitting(true);
@@ -361,8 +380,8 @@ export default function AltaAlumnos() {
   };
 
   const handleDelete = async () => {
-    if (esBoletaProtegida(deleteModal?.boleta)) {
-      toast.error(`La boleta ${deleteModal?.boleta} esta protegida y no se puede eliminar`);
+    if (esAlumnoProtegido(deleteModal)) {
+      toast.error(mensajeProteccion(deleteModal, 'eliminar'));
       return;
     }
     setSubmitting(true);
@@ -436,7 +455,7 @@ export default function AltaAlumnos() {
       ) : (
         <div className="resource-grid">
           {paged.map((item) => {
-            const protegida = esBoletaProtegida(item.boleta);
+            const protegida = esAlumnoProtegido(item);
             return (
             <div key={item.boleta} className="resource-card">
               <div className="resource-card-title">
@@ -460,7 +479,7 @@ export default function AltaAlumnos() {
                   className="btn btn-outline btn-sm"
                   onClick={() => openEdit(item)}
                   disabled={protegida}
-                  title={protegida ? 'Boleta protegida: no editable' : 'Editar'}
+                  title={protegida ? mensajeProteccion(item, 'editar') : 'Editar'}
                 >
                   <Pencil size={14} /> Editar
                 </button>
@@ -468,7 +487,7 @@ export default function AltaAlumnos() {
                   className="btn btn-danger btn-sm"
                   onClick={() => setDeleteModal(item)}
                   disabled={protegida}
-                  title={protegida ? 'Boleta protegida: no eliminable' : 'Eliminar'}
+                  title={protegida ? mensajeProteccion(item, 'eliminar') : 'Eliminar'}
                 >
                   <Trash2 size={14} />
                 </button>
@@ -538,7 +557,7 @@ export default function AltaAlumnos() {
         footer={
           <>
             <button className="btn btn-ghost" onClick={() => setDeleteModal(null)}>Cancelar</button>
-            <button className="btn btn-danger" disabled={submitting || esBoletaProtegida(deleteModal?.boleta)} onClick={handleDelete}>
+            <button className="btn btn-danger" disabled={submitting || esAlumnoProtegido(deleteModal)} onClick={handleDelete}>
               {submitting ? 'Eliminando...' : 'Eliminar'}
             </button>
           </>

@@ -902,11 +902,70 @@ async function marcarPrestamoDevuelto(req, res) {
 
 const BOLETA_FORMAT_RE = /^\d{10}$/;
 const GRUPO_FORMAT_RE = /^\d[A-Z]{2,4}\d?[A-Z]?$/;
-const PROTECTED_BOLETAS = new Set([10000000001]);
+const PROTECTED_BOLETAS = new Set([10000000001, 1000000001]);
 
 function esBoletaProtegida(boleta) {
     const boletaNum = Number(boleta);
     return Number.isFinite(boletaNum) && PROTECTED_BOLETAS.has(boletaNum);
+}
+
+function normalizarGrupo(grupo) {
+    return String(grupo ?? '').trim().toUpperCase();
+}
+
+function esGrupoAdminProtegido(grupo) {
+    return normalizarGrupo(grupo) === 'ADMIN';
+}
+
+async function obtenerBoletasCatalogo(boletasArr) {
+    if (!Array.isArray(boletasArr) || boletasArr.length === 0) return [];
+
+    const boletasUnicas = [...new Set(
+        boletasArr
+            .map((boleta) => Number(boleta))
+            .filter((boleta) => Number.isFinite(boleta))
+    )];
+
+    if (boletasUnicas.length === 0) return [];
+
+    const supabase = getClient();
+    const { data, error } = await supabase
+        .from('boletas')
+        .select('boleta, Grupo')
+        .in('boleta', boletasUnicas);
+
+    if (error) {
+        throw error;
+    }
+
+    return data || [];
+}
+
+async function resolverProteccionBoleta(boleta, accion = 'modificar') {
+    const boletaNum = Number(boleta);
+    if (!Number.isFinite(boletaNum)) {
+        return { protegida: false, registro: null };
+    }
+
+    if (esBoletaProtegida(boletaNum)) {
+        return {
+            protegida: true,
+            registro: null,
+            message: `La boleta ${boletaNum} es de administrador y no se puede ${accion}`,
+        };
+    }
+
+    const registros = await obtenerBoletasCatalogo([boletaNum]);
+    const registro = registros[0] || null;
+    if (registro && esGrupoAdminProtegido(registro.Grupo)) {
+        return {
+            protegida: true,
+            registro,
+            message: `La boleta ${boletaNum} pertenece al grupo Admin y no se puede ${accion}`,
+        };
+    }
+
+    return { protegida: false, registro };
 }
 
 async function obtenerBoletas(req, res) {
@@ -975,8 +1034,9 @@ async function actualizarBoleta(req, res) {
         if (!boletaParam || Number.isNaN(boletaNum)) {
             return res.status(400).json({ success: false, message: 'Boleta inválida' });
         }
-        if (esBoletaProtegida(boletaNum)) {
-            return res.status(403).json({ success: false, message: `La boleta ${boletaNum} es de administrador y no se puede modificar` });
+        const proteccion = await resolverProteccionBoleta(boletaNum, 'modificar');
+        if (proteccion.protegida) {
+            return res.status(403).json({ success: false, message: proteccion.message });
         }
 
         const nombreTrim = String(nombre ?? '').trim();
@@ -1010,8 +1070,9 @@ async function eliminarBoleta(req, res) {
         if (!boletaParam || Number.isNaN(boletaNum)) {
             return res.status(400).json({ success: false, message: 'Boleta inválida' });
         }
-        if (esBoletaProtegida(boletaNum)) {
-            return res.status(403).json({ success: false, message: `La boleta ${boletaNum} es de administrador y no se puede eliminar` });
+        const proteccion = await resolverProteccionBoleta(boletaNum, 'eliminar');
+        if (proteccion.protegida) {
+            return res.status(403).json({ success: false, message: proteccion.message });
         }
 
         const resultado = await EliminarBoleta(boletaNum);
@@ -1057,6 +1118,12 @@ async function previewCargaMasiva(req, res) {
 
         const existingResult = await BoletasExistentes(potentialNums);
         const existingSet = new Set(existingResult.data || []);
+        const existingRows = await obtenerBoletasCatalogo(potentialNums);
+        const protectedExistingSet = new Set(
+            existingRows
+                .filter((row) => esGrupoAdminProtegido(row.Grupo))
+                .map((row) => row.boleta)
+        );
 
         const rows = parsedRows.map(r => {
             const boletaStr = String(r.boleta ?? '').trim();
@@ -1070,7 +1137,7 @@ async function previewCargaMasiva(req, res) {
             }
 
             const boletaNum = parseInt(boletaStr, 10);
-            if (esBoletaProtegida(boletaNum)) {
+            if (esBoletaProtegida(boletaNum) || protectedExistingSet.has(boletaNum)) {
                 return {
                     boleta: boletaNum,
                     nombre,
@@ -1119,8 +1186,16 @@ async function confirmarCargaMasiva(req, res) {
             return res.status(400).json({ success: false, message: 'No hay filas con formato válido para importar' });
         }
 
-        const skippedProtected = validRows.filter((r) => esBoletaProtegida(r.boleta)).length;
-        const importableRows = validRows.filter((r) => !esBoletaProtegida(r.boleta));
+        const existingRows = await obtenerBoletasCatalogo(validRows.map((r) => r.boleta));
+        const protectedExistingSet = new Set(
+            existingRows
+                .filter((row) => esGrupoAdminProtegido(row.Grupo))
+                .map((row) => row.boleta)
+        );
+
+        const esRegistroProtegido = (boleta) => esBoletaProtegida(boleta) || protectedExistingSet.has(boleta);
+        const skippedProtected = validRows.filter((r) => esRegistroProtegido(r.boleta)).length;
+        const importableRows = validRows.filter((r) => !esRegistroProtegido(r.boleta));
 
         if (importableRows.length === 0) {
             return res.status(400).json({

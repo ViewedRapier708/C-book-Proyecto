@@ -9,6 +9,13 @@ import { solicitudesApi } from '../../api/recursos';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 import { Spinner } from '../../components/ui/Feedback';
 import { DOCUMENTACION_REQUERIDA_MENSAJE } from '../../constants/documentacion';
+import {
+  getSolicitudLibroEstadoId,
+  getSolicitudLibroVisibleDetails,
+  getSolicitudLibroSortOrder,
+  getSolicitudLibroStatusLabel,
+  isSolicitudLibroActiva,
+} from '../../utils/solicitudesLibros';
 
 const ESTADO_SOLICITUD = {
   1: 'pendiente',
@@ -16,13 +23,7 @@ const ESTADO_SOLICITUD = {
   3: 'rechazada',
   4: 'cancelada',
   5: 'entregado',
-};
-
-const ESTADO_PRESTAMO = {
-  1: 'en_espera_recoleccion',
-  2: 'recogido',
-  3: 'devuelto',
-  4: 'perdido',
+  6: 'devuelto',
 };
 
 const TIPO_MAP = {
@@ -38,28 +39,20 @@ function getTipoSolicitud(s) {
 function getEstadoStr(s) {
   const tipo = getTipoSolicitud(s);
 
-  // Para libros
   if (tipo === 'libro') {
-    if (s.estado_prestamo_id) {
-      return ESTADO_PRESTAMO[s.estado_prestamo_id] || 'sin_estado';
-    }
-    const estadoSolicitud = s.estado_solicitud_id ?? s.estado_asistencia_id;
+    const estadoSolicitud = getSolicitudLibroEstadoId(s);
     if (estadoSolicitud) {
       return ESTADO_SOLICITUD[estadoSolicitud] || 'sin_estado';
     }
-    return 'sin_estado';
   }
 
   return 'sin_estado';
 }
 
-// Solicitud activa = está en uso actualmente
 function isActiva(s) {
-  const estado = getEstadoStr(s);
-  return ['pendiente', 'aprobada', 'en_espera_recoleccion', 'recogido', 'entregado'].includes(estado);
+  return getTipoSolicitud(s) === 'libro' && isSolicitudLibroActiva(s);
 }
 
-// Solicitud pendiente = esperando respuesta/acción
 function getTipoLabel(s) {
   const tipo = getTipoSolicitud(s);
   return TIPO_MAP[tipo] || tipo || 'Solicitud';
@@ -71,21 +64,6 @@ function getSolicitudNombre(s) {
   const tipo = getTipoLabel(s);
   const numero = s?.numero_material ?? s?.ejemplar_id ?? s?.recurso_id ?? s?.id ?? '';
   return `${tipo}${numero ? ` #${numero}` : ''}`.trim();
-}
-
-function getEstadoLabel(estado) {
-  const map = {
-    pendiente: 'Pendiente',
-    aprobada: 'Aprobada',
-    rechazada: 'Rechazada',
-    cancelada: 'Cancelada',
-    entregado: 'Entregado',
-    en_espera_recoleccion: 'En espera de recoleccion',
-    recogido: 'Recogido',
-    devuelto: 'Devuelto',
-    perdido: 'Perdido',
-  };
-  return map[estado] || estado || '-';
 }
 
 function formatFecha(iso) {
@@ -111,8 +89,9 @@ export default function UserHome() {
     try {
       const res = await solicitudesApi.getUserSolicitudes();
       setSolicitudes(res.data || []);
-    } catch { /* ignore */ }
-    finally {
+    } catch {
+      // ignore
+    } finally {
       setLoading(false);
       setRefreshing(false);
     }
@@ -121,19 +100,15 @@ export default function UserHome() {
   useEffect(() => {
     loadSolicitudes();
 
-    // Polling cada 15 segundos para mantener datos actualizados en tiempo real
     const interval = setInterval(() => loadSolicitudes(), 15000);
-
-    // Refrescar cuando la pestaña vuelve a tener foco
     const handleFocus = () => loadSolicitudes();
-    window.addEventListener('focus', handleFocus);
-
-    // Refrescar cuando el usuario vuelve de otra página
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         loadSolicitudes();
       }
     };
+
+    window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
@@ -150,15 +125,22 @@ export default function UserHome() {
     { icon: Package, label: 'Mis solicitudes de libros', desc: 'Revisa el estado de tus solicitudes de libros', to: '/user/mis-solicitudes-libros', color: '#d97706' },
   ];
 
-  const solicitudesActivas = solicitudes.filter(isActiva).slice(0, 3);
+  const solicitudesActivas = solicitudes
+    .filter(isActiva)
+    .sort((a, b) => {
+      const diff = getSolicitudLibroSortOrder(a) - getSolicitudLibroSortOrder(b);
+      if (diff !== 0) return diff;
+      return new Date(b.fecha_solicitud || 0) - new Date(a.fecha_solicitud || 0);
+    })
+    .slice(0, 3);
   const totalActivas = solicitudes.filter(isActiva).length;
 
   return (
     <AnimatedPage>
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <h1>¡Bienvenido, {user?.boleta}!</h1>
-          <p>¿Qué vamos a hacer hoy?</p>
+          <h1>Bienvenido, {user?.boleta}!</h1>
+          <p>Que vamos a hacer hoy?</p>
         </div>
         <button
           className="btn btn-outline"
@@ -171,9 +153,10 @@ export default function UserHome() {
         </button>
       </div>
 
-      {/* Quick Stats */}
       {loading && solicitudes.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '2rem' }}><Spinner /></div>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <Spinner />
+        </div>
       ) : (
         <>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
@@ -195,16 +178,17 @@ export default function UserHome() {
                 {[0, 1, 2].map((idx) => {
                   const solicitud = solicitudesActivas[idx];
                   const estado = solicitud ? getEstadoStr(solicitud) : '';
+                  const visibleDetails = solicitud ? getSolicitudLibroVisibleDetails(solicitud) : [];
                   const numeroMaterial = solicitud?.numero_material ?? solicitud?.ejemplar_id ?? solicitud?.recurso_id ?? solicitud?.id ?? '-';
+                  const badgeClass = estado === 'aprobada' || estado === 'entregado' ? 'badge-success' : estado === 'rechazada' || estado === 'cancelada' ? 'badge-danger' : 'badge-warning';
+
                   return (
                     <div key={idx} style={{ padding: '0.7rem', borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-color)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.55rem', marginBottom: '0.55rem' }}>
                         <span style={{ fontSize: '0.9rem', fontWeight: 700, color: solicitud ? 'var(--text-primary)' : 'var(--text-muted)' }}>
                           Solicitud {idx + 1}
                         </span>
-                        <span className={`badge ${estado === 'aprobada' || estado === 'entregado' || estado === 'recogido' ? 'badge-success' : estado === 'rechazada' || estado === 'cancelada' ? 'badge-danger' : 'badge-warning'}`}>
-                          {solicitud ? getEstadoLabel(estado) : 'Sin activa'}
-                        </span>
+                        <span className={`badge ${badgeClass}`}>{solicitud ? getSolicitudLibroStatusLabel(solicitud) : 'Sin activa'}</span>
                       </div>
 
                       {!solicitud ? (
@@ -215,13 +199,11 @@ export default function UserHome() {
                           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Tipo: {getTipoLabel(solicitud)}</div>
                           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Autor: {solicitud.autor || '-'}</div>
                           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ejemplar: {numeroMaterial}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Fecha solicitud: {formatFecha(solicitud.fecha_solicitud)}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Limite respuesta: {formatFecha(solicitud.fecha_limite_respuesta)}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Fecha aprobacion: {formatFecha(solicitud.fecha_aprobacion)}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Limite recoleccion: {formatFecha(solicitud.fecha_limite_recoleccion)}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Fecha entrega: {formatFecha(solicitud.fecha_inicio_prestamo)}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Limite devolucion: {formatFecha(solicitud.fecha_limite_devolucion)}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Fecha devolucion: {formatFecha(solicitud.fecha_devolucion_real)}</div>
+                          {visibleDetails.map((detalle) => (
+                            <div key={`${solicitud.id}-${detalle.label}`} style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                              {detalle.label}: {formatFecha(detalle.value)}
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
@@ -232,69 +214,82 @@ export default function UserHome() {
           </div>
 
           {user?.tiene_documentos === false && (
-            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', padding: '0.9rem 1rem', borderRadius: 'var(--radius-sm)', background: '#f59e0b18', border: '1px solid #f59e0b44', marginBottom: '1.5rem', color: '#b45309' }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '0.75rem',
+                alignItems: 'flex-start',
+                padding: '0.9rem 1rem',
+                borderRadius: 'var(--radius-sm)',
+                background: '#f59e0b18',
+                border: '1px solid #f59e0b44',
+                marginBottom: '1.5rem',
+                color: '#b45309',
+              }}
+            >
               <AlertCircle size={18} style={{ flexShrink: 0, marginTop: 2 }} />
               <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5 }}>{DOCUMENTACION_REQUERIDA_MENSAJE}</p>
             </div>
           )}
 
-      {/* Services */}
-      <h3 style={{ marginBottom: '0.75rem' }}>Servicios Disponibles</h3>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-        {services.map((s, i) => (
-          <motion.div
-            key={s.to}
-            className="service-card"
-            style={{ cursor: 'pointer' }}
-            onClick={() => navigate(s.to)}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 + i * 0.08 }}
-            whileHover={{ y: -4 }}
-          >
-            <div className="service-card-icon" style={{ background: s.color + '18' }}>
-              <s.icon size={22} color={s.color} />
-            </div>
-            <div>
-              <span className="service-card-label">{s.label}</span>
-              <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>{s.desc}</p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Recent Activity */}
-      <motion.div className="card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Activity size={18} /> Actividad Reciente
-          </h3>
-          <button className="btn btn-ghost btn-sm" onClick={() => navigate('/user/mis-solicitudes-libros')}>
-            Ver todas <ArrowRight size={14} />
-          </button>
-        </div>
-        {recientes.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '1.5rem' }}>
-            Aún no has realizado solicitudes. ¡Comienza explorando los servicios!
-          </p>
-        ) : (
-          <div className="activity-feed">
-            {recientes.map((s, idx) => (
-              <div key={idx} className="activity-item">
-                <div className={`activity-dot ${getEstadoStr(s) === 'aprobada' ? 'success' : getEstadoStr(s) === 'cancelado' ? 'danger' : ''}`} />
-                <div>
-                  <div className="activity-text">
-                    <strong>{getTipoLabel(s)}</strong> — {getEstadoStr(s)}
-                  </div>
-                  <div className="activity-time">
-                    {s.fecha_solicitud ? formatDistanceToNow(new Date(s.fecha_solicitud), { addSuffix: true, locale: es }) : ''}
-                  </div>
+          <h3 style={{ marginBottom: '0.75rem' }}>Servicios Disponibles</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+            {services.map((service, i) => (
+              <motion.div
+                key={service.to}
+                className="service-card"
+                style={{ cursor: 'pointer' }}
+                onClick={() => navigate(service.to)}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + i * 0.08 }}
+                whileHover={{ y: -4 }}
+              >
+                <div className="service-card-icon" style={{ background: `${service.color}18` }}>
+                  <service.icon size={22} color={service.color} />
                 </div>
-              </div>
+                <div>
+                  <span className="service-card-label">{service.label}</span>
+                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>{service.desc}</p>
+                </div>
+              </motion.div>
             ))}
           </div>
-        )}
-      </motion.div>
+
+          <motion.div className="card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Activity size={18} /> Actividad Reciente
+              </h3>
+              <button className="btn btn-ghost btn-sm" onClick={() => navigate('/user/mis-solicitudes-libros')}>
+                Ver todas <ArrowRight size={14} />
+              </button>
+            </div>
+            {recientes.length === 0 ? (
+              <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '1.5rem' }}>
+                Aun no has realizado solicitudes. Comienza explorando los servicios.
+              </p>
+            ) : (
+              <div className="activity-feed">
+                {recientes.map((s, idx) => {
+                  const estado = getEstadoStr(s);
+                  return (
+                    <div key={idx} className="activity-item">
+                      <div className={`activity-dot ${estado === 'aprobada' || estado === 'entregado' ? 'success' : estado === 'cancelada' || estado === 'rechazada' ? 'danger' : ''}`} />
+                      <div>
+                        <div className="activity-text">
+                          <strong>{getTipoLabel(s)}</strong> - {getSolicitudLibroStatusLabel(getSolicitudLibroEstadoId(s))}
+                        </div>
+                        <div className="activity-time">
+                          {s.fecha_solicitud ? formatDistanceToNow(new Date(s.fecha_solicitud), { addSuffix: true, locale: es }) : ''}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
         </>
       )}
     </AnimatedPage>
