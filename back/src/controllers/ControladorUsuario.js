@@ -5,6 +5,7 @@ const {
   crearUsuarioEnTabla,
   verificarConfirmacionPorBoleta,
   confirmarRegistroConToken,
+  confirmarRegistroConAccessToken,
   buscarCorreoPorBoleta,
   loginConAuth,
   traerUsuarioInfo,
@@ -178,10 +179,28 @@ async function verificarCorreoLegacy(req, res) {
 
 async function verificarCorreo(req, res) {
   try {
-    const { token, boleta, correo } = req.body || {};
+    const { token, access_token, boleta, correo } = req.body || {};
 
     if (token) {
       const resultado = await confirmarRegistroConToken(token);
+
+      if (!resultado.success) {
+        return res.status(400).json({
+          confirmado: false,
+          error: resultado.error || 'No se pudo confirmar la cuenta'
+        });
+      }
+
+      return res.status(200).json({
+        confirmado: true,
+        mensaje: resultado.alreadyConfirmed
+          ? 'La cuenta ya estaba confirmada'
+          : 'Correo verificado y cuenta activada exitosamente'
+      });
+    }
+
+    if (access_token) {
+      const resultado = await confirmarRegistroConAccessToken(access_token);
 
       if (!resultado.success) {
         return res.status(400).json({
@@ -216,9 +235,8 @@ async function verificarCorreo(req, res) {
     const resultado = await verificarConfirmacionPorBoleta(boleta);
     const authCorreo = String(resultado.correo || '').trim().toLowerCase();
     const correoRegistro = String(correo || '').trim().toLowerCase();
-    const pendienteNodemailer = resultado.usuario?.user_metadata?.pending_nodemailer_confirmation === true;
 
-    if (resultado.confirmado && authCorreo === correoRegistro && !pendienteNodemailer) {
+    if (resultado.confirmado && authCorreo === correoRegistro) {
       const usuarioCreado = await crearUsuarioEnTabla(boleta, correoRegistro);
 
       if (!usuarioCreado.success) {

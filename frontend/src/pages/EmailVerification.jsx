@@ -15,8 +15,75 @@ export default function EmailVerification() {
 
   useEffect(() => {
     const token = searchParams.get('token');
+    const hashParams = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
+    const supabaseAccessToken = searchParams.get('access_token') || hashParams.get('access_token');
+    const supabaseCode = searchParams.get('code');
+
+    const finishSuccess = (message) => {
+      localStorage.removeItem('datosRegistro');
+      setSuccessMsg(message || 'Tu cuenta ha sido confirmada.');
+      setStatus('success');
+      setTimeout(() => navigate('/', { replace: true }), 3000);
+    };
 
     if (!token) {
+      if (supabaseAccessToken || supabaseCode) {
+        let cancelled = false;
+
+        const confirmSupabaseRegistration = async () => {
+          try {
+            setStatus('checking');
+            let accessToken = supabaseAccessToken;
+
+            if (!accessToken && supabaseCode) {
+              const { supabase } = await import('../lib/supabaseClient');
+              const { data, error } = await supabase.auth.exchangeCodeForSession(supabaseCode);
+              if (error) throw error;
+              accessToken = data?.session?.access_token;
+            }
+
+            if (!accessToken) {
+              throw new Error('No se pudo leer la sesion confirmada de Supabase.');
+            }
+
+            const data = await authApi.verifySupabaseCallback(accessToken);
+            if (cancelled) return;
+
+            finishSuccess(data.mensaje || 'Tu cuenta ha sido confirmada.');
+          } catch (err) {
+            if (cancelled) return;
+
+            const stored = localStorage.getItem('datosRegistro');
+            if (stored) {
+              try {
+                const { boleta, correo } = JSON.parse(stored);
+                const data = await authApi.verifyEmail(boleta, correo);
+                if (cancelled) return;
+
+                if (data.confirmado) {
+                  finishSuccess(data.mensaje || 'Tu cuenta ha sido confirmada.');
+                  return;
+                }
+
+                setStatus('waiting');
+                return;
+              } catch {
+                // Continua con el error original del callback.
+              }
+            }
+
+            setErrorMsg(err.message || 'No se pudo confirmar la cuenta.');
+            setStatus('error');
+          }
+        };
+
+        confirmSupabaseRegistration();
+
+        return () => {
+          cancelled = true;
+        };
+      }
+
       const stored = localStorage.getItem('datosRegistro');
       if (!stored) {
         setStatus('error');
@@ -31,16 +98,18 @@ export default function EmailVerification() {
           const data = await authApi.verifyEmail(boleta, correo);
 
           if (data.confirmado) {
-            setSuccessMsg(data.mensaje || 'Tu cuenta ha sido confirmada.');
-            setStatus('success');
-            localStorage.removeItem('datosRegistro');
             clearInterval(intervalRef.current);
-            setTimeout(() => navigate('/', { replace: true }), 3000);
+            finishSuccess(data.mensaje || 'Tu cuenta ha sido confirmada.');
           } else {
             setStatus('waiting');
           }
-        } catch {
-          setStatus('waiting');
+        } catch (err) {
+          if (err?.status) {
+            setErrorMsg(err.message || 'No se pudo activar la cuenta.');
+            setStatus('error');
+          } else {
+            setStatus('waiting');
+          }
         }
       };
 
@@ -70,10 +139,7 @@ export default function EmailVerification() {
 
         if (cancelled) return;
 
-        localStorage.removeItem('datosRegistro');
-        setSuccessMsg(data.mensaje || 'Tu cuenta ha sido confirmada.');
-        setStatus('success');
-        setTimeout(() => navigate('/', { replace: true }), 3000);
+        finishSuccess(data.mensaje || 'Tu cuenta ha sido confirmada.');
       } catch (err) {
         if (cancelled) return;
 
