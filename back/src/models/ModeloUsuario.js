@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { enviarCorreo } = require('../utils/servicioCorreo');
 
 const RESET_TOKEN_TTL = '30m';
+const REGISTRATION_CONFIRM_TOKEN_TTL = '2h';
 
 function getFrontendBaseUrl() {
   const fallback = process.env.NODE_ENV === 'production'
@@ -14,6 +15,19 @@ function getFrontendBaseUrl() {
 
 function getResetTokenSecret() {
   return process.env.RESET_PASSWORD_SECRET || process.env.SESSION_SECRET || 'dev_session_secret_change_me';
+}
+
+function getRegistrationConfirmSecret() {
+  return process.env.REGISTRATION_CONFIRM_SECRET || getResetTokenSecret();
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 async function buscarUsuarioAuthPorCorreo(correo) {
@@ -29,6 +43,33 @@ async function buscarUsuarioAuthPorCorreo(correo) {
     }
 
     const usuario = (data?.users || []).find((u) => String(u.email || '').toLowerCase() === normalizedEmail);
+    if (usuario) {
+      return usuario;
+    }
+
+    if (!data?.users?.length || data.users.length < 1000) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return null;
+}
+
+async function buscarUsuarioAuthPorBoleta(boleta) {
+  const supabase = getClient();
+  const normalizedBoleta = String(boleta || '').trim();
+  let page = 1;
+
+  while (page <= 20) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
+
+    if (error) {
+      throw error;
+    }
+
+    const usuario = (data?.users || []).find((u) => String(u.user_metadata?.boleta || '').trim() === normalizedBoleta);
     if (usuario) {
       return usuario;
     }
@@ -107,14 +148,14 @@ async function validarCorreoEnTabla(correo) {
 }
 
 // Registrar usuario en Supabase Auth
-async function registrarEnAuth(boleta, correo, password) {
+async function registrarEnAuthSupabaseLegacy(boleta, correo, password) {
   const supabase = getClient();
   try {
     const { data, error } = await supabase.auth.signUp({
       email: correo,
       password: password,
       options: {
-        emailRedirectTo: "https://viewedrapier708.github.io/C-book-Proyecto/pantallasUs/confirmacionCorreo.html",
+        emailRedirectTo: `${getFrontendBaseUrl()}/verificar`,
         data: { 
           boleta: boleta,
           rol: 'alumno'
@@ -134,6 +175,145 @@ async function registrarEnAuth(boleta, correo, password) {
     }
 
     return { success: true, user: data.user };
+  } catch (err) {
+    console.error("Error en registrarEnAuth:", err);
+    return { success: false, error: 'Error interno del servidor' };
+  }
+}
+
+function construirCorreoConfirmacionRegistro({ boleta, correo, confirmUrl }) {
+  const safeBoleta = escapeHtml(boleta);
+  const safeCorreo = escapeHtml(correo);
+  const safeConfirmUrl = escapeHtml(confirmUrl);
+
+  return `
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:'Segoe UI',Roboto,Arial,sans-serif">
+<div style="max-width:560px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
+  <div style="background:#6366f1;padding:28px 32px;text-align:center">
+    <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">C-Book</h1>
+  </div>
+  <div style="padding:28px 32px">
+    <h2 style="margin:0 0 8px;font-size:18px;color:#111827">Confirma tu cuenta</h2>
+    <p style="margin:0 0 18px;color:#4b5563;font-size:14px;line-height:1.6">
+      Recibimos tu registro en C-Book. Confirma tu cuenta para activar el acceso con tu boleta y contrasena.
+    </p>
+    <div style="background:#f9fafb;border-radius:8px;padding:14px 16px;margin-bottom:18px">
+      <table style="width:100%;border-collapse:collapse">
+        <tr><td style="padding:4px 0;color:#6b7280;font-size:13px;width:80px">Boleta</td><td style="padding:4px 0;font-weight:600;font-size:13px">${safeBoleta}</td></tr>
+        <tr><td style="padding:4px 0;color:#6b7280;font-size:13px">Correo</td><td style="padding:4px 0;font-weight:600;font-size:13px">${safeCorreo}</td></tr>
+      </table>
+    </div>
+    <p style="text-align:center;margin:28px 0">
+      <a href="${safeConfirmUrl}" style="display:inline-block;background:#6366f1;color:#fff;text-decoration:none;padding:12px 18px;border-radius:8px;font-weight:700">
+        Confirmar cuenta
+      </a>
+    </p>
+    <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5">
+      Este enlace expira en 2 horas. Si no solicitaste este registro, ignora este correo.
+    </p>
+  </div>
+  <div style="padding:16px 32px;background:#f9fafb;text-align:center;border-top:1px solid #e5e7eb">
+    <p style="margin:0;font-size:11px;color:#9ca3af">Este correo fue generado automaticamente por C-Book.</p>
+  </div>
+</div>
+</body></html>`;
+}
+
+async function enviarCorreoConfirmacionRegistro(boleta, correo, authUserId) {
+  const token = jwt.sign(
+    {
+      purpose: 'registration_confirm',
+      boleta: String(boleta),
+      correo: String(correo).trim().toLowerCase(),
+      authUserId
+    },
+    getRegistrationConfirmSecret(),
+    { expiresIn: process.env.REGISTRATION_CONFIRM_TTL || REGISTRATION_CONFIRM_TOKEN_TTL }
+  );
+
+  const confirmUrl = `${getFrontendBaseUrl()}/verificar?token=${encodeURIComponent(token)}`;
+  const html = construirCorreoConfirmacionRegistro({ boleta, correo, confirmUrl });
+  return enviarCorreo(correo, 'Confirma tu cuenta - C-Book', html);
+}
+
+// Registrar usuario en Supabase Auth sin usar el correo de confirmacion de Supabase
+async function registrarEnAuth(boleta, correo, password) {
+  const supabase = getClient();
+  const normalizedCorreo = String(correo || '').trim().toLowerCase();
+  let authUser = null;
+  let createdNewUser = false;
+
+  try {
+    const existingAuthUser = await buscarUsuarioAuthPorCorreo(normalizedCorreo);
+
+    if (existingAuthUser) {
+      const authBoleta = String(existingAuthUser.user_metadata?.boleta || '').trim();
+      if (authBoleta && authBoleta !== String(boleta)) {
+        return { success: false, error: 'Este correo ya esta registrado con otra boleta' };
+      }
+
+      const { data, error } = await supabase.auth.admin.updateUserById(existingAuthUser.id, {
+        password,
+        email_confirm: true,
+        user_metadata: {
+          ...(existingAuthUser.user_metadata || {}),
+          boleta: String(boleta),
+          rol: 'alumno',
+          registration_provider: 'nodemailer',
+          pending_nodemailer_confirmation: true
+        }
+      });
+
+      if (error) {
+        console.error("Error actualizando usuario Auth pendiente:", error);
+        return { success: false, error: error.message };
+      }
+
+      authUser = data?.user || existingAuthUser;
+    } else {
+      const { data, error } = await supabase.auth.admin.createUser({
+        email: normalizedCorreo,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          boleta: String(boleta),
+          rol: 'alumno',
+          registration_provider: 'nodemailer',
+          pending_nodemailer_confirmation: true
+        }
+      });
+
+      if (error) {
+        let mensaje = error.message;
+        if (error.message && error.message.toLowerCase().includes('already')) {
+          mensaje = 'Este correo ya esta registrado. Intenta iniciar sesion o usa otro correo.';
+        }
+        console.error("Error registrando en Auth:", error);
+        return { success: false, error: mensaje };
+      }
+
+      authUser = data.user;
+      createdNewUser = true;
+    }
+
+    if (!authUser?.id) {
+      return { success: false, error: 'No se pudo crear el usuario en autenticacion' };
+    }
+
+    const enviado = await enviarCorreoConfirmacionRegistro(boleta, normalizedCorreo, authUser.id);
+    if (!enviado.success) {
+      if (createdNewUser) {
+        const { error: deleteError } = await supabase.auth.admin.deleteUser(authUser.id);
+        if (deleteError) {
+          console.error('No se pudo eliminar el usuario Auth tras fallo de correo:', deleteError);
+        }
+      }
+      return { success: false, error: 'No se pudo enviar el correo de confirmacion' };
+    }
+
+    return { success: true, user: authUser };
   } catch (err) {
     console.error("Error en registrarEnAuth:", err);
     return { success: false, error: 'Error interno del servidor' };
@@ -170,14 +350,7 @@ async function crearUsuarioEnTabla(boleta, correo) {
 async function verificarConfirmacionPorBoleta(boleta) {
   const supabase = getClient();
   try {
-    const { data, error } = await supabase.auth.admin.listUsers();
-
-    if (error) {
-      console.error("Error listando usuarios:", error);
-      return { confirmado: false, error: error.message };
-    }
-
-    const usuario = data.users.find(u => u.user_metadata?.boleta === boleta);
+    const usuario = await buscarUsuarioAuthPorBoleta(boleta);
 
     if (!usuario) {
       return { confirmado: false, error: 'Usuario no encontrado' };
@@ -192,6 +365,101 @@ async function verificarConfirmacionPorBoleta(boleta) {
   } catch (err) {
     console.error("Error en verificarConfirmacionPorBoleta:", err);
     return { confirmado: false, error: 'Error interno' };
+  }
+}
+
+async function confirmarRegistroConToken(token) {
+  const supabase = getClient();
+
+  try {
+    const payload = jwt.verify(token, getRegistrationConfirmSecret());
+    const boleta = String(payload?.boleta || '').trim();
+    const correo = String(payload?.correo || '').trim().toLowerCase();
+    const authUserId = String(payload?.authUserId || '').trim();
+
+    if (payload?.purpose !== 'registration_confirm' || !boleta || !correo || !authUserId) {
+      return { success: false, error: 'El enlace de confirmacion es invalido' };
+    }
+
+    const usuarioAuth = await buscarUsuarioAuthPorCorreo(correo);
+    if (!usuarioAuth?.id || usuarioAuth.id !== authUserId) {
+      return { success: false, error: 'Usuario no encontrado en autenticacion' };
+    }
+
+    const { data: boletaData, error: errorBoleta } = await supabase
+      .from('boletas')
+      .select('boleta')
+      .eq('boleta', boleta)
+      .maybeSingle();
+
+    if (errorBoleta) {
+      console.error('Error validando boleta al confirmar registro:', errorBoleta);
+      return { success: false, error: 'No se pudo validar la boleta' };
+    }
+
+    if (!boletaData) {
+      return { success: false, error: 'Boleta no encontrada verifique su boleta' };
+    }
+
+    const { data: usuarioExistente, error: errorUsuario } = await supabase
+      .from('usuarios_web_movil')
+      .select('boleta, correo')
+      .eq('boleta', boleta)
+      .maybeSingle();
+
+    if (errorUsuario) {
+      console.error('Error buscando usuario al confirmar registro:', errorUsuario);
+      return { success: false, error: 'No se pudo validar la cuenta' };
+    }
+
+    if (usuarioExistente) {
+      if (String(usuarioExistente.correo || '').trim().toLowerCase() === correo) {
+        return { success: true, alreadyConfirmed: true };
+      }
+      return { success: false, error: 'Boleta ya registrada en otra cuenta' };
+    }
+
+    const { data: correoExistente, error: errorCorreo } = await supabase
+      .from('usuarios_web_movil')
+      .select('boleta, correo')
+      .eq('correo', correo)
+      .maybeSingle();
+
+    if (errorCorreo) {
+      console.error('Error buscando correo al confirmar registro:', errorCorreo);
+      return { success: false, error: 'No se pudo validar el correo' };
+    }
+
+    if (correoExistente) {
+      return { success: false, error: 'Este correo ya tiene una cuenta registrada' };
+    }
+
+    const { error: confirmError } = await supabase.auth.admin.updateUserById(authUserId, {
+      email_confirm: true,
+      user_metadata: {
+        ...(usuarioAuth.user_metadata || {}),
+        boleta,
+        rol: 'alumno',
+        registration_provider: 'nodemailer',
+        pending_nodemailer_confirmation: false,
+        registration_confirmed_at: new Date().toISOString()
+      }
+    });
+
+    if (confirmError) {
+      console.error('Error confirmando usuario Auth:', confirmError);
+      return { success: false, error: 'No se pudo confirmar el usuario en autenticacion' };
+    }
+
+    const usuarioCreado = await crearUsuarioEnTabla(boleta, correo);
+    if (!usuarioCreado.success) {
+      return { success: false, error: usuarioCreado.error || 'Error al crear usuario en la base de datos' };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error('Error en confirmarRegistroConToken:', err);
+    return { success: false, error: 'El enlace de confirmacion es invalido o ha expirado' };
   }
 }
 
@@ -442,6 +710,7 @@ module.exports = {
   registrarEnAuth,
   crearUsuarioEnTabla,
   verificarConfirmacionPorBoleta,
+  confirmarRegistroConToken,
   buscarCorreoPorBoleta,
   loginConAuth,
   traerUsuarioInfo,

@@ -1515,12 +1515,26 @@ body {
 .mobile-sidebar {
   background: var(--bg-sidebar);
   border-left: 1px solid var(--border-color);
+  max-height: 100dvh;
+  padding-top: max(0.5rem, env(safe-area-inset-top));
 }
-.mobile-header {
+.mobile-menu-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-sidebar);
   border-bottom: 1px solid var(--border-color);
 }
-.mobile-header h2 {
+.mobile-menu-header h2 {
   color: var(--accent-primary);
+}
+.mobile-menu-nav {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+.mobile-logout-area {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
 }
 .mobile-close-btn:hover {
   background: var(--bg-glass-strong);
@@ -1535,10 +1549,20 @@ body {
 }
 .mobile-nav-link {
   color: var(--text-primary);
+  min-height: 2.75rem;
+  overflow-wrap: anywhere;
 }
 .mobile-nav-link:hover {
   background: var(--bg-glass-strong);
   color: var(--text-primary);
+}
+.mobile-logout-btn {
+  color: var(--danger);
+  text-align: left;
+}
+.mobile-logout-btn:hover {
+  background: var(--danger-bg);
+  color: var(--danger);
 }
 .mobile-nav-link.active {
   background: var(--button-primary-bg);

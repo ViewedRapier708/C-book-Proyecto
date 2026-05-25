@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getHomePath } from '../utils/authRoutes';
@@ -26,6 +26,16 @@ export default function Login() {
   const [showPw, setShowPw] = useState(false);
   const [form, setForm] = useState({ boleta: '', password: '', correo: '', confPsw: '' });
   const [msg, setMsg] = useState(null);
+
+  useEffect(() => {
+    const hasPendingRegistration = Boolean(localStorage.getItem('datosRegistro'));
+    const callbackPayload = `${window.location.search || ''}${window.location.hash || ''}`;
+    const isSupabaseSignupCallback = /(?:type=signup|access_token=|refresh_token=|code=)/.test(callbackPayload);
+
+    if (hasPendingRegistration && isSupabaseSignupCallback) {
+      navigate('/verificar', { replace: true });
+    }
+  }, [navigate]);
 
   if (user) {
     return <Navigate to={getHomePath(user)} replace />;

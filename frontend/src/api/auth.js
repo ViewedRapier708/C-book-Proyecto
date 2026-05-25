@@ -6,6 +6,7 @@ export const authApi = {
   register: (boleta, correo, password, confPsw) =>
     api.post("/registro", { boleta, correo, password, confPsw }),
   verifyEmail: (boleta, correo) => api.post("/verificar", { boleta, correo }),
+  confirmRegistration: (token) => api.post("/confirmar-registro", { token }),
   getSession: () => api.get("/session"),
   logout: () => api.post("/logout"),
   obtenerCorreo: (boleta) => api.post("/obtener-correo", { boleta }),

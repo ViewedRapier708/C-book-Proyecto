@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { verificarSesion, registro, verificarCorreo, login, cerrarSesion, CambioDatos, solicitarRecuperacion, actualizarContraseña, cambiarContrasenaPropia, obtenerCorreoPorBoleta } = require('../controllers/ControladorUsuario.js');
+const { verificarSesion, registro, verificarCorreo, confirmarRegistro, login, cerrarSesion, CambioDatos, solicitarRecuperacion, actualizarContraseña, cambiarContrasenaPropia, obtenerCorreoPorBoleta } = require('../controllers/ControladorUsuario.js');
 const { obtenerRecursosPorTipo, obtenerLibrosMasSolicitados } = require('../controllers/ControladorRecursos.js');
 const middlewareAutenticacion = require('../middleware/verificacionPeticiones.js');
 const controladorSolicitudes = require('../controllers/ControladorSolicitudes.js');
@@ -17,6 +17,7 @@ router.post('/registro', registro);
 router.post('/obtener-correo', obtenerCorreoPorBoleta);
 router.post('/forgot-password', solicitarRecuperacion);
 router.post('/reset-password', actualizarContraseña);
+router.post('/confirmar-registro', confirmarRegistro);
 router.post('/verificar', verificarCorreo);
 router.post('/login', login);
 router.get('/session', verificarSesion);

@@ -169,14 +169,14 @@ export default function Navbar({ onClose }) {
           mobileMenuOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full'
         }`}
       >
-        <div className="mobile-header flex items-center justify-between px-4 h-16">
+        <div className="mobile-menu-header flex items-center justify-between px-4 h-16">
           <h2 className="text-lg font-bold">C-Book</h2>
           <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-lg mobile-close-btn">
             <X size={20} />
           </button>
         </div>
 
-        <nav className="p-3">
+        <nav className="mobile-menu-nav px-3 py-4">
           <div className="space-y-0.5">
             {navLinks.map((item) => (
               <NavLink
@@ -196,6 +196,19 @@ export default function Navbar({ onClose }) {
                 {item.label}
               </NavLink>
             ))}
+          </div>
+          <div className="mobile-logout-area">
+            <button
+              type="button"
+              className="mobile-nav-link mobile-logout-btn flex w-full items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+              onClick={() => {
+                closeMobileMenu();
+                handleLogout();
+              }}
+            >
+              <LogOut size={18} />
+              Cerrar Sesion
+            </button>
           </div>
         </nav>
       </div>

@@ -4,6 +4,7 @@ const {
   registrarEnAuth,
   crearUsuarioEnTabla,
   verificarConfirmacionPorBoleta,
+  confirmarRegistroConToken,
   buscarCorreoPorBoleta,
   loginConAuth,
   traerUsuarioInfo,
@@ -127,7 +128,7 @@ async function registro(req, res) {
 }
 
 // ==================== VERIFICACIÓN DE CORREO ====================
-async function verificarCorreo(req, res) {
+async function verificarCorreoLegacy(req, res) {
   try {
     // Obtener datos del body (enviados desde localStorage del frontend)
     const { boleta, correo } = req.body;
@@ -174,6 +175,104 @@ async function verificarCorreo(req, res) {
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 }//Modificar para la verificacion por correo , osea que verifique si ya hay algun usuario en la tabla 
+
+async function verificarCorreo(req, res) {
+  try {
+    const { token, boleta, correo } = req.body || {};
+
+    if (token) {
+      const resultado = await confirmarRegistroConToken(token);
+
+      if (!resultado.success) {
+        return res.status(400).json({
+          confirmado: false,
+          error: resultado.error || 'No se pudo confirmar la cuenta'
+        });
+      }
+
+      return res.status(200).json({
+        confirmado: true,
+        mensaje: resultado.alreadyConfirmed
+          ? 'La cuenta ya estaba confirmada'
+          : 'Correo verificado y cuenta activada exitosamente'
+      });
+    }
+
+    if (!boleta || !correo) {
+      return res.status(400).json({
+        confirmado: false,
+        error: 'Faltan datos de registro o token de confirmacion'
+      });
+    }
+
+    const busqueda = await buscarCorreoPorBoleta(boleta);
+    if (busqueda.success && String(busqueda.correo || '').trim().toLowerCase() === String(correo || '').trim().toLowerCase()) {
+      return res.status(200).json({
+        confirmado: true,
+        mensaje: 'La cuenta ya esta confirmada'
+      });
+    }
+
+    const resultado = await verificarConfirmacionPorBoleta(boleta);
+    const authCorreo = String(resultado.correo || '').trim().toLowerCase();
+    const correoRegistro = String(correo || '').trim().toLowerCase();
+    const pendienteNodemailer = resultado.usuario?.user_metadata?.pending_nodemailer_confirmation === true;
+
+    if (resultado.confirmado && authCorreo === correoRegistro && !pendienteNodemailer) {
+      const usuarioCreado = await crearUsuarioEnTabla(boleta, correoRegistro);
+
+      if (!usuarioCreado.success) {
+        console.error("Error creando usuario tras confirmacion legacy:", usuarioCreado.error);
+        return res.status(400).json({
+          confirmado: true,
+          error: 'Error al crear usuario en la base de datos'
+        });
+      }
+
+      return res.status(200).json({
+        confirmado: true,
+        mensaje: 'Correo verificado y cuenta activada exitosamente'
+      });
+    }
+
+    return res.status(200).json({
+      confirmado: false,
+      mensaje: 'Revisa tu correo y usa el boton de confirmacion para activar la cuenta'
+    });
+  } catch (err) {
+    console.error("Error en verificarCorreo:", err);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+async function confirmarRegistro(req, res) {
+  try {
+    const { token } = req.body || {};
+
+    if (!token) {
+      return res.status(400).json({ confirmado: false, error: 'Falta el token de confirmacion' });
+    }
+
+    const resultado = await confirmarRegistroConToken(token);
+
+    if (!resultado.success) {
+      return res.status(400).json({
+        confirmado: false,
+        error: resultado.error || 'No se pudo confirmar la cuenta'
+      });
+    }
+
+    return res.status(200).json({
+      confirmado: true,
+      mensaje: resultado.alreadyConfirmed
+        ? 'La cuenta ya estaba confirmada'
+        : 'Correo verificado y cuenta activada exitosamente'
+    });
+  } catch (err) {
+    console.error("Error en confirmarRegistro:", err);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
 
 // ==================== LOGIN ====================
 async function login(req, res) {
@@ -243,6 +342,13 @@ async function login(req, res) {
             user: sanitizeSessionUser(sessionUser),
             rol: rol
           });
+        }
+      }
+
+      if (!busqueda.success) {
+        const authPendiente = await verificarConfirmacionPorBoleta(boleta);
+        if (authPendiente?.usuario?.user_metadata?.rol === 'alumno') {
+          return res.status(403).json({ error: 'Debes confirmar tu correo antes de iniciar sesion' });
         }
       }
     } catch (err) {
@@ -506,4 +612,4 @@ async function obtenerCorreoPorBoleta(req, res) {
   }
 }
 
-module.exports = { registro, verificarCorreo, login, cerrarSesion, verificarSesion, CambioDatos, solicitarRecuperacion, actualizarContraseña, cambiarContrasenaPropia, obtenerCorreoPorBoleta };
+module.exports = { registro, verificarCorreo, confirmarRegistro, login, cerrarSesion, verificarSesion, CambioDatos, solicitarRecuperacion, actualizarContraseña, cambiarContrasenaPropia, obtenerCorreoPorBoleta };
