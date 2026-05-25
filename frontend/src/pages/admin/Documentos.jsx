@@ -3,24 +3,32 @@ import { adminApi } from '../../api/admin';
 import { Spinner, EmptyState } from '../../components/ui/Feedback';
 import Pagination from '../../components/ui/Pagination';
 import toast from 'react-hot-toast';
-import { Search, CheckCircle } from 'lucide-react';
+import { Search, CheckCircle, RefreshCw } from 'lucide-react';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 
 export default function Documentos() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('no-docs');
   const [page, setPage] = useState(1);
   const PER_PAGE = 12;
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (showRefresh = false) => {
+    if (showRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     try {
       const data = await adminApi.getUsers();
       setItems(data.data || []);
     } catch { toast.error('Error al cargar usuarios'); }
-    finally { setLoading(false); }
+    finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -28,10 +36,14 @@ export default function Documentos() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return items.filter((u) => {
-      if (q && !(u.boleta || '').toLowerCase().includes(q) && !(u.correo || '').toLowerCase().includes(q)) return false;
+      if (q && !String(u.boleta || '').toLowerCase().includes(q) && !String(u.correo || '').toLowerCase().includes(q)) return false;
       if (filter === 'no-docs' && u.tiene_documentos) return false;
       if (filter === 'docs' && !u.tiene_documentos) return false;
       return true;
+    }).sort((a, b) => {
+      const docsDiff = Number(Boolean(a.tiene_documentos)) - Number(Boolean(b.tiene_documentos));
+      if (docsDiff !== 0) return docsDiff;
+      return String(a.boleta || a.correo || '').localeCompare(String(b.boleta || b.correo || ''), 'es-MX', { numeric: true });
     });
   }, [items, search, filter]);
 
@@ -44,11 +56,11 @@ export default function Documentos() {
     try {
       await adminApi.enableDocumentation(u.id);
       toast.success(`Documentación habilitada para ${u.boleta}`);
-      load();
+      load(true);
     } catch (err) { toast.error(err.message); }
   };
 
-  if (loading) return <Spinner />;
+  if (loading && items.length === 0) return <Spinner />;
 
   return (
     <AnimatedPage>
@@ -73,6 +85,10 @@ export default function Documentos() {
           <option value="docs">Con documentación</option>
           <option value="">Todos</option>
         </select>
+        <button className="btn btn-primary" onClick={() => load(true)} disabled={refreshing} title="Recargar usuarios">
+          <RefreshCw size={16} style={{ animation: refreshing ? 'spin .7s linear infinite' : 'none' }} />
+          {refreshing ? 'Recargando...' : 'Recargar'}
+        </button>
       </div>
 
       {paged.length === 0 ? (

@@ -4,7 +4,7 @@ import { Spinner, EmptyState } from '../../components/ui/Feedback';
 import Pagination from '../../components/ui/Pagination';
 import Modal from '../../components/ui/Modal';
 import toast from 'react-hot-toast';
-import { Search, CheckCircle, XCircle, Package } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Package, RefreshCw } from 'lucide-react';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 
 const ESTADO_MAP = {
@@ -28,18 +28,48 @@ export default function SolicitudesLibros() {
   const [page, setPage] = useState(1);
   const [actionModal, setActionModal] = useState(null); // { item, action: 'aprobar'|'rechazar'|'entregar' }
   const [submitting, setSubmitting] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const PER_PAGE = 12;
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (showRefresh = false, silent = false) => {
+    if (showRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     try {
       const data = await adminApi.getBookSolicitudes();
-      setItems(data.data || []);
-    } catch { toast.error('Error al cargar solicitudes'); }
-    finally { setLoading(false); }
+      const solicitudes = [...(data.data || [])].sort((a, b) => new Date(b.fecha_solicitud || 0) - new Date(a.fecha_solicitud || 0));
+      setItems(solicitudes);
+    } catch {
+      if (!silent) toast.error('Error al cargar solicitudes');
+    }
+    finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+
+    const interval = setInterval(() => load(true, true), 15000);
+    const handleFocus = () => load(true, true);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        load(true, true);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [load]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -67,12 +97,12 @@ export default function SolicitudesLibros() {
         toast.success('Entrega registrada');
       }
       setActionModal(null);
-      load();
+      load(true);
     } catch (err) { toast.error(err.message); }
     finally { setSubmitting(false); }
   };
 
-  if (loading) return <Spinner />;
+  if (loading && items.length === 0) return <Spinner />;
 
   const pendientes = items.filter((s) => (s.estado_solicitud_id ?? s.estado_asistencia_id) === 1).length;
   const aprobados = items.filter((s) => (s.estado_solicitud_id ?? s.estado_asistencia_id) === 2).length;
@@ -95,6 +125,10 @@ export default function SolicitudesLibros() {
           <Search size={16} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
           <input className="search-input" style={{ paddingLeft: 34 }} placeholder="Buscar por título, boleta..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>
+        <button className="btn btn-primary" onClick={() => load(true)} disabled={refreshing} title="Recargar solicitudes">
+          <RefreshCw size={16} style={{ animation: refreshing ? 'spin .7s linear infinite' : 'none' }} />
+          {refreshing ? 'Actualizando...' : 'Recargar'}
+        </button>
       </div>
 
       {paged.length === 0 ? (
