@@ -1,7 +1,7 @@
 const cron = require('node-cron');
 const { verificarAsistencia } = require('./jobs/VerificacionAsistencia');
 
-cron.schedule('*/10 * * * * *', async () => {
+cron.schedule('* * * * *', async () => {
     try {
       await verificarAsistencia();
     } catch (err) {

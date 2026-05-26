@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/layout/ProtectedRoute';
+import HorarioRestriction from './components/layout/HorarioRestriction';
 import DashboardLayout from './components/layout/DashboardLayout';
 import PageLoader from './components/ui/PageLoader';
 import ErrorBoundary from './components/ui/ErrorBoundary';
@@ -62,7 +63,9 @@ export default function App() {
                 path="/user"
                 element={
                   <ProtectedRoute role="alumno">
-                    <DashboardLayout />
+                    <HorarioRestriction>
+                      <DashboardLayout />
+                    </HorarioRestriction>
                   </ProtectedRoute>
                 }
               >

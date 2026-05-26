@@ -9,6 +9,7 @@ const controladorAdministrador = require('../controllers/ControladorAdministrado
 const controladorAnalytics = require('../controllers/ControladorAnalytics.js');
 const controladorSoporte = require('../controllers/ControladorSoporte.js');
 const sessionGuard = require('../middleware/sessionGuard.js');
+const horarioGuard = require('../middleware/horarioGuard.js');
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
@@ -25,7 +26,7 @@ router.post('/logout', sessionGuard, cerrarSesion);
 router.get('/recursos', obtenerRecursosPorTipo);
 router.get('/libros/mas-solicitados', sessionGuard, obtenerLibrosMasSolicitados);
 router.get('/recursos/usuario', sessionGuard, controladorSolicitudes.obtencionSolicitudesUsuario);
-router.post('/solicitud', sessionGuard,middlewareAutenticacion.verificarDisponibilidad,controladorSolicitudes.crearSolicitud);
+router.post('/solicitud', sessionGuard, horarioGuard, middlewareAutenticacion.verificarDisponibilidad, controladorSolicitudes.crearSolicitud);
 router.delete('/solicitud/:tipo/:id', sessionGuard, controladorSolicitudes.cancelarSolicitud);
 router.patch('/CuentaUpdate', sessionGuard, CambioDatos);
 router.post('/cambiar-contrasena', sessionGuard, cambiarContrasenaPropia);
