@@ -155,7 +155,7 @@ async function registrarEnAuthSupabaseLegacy(boleta, correo, password) {
       email: correo,
       password: password,
       options: {
-        emailRedirectTo: `${getFrontendBaseUrl()}/verificar`,
+        emailRedirectTo: `${getFrontendBaseUrl()}/verificado`,
         data: { 
           boleta: boleta,
           rol: 'alumno'
@@ -219,23 +219,6 @@ function construirCorreoConfirmacionRegistro({ boleta, correo, confirmUrl }) {
   </div>
 </div>
 </body></html>`;
-}
-
-async function enviarCorreoConfirmacionRegistro(boleta, correo, authUserId) {
-  const token = jwt.sign(
-    {
-      purpose: 'registration_confirm',
-      boleta: String(boleta),
-      correo: String(correo).trim().toLowerCase(),
-      authUserId
-    },
-    getRegistrationConfirmSecret(),
-    { expiresIn: process.env.REGISTRATION_CONFIRM_TTL || REGISTRATION_CONFIRM_TOKEN_TTL }
-  );
-
-  const confirmUrl = `${getFrontendBaseUrl()}/verificar?token=${encodeURIComponent(token)}`;
-  const html = construirCorreoConfirmacionRegistro({ boleta, correo, confirmUrl });
-  return enviarCorreo(correo, 'Confirma tu cuenta - C-Book', html);
 }
 
 // Registrar usuario en Supabase Auth usando el correo de confirmacion de Supabase

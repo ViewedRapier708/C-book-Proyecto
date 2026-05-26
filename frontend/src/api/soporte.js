@@ -23,8 +23,6 @@ export const soporteApi = {
     api.patch(`/soporte/tickets/${encodeURIComponent(id)}/estado`, { estado, comentario }),
   addComment: (id, body, isInternal = false) =>
     api.post(`/soporte/tickets/${encodeURIComponent(id)}/comentarios`, { body, isInternal }),
-  logTime: (id, minutes, note) =>
-    api.post(`/soporte/tickets/${encodeURIComponent(id)}/tiempo`, { minutes, note }),
   dashboard: () => api.get('/soporte/dashboard'),
   config: () => api.get('/soporte/config'),
   getAgents: () => api.get('/soporte/agentes'),

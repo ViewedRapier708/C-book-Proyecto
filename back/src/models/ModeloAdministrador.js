@@ -101,25 +101,6 @@ async function CrearEjemplar(libro_id, codigo_barras, numero_ejemplar, anio, est
 
 
 
-  async function CrearGuardarropa(ocupado, estado) {
-     try {
-        const { data, error } = await supabase
-            .from('guardarropas')
-                .insert([{ ocupado, estado }])
-            .select();
-        if (error) {
-            console.error("Error creando guardarropa:", error);
-            return { success: false, message: error.message };
-        }
-        return { success: true, data: data };
-    } catch (error) {
-        console.error("Error interno creando guardarropa:", error);
-        return { success: false, message: 'Error interno del servidor' };
-    }
-}//Para despues
-
-
-
   async function eliminarLibro(id) {
     try {
         const { data, error } = await supabase
@@ -800,20 +781,6 @@ async function consultarEnLotes(tabla, columna, valores) {
     return { success: true, data: resultados };
 }
 
-async function LibrosExistentesPorIsbn(isbnsArr) {
-    try {
-        const isbns = (isbnsArr || []).filter(Boolean);
-        if (isbns.length === 0) return { success: true, data: [] };
-
-        const result = await consultarEnLotes('libros', 'isbn', isbns);
-        if (!result.success) return result;
-        return { success: true, data: result.data.map(r => r.isbn) };
-    } catch (error) {
-        console.error('Error interno en LibrosExistentesPorIsbn:', error);
-        return { success: false, message: 'Error interno del servidor' };
-    }
-}
-
 async function EjemplaresExistentesPorCodigo(codigosArr) {
     try {
         const codigos = (codigosArr || []).filter(Boolean);
@@ -896,7 +863,6 @@ async function BulkCrearLibrosConEjemplares(rows) {
 module.exports = {
     CrearLibro,
     CrearEjemplar,
-    CrearGuardarropa,
     eliminarLibro,
     eliminarGuardarropa,
     actualizarDatosLibro,
@@ -917,7 +883,6 @@ module.exports = {
     EliminarBoleta,
     BulkUpsertBoletas,
     BoletasExistentes,
-    LibrosExistentesPorIsbn,
     EjemplaresExistentesPorCodigo,
     BulkCrearLibrosConEjemplares,
 };

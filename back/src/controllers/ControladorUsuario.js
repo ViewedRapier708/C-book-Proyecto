@@ -11,7 +11,6 @@ const {
   traerUsuarioInfo,
   revocarSesionesSupabase,
   cambiarContrasenaRecovery,
-  CambioCorreo,
   actualizarContrasenaConToken,
   actualizarContrasenaPropia
 } = require('../models/ModeloUsuario.js');
@@ -133,53 +132,6 @@ async function registro(req, res) {
 }
 
 // ==================== VERIFICACIÓN DE CORREO ====================
-async function verificarCorreoLegacy(req, res) {
-  try {
-    // Obtener datos del body (enviados desde localStorage del frontend)
-    const { boleta, correo } = req.body;
-    
-    if (!boleta || !correo) {
-      return res.status(400).json({ 
-        confirmado: false, 
-        error: 'Faltan datos de registro (boleta o correo)' 
-      });
-    }
-
-    // Verificar si el correo fue confirmado
-    const resultado = await verificarConfirmacionPorBoleta(boleta);
-
-    if (!resultado.confirmado) {
-      return res.status(200).json({ 
-        confirmado: false, 
-        mensaje: 'Correo aún no confirmado' 
-      });
-    }
-
-    // Correo confirmado - Crear usuario en la tabla
-    const usuarioCreado = await crearUsuarioEnTabla(boleta, correo);
-    
-    if (!usuarioCreado.success) {
-      console.error("Error creando usuario en tabla:", usuarioCreado.error);
-      // Puede que ya exista, verificamos
-      const yaExiste = await validarBoletaEnTabla(boleta);
-      if (!yaExiste) {
-        return res.status(400).json({ 
-          confirmado: true,
-          error: 'Error al crear usuario en la base de datos' 
-        });
-      }
-    }
-
-    return res.status(200).json({ 
-      confirmado: true,
-      mensaje: 'Correo verificado y cuenta activada exitosamente'
-    });
-
-  } catch (err) {
-    console.error("Error en verificarCorreo:", err);
-    return res.status(500).json({ error: 'Error interno del servidor' });
-  }
-}//Modificar para la verificacion por correo , osea que verifique si ya hay algun usuario en la tabla 
 
 async function verificarCorreo(req, res) {
   try {
@@ -487,14 +439,7 @@ async function CambioDatos(req , res) {
     }
     switch (TipoDatoACambiar) {
       case 'correo':
-        if (!boleta || !nuevoCorreo) {
-          return res.status(400).json({ error: 'Faltan datos para actualizar correo' });
-        } 
-        const resultadoCorreo = await CambioCorreo(boleta, nuevoCorreo);
-        if (!resultadoCorreo.success) {
-          return res.status(400).json({ error: resultadoCorreo.error || 'Error al cambiar correo' });
-        }
-        return res.status(200).json({ success: true, message: 'Correo actualizado exitosamente' });
+        return res.status(400).json({ error: 'El cambio de correo no está disponible actualmente' });
       case 'contraseña':
         if (!boleta || !nuevaContraseña) {
           return res.status(400).json({ error: 'Faltan datos para actualizar contraseña' });

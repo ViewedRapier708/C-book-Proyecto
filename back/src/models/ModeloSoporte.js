@@ -492,53 +492,6 @@ async function crearAgente(payload, user) {
 }
 
 
-async function actualizarEstadoAgente(agentUserId, estado, user) {
-  requireSupportAdmin(user);
-  const supabase = getSupportClient();
-  const targetUserId = String(agentUserId || '').trim();
-  const nextStatus = String(estado || '').trim().toLowerCase();
-
-  if (!targetUserId) {
-    const err = new Error('Debes indicar el agente de soporte');
-    err.status = 400;
-    throw err;
-  }
-  if (!['active', 'inactive'].includes(nextStatus)) {
-    const err = new Error('Estado de agente no valido');
-    err.status = 400;
-    throw err;
-  }
-
-  const profile = await buscarPerfilSoporte(targetUserId);
-  if (!profile) {
-    const err = new Error('Agente de soporte no encontrado');
-    err.status = 404;
-    throw err;
-  }
-  if (![SUPPORT_ROLES.ADMIN, SUPPORT_ROLES.AGENT].includes(profile.role)) {
-    const err = new Error('El usuario no pertenece al modulo de soporte');
-    err.status = 409;
-    throw err;
-  }
-  if (profile.status === nextStatus) {
-    return mapSupportProfile(profile);
-  }
-
-  const { data, error } = await supabase
-    .from('support_profiles')
-    .update({ status: nextStatus, updated_at: new Date().toISOString() })
-    .eq('user_id', targetUserId)
-    .select('user_id,full_name,email,phone,boleta,role,status,created_at,updated_at')
-    .single();
-
-  if (error) {
-    logDbError('actualizarEstadoAgente.update', error);
-    throw error;
-  }
-
-  return mapSupportProfile(data);
-}
-
 async function asegurarTipo(nombre) {
   const supabase = getSupportClient();
   const cleanName = String(nombre || 'Otro').trim() || 'Otro';

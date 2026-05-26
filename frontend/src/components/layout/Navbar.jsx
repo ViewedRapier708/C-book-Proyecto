@@ -20,7 +20,7 @@ const adminLinks = [
   { to: '/admin/usuarios', icon: Users, label: 'Usuarios' },
   { to: '/admin/documentos', icon: FileText, label: 'Documentos' },
   { to: '/admin/solicitudes-libros', icon: ClipboardList, label: 'Solicitudes de libros' },
-  { to: '/admin/prestamos-libros', icon: BookOpen, label: 'Prestamos Libros' },
+  { to: '/admin/prestamos-libros', icon: BookOpen, label: 'Prestamos de libros activos' },
 ];
 
 const userLinks = [

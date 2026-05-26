@@ -6,7 +6,7 @@ function isLocalHostname(hostname = '') {
   return ['localhost', '127.0.0.1', '0.0.0.0', '[::1]'].includes(hostname);
 }
 
-export function resolveApiBase({ envApiBase, location } = {}) {
+function resolveApiBase({ envApiBase, location } = {}) {
   const normalizedBase = normalizeApiBase(envApiBase);
 
   if (!location || !normalizedBase) {

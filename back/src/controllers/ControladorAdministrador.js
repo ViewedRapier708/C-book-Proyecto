@@ -2,7 +2,6 @@ const path = require('path');
 const {
     CrearLibro,
     CrearEjemplar,
-    CrearGuardarropa,
     eliminarLibro,
     eliminarGuardarropa,
     actualizarDatosLibro,
@@ -331,26 +330,6 @@ for (const [campo, limites] of Object.entries(longitudes)) {
 
 
 
-
-async function crearGuardarropa(req, res) {
-    try {
-        const { ocupado, estado } = req.body;
-
-        const resultado = await CrearGuardarropa(ocupado, estado);
-        
-        if (resultado.success) {
-            return res.status(201).json(resultado);
-        } else {
-            return res.status(400).json(resultado);
-        }
-    } catch (error) {
-        console.error('Error en crearGuardarropa:', error);
-        return res.status(500).json({ 
-            success: false, 
-            message: 'Error interno del servidor' 
-        });
-    }
-}
 
 // ==================== ELIMINAR MATERIALES ====================
 

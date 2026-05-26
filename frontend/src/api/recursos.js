@@ -9,6 +9,5 @@ export const solicitudesApi = {
   create: (tipo, boleta, idRecurso) =>
     api.post('/solicitud', { tipo, boleta, idRecurso }),
   cancel: (tipo, id) => api.delete(`/solicitud/${tipo}/${id}`),
-  cancelAll: (tipo) => api.delete(`/solicitud/${tipo}/all`),
   getUserSolicitudes: () => api.get('/recursos/usuario'),
 };
