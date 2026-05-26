@@ -39,4 +39,24 @@ function getClient() {
   });
 }
 
-module.exports = { connect, getClient };
+let anonClient = null;
+
+function getAnonClient() {
+  const url = (process.env.SUPABASE_URL || '').trim();
+  const key = (process.env.SUPABASE_ANON_KEY || '').trim();
+  if (!url || !key) {
+    console.warn('SUPABASE_ANON_KEY no configurada, usando getClient() como fallback');
+    return getClient();
+  }
+  if (!anonClient) {
+    anonClient = createClient(url, key, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+  }
+  return anonClient;
+}
+
+module.exports = { connect, getClient, getAnonClient };

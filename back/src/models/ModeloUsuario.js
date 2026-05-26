@@ -1,4 +1,4 @@
-const { getClient } = require('../config/db');
+const { getClient, getAnonClient } = require('../config/db');
 const jwt = require('jsonwebtoken');
 const { enviarCorreo } = require('../utils/servicioCorreo');
 
@@ -149,7 +149,7 @@ async function validarCorreoEnTabla(correo) {
 
 // Registrar usuario en Supabase Auth
 async function registrarEnAuthSupabaseLegacy(boleta, correo, password) {
-  const supabase = getClient();
+  const supabase = getAnonClient();
   try {
     const { data, error } = await supabase.auth.signUp({
       email: correo,
