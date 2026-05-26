@@ -8,6 +8,7 @@ import AnimatedPage from '../../components/layout/AnimatedPage';
 
 export default function Documentos() {
   const [items, setItems] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
@@ -22,8 +23,10 @@ export default function Documentos() {
       setLoading(true);
     }
     try {
-      const data = await adminApi.getUsers();
-      setItems(data.data || []);
+      const data = await adminApi.getUsers({ limit: 0, rol: 'alumno' });
+      const usuarios = data.data || [];
+      setItems(usuarios);
+      setTotalCount(data.total ?? usuarios.length);
     } catch { toast.error('Error al cargar usuarios'); }
     finally {
       setLoading(false);
@@ -72,7 +75,7 @@ export default function Documentos() {
       <div className="stats-grid">
         <div className="stat-card"><div className="stat-card-label">Pendientes</div><div className="stat-card-value" style={{ color: 'var(--warning)' }}>{pendientes}</div></div>
         <div className="stat-card"><div className="stat-card-label">Aprobados</div><div className="stat-card-value" style={{ color: 'var(--success)' }}>{aprobados}</div></div>
-        <div className="stat-card"><div className="stat-card-label">Total</div><div className="stat-card-value">{items.length}</div></div>
+        <div className="stat-card"><div className="stat-card-label">Total</div><div className="stat-card-value">{totalCount}</div></div>
       </div>
 
       <div className="toolbar">

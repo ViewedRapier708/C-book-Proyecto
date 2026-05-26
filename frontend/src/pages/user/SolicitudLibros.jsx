@@ -1,20 +1,23 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { recursosApi, solicitudesApi } from '../../api/recursos';
 import { useAuth } from '../../context/AuthContext';
-import { Spinner, EmptyState } from '../../components/ui/Feedback';
+import { EmptyState } from '../../components/ui/Feedback';
 import Pagination from '../../components/ui/Pagination';
 import Modal from '../../components/ui/Modal';
 import toast from 'react-hot-toast';
 import { AlertCircle, Search, TrendingUp, Star } from 'lucide-react';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 import { DOCUMENTACION_REQUERIDA_MENSAJE } from '../../constants/documentacion';
+import { SkeletonGrid } from '../../components/ui/Skeleton';
 
 const MAX_LIBROS = 3;
 
 export default function SolicitudLibros() {
   const { user } = useAuth();
   const [items, setItems] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [catalogLoading, setCatalogLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [filterTipo, setFilterTipo] = useState('');
   const [filterDisp, setFilterDisp] = useState('');
@@ -25,25 +28,124 @@ export default function SolicitudLibros() {
   const [masSolicitados, setMasSolicitados] = useState([]);
   const [loadingTop, setLoadingTop] = useState(true);
   const PER_PAGE = 12;
+  const BATCH_SIZE = 120;
+  const loadTokenRef = useRef(0);
+  const nextBatchPageRef = useRef(1);
+  const itemsRef = useRef([]);
+  const totalCountRef = useRef(0);
+  const loadingMoreRef = useRef(false);
+
+  const commitItems = useCallback((valueOrUpdater) => {
+    setItems((prev) => {
+      const next = typeof valueOrUpdater === 'function'
+        ? valueOrUpdater(prev)
+        : valueOrUpdater;
+      itemsRef.current = next;
+      return next;
+    });
+  }, []);
+
+  const commitTotal = useCallback((value) => {
+    totalCountRef.current = value;
+    setTotalCount(value);
+  }, []);
+
+  const fetchBatch = useCallback((batchPage) => (
+    recursosApi.getByType('libro', { page: batchPage, limit: BATCH_SIZE })
+  ), []);
 
   const load = useCallback(async () => {
+    const token = loadTokenRef.current + 1;
+    loadTokenRef.current = token;
+    nextBatchPageRef.current = 1;
+    loadingMoreRef.current = false;
+
     setLoading(true);
+    setCatalogLoading(false);
+    setLoadingTop(true);
+
     try {
-      const [catData, solData, topData] = await Promise.all([
-        recursosApi.getByType('libro'),
+      const [catData, solData] = await Promise.all([
+        fetchBatch(1),
         solicitudesApi.getUserSolicitudes(),
-        recursosApi.getMasSolicitados(),
       ]);
-      setItems(catData.data || []);
-      setMasSolicitados(topData.data || []);
+
+      if (loadTokenRef.current !== token) return;
+
+      const libros = catData.data || [];
+      nextBatchPageRef.current = 2;
+      commitItems(libros);
+      commitTotal(catData.total ?? libros.length);
+
       const sols = solData.data || [];
       const activas = sols.filter(s => s.tipo_solicitud === 'libro' && s.estado_asistencia_id === 1).length;
       setActivasCount(activas);
-    } catch { toast.error('Error al cargar libros'); }
-    finally { setLoading(false); setLoadingTop(false); }
-  }, []);
+    } catch {
+      toast.error('Error al cargar libros');
+    } finally {
+      if (loadTokenRef.current === token) {
+        setLoading(false);
+      }
+    }
 
-  useEffect(() => { load(); }, [load]);
+    void recursosApi.getMasSolicitados()
+      .then((topData) => {
+        if (loadTokenRef.current !== token) return;
+        setMasSolicitados(topData.data || []);
+      })
+      .catch((err) => {
+        if (loadTokenRef.current === token) {
+          console.error('Error cargando libros mas solicitados:', err);
+        }
+      })
+      .finally(() => {
+        if (loadTokenRef.current === token) {
+          setLoadingTop(false);
+        }
+      });
+
+    if (loadTokenRef.current !== token || itemsRef.current.length >= totalCountRef.current) {
+      return;
+    }
+
+    loadingMoreRef.current = true;
+    setCatalogLoading(true);
+
+    try {
+      while (loadTokenRef.current === token && itemsRef.current.length < totalCountRef.current) {
+        const batchPage = nextBatchPageRef.current;
+        const data = await fetchBatch(batchPage);
+
+        if (loadTokenRef.current !== token) return;
+
+        const libros = data.data || [];
+        if (libros.length === 0) {
+          break;
+        }
+
+        nextBatchPageRef.current = batchPage + 1;
+        commitTotal(data.total ?? totalCountRef.current);
+        commitItems((prev) => [...prev, ...libros]);
+      }
+    } catch (err) {
+      if (loadTokenRef.current === token) {
+        console.error('Error cargando libros en segundo plano:', err);
+      }
+    } finally {
+      if (loadTokenRef.current === token) {
+        setCatalogLoading(false);
+      }
+      loadingMoreRef.current = false;
+    }
+  }, [commitItems, commitTotal, fetchBatch]);
+
+  useEffect(() => {
+    load();
+    return () => {
+      loadTokenRef.current += 1;
+      loadingMoreRef.current = false;
+    };
+  }, [load]);
 
   const tipos = useMemo(() => [...new Set(items.map((b) => b.libros?.tipo_material || b.tipo_material).filter(Boolean))], [items]);
   const sinDocumentos = user?.tiene_documentos === false;
@@ -71,6 +173,14 @@ export default function SolicitudLibros() {
   }, [items, search, filterTipo, filterDisp]);
 
   const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const catalogReady = totalCount > 0 && items.length >= totalCount;
+
+  useEffect(() => {
+    const maxPage = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+    if (page > maxPage) {
+      setPage(maxPage);
+    }
+  }, [filtered.length, page]);
 
   const handleSolicitar = async () => {
     setSubmitting(true);
@@ -86,13 +196,14 @@ export default function SolicitudLibros() {
     } finally { setSubmitting(false); }
   };
 
-  if (loading) return <Spinner />;
-
   return (
     <AnimatedPage>
       <div className="page-header">
         <h1>Catálogo de Libros</h1>
         <p>Busca y solicita libros del acervo bibliográfico</p>
+        <span className="badge badge-info" style={{ fontSize: '0.95rem', padding: '0.4rem 0.9rem', marginLeft: '1rem' }}>
+          {totalCount} libros en biblioteca
+        </span>
       </div>
 
       {activasCount >= MAX_LIBROS && (
@@ -118,7 +229,7 @@ export default function SolicitudLibros() {
           <div className="resource-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
             {masSolicitados.map((b) => (
               <div key={b.id} className="resource-card" style={{ border: '1px solid var(--accent-primary-light)' }}>
-                <div className="resource-card-title">
+                <div className="resource-card-title" title={b.libros?.titulo || 'Sin título'}>
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>
                     {b.libros?.titulo || 'Sin título'}
                   </span>
@@ -170,13 +281,15 @@ export default function SolicitudLibros() {
         </select>
       </div>
 
-      {paged.length === 0 ? (
+      {loading && items.length === 0 ? (
+        <SkeletonGrid count={PER_PAGE} />
+      ) : paged.length === 0 ? (
         <EmptyState message="No se encontraron libros" />
       ) : (
         <div className="resource-grid">
           {paged.map((b) => (
             <div key={b.id} className="resource-card">
-              <div className="resource-card-title">
+              <div className="resource-card-title" title={b.libros?.titulo || b.titulo || 'Sin título'}>
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>
                   {b.libros?.titulo || b.titulo || 'Sin título'}
                 </span>

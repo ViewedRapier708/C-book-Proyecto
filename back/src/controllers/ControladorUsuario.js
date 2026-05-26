@@ -71,11 +71,15 @@ async function registro(req, res) {
   }
 
   try {
-    const { boleta, correo, password, confPsw } = req.body;
+    const { boleta, correo, password, confPsw, acepta_terminos } = req.body;
 
     // Validaciones básicas
     if (!boleta || !correo || !password || !confPsw) {
       return res.status(400).json({ error: 'Faltan datos obligatorios' });
+    }
+
+    if (!acepta_terminos) {
+      return res.status(400).json({ error: 'Debes aceptar el Aviso de Privacidad y los Términos y Condiciones' });
     }
 
     if (!/^\d{10}$/.test(boleta)) {

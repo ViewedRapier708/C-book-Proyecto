@@ -21,7 +21,6 @@ const {
     EliminarBoleta,
     BulkUpsertBoletas,
     BoletasExistentes,
-    LibrosExistentesPorIsbn,
     EjemplaresExistentesPorCodigo,
     BulkCrearLibrosConEjemplares,
 } = require('../models/ModeloAdministrador.js');
@@ -52,101 +51,6 @@ function validarEnteroSinDecimales(valor, campo) {
     }
 
     return { ok: true, value: numero };
-}
-
-const LIBRO_REGEX = {
-    titulo: /^[\p{L}\p{N}\s\-\.,;:Â¿?Â¡!'"()\[\]{}Â«Â»â€“â€”&@#$%*+=_\\/]*$/u,
-    clasificacion: /^[\p{L}\p{N}\s\.\-]*$/u,
-    tipo_material: /^[\p{L}\s]+$/u,
-    autor: /^[\p{L}\s'\-\.,]+$/u,
-    codigo_barras: /^[\p{L}\p{N}\-]+$/u,
-    coleccion: /^[\p{L}\p{N}\s\-\.,;:Â¿?Â¡!'"()&]*$/u,
-    estatus_item: /^[\p{L}\p{N}\s_\-]+$/u,
-};
-
-const LIBRO_LONGITUDES = {
-    titulo: { min: 1, max: 500 },
-    clasificacion: { min: 1, max: 50 },
-    tipo_material: { min: 1, max: 50 },
-    autor: { min: 1, max: 200 },
-    codigo_barras: { min: 3, max: 50 },
-    coleccion: { min: 1, max: 200 },
-    estatus_item: { min: 1, max: 50 },
-};
-
-function normalizarDisponible(value) {
-    if (typeof value === 'boolean') return value;
-    const text = String(value ?? '').trim().toLowerCase();
-    if (!text) return true;
-    return ['true', '1', 'si', 'sÃ­', 'disponible', 'yes'].includes(text);
-}
-
-function validarLibroEjemplarPayload(input, options = {}) {
-    const { isbnRequerido = true } = options;
-    const row = {
-        titulo: String(input?.titulo ?? '').trim(),
-        clasificacion: String(input?.clasificacion ?? '').trim(),
-        isbn: String(input?.isbn ?? '').trim(),
-        tipo_material: String(input?.tipo_material ?? '').trim(),
-        autor: String(input?.autor ?? '').trim(),
-        codigo_barras: String(input?.codigo_barras ?? '').trim(),
-        numero_ejemplar: String(input?.numero_ejemplar ?? '').trim(),
-        anio: String(input?.anio ?? '').trim(),
-        estatus_item: String(input?.estatus_item ?? '').trim(),
-        coleccion: String(input?.coleccion ?? '').trim(),
-        Disponible: normalizarDisponible(input?.Disponible),
-    };
-
-    if (!row.titulo || !row.clasificacion || !row.tipo_material || !row.autor || (isbnRequerido && !row.isbn)) {
-        return { ok: false, message: 'Todos los campos son requeridos', row };
-    }
-
-    if (!row.numero_ejemplar || !row.anio || !row.estatus_item || !row.coleccion || !row.codigo_barras) {
-        return { ok: false, message: 'Todos los campos del ejemplar son requeridos', row };
-    }
-
-    const validacionNumeroEjemplar = validarEnteroSinDecimales(row.numero_ejemplar, 'numero_ejemplar');
-    if (!validacionNumeroEjemplar.ok) return { ok: false, message: validacionNumeroEjemplar.message, row };
-
-    const validacionAnio = validarEnteroSinDecimales(row.anio, 'anio');
-    if (!validacionAnio.ok) return { ok: false, message: validacionAnio.message, row };
-
-    if (validacionAnio.value < 1000 || validacionAnio.value > 2100) {
-        return { ok: false, message: 'El aÃ±o debe estar entre 1000 y 2100', row };
-    }
-
-    const regexChecks = [
-        ['titulo', 'El tÃ­tulo contiene caracteres no permitidos (no se permiten emojis)'],
-        ['clasificacion', 'La clasificaciÃ³n solo puede contener letras, nÃºmeros, espacios, puntos y guiones'],
-        ['tipo_material', 'El tipo de material solo puede contener letras y espacios'],
-        ['autor', 'El autor solo puede contener letras, espacios, apÃ³strofes, puntos, comas y guiones'],
-        ['codigo_barras', 'El cÃ³digo de barras contiene caracteres no permitidos'],
-        ['coleccion', 'La colecciÃ³n contiene caracteres no permitidos'],
-        ['estatus_item', 'El estatus del item contiene caracteres no permitidos'],
-    ];
-
-    for (const [campo, message] of regexChecks) {
-        if (!LIBRO_REGEX[campo].test(row[campo])) {
-            return { ok: false, message, row };
-        }
-    }
-
-    for (const [campo, limites] of Object.entries(LIBRO_LONGITUDES)) {
-        const valor = row[campo];
-        if (valor.length < limites.min || valor.length > limites.max) {
-            return { ok: false, message: `El campo ${campo} debe tener entre ${limites.min} y ${limites.max} caracteres`, row };
-        }
-    }
-
-    return {
-        ok: true,
-        row: {
-            ...row,
-            isbn: row.isbn || null,
-            numero_ejemplar: validacionNumeroEjemplar.value,
-            anio: validacionAnio.value,
-        },
-    };
 }
 
 // ==================== CREAR MATERIALES ====================
@@ -594,10 +498,12 @@ async function actualizarLibro(req, res) {
 async function obtenerMateriales(req, res) {
     try {
         const { tipo } = req.params;
-        const page = Number.parseInt(req.query.page, 10) || 1;
-        const limit = Number.parseInt(req.query.limit, 10) || 25;
+        const pagination = {
+            page: req.query.page !== undefined ? (Number.parseInt(req.query.page, 10) || 1) : 1,
+            limit: req.query.limit !== undefined ? (Number.parseInt(req.query.limit, 10) || 0) : 25,
+        };
         
-        const resultado = await ObtenerMateriales(tipo, { page, limit });
+        const resultado = await ObtenerMateriales(tipo, pagination);
         
         if (resultado.success) {
             return res.status(200).json(resultado);
@@ -617,10 +523,15 @@ async function obtenerMateriales(req, res) {
 
 async function obtenerUsuarios(req, res) {
     try {
-        const page = Number.parseInt(req.query.page, 10) || 1;
-        const limit = Number.parseInt(req.query.limit, 10) || 25;
+        const page = req.query.page !== undefined
+            ? (Number.parseInt(req.query.page, 10) || 1)
+            : 1;
+        const limit = req.query.limit !== undefined
+            ? (Number.parseInt(req.query.limit, 10) || 0)
+            : 25;
+        const rol = String(req.query.rol ?? '').trim() || undefined;
 
-        const resultado = await ObtenerUsuarios({ page, limit });
+        const resultado = await ObtenerUsuarios({ page, limit }, { rol });
 
         if (resultado.success) {
             return res.status(200).json(resultado);
@@ -1350,65 +1261,34 @@ async function previewCargaMasivaLibros(req, res) {
             return res.status(400).json({ success: false, message: 'Error al procesar el archivo: ' + parseError.message });
         }
 
-        const validated = parsedRows.map((row, index) => {
-            const result = validarLibroEjemplarPayload(row, { isbnRequerido: false });
-            return {
-                index,
-                raw: row,
-                valid: result.ok,
-                row: result.row,
-                message: result.ok ? '' : result.message,
-            };
-        });
-
-        const isbnValues = validated
-            .filter((item) => item.valid && item.row.isbn)
-            .map((item) => item.row.isbn);
-        const codigoValues = validated
-            .filter((item) => item.valid)
-            .map((item) => item.row.codigo_barras);
-
-        const [existingIsbnResult, existingCodigoResult] = await Promise.all([
-            LibrosExistentesPorIsbn(isbnValues),
-            EjemplaresExistentesPorCodigo(codigoValues),
-        ]);
-
-        if (!existingIsbnResult.success) return res.status(400).json(existingIsbnResult);
+        const codigosUnicos = [...new Set(parsedRows.map(r => r.codigo_barras).filter(Boolean))];
+        const existingCodigoResult = await EjemplaresExistentesPorCodigo(codigosUnicos);
         if (!existingCodigoResult.success) return res.status(400).json(existingCodigoResult);
-
-        const existingIsbns = new Set(existingIsbnResult.data || []);
         const existingCodigos = new Set(existingCodigoResult.data || []);
-        const seenIsbns = new Set();
-        const seenCodigos = new Set();
 
-        const rows = validated.map((item) => {
-            const row = item.row;
-            if (!item.valid) {
-                return { ...row, status: 'invalid', message: item.message };
+        const seenBarcodes = new Set();
+        const rows = [];
+        let duplicateEnArchivo = 0;
+        let duplicateEnBD = 0;
+        for (const row of parsedRows) {
+            const codigo = row.codigo_barras;
+            if (seenBarcodes.has(codigo)) {
+                duplicateEnArchivo++;
+                rows.push({ ...row, isbn: row.isbn || null, status: 'duplicate', message: 'Código de barras repetido en el archivo' });
+                continue;
             }
-
-            const duplicatedReasons = [];
-            if (row.isbn && (existingIsbns.has(row.isbn) || seenIsbns.has(row.isbn))) {
-                duplicatedReasons.push('ISBN duplicado');
+            seenBarcodes.add(codigo);
+            if (existingCodigos.has(codigo)) {
+                duplicateEnBD++;
+                rows.push({ ...row, isbn: row.isbn || null, status: 'duplicate', message: 'Código de barras ya existe en la base de datos' });
+                continue;
             }
-            if (existingCodigos.has(row.codigo_barras) || seenCodigos.has(row.codigo_barras)) {
-                duplicatedReasons.push('cÃ³digo de barras duplicado');
-            }
-
-            if (row.isbn) seenIsbns.add(row.isbn);
-            seenCodigos.add(row.codigo_barras);
-
-            if (duplicatedReasons.length > 0) {
-                return { ...row, status: 'duplicate', message: duplicatedReasons.join(' y ') };
-            }
-
-            return { ...row, status: 'valid', message: '' };
-        });
+            rows.push({ ...row, isbn: row.isbn || null, status: 'valid', message: '' });
+        }
 
         const summary = {
             valid: rows.filter(r => r.status === 'valid').length,
-            duplicate: rows.filter(r => r.status === 'duplicate').length,
-            invalid: rows.filter(r => r.status === 'invalid').length,
+            duplicate: duplicateEnArchivo + duplicateEnBD,
         };
 
         return res.status(200).json({ success: true, rows, summary, fileName: file.originalname });
@@ -1426,48 +1306,22 @@ async function confirmarCargaMasivaLibros(req, res) {
             return res.status(400).json({ success: false, message: 'No hay filas para importar' });
         }
 
-        const validatedRows = rows
-            .map((row) => validarLibroEjemplarPayload(row, { isbnRequerido: false }))
-            .filter((result) => result.ok)
-            .map((result) => result.row);
-
-        if (validatedRows.length === 0) {
-            return res.status(400).json({ success: false, message: 'No hay filas con formato vÃ¡lido para importar' });
-        }
-
-        const [existingIsbnResult, existingCodigoResult] = await Promise.all([
-            LibrosExistentesPorIsbn(validatedRows.map((row) => row.isbn).filter(Boolean)),
-            EjemplaresExistentesPorCodigo(validatedRows.map((row) => row.codigo_barras)),
-        ]);
-
-        if (!existingIsbnResult.success) return res.status(400).json(existingIsbnResult);
+        const codigosUnicos = [...new Set(rows.map(r => r.codigo_barras).filter(Boolean))];
+        const existingCodigoResult = await EjemplaresExistentesPorCodigo(codigosUnicos);
         if (!existingCodigoResult.success) return res.status(400).json(existingCodigoResult);
-
-        const existingIsbns = new Set(existingIsbnResult.data || []);
         const existingCodigos = new Set(existingCodigoResult.data || []);
-        const seenIsbns = new Set();
-        const seenCodigos = new Set();
+
+        const seenBarcodes = new Set();
+        const uniqueRows = [];
         let skipped = 0;
-
-        const importableRows = validatedRows.filter((row) => {
-            const isDuplicated = Boolean(
-                (row.isbn && (existingIsbns.has(row.isbn) || seenIsbns.has(row.isbn))) ||
-                existingCodigos.has(row.codigo_barras) ||
-                seenCodigos.has(row.codigo_barras)
-            );
-
-            if (row.isbn) seenIsbns.add(row.isbn);
-            seenCodigos.add(row.codigo_barras);
-
-            if (isDuplicated) skipped += 1;
-            return !isDuplicated;
-        });
-
-        if (importableRows.length === 0) {
-            return res.status(400).json({ success: false, message: 'No hay filas nuevas para importar' });
+        for (const row of rows) {
+            const codigo = row.codigo_barras;
+            if (seenBarcodes.has(codigo) || existingCodigos.has(codigo)) { skipped++; continue; }
+            seenBarcodes.add(codigo);
+            uniqueRows.push(row);
         }
 
-        const resultado = await BulkCrearLibrosConEjemplares(importableRows);
+        const resultado = await BulkCrearLibrosConEjemplares(uniqueRows);
         if (!resultado.success) return res.status(400).json(resultado);
 
         return res.status(200).json({

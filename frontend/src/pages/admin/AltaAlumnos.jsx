@@ -300,6 +300,7 @@ function ModalCargaMasiva({ open, onClose, onSuccess }) {
 // ── Main page ───────────────────────────────────────────────────────────────
 export default function AltaAlumnos() {
   const [items, setItems] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [grupoFilter, setGrupoFilter] = useState('');
@@ -315,7 +316,9 @@ export default function AltaAlumnos() {
     setLoading(true);
     try {
       const data = await adminApi.getBoletas();
-      setItems((data.data || []).filter((item) => !esGrupoAdminProtegido(item?.Grupo)));
+      const boletas = (data.data || []).filter((item) => !esGrupoAdminProtegido(item?.Grupo));
+      setItems(boletas);
+      setTotalCount(data.total ?? boletas.length);
     } catch { toast.error('Error al cargar alumnos'); }
     finally { setLoading(false); }
   }, []);
@@ -327,10 +330,10 @@ export default function AltaAlumnos() {
   , [items]);
 
   const stats = useMemo(() => ({
-    total: items.length,
+    total: totalCount,
     grupos: new Set(items.map(i => i.Grupo).filter(Boolean)).size,
     registrados: items.filter(i => i.registrado).length,
-  }), [items]);
+  }), [items, totalCount]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();

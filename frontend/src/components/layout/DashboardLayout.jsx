@@ -1,6 +1,5 @@
 import { useState, Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
 import Navbar from './Navbar';
 import ThemeToggle from '../ui/ThemeToggle';
 import CommandPalette from '../ui/CommandPalette';
@@ -34,9 +33,7 @@ export default function DashboardLayout() {
             <div className="w-9 h-9 border-3 border-[var(--border-color)] border-t-primary-500 rounded-full animate-spin" />
           </div>
         }>
-          <AnimatePresence mode="wait">
-            <Outlet key={location.pathname} />
-          </AnimatePresence>
+          <Outlet key={location.pathname} />
         </Suspense>
       </main>
 

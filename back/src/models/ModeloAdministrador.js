@@ -3,13 +3,50 @@ const {getClient} = require("../config/db");
 const supabase = getClient();
 
 const DEFAULT_LIMIT = 25;
+const FETCH_BATCH_SIZE = 1000;
+const PROTECTED_BOLETAS = new Set([10000000001, 1000000001]);
 
 function resolvePagination({ page = 1, limit = DEFAULT_LIMIT } = {}) {
-    const safePage = Number.isFinite(page) && page > 0 ? page : 1;
-    const safeLimit = Number.isFinite(limit) && limit > 0 ? limit : DEFAULT_LIMIT;
+    const all = limit === 0;
+    const safePage = all ? 1 : (Number.isFinite(page) && page > 0 ? page : 1);
+    const safeLimit = all ? 0 : (Number.isFinite(limit) && limit > 0 ? limit : DEFAULT_LIMIT);
     const from = (safePage - 1) * safeLimit;
     const to = from + safeLimit - 1;
-    return { page: safePage, limit: safeLimit, from, to };
+    return { page: safePage, limit: safeLimit, from, to, all };
+}
+
+async function fetchRowsInBatches(buildQuery, total) {
+    if (!total || total <= 0) {
+        return { success: true, data: [] };
+    }
+
+    const rows = [];
+
+    for (let start = 0; start < total; start += FETCH_BATCH_SIZE) {
+        const end = Math.min(start + FETCH_BATCH_SIZE - 1, total - 1);
+        const { data, error } = await buildQuery().range(start, end);
+
+        if (error) {
+            return { success: false, message: error.message };
+        }
+
+        rows.push(...(data || []));
+    }
+
+    return { success: true, data: rows };
+}
+
+function esBoletaProtegida(boleta) {
+    const boletaNum = Number(boleta);
+    return Number.isFinite(boletaNum) && PROTECTED_BOLETAS.has(boletaNum);
+}
+
+function normalizarGrupo(grupo) {
+    return String(grupo ?? '').trim().toUpperCase();
+}
+
+function esGrupoAdminProtegido(grupo) {
+    return ['ADMIN', 'ADMINISTRADOR'].includes(normalizarGrupo(grupo));
 }
 
 // ==================== MODELO ADMINISTRADOR ====================
@@ -174,7 +211,7 @@ async function ObtenerMateriales(tipo, pagination = {}) {
 
 async function obtenerLibros(pagination) {
     try {
-        const { page, limit, from, to } = resolvePagination(pagination);
+        const { page, limit, from, to, all } = resolvePagination(pagination);
 
         const { count, error: countError } = await supabase
             .from('ejemplares')
@@ -185,7 +222,7 @@ async function obtenerLibros(pagination) {
             return { success: false, message: countError.message };
         }
 
-        const { data, error } = await supabase
+        const buildQuery = () => supabase
             .from('ejemplares')
             .select(
                 `
@@ -207,14 +244,29 @@ async function obtenerLibros(pagination) {
                 )
                 `
             )
-            .range(from, to);
+            .order('id', { ascending: true });
 
-        if (error) {
-            console.error('Error obteniendo libros:', error);
-            return { success: false, message: error.message };
+        let data = [];
+
+        if (all) {
+            const result = await fetchRowsInBatches(buildQuery, count || 0);
+            if (!result.success) {
+                console.error('Error obteniendo libros:', result.message);
+                return result;
+            }
+            data = result.data;
+        } else {
+            const { data: pagedData, error } = await buildQuery().range(from, to);
+
+            if (error) {
+                console.error('Error obteniendo libros:', error);
+                return { success: false, message: error.message };
+            }
+
+            data = pagedData || [];
         }
 
-        return { success: true, data: data, total: count, page, limit };
+        return { success: true, data, total: count, page: all ? 1 : page, limit: all ? count : limit };
     } catch (error) {
         console.error('Error interno obteniendo libro:', error);
         return { success: false, message: 'Error interno del servidor' };
@@ -250,30 +302,60 @@ async function obtenerLibros(pagination) {
     }
 }
 
-async function ObtenerUsuarios(pagination) {
+async function ObtenerUsuarios(pagination = {}, filters = {}) {
     try {
-        const { page, limit, from, to } = resolvePagination(pagination);
+        const { page, limit, from, to, all } = resolvePagination(pagination);
+        const rol = String(filters.rol ?? '').trim();
 
-        const { count, error: countError } = await supabase
+        let countQuery = supabase
             .from('usuarios_web_movil')
             .select('*', { count: 'exact', head: true });
+
+        if (rol) {
+            countQuery = countQuery.eq('rol', rol);
+        }
+
+        const { count, error: countError } = await countQuery;
 
         if (countError) {
             console.error('Error obteniendo total usuarios:', countError);
             return { success: false, message: countError.message };
         }
 
-        const { data, error } = await supabase
-            .from('usuarios_web_movil')
-            .select('*')
-            .range(from, to);
+        const buildQuery = () => {
+            let query = supabase
+                .from('usuarios_web_movil')
+                .select('*')
+                .order('boleta', { ascending: true });
 
-        if (error) {
-            console.error('Error obteniendo usuarios:', error);
-            return { success: false, message: error.message };
+            if (rol) {
+                query = query.eq('rol', rol);
+            }
+
+            return query;
+        };
+
+        let data = [];
+
+        if (all) {
+            const result = await fetchRowsInBatches(buildQuery, count || 0);
+            if (!result.success) {
+                console.error('Error obteniendo usuarios:', result.message);
+                return result;
+            }
+            data = result.data;
+        } else {
+            const { data: pagedData, error } = await buildQuery().range(from, to);
+
+            if (error) {
+                console.error('Error obteniendo usuarios:', error);
+                return { success: false, message: error.message };
+            }
+
+            data = pagedData || [];
         }
 
-        return { success: true, data: data, total: count, page, limit };
+        return { success: true, data, total: count, page: all ? 1 : page, limit: all ? count : limit };
     } catch (error) {
         console.error('Error interno obteniendo usuarios:', error);
         return { success: false, message: 'Error interno del servidor' };
@@ -526,31 +608,57 @@ console.log(prestamo, errorPrestamo)
 
 async function ObtenerBoletas() {
     try {
-        const { data: boletas, error: boletasError } = await supabase
+        const { count: boletaCount, error: countError } = await supabase
             .from('boletas')
-            .select('boleta, nombre, Grupo')
-            .order('boleta', { ascending: true });
+            .select('*', { count: 'exact', head: true });
 
-        if (boletasError) {
-            console.error('Error obteniendo boletas:', boletasError);
-            return { success: false, message: boletasError.message };
+        if (countError) {
+            console.error('Error contando boletas:', countError);
+            return { success: false, message: countError.message };
         }
 
-        const { data: usuarios, error: usersError } = await supabase
+        const boletasResult = await fetchRowsInBatches(
+            () => supabase
+                .from('boletas')
+                .select('boleta, nombre, Grupo')
+                .order('boleta', { ascending: true }),
+            boletaCount || 0
+        );
+
+        if (!boletasResult.success) {
+            console.error('Error obteniendo boletas:', boletasResult.message);
+            return boletasResult;
+        }
+
+        const { count: usuariosCount, error: usersCountError } = await supabase
             .from('usuarios_web_movil')
-            .select('boleta');
+            .select('*', { count: 'exact', head: true });
 
-        if (usersError) {
-            console.error('Error obteniendo usuarios para boletas:', usersError);
-            return { success: false, message: usersError.message };
+        if (usersCountError) {
+            console.error('Error contando usuarios para boletas:', usersCountError);
+            return { success: false, message: usersCountError.message };
         }
 
-        const registradas = new Set((usuarios || []).map(u => u.boleta));
+        const usuariosResult = await fetchRowsInBatches(
+            () => supabase
+                .from('usuarios_web_movil')
+                .select('boleta'),
+            usuariosCount || 0
+        );
 
-        const data = (boletas || []).map(b => ({
-            ...b,
-            registrado: registradas.has(b.boleta),
-        }));
+        if (!usuariosResult.success) {
+            console.error('Error obteniendo usuarios para boletas:', usuariosResult.message);
+            return usuariosResult;
+        }
+
+        const registradas = new Set((usuariosResult.data || []).map(u => u.boleta));
+
+        const data = (boletasResult.data || [])
+            .filter((boleta) => !esBoletaProtegida(boleta.boleta) && !esGrupoAdminProtegido(boleta.Grupo))
+            .map((boleta) => ({
+                ...boleta,
+                registrado: registradas.has(boleta.boleta),
+            }));
 
         return { success: true, data, total: data.length };
     } catch (error) {
@@ -667,22 +775,39 @@ async function BoletasExistentes(boletasArr) {
     }
 }
 
+const CHUNK_SIZE_QUERY = 1000;
+const CHUNK_SIZE_INSERT = 500;
+
+async function consultarEnLotes(tabla, columna, valores) {
+    if (!valores || valores.length === 0) return { success: true, data: [] };
+
+    const resultados = [];
+    for (let i = 0; i < valores.length; i += CHUNK_SIZE_QUERY) {
+        const lote = valores.slice(i, i + CHUNK_SIZE_QUERY);
+        const { data, error } = await supabase
+            .from(tabla)
+            .select(columna)
+            .in(columna, lote);
+
+        if (error) {
+            console.error(`Error consultando ${tabla}.${columna} en lote:`, error);
+            return { success: false, message: error.message };
+        }
+
+        resultados.push(...(data || []));
+    }
+
+    return { success: true, data: resultados };
+}
+
 async function LibrosExistentesPorIsbn(isbnsArr) {
     try {
         const isbns = (isbnsArr || []).filter(Boolean);
         if (isbns.length === 0) return { success: true, data: [] };
 
-        const { data, error } = await supabase
-            .from('libros')
-            .select('isbn')
-            .in('isbn', isbns);
-
-        if (error) {
-            console.error('Error verificando ISBN existentes:', error);
-            return { success: false, message: error.message };
-        }
-
-        return { success: true, data: (data || []).map(r => r.isbn) };
+        const result = await consultarEnLotes('libros', 'isbn', isbns);
+        if (!result.success) return result;
+        return { success: true, data: result.data.map(r => r.isbn) };
     } catch (error) {
         console.error('Error interno en LibrosExistentesPorIsbn:', error);
         return { success: false, message: 'Error interno del servidor' };
@@ -694,17 +819,9 @@ async function EjemplaresExistentesPorCodigo(codigosArr) {
         const codigos = (codigosArr || []).filter(Boolean);
         if (codigos.length === 0) return { success: true, data: [] };
 
-        const { data, error } = await supabase
-            .from('ejemplares')
-            .select('codigo_barras')
-            .in('codigo_barras', codigos);
-
-        if (error) {
-            console.error('Error verificando codigos de barras existentes:', error);
-            return { success: false, message: error.message };
-        }
-
-        return { success: true, data: (data || []).map(r => r.codigo_barras) };
+        const result = await consultarEnLotes('ejemplares', 'codigo_barras', codigos);
+        if (!result.success) return result;
+        return { success: true, data: result.data.map(r => r.codigo_barras) };
     } catch (error) {
         console.error('Error interno en EjemplaresExistentesPorCodigo:', error);
         return { success: false, message: 'Error interno del servidor' };
@@ -715,44 +832,58 @@ async function BulkCrearLibrosConEjemplares(rows) {
     const inserted = [];
 
     try {
-        for (const row of rows) {
-            const resultadoLibro = await CrearLibro(
-                row.titulo,
-                row.clasificacion,
-                row.isbn || null,
-                row.tipo_material,
-                row.autor
-            );
+        for (let i = 0; i < rows.length; i += CHUNK_SIZE_INSERT) {
+            const chunk = rows.slice(i, i + CHUNK_SIZE_INSERT);
 
-            if (!resultadoLibro.success) {
-                return { success: false, message: resultadoLibro.message, inserted };
+            const librosData = chunk.map(row => ({
+                titulo: row.titulo,
+                clasificacion: row.clasificacion,
+                isbn: row.isbn || null,
+                tipo_material: row.tipo_material,
+                autor: row.autor,
+            }));
+
+            const { data: createdLibros, error: librosError } = await supabase
+                .from('libros')
+                .insert(librosData)
+                .select();
+
+            if (librosError) {
+                console.error('Error creando libros en lote:', librosError);
+                return { success: false, message: `Error creando libros: ${librosError.message}`, inserted };
             }
 
-            const libroCreado = Array.isArray(resultadoLibro.data) ? resultadoLibro.data[0] : null;
-            const libroId = libroCreado?.id;
-            if (!libroId) {
-                return { success: false, message: 'No se pudo obtener el id del libro creado', inserted };
+            const ejemplaresData = createdLibros.map((libro, idx) => ({
+                libro_id: libro.id,
+                codigo_barras: chunk[idx].codigo_barras,
+                numero_ejemplar: chunk[idx].numero_ejemplar,
+                anio: chunk[idx].anio,
+                estatus_item: chunk[idx].estatus_item,
+                Disponible: chunk[idx].Disponible ?? true,
+                coleccion: chunk[idx].coleccion,
+            }));
+
+            const { data: createdEjemplares, error: ejemplaresError } = await supabase
+                .from('ejemplares')
+                .insert(ejemplaresData, { onConflict: 'codigo_barras', ignoreDuplicates: true })
+                .select();
+
+            if (ejemplaresError) {
+                console.error('Error creando ejemplares en lote:', ejemplaresError);
+                const libroIds = createdLibros.map(l => l.id);
+                await supabase.from('libros').delete().in('id', libroIds);
+                return { success: false, message: `Error creando ejemplares: ${ejemplaresError.message}`, inserted };
             }
 
-            const resultadoEjemplar = await CrearEjemplar(
-                libroId,
-                row.codigo_barras,
-                row.numero_ejemplar,
-                row.anio,
-                row.estatus_item,
-                row.Disponible,
-                row.coleccion
-            );
-
-            if (!resultadoEjemplar.success) {
-                await supabase.from('libros').delete().eq('id', libroId);
-                return { success: false, message: resultadoEjemplar.message, inserted };
+            const ejemplarByBarcode = {};
+            for (const ej of createdEjemplares || []) {
+                ejemplarByBarcode[ej.codigo_barras] = ej;
             }
 
-            inserted.push({
-                libro: libroCreado,
-                ejemplar: Array.isArray(resultadoEjemplar.data) ? resultadoEjemplar.data[0] : null,
-            });
+            inserted.push(...chunk.map((row, idx) => ({
+                libro: createdLibros[idx],
+                ejemplar: ejemplarByBarcode[row.codigo_barras] || null,
+            })));
         }
 
         return { success: true, data: inserted };

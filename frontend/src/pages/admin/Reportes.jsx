@@ -46,12 +46,12 @@ export default function Reportes() {
     try {
       let result;
       if (type === 'usuarios') {
-        result = await adminApi.getUsers();
+        result = await adminApi.getUsers({ limit: 0, rol: 'alumno' });
         setData(prev => ({ ...prev, usuarios: result.data || [] }));
       } else if (type === 'completo') {
         const [u, l] = await Promise.all([
-          adminApi.getUsers(),
-          adminApi.getMaterials('libros'),
+          adminApi.getUsers({ limit: 0, rol: 'alumno' }),
+          adminApi.getMaterials('libros', { limit: 0 }),
         ]);
         setData(prev => ({
           ...prev,
@@ -60,7 +60,7 @@ export default function Reportes() {
           completo: true,
         }));
       } else {
-        result = await adminApi.getMaterials(type);
+        result = await adminApi.getMaterials(type, { limit: 0 });
         setData(prev => ({ ...prev, [type]: result.data || [] }));
       }
     } catch (err) {

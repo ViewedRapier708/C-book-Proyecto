@@ -2,7 +2,7 @@ import { AUTH_UNAUTHORIZED_EVENT, api, authUrl } from './client';
 
 export const adminApi = {
   // Materials CRUD
-  getMaterials: (tipo) => api.get(`/admin/materiales/${tipo}`),
+  getMaterials: (tipo, params = {}) => api.get(`/admin/materiales/${tipo}`, { params }),
   createBook: (data) => api.post('/admin/libros', data),
   updateBook: (data) => api.put('/admin/libros', data),
   deleteMaterial: (tipo, id) => api.delete(`/admin/materiales/${tipo}/${id}`),
@@ -24,7 +24,7 @@ export const adminApi = {
   },
 
   // Users
-  getUsers: () => api.get('/admin/usuarios'),
+  getUsers: (params = {}) => api.get('/admin/usuarios', { params }),
   enableDocumentation: (id) => api.put(`/admin/usuarios/${id}/habilitar`),
 
   // Book solicitudes

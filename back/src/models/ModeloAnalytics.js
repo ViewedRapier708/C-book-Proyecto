@@ -1,7 +1,7 @@
 const { getClient } = require('../config/db');
 
 /**
- * Obtiene estadísticas generales del sistema
+ * Obtiene estadisticas generales del sistema
  */
 async function obtenerEstadisticasGenerales() {
   const supabase = getClient();
@@ -9,55 +9,49 @@ async function obtenerEstadisticasGenerales() {
   const [
     { count: totalUsuarios },
     { count: totalLibros },
-    { data: solicitudesLibros },
-    { data: prestamosLibros },
-    { data: librosDisponibles },
+    { count: totalSolicitudes },
+    { count: pendientes },
+    { count: aprobadas },
+    { count: completadas },
+    { count: canceladas },
+    { count: prestamosActivos },
+    { count: prestamosDevueltos },
+    { count: librosDisponibles },
   ] = await Promise.all([
-    supabase.from('usuarios_web_movil').select('*', { count: 'exact', head: true }),
+    supabase.from('usuarios_web_movil').select('*', { count: 'exact', head: true }).eq('rol', 'alumno'),
     supabase.from('ejemplares').select('*', { count: 'exact', head: true }),
-    supabase.from('solicitudes_libros').select('id, estado_asistencia_id, fecha_solicitud'),
-    supabase.from('prestamos_libros').select('id, estado_prestamo_id, fecha_inicio_prestamo'),
-    supabase.from('ejemplares').select('id').eq('Disponible', true),
+    supabase.from('solicitudes_libros').select('*', { count: 'exact', head: true }),
+    supabase.from('solicitudes_libros').select('*', { count: 'exact', head: true }).eq('estado_asistencia_id', 1),
+    supabase.from('solicitudes_libros').select('*', { count: 'exact', head: true }).eq('estado_asistencia_id', 2),
+    supabase.from('solicitudes_libros').select('*', { count: 'exact', head: true }).eq('estado_asistencia_id', 3),
+    supabase.from('solicitudes_libros').select('*', { count: 'exact', head: true }).eq('estado_asistencia_id', 4),
+    supabase.from('prestamos_libros').select('*', { count: 'exact', head: true }).neq('estado_prestamo_id', 3),
+    supabase.from('prestamos_libros').select('*', { count: 'exact', head: true }).eq('estado_prestamo_id', 3),
+    supabase.from('ejemplares').select('*', { count: 'exact', head: true }).eq('Disponible', true),
   ]);
 
-  // Calcular solicitudes por estado
-  const allSolicitudes = [
-    ...(solicitudesLibros || []).map(s => ({ ...s, tipo: 'libro' })),
-  ];
-
-  const pendientes = allSolicitudes.filter(s => s.estado_asistencia_id === 1).length;
-  const aprobadas = allSolicitudes.filter(s => s.estado_asistencia_id === 2).length;
-  const completadas = allSolicitudes.filter(s => s.estado_asistencia_id === 3).length;
-  const canceladas = allSolicitudes.filter(s => s.estado_asistencia_id === 4).length;
-
-  // Préstamos activos vs devueltos
-  const prestamosActivos = (prestamosLibros || []).filter(p => p.estado_prestamo_id !== 3).length;
-  const prestamosDevueltos = (prestamosLibros || []).filter(p => p.estado_prestamo_id === 3).length;
-
-  // Solicitudes por tipo
   const solicitudesPorTipo = {
-    libro: (solicitudesLibros || []).length,
+    libro: totalSolicitudes || 0,
   };
 
-  // Solicitudes por estado
   const solicitudesPorEstado = {
-    pendientes,
-    aprobadas,
-    completadas,
-    canceladas,
+    pendientes: pendientes || 0,
+    aprobadas: aprobadas || 0,
+    completadas: completadas || 0,
+    canceladas: canceladas || 0,
   };
 
   return {
     totales: {
       usuarios: totalUsuarios || 0,
       libros: totalLibros || 0,
-      solicitudes: allSolicitudes.length,
-      prestamosActivos,
-      prestamosDevueltos,
+      solicitudes: totalSolicitudes || 0,
+      prestamosActivos: prestamosActivos || 0,
+      prestamosDevueltos: prestamosDevueltos || 0,
     },
     disponibilidad: {
       libros: {
-        disponibles: (librosDisponibles || []).length,
+        disponibles: librosDisponibles || 0,
         total: totalLibros || 0,
       },
     },
@@ -67,7 +61,7 @@ async function obtenerEstadisticasGenerales() {
 }
 
 /**
- * Obtiene datos de tendencia (solicitudes por día en los últimos 30 días)
+ * Obtiene datos de tendencia (solicitudes por dia en los ultimos 30 dias)
  */
 async function obtenerTendencias() {
   const supabase = getClient();
@@ -81,7 +75,6 @@ async function obtenerTendencias() {
     supabase.from('solicitudes_libros').select('fecha_solicitud').gte('fecha_solicitud', desde),
   ]);
 
-  // Agrupar por día
   const diasMap = {};
   for (let i = 0; i < 30; i++) {
     const d = new Date();
@@ -90,16 +83,19 @@ async function obtenerTendencias() {
     diasMap[key] = { fecha: key, libros: 0, total: 0 };
   }
 
-  (solicLibros || []).forEach(s => {
+  (solicLibros || []).forEach((s) => {
     const key = (s.fecha_solicitud || '').slice(0, 10);
-    if (diasMap[key]) { diasMap[key].libros++; diasMap[key].total++; }
+    if (diasMap[key]) {
+      diasMap[key].libros++;
+      diasMap[key].total++;
+    }
   });
 
   return Object.values(diasMap);
 }
 
 /**
- * Obtiene las últimas actividades del sistema
+ * Obtiene las ultimas actividades del sistema
  */
 async function obtenerActividadReciente(limite = 20) {
   const supabase = getClient();
@@ -120,14 +116,15 @@ async function obtenerActividadReciente(limite = 20) {
 
   const actividades = [];
 
-  (solicLibros || []).forEach(s => actividades.push({
+  (solicLibros || []).forEach((s) => actividades.push({
     tipo: 'solicitud_libro',
     id: s.id,
     boleta: s.usuario_boleta,
     estado: s.estado_asistencia_id,
     fecha: s.fecha_solicitud,
   }));
-  (prestamos || []).forEach(p => actividades.push({
+
+  (prestamos || []).forEach((p) => actividades.push({
     tipo: 'prestamo_libro',
     id: p.id,
     boleta: p.solicitudes_libros?.usuario_boleta || null,
@@ -135,7 +132,6 @@ async function obtenerActividadReciente(limite = 20) {
     fecha: p.fecha_inicio_prestamo,
   }));
 
-  // Ordenar por fecha descendente
   actividades.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
   return actividades.slice(0, limite);

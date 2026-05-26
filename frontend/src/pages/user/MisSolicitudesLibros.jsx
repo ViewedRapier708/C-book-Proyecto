@@ -344,32 +344,37 @@ export default function MisSolicitudesLibros() {
                   overflow: 'hidden',
                 }}
               >
-                <div className="resource-card-title" style={{ alignItems: 'flex-start', gap: '0.75rem' }}>
-                  <span
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: 6,
-                      minWidth: 0,
-                      flex: 1,
-                    }}
-                  >
-                    <EstIcon size={16} style={{ color: est.accent, flexShrink: 0, marginTop: 2 }} />
+                <div className="resource-card-title" style={{ alignItems: 'flex-start', gap: '0.5rem' }}>
+                  <div style={{ minWidth: 0, flex: 1, display: 'grid', gap: '0.4rem' }}>
                     <span
                       style={{
-                        display: 'block',
-                        lineHeight: 1.2,
-                        whiteSpace: 'normal',
-                        overflowWrap: 'anywhere',
-                        wordBreak: 'break-word',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 6,
+                        minWidth: 0,
                       }}
                     >
-                      {s.titulo || `Libro #${s.id}`}
+                      <EstIcon size={16} style={{ color: est.accent, flexShrink: 0, marginTop: 2 }} />
+                      <span
+                        title={s.titulo || `Libro #${s.id}`}
+                        style={{
+                          lineHeight: 1.2,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitBoxOrient: 'vertical',
+                          WebkitLineClamp: 2,
+                          overflowWrap: 'break-word',
+                          wordBreak: 'break-word',
+                        }}
+                      >
+                        {s.titulo || `Libro #${s.id}`}
+                      </span>
                     </span>
-                  </span>
-                  <span className={`badge ${est.badge}`} style={{ whiteSpace: 'normal', textAlign: 'center', lineHeight: 1.15, flexShrink: 0 }}>
-                    {est.label}
-                  </span>
+                    <span className={`badge ${est.badge}`} style={{ whiteSpace: 'normal', textAlign: 'center', lineHeight: 1.15, width: 'fit-content' }}>
+                      {est.label}
+                    </span>
+                  </div>
                 </div>
 
                 <div style={{ padding: '0 1.25rem' }}>

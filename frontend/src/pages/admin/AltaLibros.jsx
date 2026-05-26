@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { Plus, Search, Pencil, Trash2, Upload } from 'lucide-react';
 import ExportButtons from '../../components/ui/ExportButtons';
 import AnimatedPage from '../../components/layout/AnimatedPage';
+import { SkeletonGrid } from '../../components/ui/Skeleton';
 
 const EXPORT_COLS = [
   { key: 'titulo', label: 'Título' }, { key: 'autor', label: 'Autor' },
@@ -274,7 +275,9 @@ function ModalCargaMasivaLibros({ open, onClose, onSuccess }) {
 
 export default function AltaLibros() {
   const [items, setItems] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [catalogLoading, setCatalogLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
@@ -283,18 +286,101 @@ export default function AltaLibros() {
   const [submitting, setSubmitting] = useState(false);
   const [deleteModal, setDeleteModal] = useState(null);
   const [bulkOpen, setBulkOpen] = useState(false);
-  const PER_PAGE = 12;
+  const PER_PAGE = 50;
+  const BATCH_SIZE = 200;
+  const loadTokenRef = useRef(0);
+  const nextBatchPageRef = useRef(1);
+  const itemsRef = useRef([]);
+  const totalCountRef = useRef(0);
+  const loadingMoreRef = useRef(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await adminApi.getMaterials('libros');
-      setItems(data.data || []);
-    } catch { toast.error('Error al cargar libros'); }
-    finally { setLoading(false); }
+  const commitItems = useCallback((valueOrUpdater) => {
+    setItems((prev) => {
+      const next = typeof valueOrUpdater === 'function'
+        ? valueOrUpdater(prev)
+        : valueOrUpdater;
+      itemsRef.current = next;
+      return next;
+    });
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  const commitTotal = useCallback((value) => {
+    totalCountRef.current = value;
+    setTotalCount(value);
+  }, []);
+
+  const fetchBatch = useCallback((batchPage) => (
+    adminApi.getMaterials('libros', { page: batchPage, limit: BATCH_SIZE })
+  ), []);
+
+  const load = useCallback(async () => {
+    const token = loadTokenRef.current + 1;
+    loadTokenRef.current = token;
+    nextBatchPageRef.current = 1;
+    loadingMoreRef.current = false;
+
+    setLoading(true);
+    setCatalogLoading(false);
+
+    try {
+      const data = await fetchBatch(1);
+      const libros = data.data || [];
+
+      if (loadTokenRef.current !== token) return;
+
+      nextBatchPageRef.current = 2;
+      commitItems(libros);
+      commitTotal(data.total ?? libros.length);
+    } catch {
+      toast.error('Error al cargar libros');
+    } finally {
+      if (loadTokenRef.current === token) {
+        setLoading(false);
+      }
+    }
+
+    if (loadTokenRef.current !== token || itemsRef.current.length >= totalCountRef.current) {
+      return;
+    }
+
+    loadingMoreRef.current = true;
+    setCatalogLoading(true);
+
+    try {
+      while (loadTokenRef.current === token && itemsRef.current.length < totalCountRef.current) {
+        const batchPage = nextBatchPageRef.current;
+        const data = await fetchBatch(batchPage);
+
+        if (loadTokenRef.current !== token) return;
+
+        const libros = data.data || [];
+        if (libros.length === 0) {
+          break;
+        }
+
+        nextBatchPageRef.current = batchPage + 1;
+        commitTotal(data.total ?? totalCountRef.current);
+        commitItems((prev) => [...prev, ...libros]);
+      }
+    } catch (err) {
+      if (loadTokenRef.current === token) {
+        console.error('Error cargando libros en segundo plano:', err);
+      }
+    } finally {
+      if (loadTokenRef.current === token) {
+        setCatalogLoading(false);
+      }
+      loadingMoreRef.current = false;
+    }
+  }, [commitItems, commitTotal, fetchBatch]);
+
+  useEffect(() => {
+    load();
+    return () => {
+      loadTokenRef.current += 1;
+      loadingMoreRef.current = false;
+    };
+  }, [load]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -306,6 +392,14 @@ export default function AltaLibros() {
   }, [items, search]);
 
   const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const catalogReady = totalCount > 0 && items.length >= totalCount;
+
+  useEffect(() => {
+    const maxPage = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+    if (page > maxPage) {
+      setPage(maxPage);
+    }
+  }, [filtered.length, page]);
 
   const openNew = () => { setEditing(null); setForm(EMPTY); setModalOpen(true); };
   const openEdit = (b) => {
@@ -360,14 +454,12 @@ export default function AltaLibros() {
     finally { setSubmitting(false); }
   };
 
-  if (loading) return <Spinner />;
-
   return (
     <AnimatedPage>
       <div className="page-header">
         <h1>Gestión de Libros</h1>
         <p>Alta, edición y eliminación de libros del acervo</p>
-        <span className="badge badge-info" style={{ fontSize: '0.95rem', padding: '0.4rem 0.9rem', marginLeft: '1rem' }}>{items.length} libros registrados</span>
+        <span className="badge badge-info" style={{ fontSize: '0.95rem', padding: '0.4rem 0.9rem', marginLeft: '1rem' }}>{totalCount} libros registrados</span>
       </div>
 
       <div className="toolbar">
@@ -375,18 +467,20 @@ export default function AltaLibros() {
           <Search size={16} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
           <input className="search-input" style={{ paddingLeft: 34 }} placeholder="Buscar por título, autor, ISBN..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>
-        <ExportButtons data={filtered} columns={EXPORT_COLS} filenameBase="libros" title="Reporte de Libros" />
+        <ExportButtons data={filtered} columns={EXPORT_COLS} filenameBase="libros" title="Reporte de Libros" disabled={!catalogReady} />
         <button className="btn btn-outline" onClick={() => setBulkOpen(true)}><Upload size={16} /> Carga masiva</button>
         <button className="btn btn-primary" onClick={openNew}><Plus size={16} /> Nuevo Libro</button>
       </div>
 
-      {paged.length === 0 ? (
+      {loading && items.length === 0 ? (
+        <SkeletonGrid count={PER_PAGE} />
+      ) : paged.length === 0 ? (
         <EmptyState message="No se encontraron libros" />
       ) : (
         <div className="resource-grid">
           {paged.map((b) => (
             <div key={b.id} className="resource-card">
-              <div className="resource-card-title">
+              <div className="resource-card-title" title={b.libros?.titulo || b.titulo || 'Sin título'}>
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '65%' }}>{b.libros?.titulo || b.titulo || 'Sin título'}</span>
                 <span className={`badge ${(b.Disponible ?? b.disponible) ? 'badge-success' : 'badge-danger'}`}>{(b.Disponible ?? b.disponible) ? 'Disponible' : 'No disp.'}</span>
               </div>

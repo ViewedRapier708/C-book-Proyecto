@@ -8,6 +8,7 @@ import { es } from 'date-fns/locale';
 import { solicitudesApi } from '../../api/recursos';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 import { Spinner } from '../../components/ui/Feedback';
+import MobileAppPromo from '../../components/ui/MobileAppPromo';
 import { DOCUMENTACION_REQUERIDA_MENSAJE } from '../../constants/documentacion';
 import {
   getSolicitudLibroEstadoId,
@@ -231,6 +232,18 @@ export default function UserHome() {
               <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5 }}>{DOCUMENTACION_REQUERIDA_MENSAJE}</p>
             </div>
           )}
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 }}
+            style={{ marginBottom: '1.5rem' }}
+          >
+            <MobileAppPromo
+              title="Solicita libros tambien desde tu celular"
+              description="Prueba la app movil para revisar tu cuenta y enviar solicitudes con mas rapidez, sin depender solo de la version web."
+            />
+          </motion.div>
 
           <h3 style={{ marginBottom: '0.75rem' }}>Servicios Disponibles</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>

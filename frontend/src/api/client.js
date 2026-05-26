@@ -45,13 +45,22 @@ export function authUrl(endpoint) {
 }
 
 async function request(endpoint, options = {}) {
-  const url = authUrl(endpoint);
-  console.log(`Requesting ${options.method || 'GET'} ${url}`);
+  let url = authUrl(endpoint);
+  const { params, ...fetchOptions } = options;
+  if (params) {
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null) searchParams.set(key, String(value));
+    }
+    const qs = searchParams.toString();
+    if (qs) url += (url.includes('?') ? '&' : '?') + qs;
+  }
+  console.log(`Requesting ${fetchOptions.method || 'GET'} ${url}`);
 
   const config = {
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-    ...options,
+    headers: { 'Content-Type': 'application/json', ...fetchOptions.headers },
+    ...fetchOptions,
   };
   const res = await fetch(url, config);
 
@@ -80,7 +89,7 @@ async function request(endpoint, options = {}) {
 }
 
 export const api = {
-  get: (endpoint) => request(endpoint, { method: 'GET' }),
+  get: (endpoint, config = {}) => request(endpoint, { method: 'GET', ...config }),
   post: (endpoint, body) => request(endpoint, { method: 'POST', body: JSON.stringify(body) }),
   put: (endpoint, body) => request(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
   patch: (endpoint, body) => request(endpoint, { method: 'PATCH', body: JSON.stringify(body) }),

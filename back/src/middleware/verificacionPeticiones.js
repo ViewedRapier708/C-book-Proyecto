@@ -7,7 +7,7 @@ const { getClient } = require('../config/db');
 const tipos = ['libro'];
 
 async function verificarDisponibilidad(req, res, next) {
-    //Variable que se necesita para saber que tipo de material se esta solicitando
+    // Variable que se necesita para saber que tipo de material se esta solicitando
     const { tipo, idRecurso, boleta } = req.body;
     if (!idRecurso || !boleta || !tipo) {
         return res.status(400).json({
@@ -15,21 +15,24 @@ async function verificarDisponibilidad(req, res, next) {
             error: 'Se requieren mas datos para procesar la solicitud porfavor verifique y vuelve a intentarlo'
         });
     }
+
     if (!tipos.includes(tipo)) {
         return res.status(400).json({
             success: false,
-            error: 'Tipo de material invǭlido. Los tipos permitidos son: libro.'
+            error: 'Tipo de material invalido. Los tipos permitidos son: libro.'
         });
     }
-    //Variables que se deben de verificar para que se pueda hacer la solicitud
+
+    // Variables que se deben de verificar para que se pueda hacer la solicitud
     if (tipo === 'libro') {
         const numeroBoleta = Number(boleta);
         if (!Number.isInteger(numeroBoleta)) {
             return res.status(400).json({
                 success: false,
-                error: 'La boleta del usuario es invǭlida'
+                error: 'La boleta del usuario es invalida'
             });
         }
+
         const supabase = getClient();
         const { data: usuarioDoc, error: errorDoc } = await supabase
             .from('usuarios_web_movil')
@@ -40,14 +43,14 @@ async function verificarDisponibilidad(req, res, next) {
         if (errorDoc || !usuarioDoc) {
             return res.status(500).json({
                 success: false,
-                error: 'No se pudo validar la documentación del usuario'
+                error: 'No se pudo validar la documentacion del usuario'
             });
         }
 
         if (!usuarioDoc.tiene_documentos) {
             return res.status(403).json({
                 success: false,
-                error: 'No tienes documentación habilitada. Acude a la escuela para entregar tu recibo o comprobante de vivienda (luz, agua, etc.) y tu comprobante de horario actual.'
+                error: 'No tienes documentacion habilitada. Acude a la escuela para entregar tu recibo o comprobante de domicilio (luz, agua, etc.) con antiguedad no mayor a 3 meses y tu comprobante de horario actual.'
             });
         }
 

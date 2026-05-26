@@ -14,6 +14,7 @@ const EXPORT_COLS = [
 
 export default function Usuarios() {
   const [items, setItems] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
@@ -24,8 +25,10 @@ export default function Usuarios() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await adminApi.getUsers();
-      setItems(data.data || []);
+      const data = await adminApi.getUsers({ limit: 0, rol: 'alumno' });
+      const usuarios = data.data || [];
+      setItems(usuarios);
+      setTotalCount(data.total ?? usuarios.length);
     } catch { toast.error('Error al cargar usuarios'); }
     finally { setLoading(false); }
   }, []);
@@ -35,7 +38,7 @@ export default function Usuarios() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return items.filter((u) => {
-      if (q && !(u.boleta || '').toLowerCase().includes(q) && !(u.correo || '').toLowerCase().includes(q)) return false;
+      if (q && !String(u.boleta || '').toLowerCase().includes(q) && !String(u.correo || '').toLowerCase().includes(q)) return false;
       if (filter === 'docs' && !u.tiene_documentos) return false;
       if (filter === 'no-docs' && u.tiene_documentos) return false;
       return true;
@@ -65,7 +68,7 @@ export default function Usuarios() {
       </div>
 
       <div className="stats-grid">
-        <div className="stat-card"><div className="stat-card-label">Total usuarios</div><div className="stat-card-value">{items.length}</div></div>
+        <div className="stat-card"><div className="stat-card-label">Total usuarios</div><div className="stat-card-value">{totalCount}</div></div>
         <div className="stat-card"><div className="stat-card-label">Con documentación</div><div className="stat-card-value" style={{ color: 'var(--success)' }}>{items.filter((u) => u.tiene_documentos).length}</div></div>
         <div className="stat-card"><div className="stat-card-label">Sin documentación</div><div className="stat-card-value" style={{ color: 'var(--warning)' }}>{items.filter((u) => !u.tiene_documentos).length}</div></div>
       </div>

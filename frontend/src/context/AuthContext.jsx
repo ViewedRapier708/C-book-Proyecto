@@ -45,8 +45,8 @@ export function AuthProvider({ children }) {
     return data;
   };
 
-  const register = async (boleta, correo, password, confPsw) => {
-    return await authApi.register(boleta, correo, password, confPsw);
+  const register = async (boleta, correo, password, confPsw, aceptaTerminos) => {
+    return await authApi.register(boleta, correo, password, confPsw, aceptaTerminos);
   };
 
   const logout = async () => {

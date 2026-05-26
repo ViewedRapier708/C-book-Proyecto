@@ -11,6 +11,17 @@ const REQUIRED_COLUMNS = [
   'Coleccion',
 ];
 
+const EXPECTED_NORMALIZED = [
+  'codigodebarras', 'titulo', 'autor', 'nodeclasificacion',
+  'isbn', 'tipodematerial', 'nodeejemplar', 'anio',
+  'estatusdeitem', 'coleccion'
+];
+
+const RE_SUMMARY = /^\d+\s+(volúmenes|titulos|títulos)/i;
+const RE_DATE_BARCODE = /^\d{1,2}\/\d{1,2}\/\d{2,4}$/;
+const RE_TITLE_CLEAN = /^"+|"+$/g;
+const RE_TITLE_TRAILING = /\s+\/$/;
+
 function normalizeHeader(value) {
   return String(value ?? '')
     .trim()
@@ -21,26 +32,12 @@ function normalizeHeader(value) {
 }
 
 function toSafeText(value) {
-  return String(value ?? '').replace(/^"|"$/g, '').trim();
-}
-
-function cleanTitle(value) {
-  return toSafeText(value)
-    .replace(/^"+|"+$/g, '')
-    .replace(/\s+\/$/, '')
-    .trim();
-}
-
-function normalizeEjemplar(value) {
-  const text = toSafeText(value);
-  const match = text.match(/\d+/);
-  return match ? match[0] : text;
-}
-
-function normalizeYear(value) {
-  const text = toSafeText(value);
-  const match = text.match(/\b\d{4}\b/);
-  return match ? match[0] : text.replace(/\D/g, '');
+  if (value == null) return '';
+  let s = String(value);
+  if (s.length > 1 && (s.charCodeAt(0) === 34 || s.charCodeAt(s.length - 1) === 34)) {
+    s = s.replace(RE_TITLE_CLEAN, '');
+  }
+  return s.trim();
 }
 
 function resolveIndexes(headers) {
@@ -79,32 +76,85 @@ function resolveIndexes(headers) {
   return indexes;
 }
 
-function rowToBook(row, indexes) {
-  return {
-    codigo_barras: toSafeText(row[indexes.codigoBarrasIdx]),
-    titulo: cleanTitle(row[indexes.tituloIdx]),
-    autor: toSafeText(row[indexes.autorIdx]),
-    clasificacion: toSafeText(row[indexes.clasificacionIdx]),
-    isbn: toSafeText(row[indexes.isbnIdx]),
-    tipo_material: toSafeText(row[indexes.tipoMaterialIdx]),
-    numero_ejemplar: normalizeEjemplar(row[indexes.numeroEjemplarIdx]),
-    anio: normalizeYear(row[indexes.anioIdx]),
-    estatus_item: toSafeText(row[indexes.estatusItemIdx]),
-    coleccion: toSafeText(row[indexes.coleccionIdx]),
-    Disponible: true,
-  };
+function findHeaderRow(matrix) {
+  const scanLimit = Math.min(matrix.length, 50);
+  for (let i = 0; i < scanLimit; i++) {
+    const row = matrix[i];
+    if (!row) continue;
+    let matches = 0;
+    for (let j = 0; j < row.length && matches < 5; j++) {
+      const h = normalizeHeader(row[j]);
+      for (let k = 0; k < EXPECTED_NORMALIZED.length; k++) {
+        if (h === EXPECTED_NORMALIZED[k]) { matches++; break; }
+      }
+    }
+    if (matches >= 5) return i;
+  }
+  return -1;
 }
 
 function parseStructuredRows(matrix) {
   if (!Array.isArray(matrix) || matrix.length === 0) return [];
 
-  const headers = (matrix[0] || []).map(toSafeText);
+  const headerRowIndex = findHeaderRow(matrix);
+  if (headerRowIndex === -1) {
+    throw new Error(`Formato invalido. No se encontró una fila de encabezados válida. El archivo debe incluir columnas como: ${REQUIRED_COLUMNS.join(', ')}`);
+  }
+
+  const headers = matrix[headerRowIndex] || [];
   const indexes = resolveIndexes(headers);
 
-  return matrix
-    .slice(1)
-    .map((row) => rowToBook(row, indexes))
-    .filter((r) => Object.values(r).some((value) => value !== '' && value !== true));
+  const { codigoBarrasIdx, tituloIdx, autorIdx, clasificacionIdx, isbnIdx,
+    tipoMaterialIdx, numeroEjemplarIdx, anioIdx, estatusItemIdx, coleccionIdx } = indexes;
+
+  const result = [];
+  for (let i = headerRowIndex + 1; i < matrix.length; i++) {
+    const row = matrix[i];
+    if (!row) continue;
+
+    const codigoB = toSafeText(row[codigoBarrasIdx]);
+    if (!codigoB) continue;
+    if (RE_SUMMARY.test(codigoB)) continue;
+    if (RE_DATE_BARCODE.test(codigoB)) continue;
+
+    const ttl = toSafeText(row[tituloIdx]);
+    const aut = toSafeText(row[autorIdx]);
+    const cls = toSafeText(row[clasificacionIdx]);
+    const isb = toSafeText(row[isbnIdx]);
+    if (!ttl && !aut && !cls && !isb) continue;
+
+    let titulo = ttl;
+    if (titulo.length > 0 && (titulo.charCodeAt(0) === 34 || titulo.charCodeAt(titulo.length - 1) === 34)) {
+      titulo = titulo.replace(RE_TITLE_CLEAN, '');
+    }
+    if (titulo.length > 0) {
+      titulo = titulo.replace(RE_TITLE_TRAILING, '').trim();
+    }
+
+    const neStr = toSafeText(row[numeroEjemplarIdx]);
+    const matchNe = neStr.match(/\d+/);
+    const numeroE = matchNe ? matchNe[0] : neStr;
+
+    const anioStr = toSafeText(row[anioIdx]);
+    const matchAnio = anioStr.match(/\b\d{4}\b/);
+    const anio = matchAnio ? matchAnio[0] : anioStr.replace(/\D/g, '');
+
+    result.push({
+      codigo_barras: codigoB,
+      titulo,
+      autor: aut,
+      clasificacion: cls,
+      isbn: isb,
+      tipo_material: toSafeText(row[tipoMaterialIdx]),
+      numero_ejemplar: numeroE,
+      anio,
+      estatus_item: toSafeText(row[estatusItemIdx]),
+      coleccion: toSafeText(row[coleccionIdx]),
+      Disponible: true,
+    });
+  }
+
+  return result;
 }
 
 function parseCSV(buffer) {
