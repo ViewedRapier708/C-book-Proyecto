@@ -168,8 +168,8 @@ export default function EmailVerification() {
         {status === 'waiting' && (
           <>
             <Clock size={40} style={{ color: 'var(--warning)' }} />
-            <h2>Esperando confirmacion</h2>
-            <p>Revisa tu bandeja de entrada y haz clic en el boton de confirmacion.</p>
+            <h2>Esperando confirmación</h2>
+            <p>Revisa tu bandeja de entrada y haz clic en el botón de confirmación.</p>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-light)', marginTop: '0.5rem' }}>
               El enlace expira en 2 horas. Intento {attempts} de {MAX_ATTEMPTS}
             </p>

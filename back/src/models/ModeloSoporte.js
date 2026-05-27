@@ -300,7 +300,7 @@ async function loginSoporte(identifier, password) {
       .maybeSingle();
     
     if (error || !profile) {
-      const err = new Error('Usuario o contrasena incorrectos');
+      const err = new Error('Usuario o contraseña incorrectos');
       err.status = 401;
       throw err;
     }
@@ -310,7 +310,7 @@ async function loginSoporte(identifier, password) {
   }
 
   if (!email || !password) {
-    const err = new Error('Usuario o contrasena incorrectos');
+    const err = new Error('Usuario o contraseña incorrectos');
     err.status = 400;
     throw err;
   }
@@ -321,7 +321,7 @@ async function loginSoporte(identifier, password) {
   });
 
   if (authError || !data?.user || !data?.session) {
-    const err = new Error('Usuario o contrasena incorrectos');
+    const err = new Error('Usuario o contraseña incorrectos');
     err.status = 401;
     throw err;
   }
@@ -418,17 +418,17 @@ async function crearAgente(payload, user) {
   const estado = 'active';
 
   if (!nombre || !email || !password) {
-    const err = new Error('Nombre, correo y contrasena temporal son obligatorios');
+    const err = new Error('Nombre, correo y contraseña temporal son obligatorios');
     err.status = 400;
     throw err;
   }
   if (!confirmPassword) {
-    const err = new Error('Debes confirmar la contrasena');
+    const err = new Error('Debes confirmar la contraseña');
     err.status = 400;
     throw err;
   }
   if (password !== confirmPassword) {
-    const err = new Error('La confirmacion de contrasena no coincide');
+    const err = new Error('La confirmación de contraseña no coincide');
     err.status = 400;
     throw err;
   }

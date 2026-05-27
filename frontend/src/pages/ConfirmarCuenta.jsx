@@ -67,7 +67,7 @@ export default function ConfirmarCuenta() {
           <>
             <AlertTriangle size={40} style={{ color: 'var(--danger)' }} />
             <h2>Enlace invalido</h2>
-            <p>No se encontro un enlace de confirmacion valido. Solicita un nuevo correo.</p>
+            <p>No se encontró un enlace de confirmación válido. Solicita un nuevo correo.</p>
             <Link className="btn btn-primary" style={{ marginTop: '1rem' }} to="/">
               Volver al inicio
             </Link>
@@ -79,7 +79,7 @@ export default function ConfirmarCuenta() {
             <p>
               {email
                 ? `Correo detectado: ${email}.`
-                : 'Tu enlace de confirmacion esta listo.'}
+                : 'Tu enlace de confirmación está listo.'}
             </p>
             <p>Presiona el boton para confirmar manualmente tu cuenta.</p>
             <button className="btn btn-primary" style={{ marginTop: '1rem' }} onClick={handleConfirm} disabled={submitting}>

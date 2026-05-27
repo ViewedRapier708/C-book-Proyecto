@@ -44,7 +44,7 @@ export default function AgregarAgenteSoporte() {
     setError('');
 
     if (form.password !== form.confirmPassword) {
-      setError('La confirmacion de contrasena no coincide');
+      setError('La confirmación de contraseña no coincide');
       return;
     }
 
@@ -82,7 +82,7 @@ export default function AgregarAgenteSoporte() {
           <div>
             <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#e89a4f' }}>Modulo de soporte</p>
             <h1 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight mb-1">Agregar agente de soporte</h1>
-            <p className="text-sm text-[var(--text-muted)]">Registro de nuevos agentes con validacion de contrasena confirmada.</p>
+            <p className="text-sm text-[var(--text-muted)]">Registro de nuevos agentes con validación de contraseña confirmada.</p>
           </div>
           <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)]" onClick={load} disabled={loading}>
             <RefreshCcw size={14} /> Actualizar
@@ -99,15 +99,15 @@ export default function AgregarAgenteSoporte() {
               <input className="px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" placeholder="correo@soporte.com" type="email" value={form.email} onChange={setField('email')} required />
               <input className="px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" placeholder="Numero de boleta" value={form.boleta} onChange={setField('boleta')} maxLength={10} onKeyPress={(e) => e.key !== 'Enter' && !/\d/.test(e.key) && e.preventDefault()} />
               <input className="px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" placeholder="Telefono" value={form.telefono} onChange={setField('telefono')} />
-              <input className="px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" placeholder="Contrasena temporal" type={showPasswords ? 'text' : 'password'} value={form.password} onChange={setField('password')} required />
-              <input className="px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" placeholder="Confirmar contrasena" type={showPasswords ? 'text' : 'password'} value={form.confirmPassword} onChange={setField('confirmPassword')} required />
+              <input className="px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" placeholder="Contraseña temporal" type={showPasswords ? 'text' : 'password'} value={form.password} onChange={setField('password')} required />
+              <input className="px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" placeholder="Confirmar contraseña" type={showPasswords ? 'text' : 'password'} value={form.confirmPassword} onChange={setField('confirmPassword')} required />
               <button
                 type="button"
                 className="md:col-span-2 inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-glass)] px-3 py-2 text-sm font-medium text-[var(--text-secondary)]"
                 onClick={() => setShowPasswords((value) => !value)}
               >
                 {showPasswords ? <EyeOff size={14} /> : <Eye size={14} />}
-                {showPasswords ? 'Ocultar contrasenas' : 'Mostrar contrasenas'}
+                {showPasswords ? 'Ocultar contraseñas' : 'Mostrar contraseñas'}
               </button>
               <button className="md:col-span-2 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#c46f21' }} disabled={saving}>
                 <Plus size={14} /> {saving ? 'Guardando...' : 'Crear agente'}

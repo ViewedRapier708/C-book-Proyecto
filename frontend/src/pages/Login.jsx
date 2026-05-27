@@ -9,13 +9,13 @@ const CORREO_IPN_REGEX = /^[\w.-]+@alumno\.ipn\.mx$/;
 
 function validarPassword(password) {
   if (!password || password.length < 6 || password.length > 16)
-    return 'La contrasena debe tener entre 6 y 16 caracteres';
+    return 'La contraseña debe tener entre 6 y 16 caracteres';
   if (!/[a-z]/.test(password))
-    return 'La contrasena debe contener al menos una letra minuscula';
+    return 'La contraseña debe contener al menos una letra minúscula';
   if (!/[A-Z]/.test(password))
-    return 'La contrasena debe contener al menos una letra mayuscula';
+    return 'La contraseña debe contener al menos una letra mayúscula';
   if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
-    return 'La contrasena debe contener al menos un caracter especial';
+    return 'La contraseña debe contener al menos un carácter especial';
   return null;
 }
 
@@ -114,7 +114,7 @@ export default function Login() {
     }
 
     if (!form.password) {
-      setMsg({ type: 'error', text: 'Ingrese su contrasena' });
+      setMsg({ type: 'error', text: 'Ingrese su contraseña' });
       return;
     }
 
@@ -147,7 +147,7 @@ export default function Login() {
       return;
     }
     if (form.password !== form.confPsw) {
-      setMsg({ type: 'error', text: 'Las contrasenas no coinciden' });
+      setMsg({ type: 'error', text: 'Las contraseñas no coinciden' });
       return;
     }
     if (!aceptaTerminos) {
@@ -196,7 +196,7 @@ export default function Login() {
           <form onSubmit={mode === 'login' ? handleLogin : handleRegister}>
             <div key={animKey} className="auth-form-content">
               <p className="subtitle">
-                {mode === 'login' ? 'Ingresa tu boleta y contrasena' : 'Solo correos @alumno.ipn.mx'}
+                {mode === 'login' ? 'Ingresa tu boleta y contraseña' : 'Solo correos @alumno.ipn.mx'}
               </p>
 
               {msg && <div className={`msg msg-${msg.type}`}>{msg.text}</div>}
@@ -227,10 +227,10 @@ export default function Login() {
               )}
 
               <div className="form-group">
-                <label>Contrasena</label>
+                <label>Contraseña</label>
                 <input
                   type={showPw ? 'text' : 'password'}
-                  placeholder="Ingrese su contrasena"
+                  placeholder="Ingrese su contraseña"
                   maxLength={16}
                   value={form.password}
                   onChange={set('password')}
@@ -240,10 +240,10 @@ export default function Login() {
 
               {mode === 'register' && (
                 <div className="form-group">
-                  <label>Confirmar contrasena</label>
+                  <label>Confirmar contraseña</label>
                   <input
                     type={showPw ? 'text' : 'password'}
-                    placeholder="Confirme su contrasena"
+                    placeholder="Confirme su contraseña"
                     maxLength={16}
                     value={form.confPsw}
                     onChange={set('confPsw')}
@@ -266,7 +266,7 @@ export default function Login() {
 
             <label className="show-password">
               <input type="checkbox" checked={showPw} onChange={() => setShowPw(!showPw)} />
-              Mostrar contrasena
+              Mostrar contraseña
             </label>
 
             <button className="btn-submit" type="submit" disabled={loading || (mode === 'register' && !aceptaTerminos)}>
@@ -276,7 +276,7 @@ export default function Login() {
 
           {mode === 'login' && (
             <p className="toggle-link" style={{ marginTop: '0.5rem' }}>
-              <Link to="/forgot-password">Olvidaste tu contrasena?</Link>
+              <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
             </p>
           )}
 

@@ -176,7 +176,7 @@ async function verificarCorreo(req, res) {
     if (!boleta || !correo) {
       return res.status(400).json({
         confirmado: false,
-        error: 'Faltan datos de registro o token de confirmacion'
+        error: 'Faltan datos de registro o token de confirmación'
       });
     }
 
@@ -211,7 +211,7 @@ async function verificarCorreo(req, res) {
       const usuarioCreado = await crearUsuarioEnTabla(boleta, correoRegistro);
 
       if (!usuarioCreado.success) {
-        console.error("Error creando usuario tras confirmacion legacy:", usuarioCreado.error);
+        console.error("Error creando usuario tras confirmación legacy:", usuarioCreado.error);
         return res.status(400).json({
           confirmado: true,
           error: 'Error al crear usuario en la base de datos'
@@ -226,7 +226,7 @@ async function verificarCorreo(req, res) {
 
     return res.status(200).json({
       confirmado: false,
-      mensaje: 'Revisa tu correo y usa el boton de confirmacion para activar la cuenta'
+      mensaje: 'Revisa tu correo y usa el botón de confirmación para activar la cuenta'
     });
   } catch (err) {
     console.error("Error en verificarCorreo:", err);
@@ -239,7 +239,7 @@ async function confirmarRegistro(req, res) {
     const { token } = req.body || {};
 
     if (!token) {
-      return res.status(400).json({ confirmado: false, error: 'Falta el token de confirmacion' });
+      return res.status(400).json({ confirmado: false, error: 'Falta el token de confirmación' });
     }
 
     const resultado = await confirmarRegistroConToken(token);

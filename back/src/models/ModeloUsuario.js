@@ -197,7 +197,7 @@ function construirCorreoConfirmacionRegistro({ boleta, correo, confirmUrl }) {
   <div style="padding:28px 32px">
     <h2 style="margin:0 0 8px;font-size:18px;color:#111827">Confirma tu cuenta</h2>
     <p style="margin:0 0 18px;color:#4b5563;font-size:14px;line-height:1.6">
-      Recibimos tu registro en C-Book. Confirma tu cuenta para activar el acceso con tu boleta y contrasena.
+      Recibimos tu registro en C-Book. Confirma tu cuenta para activar el acceso con tu boleta y contraseña.
     </p>
     <div style="background:#f9fafb;border-radius:8px;padding:14px 16px;margin-bottom:18px">
       <table style="width:100%;border-collapse:collapse">
@@ -221,7 +221,7 @@ function construirCorreoConfirmacionRegistro({ boleta, correo, confirmUrl }) {
 </body></html>`;
 }
 
-// Registrar usuario en Supabase Auth usando el correo de confirmacion de Supabase
+// Registrar usuario en Supabase Auth usando el correo de confirmación de Supabase
 async function registrarEnAuth(boleta, correo, password) {
   return registrarEnAuthSupabaseLegacy(boleta, correo, password);
 }
@@ -284,7 +284,7 @@ async function confirmarRegistroConToken(token) {
     const authUserId = String(payload?.authUserId || '').trim();
 
     if (payload?.purpose !== 'registration_confirm' || !boleta || !correo || !authUserId) {
-      return { success: false, error: 'El enlace de confirmacion es invalido' };
+      return { success: false, error: 'El enlace de confirmación es inválido' };
     }
 
     const usuarioAuth = await buscarUsuarioAuthPorCorreo(correo);
@@ -365,7 +365,7 @@ async function confirmarRegistroConToken(token) {
     return { success: true };
   } catch (err) {
     console.error('Error en confirmarRegistroConToken:', err);
-    return { success: false, error: 'El enlace de confirmacion es invalido o ha expirado' };
+    return { success: false, error: 'El enlace de confirmación es inválido o ha expirado' };
   }
 }
 
@@ -452,7 +452,7 @@ async function confirmarRegistroConAccessToken(accessToken) {
     return { success: true };
   } catch (err) {
     console.error('Error en confirmarRegistroConAccessToken:', err);
-    return { success: false, error: 'No se pudo completar la confirmacion de Supabase' };
+    return { success: false, error: 'No se pudo completar la confirmación de Supabase' };
   }
 }
 
@@ -604,13 +604,13 @@ async function cambiarContrasenaRecovery(correo) {
     <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">C-Book</h1>
   </div>
   <div style="padding:28px 32px">
-    <h2 style="margin:0 0 8px;font-size:18px;color:#111827">Recuperacion de contrasena</h2>
+    <h2 style="margin:0 0 8px;font-size:18px;color:#111827">Recuperación de contraseña</h2>
     <p style="margin:0 0 20px;color:#4b5563;font-size:14px;line-height:1.6">
-      Recibimos una solicitud para cambiar la contrasena de tu cuenta. Usa el siguiente boton para crear una nueva contrasena.
+      Recibimos una solicitud para cambiar la contraseña de tu cuenta. Usa el siguiente botón para crear una nueva contraseña.
     </p>
     <p style="text-align:center;margin:28px 0">
       <a href="${resetUrl}" style="display:inline-block;background:#6366f1;color:#fff;text-decoration:none;padding:12px 18px;border-radius:8px;font-weight:700">
-        Cambiar contrasena
+        Cambiar contraseña
       </a>
     </p>
     <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5">
@@ -623,7 +623,7 @@ async function cambiarContrasenaRecovery(correo) {
 </div>
 </body></html>`;
 
-    const enviado = await enviarCorreo(correo, 'Recuperacion de contrasena - C-Book', html);
+    const enviado = await enviarCorreo(correo, 'Recuperación de contraseña - C-Book', html);
     console.log('Resultado de enviarCorreo en cambiarContrasenaRecovery:', enviado);
     
     if (!enviado.success) {
@@ -657,7 +657,7 @@ async function actualizarContrasenaConToken(accessToken, newPassword) {
     });
 
     if (error) {
-      console.error('Error actualizando contrasena:', error);
+      console.error('Error actualizando contraseña:', error);
       return { success: false, error: error.message };
     }
     return { success: true };
