@@ -180,19 +180,34 @@ async function verificarCorreo(req, res) {
       });
     }
 
-    const busqueda = await buscarCorreoPorBoleta(boleta);
-    if (busqueda.success && String(busqueda.correo || '').trim().toLowerCase() === String(correo || '').trim().toLowerCase()) {
-      return res.status(200).json({
-        confirmado: true,
-        mensaje: 'La cuenta ya esta confirmada'
-      });
-    }
-
     const resultado = await verificarConfirmacionPorBoleta(boleta);
-    const authCorreo = String(resultado.correo || '').trim().toLowerCase();
     const correoRegistro = String(correo || '').trim().toLowerCase();
+    const authCorreo = String(resultado.correo || '').trim().toLowerCase();
 
-    if (resultado.confirmado && authCorreo === correoRegistro) {
+    if (resultado.confirmado) {
+      if (authCorreo !== correoRegistro) {
+        return res.status(400).json({
+          confirmado: false,
+          error: 'El correo confirmado no coincide con la boleta registrada'
+        });
+      }
+
+      const busqueda = await buscarCorreoPorBoleta(boleta);
+      if (busqueda.success) {
+        const correoTabla = String(busqueda.correo || '').trim().toLowerCase();
+        if (correoTabla === correoRegistro) {
+          return res.status(200).json({
+            confirmado: true,
+            mensaje: 'La cuenta ya esta confirmada'
+          });
+        }
+
+        return res.status(400).json({
+          confirmado: false,
+          error: 'Boleta ya registrada en otra cuenta'
+        });
+      }
+
       const usuarioCreado = await crearUsuarioEnTabla(boleta, correoRegistro);
 
       if (!usuarioCreado.success) {

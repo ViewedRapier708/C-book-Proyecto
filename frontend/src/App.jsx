@@ -12,6 +12,7 @@ import SupportFab from './components/ui/SupportFab';
 const Login              = lazy(() => import('./pages/Login'));
 const EmailVerification  = lazy(() => import('./pages/EmailVerification'));
 const EmailConfirmed     = lazy(() => import('./pages/EmailConfirmed'));
+const ConfirmarCuenta    = lazy(() => import('./pages/ConfirmarCuenta'));
 const ForgotPassword     = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword      = lazy(() => import('./pages/ResetPassword'));
 
@@ -55,6 +56,7 @@ export default function App() {
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Login />} />
+              <Route path="/confirmar-cuenta" element={<ConfirmarCuenta />} />
               <Route path="/verificar" element={<EmailVerification />} />
               <Route path="/verificado" element={<EmailConfirmed />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />

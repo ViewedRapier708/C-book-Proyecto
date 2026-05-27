@@ -155,7 +155,7 @@ async function registrarEnAuthSupabaseLegacy(boleta, correo, password) {
       email: correo,
       password: password,
       options: {
-        emailRedirectTo: `${getFrontendBaseUrl()}/verificado`,
+        emailRedirectTo: `${getFrontendBaseUrl()}/verificar`,
         data: { 
           boleta: boleta,
           rol: 'alumno'
