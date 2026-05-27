@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { AlertTriangle, MailCheck } from 'lucide-react';
 
 function safeDecode(value) {
@@ -23,6 +23,7 @@ function isValidConfirmationUrl(value) {
 
 export default function ConfirmarCuenta() {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const [submitting, setSubmitting] = useState(false);
 
   const email = useMemo(() => {
@@ -30,10 +31,28 @@ export default function ConfirmarCuenta() {
   }, [searchParams]);
 
   const confirmationUrl = useMemo(() => {
-    const rawUrl = String(searchParams.get('url') || '').trim();
+    const queryUrl = String(
+      searchParams.get('url') ||
+      searchParams.get('confirmation_url') ||
+      ''
+    ).trim();
+
+    let hashUrl = '';
+    const hashValue = String(location.hash || '').replace(/^#/, '').trim();
+
+    if (hashValue) {
+      const hashParams = new URLSearchParams(hashValue);
+      hashUrl = String(
+        hashParams.get('url') ||
+        hashParams.get('confirmation_url') ||
+        hashValue
+      ).trim();
+    }
+
+    const rawUrl = queryUrl || hashUrl;
     const decoded = safeDecode(rawUrl);
     return isValidConfirmationUrl(decoded) ? decoded : '';
-  }, [searchParams]);
+  }, [location.hash, searchParams]);
 
   const handleConfirm = () => {
     if (!confirmationUrl) return;
