@@ -6,6 +6,7 @@ import MobileAppPromo from '../components/ui/MobileAppPromo';
 import toast from 'react-hot-toast';
 
 const CORREO_IPN_REGEX = /^[\w.-]+@alumno\.ipn\.mx$/;
+const LOGO_SRC = '/images/cbook-logo.jpeg';
 
 function validarPassword(password) {
   if (!password || password.length < 6 || password.length > 16)
@@ -178,7 +179,10 @@ export default function Login() {
       <div className="auth-left">
         <div className="auth-left-stack">
           <div className="auth-hero">
-            <h1>C-Book</h1>
+            <div className="auth-brand">
+              <img src={LOGO_SRC} alt="" className="brand-logo auth-brand-logo" />
+              <h1>C-Book</h1>
+            </div>
             <p>Plataforma digital creada para facilitar el acceso a recursos educativos, solicitudes de libros y seguimiento de soporte.</p>
           </div>
 

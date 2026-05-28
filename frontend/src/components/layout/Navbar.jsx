@@ -34,6 +34,8 @@ const userLinks = [
   { to: '/user/perfil', icon: UserCircle, label: 'Mi Perfil' },
 ];
 
+const LOGO_SRC = '/images/cbook-logo.jpeg';
+
 function supportLinks(role) {
   return [
     { section: 'Soporte' },
@@ -170,7 +172,10 @@ export default function Navbar({ onClose }) {
         }`}
       >
         <div className="mobile-menu-header flex items-center justify-between px-4 h-16">
-          <h2 className="text-lg font-bold">C-Book</h2>
+          <div className="brand-mark">
+            <img src={LOGO_SRC} alt="" className="brand-logo" />
+            <h2 className="text-lg font-bold">C-Book</h2>
+          </div>
           <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-lg mobile-close-btn">
             <X size={20} />
           </button>
@@ -216,7 +221,10 @@ export default function Navbar({ onClose }) {
       <nav className="main-nav fixed top-0 left-0 right-0 h-16 backdrop-blur-xl z-[100] px-4 md:px-6">
         <div className="h-full flex items-center justify-between gap-4 max-w-[1600px] mx-auto">
           <div className="flex-shrink-0">
-            <h2 className="text-lg font-bold">C-Book</h2>
+            <div className="brand-mark">
+              <img src={LOGO_SRC} alt="" className="brand-logo" />
+              <h2 className="text-lg font-bold">C-Book</h2>
+            </div>
             <small className="main-nav-label">
               {getRoleLabel(user)}
             </small>

@@ -1246,6 +1246,20 @@ body {
   box-shadow: var(--shadow-lg);
 }
 
+.auth-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  margin-bottom: 0.65rem;
+}
+
+.auth-brand-logo {
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+}
+
 .auth-left h1 {
   color: var(--text-primary);
 }
@@ -1709,6 +1723,20 @@ body {
 .main-nav {
   background: var(--bg-sidebar);
   border-bottom: 1px solid var(--border-color);
+}
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border-color);
 }
 .main-nav h2 {
   color: var(--accent-primary);
