@@ -1,14 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import {
-  FileBarChart, FileDown, FileSpreadsheet, Calendar,
-  Users, BookOpen, RefreshCw
+  FileBarChart, FileSpreadsheet,
+  Users, BookOpen,
 } from 'lucide-react';
 import { adminApi } from '../../api/admin';
 import { exportToExcel, exportMultiSheetExcel } from '../../utils/exportExcel';
-import { generatePDF } from '../../utils/exportPDF';
 import { Spinner } from '../../components/ui/Feedback';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 
@@ -26,14 +23,24 @@ const columnMap = {
     { key: 'tiene_documentos', label: 'Documentos' },
   ],
   libros: [
-    { key: 'titulo', label: 'Título', accessor: (r) => r.libros?.titulo },
-    { key: 'autor', label: 'Autor', accessor: (r) => r.libros?.autor },
-    { key: 'isbn', label: 'ISBN', accessor: (r) => r.libros?.isbn },
-    { key: 'tipo_material', label: 'Tipo Material', accessor: (r) => r.libros?.tipo_material },
+    { key: 'titulo', label: 'Título' },
+    { key: 'autor', label: 'Autor' },
+    { key: 'isbn', label: 'ISBN' },
+    { key: 'tipo_material', label: 'Tipo Material' },
     { key: 'anio', label: 'Año' },
-    { key: 'Disponible', label: 'Disponible' },
+    { key: 'disponible', label: 'Disponible' },
   ],
 };
+
+const flattenLibros = (items) =>
+  (items || []).map((item) => ({
+    titulo: item.libros?.titulo ?? item.titulo ?? '-',
+    autor: item.libros?.autor ?? item.autor ?? '-',
+    isbn: item.libros?.isbn ?? item.isbn ?? '-',
+    tipo_material: item.libros?.tipo_material ?? item.tipo_material ?? '-',
+    anio: item.anio ?? '-',
+    disponible: item.Disponible ?? item.disponible ?? false,
+  }));
 
 export default function Reportes() {
   const [selected, setSelected] = useState('usuarios');
@@ -44,9 +51,8 @@ export default function Reportes() {
     if (data[type]) return;
     setLoading(true);
     try {
-      let result;
       if (type === 'usuarios') {
-        result = await adminApi.getUsers({ limit: 0, rol: 'alumno' });
+        const result = await adminApi.getUsers({ limit: 0, rol: 'alumno' });
         setData(prev => ({ ...prev, usuarios: result.data || [] }));
       } else if (type === 'completo') {
         const [u, l] = await Promise.all([
@@ -56,12 +62,12 @@ export default function Reportes() {
         setData(prev => ({
           ...prev,
           usuarios: u.data || [],
-          libros: l.data || [],
+          libros: flattenLibros(l.data),
           completo: true,
         }));
       } else {
-        result = await adminApi.getMaterials(type, { limit: 0 });
-        setData(prev => ({ ...prev, [type]: result.data || [] }));
+        const result = await adminApi.getMaterials(type, { limit: 0 });
+        setData(prev => ({ ...prev, [type]: flattenLibros(result.data) }));
       }
     } catch (err) {
       console.error(err);
@@ -105,52 +111,11 @@ export default function Reportes() {
     exportMultiSheetExcel(sheets, 'reporte_completo');
   };
 
-  const handlePDFSingle = () => {
-    if (!currentData) return;
-    const rows = currentData.map(row => currentCols.map(c => {
-      const v = getVal(row, c);
-      return typeof v === 'boolean' ? (v ? 'Sí' : 'No') : String(v ?? '-');
-    }));
-    const stats = [
-      { label: 'Total Registros', value: currentData.length },
-      { label: 'Fecha', value: format(new Date(), 'dd/MM/yyyy') },
-    ];
-    generatePDF({
-      title: `Reporte de ${selected.charAt(0).toUpperCase() + selected.slice(1)}`,
-      subtitle: `Generado el ${format(new Date(), "d 'de' MMMM 'de' yyyy", { locale: es })}`,
-      columns: currentCols.map(c => c.label),
-      rows,
-      stats,
-      filename: `reporte_${selected}`,
-      orientation: currentCols.length > 5 ? 'landscape' : 'portrait',
-    });
-  };
-
-  const handlePDFCompleto = () => {
-    // Generate a summary PDF
-    const allStats = [
-      { label: 'Usuarios', value: (data.usuarios || []).length },
-      { label: 'Libros', value: (data.libros || []).length },
-    ];
-    const rows = [
-      ...((data.libros || []).slice(0, 30).map(r => [r.libros?.titulo || '-', r.libros?.autor || '-', r.libros?.isbn || '-', r.Disponible ? 'Sí' : 'No'])),
-    ];
-    generatePDF({
-      title: 'Reporte Completo del Sistema',
-      subtitle: `C-Book — ${format(new Date(), "d 'de' MMMM 'de' yyyy", { locale: es })}`,
-      columns: ['Título', 'Autor', 'ISBN', 'Disponible'],
-      rows,
-      stats: allStats,
-      filename: 'reporte_completo',
-      orientation: 'landscape',
-    });
-  };
-
   return (
     <AnimatedPage>
       <div className="page-header">
         <h1>Reportes</h1>
-        <p>Genera y exporta reportes del sistema en PDF o Excel</p>
+        <p>Genera y exporta reportes del sistema en Excel</p>
       </div>
 
       {/* Report Type Selector */}
@@ -196,14 +161,6 @@ export default function Reportes() {
               disabled={loading}
             >
               <FileSpreadsheet size={16} /> Exportar Excel
-            </button>
-            <button
-              className="btn btn-outline"
-              style={{ borderColor: '#ef4444', color: '#ef4444' }}
-              onClick={selected === 'completo' ? handlePDFCompleto : handlePDFSingle}
-              disabled={loading}
-            >
-              <FileDown size={16} /> Exportar PDF
             </button>
           </div>
         </div>
