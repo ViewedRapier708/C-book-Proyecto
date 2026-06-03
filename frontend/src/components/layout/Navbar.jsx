@@ -5,9 +5,11 @@ import {
   LayoutDashboard, BookOpen, Users,
   FileText, ClipboardList, LogOut,
   FileBarChart, UserCircle,
-  ChevronDown, Menu, X, GraduationCap, Headphones,
+  ChevronDown, Menu, X, GraduationCap, Headphones, ClipboardCheck,
 } from 'lucide-react';
 import { isSupportAdmin, isSupportRole } from '../../utils/authRoutes';
+import Modal from '../ui/Modal';
+import { openSatisfactionSurvey } from '../../constants/survey';
 
 const adminLinks = [
   { section: 'General' },
@@ -144,10 +146,26 @@ export default function Navbar({ onClose }) {
   const navigate = useNavigate();
   const links = getLinks(user);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showSurveyLogoutModal, setShowSurveyLogoutModal] = useState(false);
 
-  const handleLogout = async () => {
+  const finishLogout = async () => {
+    setShowSurveyLogoutModal(false);
     await logout();
     navigate('/', { replace: true });
+  };
+
+  const handleLogout = () => {
+    if (user?.rol === 'alumno') {
+      setShowSurveyLogoutModal(true);
+      return;
+    }
+
+    finishLogout();
+  };
+
+  const handleSurveyAndLogout = async () => {
+    openSatisfactionSurvey();
+    await finishLogout();
   };
 
   const navLinks = links.filter((item) => !item.section);
@@ -261,6 +279,27 @@ export default function Navbar({ onClose }) {
           </div>
         </div>
       </nav>
+
+      <Modal
+        open={showSurveyLogoutModal}
+        onClose={() => setShowSurveyLogoutModal(false)}
+        title="Antes de irte"
+        footer={
+          <>
+            <button className="btn btn-ghost" onClick={finishLogout}>
+              Cerrar sesión de todas formas
+            </button>
+            <button className="btn btn-success" onClick={handleSurveyAndLogout}>
+              <ClipboardCheck size={16} />
+              Contestar encuesta
+            </button>
+          </>
+        }
+      >
+        <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+          Gracias por usar C-Book. Antes de cerrar sesión, ¿podrías contestar nuestra encuesta de satisfacción? Tus comentarios nos ayudan a mejorar el servicio para ti y tus compañeros.
+        </p>
+      </Modal>
     </>
   );
 }

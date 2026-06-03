@@ -1,12 +1,14 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { recursosApi, solicitudesApi } from '../../api/recursos';
 import { useAuth } from '../../context/AuthContext';
-import { useHorario } from '../../components/layout/HorarioRestriction';
+// useHorario queda disponible si se reactiva la limitación por horario de biblioteca.
+// import { useHorario } from '../../components/layout/HorarioRestriction';
 import { EmptyState } from '../../components/ui/Feedback';
 import Pagination from '../../components/ui/Pagination';
 import Modal from '../../components/ui/Modal';
 import toast from 'react-hot-toast';
-import { AlertCircle, Search, TrendingUp, Star, Clock } from 'lucide-react';
+// Si se reactiva el aviso de horario, volver a agregar Clock a este import.
+import { AlertCircle, Search, TrendingUp, Star } from 'lucide-react';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 import { DOCUMENTACION_REQUERIDA_MENSAJE } from '../../constants/documentacion';
 import { SkeletonGrid } from '../../components/ui/Skeleton';
@@ -15,11 +17,10 @@ const MAX_LIBROS = 3;
 
 export default function SolicitudLibros() {
   const { user } = useAuth();
-  const { dentroHorario } = useHorario();
+  // const { dentroHorario } = useHorario();
   const [items, setItems] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [catalogLoading, setCatalogLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [filterTipo, setFilterTipo] = useState('');
   const [filterDisp, setFilterDisp] = useState('');
@@ -63,7 +64,6 @@ export default function SolicitudLibros() {
     loadingMoreRef.current = false;
 
     setLoading(true);
-    setCatalogLoading(false);
     setLoadingTop(true);
 
     try {
@@ -111,7 +111,6 @@ export default function SolicitudLibros() {
     }
 
     loadingMoreRef.current = true;
-    setCatalogLoading(true);
 
     try {
       while (loadTokenRef.current === token && itemsRef.current.length < totalCountRef.current) {
@@ -134,9 +133,6 @@ export default function SolicitudLibros() {
         console.error('Error cargando libros en segundo plano:', err);
       }
     } finally {
-      if (loadTokenRef.current === token) {
-        setCatalogLoading(false);
-      }
       loadingMoreRef.current = false;
     }
   }, [commitItems, commitTotal, fetchBatch]);
@@ -175,7 +171,6 @@ export default function SolicitudLibros() {
   }, [items, search, filterTipo, filterDisp]);
 
   const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
-  const catalogReady = totalCount > 0 && items.length >= totalCount;
 
   useEffect(() => {
     const maxPage = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
@@ -208,12 +203,14 @@ export default function SolicitudLibros() {
         </span>
       </div>
 
+      {/* Bloque disponible para futura reactivación del aviso de horario de biblioteca.
       {!dentroHorario && (
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', padding: '0.9rem 1rem', borderRadius: 'var(--radius-sm)', background: '#f59e0b18', border: '1px solid #f59e0b44', marginBottom: '1rem', color: '#b45309' }}>
           <Clock size={18} style={{ flexShrink: 0, marginTop: 2 }} />
           <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5 }}>Las solicitudes de préstamo solo están disponibles de 8:00 a 20:00 horas (CDMX). Fuera de este horario puedes consultar el catálogo.</p>
         </div>
       )}
+      */}
 
       {activasCount >= MAX_LIBROS && (
         <div style={{ padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', background: '#f59e0b18', border: '1px solid #f59e0b44', marginBottom: '1rem', fontSize: '0.85rem', color: '#f59e0b' }}>
@@ -318,10 +315,10 @@ export default function SolicitudLibros() {
                 <button
                   className="btn btn-primary btn-sm"
                   style={{ flex: 1 }}
-                  disabled={sinDocumentos || !(b.Disponible ?? b.disponible) || activasCount >= MAX_LIBROS || !dentroHorario}
+                  disabled={sinDocumentos || !(b.Disponible ?? b.disponible) || activasCount >= MAX_LIBROS}
                   onClick={() => setConfirm(b)}
                 >
-                  {sinDocumentos ? 'Documentos pendientes' : activasCount >= MAX_LIBROS ? 'Límite alcanzado' : !dentroHorario ? 'Fuera de horario' : 'Solicitar'}
+                  {sinDocumentos ? 'Documentos pendientes' : activasCount >= MAX_LIBROS ? 'Límite alcanzado' : 'Solicitar'}
                 </button>
               </div>
             </div>
@@ -338,8 +335,8 @@ export default function SolicitudLibros() {
         footer={
           <>
             <button className="btn btn-ghost" onClick={() => setConfirm(null)}>Cancelar</button>
-            <button className="btn btn-primary" disabled={submitting || !dentroHorario} onClick={handleSolicitar}>
-              {submitting ? 'Enviando...' : !dentroHorario ? 'Fuera de horario' : 'Confirmar'}
+            <button className="btn btn-primary" disabled={submitting} onClick={handleSolicitar}>
+              {submitting ? 'Enviando...' : 'Confirmar'}
             </button>
           </>
         }
