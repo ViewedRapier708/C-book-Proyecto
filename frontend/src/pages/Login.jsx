@@ -161,9 +161,12 @@ export default function Login() {
     setLoading(true);
     try {
       const data = await register(form.boleta, form.correo, form.password, form.confPsw, aceptaTerminos);
-      localStorage.setItem('datosRegistro', JSON.stringify({ boleta: form.boleta, correo: form.correo }));
-      toast.success(data.message || 'Registro exitoso. Revisa tu correo.');
-      navigate('/verificar', { replace: true });
+      toast.success(data.message || 'Registro exitoso. Bienvenido.');
+      if (data.user) {
+        navigate(getHomePath(data.user), { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
     } catch (err) {
       setMsg({ type: 'error', text: err.message });
     } finally {
@@ -249,6 +252,11 @@ export default function Login() {
                     onChange={set('password')}
                     required
                   />
+                  {mode === 'register' && (
+                    <p className="password-hint">
+                      Formato: 6 a 16 caracteres, una mayuscula, una minuscula y un caracter especial.
+                    </p>
+                  )}
                 </div>
 
                 {mode === 'register' && (
@@ -264,23 +272,23 @@ export default function Login() {
                     />
                   </div>
                 )}
-
-                {mode === 'register' && (
-                  <div style={{ marginBottom: '0.75rem' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', lineHeight: 1.4 }}>
-                      <input type="checkbox" checked={aceptaTerminos} onChange={() => setAceptaTerminos(!aceptaTerminos)} />
-                      <span>
-                        Acepto el <a style={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={(e) => { e.preventDefault(); setView('privacidad'); }}>Aviso de Privacidad</a> y los <a style={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={(e) => { e.preventDefault(); setView('terminos'); }}>Términos y Condiciones</a>
-                      </span>
-                    </label>
-                  </div>
-                )}
               </div>
 
               <label className="show-password">
                 <input type="checkbox" checked={showPw} onChange={() => setShowPw(!showPw)} />
                 Mostrar contraseña
               </label>
+
+              {mode === 'register' && (
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', lineHeight: 1.4 }}>
+                    <input type="checkbox" checked={aceptaTerminos} onChange={() => setAceptaTerminos(!aceptaTerminos)} />
+                    <span>
+                      Acepto el <a style={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={(e) => { e.preventDefault(); setView('privacidad'); }}>Aviso de Privacidad</a> y los <a style={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={(e) => { e.preventDefault(); setView('terminos'); }}>Términos y Condiciones</a>
+                    </span>
+                  </label>
+                </div>
+              )}
 
               <button className="btn-submit" type="submit" disabled={loading || (mode === 'register' && !aceptaTerminos)}>
                 {loading ? 'Procesando...' : mode === 'login' ? 'ACCEDER' : 'REGISTRAR'}

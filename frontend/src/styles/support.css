@@ -60,6 +60,13 @@
   .survey-fab { bottom: 62px; }
 }
 
+@media (max-width: 768px) {
+  .support-fab,
+  .survey-fab {
+    display: none;
+  }
+}
+
 .survey-home-card {
   position: relative;
   overflow: hidden;

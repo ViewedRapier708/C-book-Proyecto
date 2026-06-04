@@ -480,6 +480,10 @@ async function obtenerMateriales(req, res) {
         const pagination = {
             page: req.query.page !== undefined ? (Number.parseInt(req.query.page, 10) || 1) : 1,
             limit: req.query.limit !== undefined ? (Number.parseInt(req.query.limit, 10) || 0) : 25,
+            q: req.query.q || '',
+            all: req.query.all === 'true',
+            tipo_material: req.query.tipo_material || '',
+            disponible: req.query.disponible !== undefined ? req.query.disponible : '',
         };
         
         const resultado = await ObtenerMateriales(tipo, pagination);
