@@ -17,8 +17,9 @@ function getPublicUser(req) {
 
 function handleError(res, err) {
   console.error('[ControladorSoporte]', err);
+  const isProduction = (process.env.NODE_ENV || 'development') === 'production';
   return res.status(err.status || 500).json({
-    error: err.message || 'Error interno del modulo de soporte',
+    error: isProduction ? 'Error interno del modulo de soporte' : (err.message || 'Error interno del modulo de soporte'),
   });
 }
 

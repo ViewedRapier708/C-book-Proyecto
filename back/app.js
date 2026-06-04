@@ -8,6 +8,12 @@ const authRoutes = require('./src/routes/Rutas.js');
 
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const isProduction = NODE_ENV === 'production';
+
+if (isProduction && !process.env.SESSION_SECRET) {
+  console.error('FATAL: SESSION_SECRET no está configurado en producción. El servidor no puede arrancar de forma segura.');
+  process.exit(1);
+}
+
 const sessionSecret = process.env.SESSION_SECRET || 'dev_session_secret_change_me';
 const rawSameSite = (process.env.SESSION_COOKIE_SAME_SITE || (isProduction ? 'none' : 'lax')).toLowerCase();
 const configuredSameSite = ['lax', 'strict', 'none'].includes(rawSameSite) ? rawSameSite : 'lax';

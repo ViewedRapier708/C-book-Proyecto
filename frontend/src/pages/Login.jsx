@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import DOMPurify from 'dompurify';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getHomePath } from '../utils/authRoutes';
@@ -32,7 +33,7 @@ function DocumentPage({ docUrl, title, onBack }) {
         let text = await res.text();
         text = text.replace(/<br\s*\/?>\s*<div>.*?Termly.*?<\/div>/gs, '');
         text = text.replace(/This Privacy Policy was created using Termly.*?(?:<\/a>)?\.?\s*/gi, '');
-        if (!cancelled) setHtml(text);
+        if (!cancelled) setHtml(DOMPurify.sanitize(text));
       } catch {
         if (!cancelled) setHtml('<p>Error al cargar el documento</p>');
       } finally {
