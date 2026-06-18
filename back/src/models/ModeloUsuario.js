@@ -181,6 +181,33 @@ async function registrarEnAuthSupabaseLegacy(boleta, correo, password) {
   }
 }
 
+async function registrarEnAuthAutoConfirmado(boleta, correo, password) {
+  const supabase = getClient();
+  try {
+    const { data, error } = await supabase.auth.admin.createUser({
+      email: correo,
+      password: password,
+      email_confirm: true,
+      user_metadata: {
+        boleta: boleta,
+        rol: 'alumno'
+      }
+    });
+
+    if (error) {
+      let mensaje = error.message;
+      if (error.message && error.message.toLowerCase().includes('already registered')) {
+        mensaje = 'Este correo ya está registrado. Intenta iniciar sesión o usa otro correo.';
+      }
+      return { success: false, error: mensaje };
+    }
+
+    return { success: true, user: data.user };
+  } catch (err) {
+    return { success: false, error: 'Error interno del servidor' };
+  }
+}
+
 function construirCorreoConfirmacionRegistro({ boleta, correo, confirmUrl }) {
   const safeBoleta = escapeHtml(boleta);
   const safeCorreo = escapeHtml(correo);
@@ -701,6 +728,7 @@ module.exports = {
   validarBoletaEnTabla,
   validarCorreoEnTabla,
   registrarEnAuth,
+  registrarEnAuthAutoConfirmado,
   crearUsuarioEnTabla,
   verificarConfirmacionPorBoleta,
   confirmarRegistroConToken,

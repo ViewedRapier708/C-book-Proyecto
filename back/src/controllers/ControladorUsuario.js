@@ -2,6 +2,7 @@ const {
   validarBoletaEnTabla,
   validarCorreoEnTabla,
   registrarEnAuth,
+  registrarEnAuthAutoConfirmado,
   crearUsuarioEnTabla,
   verificarConfirmacionPorBoleta,
   confirmarRegistroConToken,
@@ -112,17 +113,59 @@ async function registro(req, res) {
       return res.status(400).json({ error: 'Este correo ya tiene una cuenta registrada' });
     }
 
-    // Registrar en Supabase Auth
-    const resultadoAuth = await registrarEnAuth(boleta, correo, password);
-    
+    const resultadoAuth = await registrarEnAuthAutoConfirmado(boleta, correo, password);
+
     if (!resultadoAuth.success) {
-     // console.error("Error en Auth:", resultadoAuth.error);
       return res.status(400).json({ error: resultadoAuth.error || 'Error al registrar usuario' });
     }
 
+    const usuarioCreado = await crearUsuarioEnTabla(boleta, correo);
+    if (!usuarioCreado.success) {
+      return res.status(400).json({ error: 'Error al crear el usuario en la base de datos' });
+    }
+
+    const loginResult = await loginConAuth(correo, password);
+    if (!loginResult.success) {
+      return res.status(201).json({
+        success: true,
+        message: 'Registro exitoso. Inicia sesión para continuar.',
+        requiereLogin: true
+      });
+    }
+
+    const userData = await traerUsuarioInfo(boleta);
+    const nombre = (userData.data?.boletas?.nombre).trim();
+    const grupo = userData.data?.boletas?.Grupo;
+    const rol = userData.data?.rol;
+
+    const secret = req.app.locals.sessionSecret || process.env.SESSION_SECRET || 'dev_session_secret_change_me';
+
+    const sessionUser = {
+      authProvider: 'main',
+      tipoCuenta: 'principal',
+      supabaseUserId: resultadoAuth.user.id,
+      nombre,
+      email: correo,
+      boleta,
+      grupo,
+      rol,
+      tiene_documentos: true,
+      tokens: {
+        accessToken: loginResult.session.access_token,
+        refreshToken: loginResult.session.refresh_token,
+        expiresAt: loginResult.session.expires_at ? loginResult.session.expires_at * 1000 : null,
+        expiresIn: loginResult.session.expires_in
+      }
+    };
+
+    const token = jwt.sign(sessionUser, secret, { expiresIn: '2h' });
+    res.cookie('app_session', token, req.app.locals.cookieSettings);
+
     return res.status(200).json({
       success: true,
-      message: 'Registro exitoso. Revisa tu correo para verificar la cuenta.'
+      message: 'Registro exitoso. Bienvenido.',
+      user: sanitizeSessionUser(sessionUser),
+      rol: rol
     });
 
   } catch (err) {

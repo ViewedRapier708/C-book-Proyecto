@@ -5,7 +5,7 @@ import {
   LayoutDashboard, BookOpen, Users,
   FileText, ClipboardList, LogOut,
   FileBarChart, UserCircle,
-  ChevronDown, Menu, X, GraduationCap, Headphones, ClipboardCheck,
+  ChevronDown, GraduationCap, Headphones, ClipboardCheck, MoreHorizontal,
 } from 'lucide-react';
 import { isSupportAdmin, isSupportRole } from '../../utils/authRoutes';
 import Modal from '../ui/Modal';
@@ -37,6 +37,7 @@ const userLinks = [
 ];
 
 const LOGO_SRC = '/images/cbook-logo.jpeg';
+const MOBILE_PRIMARY_LINKS = 4;
 
 function supportLinks(role) {
   return [
@@ -145,7 +146,7 @@ export default function Navbar({ onClose }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const links = getLinks(user);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const [showSurveyLogoutModal, setShowSurveyLogoutModal] = useState(false);
 
   const finishLogout = async () => {
@@ -169,73 +170,16 @@ export default function Navbar({ onClose }) {
   };
 
   const navLinks = links.filter((item) => !item.section);
+  const primaryMobileLinks = navLinks.slice(0, MOBILE_PRIMARY_LINKS);
+  const overflowMobileLinks = navLinks.slice(MOBILE_PRIMARY_LINKS);
 
-  const closeMobileMenu = () => {
-    setMobileMenuOpen(false);
+  const closeMobileMore = () => {
+    setMobileMoreOpen(false);
     onClose?.();
   };
 
   return (
     <>
-      <div
-        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-[99] transition-opacity duration-300 lg:hidden ${
-          mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setMobileMenuOpen(false)}
-      />
-
-      <div
-        className={`mobile-sidebar fixed top-0 right-0 bottom-0 w-[280px] backdrop-blur-xl z-[100] transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-y-auto lg:hidden ${
-          mobileMenuOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full'
-        }`}
-      >
-        <div className="mobile-menu-header flex items-center justify-between px-4 h-16">
-          <div className="brand-mark">
-            <img src={LOGO_SRC} alt="" className="brand-logo" />
-            <h2 className="text-lg font-bold">C-Book</h2>
-          </div>
-          <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-lg mobile-close-btn">
-            <X size={20} />
-          </button>
-        </div>
-
-        <nav className="mobile-menu-nav px-3 py-4">
-          <div className="space-y-0.5">
-            {navLinks.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) =>
-                  `mobile-nav-link flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                    isActive
-                      ? 'active'
-                      : ''
-                  }`
-                }
-                onClick={closeMobileMenu}
-              >
-                <item.icon size={18} />
-                {item.label}
-              </NavLink>
-            ))}
-          </div>
-          <div className="mobile-logout-area">
-            <button
-              type="button"
-              className="mobile-nav-link mobile-logout-btn flex w-full items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
-              onClick={() => {
-                closeMobileMenu();
-                handleLogout();
-              }}
-            >
-              <LogOut size={18} />
-              Cerrar Sesion
-            </button>
-          </div>
-        </nav>
-      </div>
-
       <nav className="main-nav fixed top-0 left-0 right-0 h-16 backdrop-blur-xl z-[100] px-4 md:px-6">
         <div className="h-full flex items-center justify-between gap-4 max-w-[1600px] mx-auto">
           <div className="flex-shrink-0">
@@ -273,11 +217,68 @@ export default function Navbar({ onClose }) {
             <div className="hidden lg:block">
               <UserMenu user={user} onLogout={handleLogout} />
             </div>
-            <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden p-2 rounded-lg mobile-menu-btn">
-              <Menu size={22} />
-            </button>
+            <div className="lg:hidden">
+              <UserMenu user={user} onLogout={handleLogout} />
+            </div>
           </div>
         </div>
+      </nav>
+
+      <nav className="bottom-tab-bar lg:hidden" aria-label="Navegacion principal">
+        {primaryMobileLinks.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={({ isActive }) => `bottom-tab-link ${isActive ? 'active' : ''}`}
+            onClick={closeMobileMore}
+          >
+            <item.icon size={18} />
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
+
+        {overflowMobileLinks.length > 0 && (
+          <div className="bottom-tab-more">
+            <button
+              type="button"
+              className={`bottom-tab-link bottom-tab-more-btn ${mobileMoreOpen ? 'active' : ''}`}
+              onClick={() => setMobileMoreOpen((open) => !open)}
+              aria-expanded={mobileMoreOpen}
+            >
+              <MoreHorizontal size={18} />
+              <span>Mas</span>
+            </button>
+
+            {mobileMoreOpen && (
+              <div className="bottom-tab-overflow">
+                {overflowMobileLinks.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
+                    className={({ isActive }) => `bottom-tab-overflow-link ${isActive ? 'active' : ''}`}
+                    onClick={closeMobileMore}
+                  >
+                    <item.icon size={17} />
+                    <span>{item.label}</span>
+                  </NavLink>
+                ))}
+                <button
+                  type="button"
+                  className="bottom-tab-overflow-link bottom-tab-overflow-logout"
+                  onClick={() => {
+                    closeMobileMore();
+                    handleLogout();
+                  }}
+                >
+                  <LogOut size={17} />
+                  <span>Cerrar Sesion</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </nav>
 
       <Modal
