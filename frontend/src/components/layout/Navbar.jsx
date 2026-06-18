@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import {
   LayoutDashboard, BookOpen, Users,
   FileText, ClipboardList, LogOut,
-  FileBarChart, UserCircle,
+  UserCircle,
   ChevronDown, GraduationCap, Headphones, ClipboardCheck, MoreHorizontal,
 } from 'lucide-react';
 import { isSupportAdmin, isSupportRole } from '../../utils/authRoutes';
@@ -14,14 +14,13 @@ import { openSatisfactionSurvey } from '../../constants/survey';
 const adminLinks = [
   { section: 'General' },
   { to: '/admin', icon: LayoutDashboard, label: 'Inicio', end: true },
-  { to: '/admin/reportes', icon: FileBarChart, label: 'Reportes' },
   { section: 'Altas' },
   { to: '/admin/alumnos', icon: GraduationCap, label: 'Alumnos' },
   { to: '/admin/libros', icon: BookOpen, label: 'Libros' },
   { section: 'Gestion' },
   { to: '/admin/usuarios', icon: Users, label: 'Usuarios' },
-  { to: '/admin/documentos', icon: FileText, label: 'Documentos' },
-  { to: '/admin/solicitudes-libros', icon: ClipboardList, label: 'Solicitudes de libros' },
+  { to: '/admin/documentos', icon: FileText, label: 'Entrega de documentos' },
+  { to: '/admin/solicitudes-libros', icon: ClipboardList, label: 'Solicitudes pendientes de libros' },
   { to: '/admin/prestamos-libros', icon: BookOpen, label: 'Prestamos de libros activos' },
 ];
 
@@ -43,7 +42,7 @@ function supportLinks(role) {
   return [
     { section: 'Soporte' },
     { to: '/soporte', icon: LayoutDashboard, label: 'Dashboard', end: true },
-    { to: '/soporte/tickets', icon: ClipboardList, label: 'Tikets' },
+    { to: '/soporte/tickets', icon: ClipboardList, label: 'Tickets' },
     ...(isSupportAdmin(role) ? [
       { section: 'Equipo' },
       { to: '/soporte/agregar-agente', icon: Users, label: 'Agregar agente de soporte' },
@@ -114,16 +113,14 @@ function UserMenu({ user, onLogout }) {
                 <Headphones size={16} />
                 Reportar error
               </NavLink>
-              {user?.rol !== 'Admin' && (
-                <NavLink
-                  to="/user/soporte/mis-reportes"
-                  className="dropdown-item flex items-center gap-2 px-3 py-2 text-sm"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <ClipboardList size={16} />
-                  Mis reportes
-                </NavLink>
-              )}
+    <NavLink
+      to={user?.rol === 'Admin' ? '/admin/soporte/mis-reportes' : '/user/soporte/mis-reportes'}
+      className="dropdown-item flex items-center gap-2 px-3 py-2 text-sm"
+      onClick={() => setIsOpen(false)}
+    >
+      <ClipboardList size={16} />
+      Mis reportes
+    </NavLink>
             </>
           )}
           <button

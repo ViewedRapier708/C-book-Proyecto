@@ -60,8 +60,28 @@
   .survey-fab { bottom: 62px; }
 }
 
+.support-mobile-link {
+  display: none;
+}
+
 @media (max-width: 768px) {
-  .support-fab,
+  .support-fab {
+    display: none;
+  }
+  .support-mobile-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 10px;
+    background: #c46f21;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+  }
   .survey-fab {
     display: none;
   }
@@ -484,6 +504,12 @@
 }
 .sup-var-chip:hover { color: #e89a4f; border-style: solid; }
 
+/* ── Text wrapping para descripciones y contenido largo ──── */
+.sup-text-wrap {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
 /* ── Shortcut rows ───────────────────────────────────────── */
 .sup-shortcut-row {
   display: flex;
@@ -531,3 +557,54 @@
   cursor: pointer;
 }
 .sup-rule-row input { accent-color: #c46f21; }
+
+@media (max-width: 640px) {
+  .sup-type-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sup-prio-card {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.82rem;
+  }
+
+  .sup-dropzone {
+    padding: 1rem;
+  }
+
+  .sup-config-card {
+    padding: 0.9rem 1rem;
+  }
+
+  .sup-cfg-tabs {
+    gap: 2px;
+  }
+
+  .sup-cfg-tab {
+    padding: 0.5rem 0.65rem;
+    font-size: 0.78rem;
+  }
+
+  .sup-strat-card {
+    min-width: 100%;
+  }
+
+  .sup-editor-toolbar {
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+
+  .sup-timeline {
+    padding-left: 20px;
+  }
+
+  .sup-tl-item {
+    padding: 8px 0 10px 10px;
+  }
+
+  .sup-shortcut-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+}

@@ -83,15 +83,17 @@ export default function Documentos() {
           <Search size={16} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
           <input className="search-input" style={{ paddingLeft: 34 }} placeholder="Buscar por boleta o correo..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>
-        <select value={filter} onChange={(e) => { setFilter(e.target.value); setPage(1); }} style={{ maxWidth: 200 }}>
-          <option value="no-docs">Sin documentación</option>
-          <option value="docs">Con documentación</option>
-          <option value="">Todos</option>
-        </select>
-        <button className="btn btn-primary" onClick={() => load(true)} disabled={refreshing} title="Recargar usuarios">
-          <RefreshCw size={16} style={{ animation: refreshing ? 'spin .7s linear infinite' : 'none' }} />
-          {refreshing ? 'Recargando...' : 'Recargar'}
-        </button>
+        <div className="flex flex-wrap gap-2 items-center">
+          <select className="w-full sm:w-auto sm:max-w-[200px]" value={filter} onChange={(e) => { setFilter(e.target.value); setPage(1); }}>
+            <option value="no-docs">Sin documentación</option>
+            <option value="docs">Con documentación</option>
+            <option value="">Todos</option>
+          </select>
+          <button className="btn btn-primary" onClick={() => load(true)} disabled={refreshing} title="Recargar usuarios">
+            <RefreshCw size={16} style={{ animation: refreshing ? 'spin .7s linear infinite' : 'none' }} />
+            {refreshing ? 'Recargando...' : 'Recargar'}
+          </button>
+        </div>
       </div>
 
       {paged.length === 0 ? (

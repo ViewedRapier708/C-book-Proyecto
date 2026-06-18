@@ -81,6 +81,7 @@ router.post('/soporte/tickets', sessionGuard, controladorSoporte.crearTicket);
 router.get('/soporte/tickets', sessionGuard, controladorSoporte.listarTickets);
 router.get('/soporte/tickets/:id', sessionGuard, controladorSoporte.obtenerTicket);
 router.post('/soporte/tickets/:id/tomar', sessionGuard, controladorSoporte.tomarTicket);
+router.post('/soporte/tickets/:id/reabrir', sessionGuard, controladorSoporte.reabrirTicket);
 router.patch('/soporte/tickets/:id/estado', sessionGuard, controladorSoporte.cambiarEstado);
 router.post('/soporte/tickets/:id/comentarios', sessionGuard, controladorSoporte.agregarComentario);
 router.post('/soporte/tickets/:id/tiempo', sessionGuard, controladorSoporte.registrarTiempo);

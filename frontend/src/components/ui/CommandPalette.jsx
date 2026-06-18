@@ -13,8 +13,8 @@ const allCommands = [
   { label: 'Documentos', to: '/admin/documentos', icon: FileText, role: 'Admin' },
   { label: 'Solicitudes de libros', to: '/admin/solicitudes-libros', icon: ClipboardList, role: 'Admin' },
   { label: 'Prestamos Libros', to: '/admin/prestamos-libros', icon: BookCheck, role: 'Admin' },
-  { label: 'Reportes', to: '/admin/reportes', icon: FileText, role: 'Admin' },
   { label: 'Reportar error', to: '/admin/soporte/reportar', icon: Headphones, role: 'Admin' },
+  { label: 'Mis reportes', to: '/admin/soporte/mis-reportes', icon: ClipboardList, role: 'Admin' },
 
   { label: 'Inicio', to: '/user', icon: LayoutDashboard, role: 'alumno' },
   { label: 'Libros', to: '/user/libros', icon: BookOpen, role: 'alumno' },

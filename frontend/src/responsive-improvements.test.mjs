@@ -15,6 +15,13 @@ const supportCss = read('styles/support.css');
 const solicitudLibros = read('pages/user/SolicitudLibros.jsx');
 const userProfile = read('pages/user/UserProfile.jsx');
 const login = read('pages/Login.jsx');
+const adminHome = read('pages/admin/AdminHome.jsx');
+const analytics = read('pages/admin/Analytics.jsx');
+const reportes = read('pages/admin/Reportes.jsx');
+const bandejaTickets = read('pages/support/BandejaTickets.jsx');
+const editarPerfil = read('pages/user/EditarPerfil.jsx');
+const userHome = read('pages/user/UserHome.jsx');
+const horarioRestriction = read('components/layout/HorarioRestriction.jsx');
 
 assert.match(navbar, /bottom-tab-bar/, 'Navbar mobile debe renderizar bottom-tab-bar');
 assert.doesNotMatch(navbar, /mobile-sidebar/, 'Navbar mobile no debe usar mobile-sidebar');
@@ -57,5 +64,25 @@ assert.ok(
   showPasswordIndex < privacyNoticeIndex,
   'Aviso de privacidad debe mostrarse debajo de Mostrar contraseña'
 );
+
+assert.match(globals, /@media \(max-width:\s*640px\)\s*\{[\s\S]*\.data-table td::before\s*\{[\s\S]*content:\s*attr\(data-label\)/, 'data-table debe tener card-view con data-label en mobile');
+assert.match(globals, /@media \(max-width:\s*640px\)\s*\{[\s\S]*\.modal-footer\s*\{[\s\S]*flex-direction:\s*column/, 'modal footer debe apilar botones en mobile');
+assert.match(globals, /\.tabs\s*\{[\s\S]*overflow-x:\s*auto/, 'tabs deben permitir scroll horizontal');
+assert.match(globals, /@media \(max-width:\s*480px\)\s*\{[\s\S]*\.pagination\s*\{[\s\S]*flex-wrap:\s*wrap/, 'pagination debe compactarse en mobile');
+assert.match(globals, /@media \(max-width:\s*640px\)\s*\{[\s\S]*\.cmd-palette\s*\{[\s\S]*max-width:\s*calc\(100vw - 1rem\)/, 'command palette debe limitarse al viewport móvil');
+assert.match(supportCss, /@media \(max-width:\s*640px\)\s*\{[\s\S]*\.sup-type-grid\s*\{[\s\S]*grid-template-columns:\s*1fr/, 'sup-type-grid debe ser una columna en mobile');
+
+assert.match(adminHome, /md:grid-cols-2 lg:grid-cols-\[2fr_1fr\]/, 'AdminHome charts grid debe colapsar en mobile');
+assert.match(adminHome, /grid gap-4 md:grid-cols-2/, 'AdminHome actividad y accesos deben colapsar en mobile');
+assert.match(analytics, /flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3/, 'Analytics header debe apilarse en mobile');
+assert.match(analytics, /grid gap-4 mb-6 md:grid-cols-2/, 'Analytics pie charts deben colapsar en mobile');
+assert.match(reportes, /hidden sm:block/, 'Reportes debe mantener tabla solo en desktop');
+assert.match(reportes, /sm:hidden space-y-3/, 'Reportes debe renderizar cards en mobile');
+assert.match(bandejaTickets, /hidden md:block/, 'BandejaTickets debe mantener tabla solo en desktop');
+assert.match(bandejaTickets, /md:hidden space-y-3/, 'BandejaTickets debe renderizar cards en mobile');
+
+assert.match(editarPerfil, /md:grid-cols-\[1fr_1\.6fr\]/, 'EditarPerfil debe colapsar a una columna en mobile');
+assert.match(userHome, /flexWrap:\s*'wrap'/, 'UserHome page-header debe permitir wrap en mobile');
+assert.match(horarioRestriction, /flexWrap:\s*'wrap'/, 'HorarioRestriction debe permitir wrap del banner en mobile');
 
 console.log('responsive-improvements.test.mjs OK');

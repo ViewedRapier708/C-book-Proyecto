@@ -300,7 +300,7 @@ export default function SolicitudLibros() {
                 </div>
                 <div className="resource-card-body">
                   <div className="resource-card-row"><span className="resource-card-label">Autor</span><span className="resource-card-value">{b.libros?.autor || '-'}</span></div>
-                  <div className="resource-card-row"><span className="resource-card-label">Solicitado</span><span className="resource-card-value" style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>{b.solicitudes_count} vez{Number(b.solicitudes_count) !== 1 ? 'es' : ''}</span></div>
+                  <div className="resource-card-row"><span className="resource-card-label" style={{ color: 'var(--text-primary)' }}>Solicitado</span><span className="resource-card-value" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{b.solicitudes_count} vec{Number(b.solicitudes_count) !== 1 ? 'es' : ''}</span></div>
                 </div>
                 <div className="resource-card-actions">
                   <button

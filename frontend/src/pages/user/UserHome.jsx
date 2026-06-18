@@ -139,7 +139,7 @@ export default function UserHome() {
 
   return (
     <AnimatedPage>
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
           <h1>Bienvenido, {user?.boleta}!</h1>
           <p>Que vamos a hacer hoy?</p>

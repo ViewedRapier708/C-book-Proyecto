@@ -9,7 +9,6 @@ import DashboardLayout from './components/layout/DashboardLayout';
 import PageLoader from './components/ui/PageLoader';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 import SupportFab from './components/ui/SupportFab';
-import SurveyFab from './components/ui/SurveyFab';
 
 const Login              = lazy(() => import('./pages/Login'));
 const EmailVerification  = lazy(() => import('./pages/EmailVerification'));
@@ -33,7 +32,6 @@ const Documentos        = lazy(() => import('./pages/admin/Documentos'));
 const SolicitudesLibros = lazy(() => import('./pages/admin/SolicitudesLibros'));
 const PrestamosLibros   = lazy(() => import('./pages/admin/PrestamosLibros'));
 const Analytics         = lazy(() => import('./pages/admin/Analytics'));
-const Reportes          = lazy(() => import('./pages/admin/Reportes'));
 const NotFound          = lazy(() => import('./pages/NotFound'));
 
 const SoporteDashboard     = lazy(() => import('./pages/support/SoporteDashboard'));
@@ -102,8 +100,9 @@ export default function App() {
                 <Route path="solicitudes-libros" element={<SolicitudesLibros />} />
                 <Route path="prestamos-libros" element={<PrestamosLibros />} />
                 <Route path="analytics" element={<Analytics />} />
-                <Route path="reportes" element={<Reportes />} />
                 <Route path="soporte/reportar" element={<ReportarError />} />
+                <Route path="soporte/mis-reportes" element={<MisReportes />} />
+                <Route path="soporte/mis-reportes/:id" element={<DetalleTicket />} />
               </Route>
 
               <Route
@@ -130,7 +129,6 @@ export default function App() {
 
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <SurveyFab />
             <SupportFab />
           </Suspense>
         </ErrorBoundary>

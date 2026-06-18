@@ -273,13 +273,13 @@ async function obtenerLibros(pagination) {
 
         const buildQuery = () => applyEjemplarFilters(supabase
             .from('ejemplares')
-            .select('id, libro_id, codigo_barras, numero_ejemplar, anio, estatus_item, "Disponible", coleccion')
+            .select('id, libro_id, codigo_barras, numero_ejemplar, anio, estatus_item, "Disponible", coleccion, libros(id, titulo, autor, clasificacion, isbn, tipo_material)')
             .order('id', { ascending: true }), {
                 libroIds,
                 disponible: pagination.disponible,
             });
 
-        let ejemplares = [];
+        let data = [];
 
         if (all) {
             const result = await fetchRowsInBatches(buildQuery, count || 0);
@@ -287,30 +287,15 @@ async function obtenerLibros(pagination) {
                 console.error('Error obteniendo libros:', result.message);
                 return result;
             }
-            ejemplares = result.data;
+            data = result.data;
         } else {
             const { data: pagedData, error } = await buildQuery().range(from, to);
             if (error) {
                 console.error('Error obteniendo libros:', error);
                 return { success: false, message: error.message };
             }
-            ejemplares = pagedData || [];
+            data = pagedData || [];
         }
-
-        // Fetch book details separately and join manually
-        const ejemplarLibroIds = [...new Set(ejemplares.map(e => e.libro_id).filter(Boolean))];
-        let librosMap = {};
-        if (ejemplarLibroIds.length > 0) {
-            const { data: librosData, error: librosError } = await supabase
-                .from('libros')
-                .select('id, titulo, autor, clasificacion, isbn, tipo_material')
-                .in('id', ejemplarLibroIds);
-            if (!librosError && librosData) {
-                librosMap = Object.fromEntries(librosData.map(l => [l.id, l]));
-            }
-        }
-
-        const data = ejemplares.map(e => ({ ...e, libros: librosMap[e.libro_id] || null }));
 
         return { success: true, data, total: count, page: all ? 1 : page, limit: all ? count : limit };
     } catch (error) {

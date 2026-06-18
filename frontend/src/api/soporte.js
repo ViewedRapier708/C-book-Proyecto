@@ -21,6 +21,8 @@ export const soporteApi = {
   takeTicket: (id) => api.post(`/soporte/tickets/${encodeURIComponent(id)}/tomar`, {}),
   changeStatus: (id, estado, comentario) =>
     api.patch(`/soporte/tickets/${encodeURIComponent(id)}/estado`, { estado, comentario }),
+  reopenTicket: (id, comentario) =>
+    api.post(`/soporte/tickets/${encodeURIComponent(id)}/reabrir`, { comentario }),
   addComment: (id, body, isInternal = false) =>
     api.post(`/soporte/tickets/${encodeURIComponent(id)}/comentarios`, { body, isInternal }),
   dashboard: () => api.get('/soporte/dashboard'),

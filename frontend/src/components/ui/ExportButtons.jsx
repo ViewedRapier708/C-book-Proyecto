@@ -24,7 +24,7 @@ export default function ExportButtons({ data, getData, columns, filenameBase = '
   return (
     <div style={{ display: 'flex', gap: '0.5rem' }}>
       <button className="btn btn-outline btn-sm" onClick={handleExcel} title="Exportar a Excel" disabled={disabled || exporting}>
-        <FileSpreadsheet size={15} /> {exporting ? 'Exportando...' : 'Excel'}
+        <FileSpreadsheet size={15} /> {exporting ? 'Exportando...' : 'Exportar registros'}
       </button>
     </div>
   );

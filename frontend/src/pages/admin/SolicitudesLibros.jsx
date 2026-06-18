@@ -125,10 +125,12 @@ export default function SolicitudesLibros() {
           <Search size={16} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
           <input className="search-input" style={{ paddingLeft: 34 }} placeholder="Buscar por título, boleta..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>
-        <button className="btn btn-primary" onClick={() => load(true)} disabled={refreshing} title="Recargar solicitudes">
-          <RefreshCw size={16} style={{ animation: refreshing ? 'spin .7s linear infinite' : 'none' }} />
-          {refreshing ? 'Actualizando...' : 'Recargar'}
-        </button>
+        <div className="flex flex-wrap gap-2 items-center">
+          <button className="btn btn-primary" onClick={() => load(true)} disabled={refreshing} title="Recargar solicitudes">
+            <RefreshCw size={16} className={refreshing ? 'spin' : ''} />
+            {refreshing ? 'Actualizando...' : 'Recargar'}
+          </button>
+        </div>
       </div>
 
       {paged.length === 0 ? (

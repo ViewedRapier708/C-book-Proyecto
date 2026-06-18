@@ -72,7 +72,7 @@ export default function Analytics() {
 
   return (
     <AnimatedPage>
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="page-header flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
         <div>
           <h1>Analytics</h1>
           <p>Panel completo de métricas y tendencias del sistema</p>
@@ -98,14 +98,14 @@ export default function Analytics() {
           {tab === 'overview' && (
             <>
               {/* Stats */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div className="grid grid-cols-2 gap-3 mb-6 md:grid-cols-4">
                 {statCards.map((s, i) => (
                   <StatCard key={s.label} icon={s.icon} label={s.label} value={s.value} color={s.color} delay={i * 0.06} />
                 ))}
               </div>
 
               {/* Pie Charts Row */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div className="grid gap-4 mb-6 md:grid-cols-2">
                 <motion.div className="card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
                   <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0 0 1rem' }}>
                     <PieChartIcon size={18} /> Solicitudes por Tipo
@@ -194,7 +194,7 @@ export default function Analytics() {
               </motion.div>
 
               {/* Resource Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1rem' }}>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {disponibilidad.map((r, i) => {
                   const pctAvail = r.total > 0 ? Math.round((r.disponibles / r.total) * 100) : 0;
                   return (

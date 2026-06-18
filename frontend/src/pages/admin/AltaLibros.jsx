@@ -516,9 +516,11 @@ export default function AltaLibros() {
           <Search size={16} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
           <input className="search-input" style={{ paddingLeft: 34 }} placeholder="Buscar por título, autor, ISBN..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>
-        <ExportButtons data={exportData} getData={getExportData} columns={EXPORT_COLS} filenameBase="libros" title="Reporte de Libros" disabled={loading} />
-        <button className="btn btn-outline" onClick={() => setBulkOpen(true)}><Upload size={16} /> Carga masiva</button>
-        <button className="btn btn-primary" onClick={openNew}><Plus size={16} /> Nuevo Libro</button>
+        <div className="flex flex-wrap gap-2">
+          <ExportButtons data={exportData} getData={getExportData} columns={EXPORT_COLS} filenameBase="libros" title="Reporte de Libros" disabled={loading} />
+          <button className="btn btn-outline" onClick={() => setBulkOpen(true)}><Upload size={16} /> Carga masiva</button>
+          <button className="btn btn-primary" onClick={openNew}><Plus size={16} /> Nuevo Libro</button>
+        </div>
       </div>
 
       {loading && items.length === 0 ? (
@@ -562,7 +564,7 @@ export default function AltaLibros() {
         }
       >
         <form id="form-libro" onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+          <div className="form-grid">
             <div className="form-group"><label>Título *</label><input value={form.titulo} onChange={set('titulo')} required /></div>
             <div className="form-group"><label>Autor *</label><input value={form.autor} onChange={set('autor')} required /></div>
             <div className="form-group"><label>Clasificación *</label><input value={form.clasificacion} onChange={set('clasificacion')} required /></div>

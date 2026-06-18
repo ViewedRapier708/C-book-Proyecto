@@ -79,7 +79,7 @@ export default function AdminHome() {
       {loading ? (
         <SkeletonGrid count={6} type="stat" />
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div className="grid grid-cols-2 gap-3 mb-6 md:grid-cols-3 lg:grid-cols-4">
           {statCards.map((s, i) => (
             <StatCard key={s.label} icon={s.icon} label={s.label} value={s.value} subtitle={s.subtitle} color={s.color} delay={i * 0.08} />
           ))}
@@ -87,7 +87,7 @@ export default function AdminHome() {
       )}
 
       {/* Charts Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div className="grid gap-4 mb-6 md:grid-cols-2 lg:grid-cols-[2fr_1fr]">
         {/* Trends Area Chart */}
         <motion.div className="card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -161,7 +161,7 @@ export default function AdminHome() {
       </div>
 
       {/* Activity Feed + Quick Links */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <div className="grid gap-4 md:grid-cols-2">
         {/* Activity Feed */}
         <motion.div className="card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0 0 1rem' }}>
@@ -191,7 +191,7 @@ export default function AdminHome() {
         {/* Quick Links */}
         <motion.div className="card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
           <h3 style={{ margin: '0 0 1rem' }}>Accesos Rápidos</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
+          <div className="grid grid-cols-2 gap-2">
             <div
               className="service-card"
               style={{
