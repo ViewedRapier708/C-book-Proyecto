@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { BookOpen, Package, Activity, ArrowRight, RefreshCw, AlertCircle } from 'lucide-react';
+import { BookOpen, Package, Activity, ArrowRight, RefreshCw, AlertCircle, ClipboardCheck, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { solicitudesApi } from '../../api/recursos';
@@ -10,6 +10,7 @@ import AnimatedPage from '../../components/layout/AnimatedPage';
 import { Spinner } from '../../components/ui/Feedback';
 import MobileAppPromo from '../../components/ui/MobileAppPromo';
 import { DOCUMENTACION_REQUERIDA_MENSAJE } from '../../constants/documentacion';
+import { openSatisfactionSurvey } from '../../constants/survey';
 import {
   getSolicitudLibroEstadoId,
   getSolicitudLibroVisibleDetails,
@@ -161,7 +162,7 @@ export default function UserHome() {
       ) : (
         <>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-            <motion.div
+            <Motion.div
               className="card"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -211,7 +212,7 @@ export default function UserHome() {
                   );
                 })}
               </div>
-            </motion.div>
+            </Motion.div>
           </div>
 
           {user?.tiene_documentos === false && (
@@ -233,7 +234,7 @@ export default function UserHome() {
             </div>
           )}
 
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.18 }}
@@ -243,12 +244,33 @@ export default function UserHome() {
               title="Solicita libros tambien desde tu celular"
               description="Prueba la app movil para revisar tu cuenta y enviar solicitudes con mas rapidez, sin depender solo de la version web."
             />
-          </motion.div>
+          </Motion.div>
+
+          <Motion.div
+            className="card survey-home-card"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.42 }}
+            style={{ marginBottom: '1.5rem' }}
+          >
+            <div className="survey-home-content">
+              <div className="survey-home-icon">
+                <ClipboardCheck size={22} />
+              </div>
+              <div>
+                <h3>Ayúdanos a mejorar C-Book</h3>
+                <p>Tu opinión es muy importante. Contesta nuestra encuesta de satisfacción y cuéntanos cómo ha sido tu experiencia.</p>
+              </div>
+            </div>
+            <button type="button" className="btn btn-success" onClick={openSatisfactionSurvey}>
+              Contestar encuesta <ExternalLink size={16} />
+            </button>
+          </Motion.div>
 
           <h3 style={{ marginBottom: '0.75rem' }}>Servicios Disponibles</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
             {services.map((service, i) => (
-              <motion.div
+              <Motion.div
                 key={service.to}
                 className="service-card"
                 style={{ cursor: 'pointer' }}
@@ -265,11 +287,11 @@ export default function UserHome() {
                   <span className="service-card-label">{service.label}</span>
                   <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>{service.desc}</p>
                 </div>
-              </motion.div>
+              </Motion.div>
             ))}
           </div>
 
-          <motion.div className="card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+          <Motion.div className="card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Activity size={18} /> Actividad Reciente
@@ -302,7 +324,7 @@ export default function UserHome() {
                 })}
               </div>
             )}
-          </motion.div>
+          </Motion.div>
         </>
       )}
     </AnimatedPage>

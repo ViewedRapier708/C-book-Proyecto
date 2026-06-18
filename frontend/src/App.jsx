@@ -3,11 +3,13 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/layout/ProtectedRoute';
-import HorarioRestriction from './components/layout/HorarioRestriction';
+// HorarioRestriction queda disponible para futura reactivación del horario de biblioteca.
+// import HorarioRestriction from './components/layout/HorarioRestriction';
 import DashboardLayout from './components/layout/DashboardLayout';
 import PageLoader from './components/ui/PageLoader';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 import SupportFab from './components/ui/SupportFab';
+import SurveyFab from './components/ui/SurveyFab';
 
 const Login              = lazy(() => import('./pages/Login'));
 const EmailVerification  = lazy(() => import('./pages/EmailVerification'));
@@ -67,9 +69,9 @@ export default function App() {
                 path="/user"
                 element={
                   <ProtectedRoute role="alumno">
-                    <HorarioRestriction>
-                      <DashboardLayout />
-                    </HorarioRestriction>
+                    {/* <HorarioRestriction> */}
+                    <DashboardLayout />
+                    {/* </HorarioRestriction> */}
                   </ProtectedRoute>
                 }
               >
@@ -128,6 +130,7 @@ export default function App() {
 
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <SurveyFab />
             <SupportFab />
           </Suspense>
         </ErrorBoundary>

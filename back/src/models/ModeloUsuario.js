@@ -235,7 +235,7 @@ async function crearUsuarioEnTabla(boleta, correo) {
       .insert([{
         boleta: parseInt(boleta),
         correo: correo,
-        tiene_documentos: false
+        tiene_documentos: true
       }])
       .select();
 

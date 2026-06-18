@@ -10,8 +10,13 @@ const controladorAdministrador = require('../controllers/ControladorAdministrado
 const controladorAnalytics = require('../controllers/ControladorAnalytics.js');
 const controladorSoporte = require('../controllers/ControladorSoporte.js');
 const sessionGuard = require('../middleware/sessionGuard.js');
+<<<<<<< HEAD
 const adminGuard = require('../middleware/adminGuard.js');
 const horarioGuard = require('../middleware/horarioGuard.js');
+=======
+// horarioGuard queda disponible para futura reactivación del horario de biblioteca.
+// const horarioGuard = require('../middleware/horarioGuard.js');
+>>>>>>> 3706f6609089d05b7c0a5fb917110f2caa37ba44
 
 const limiterOpts = (max, windowMs, msg) => ({
   windowMs,
@@ -41,7 +46,8 @@ router.post('/logout', sessionGuard, cerrarSesion);
 router.get('/recursos', obtenerRecursosPorTipo);
 router.get('/libros/mas-solicitados', sessionGuard, obtenerLibrosMasSolicitados);
 router.get('/recursos/usuario', sessionGuard, controladorSolicitudes.obtencionSolicitudesUsuario);
-router.post('/solicitud', sessionGuard, horarioGuard, middlewareAutenticacion.verificarDisponibilidad, controladorSolicitudes.crearSolicitud);
+// Para reactivar horario: agregar horarioGuard después de sessionGuard.
+router.post('/solicitud', sessionGuard, middlewareAutenticacion.verificarDisponibilidad, controladorSolicitudes.crearSolicitud);
 router.delete('/solicitud/:tipo/:id', sessionGuard, controladorSolicitudes.cancelarSolicitud);
 router.patch('/CuentaUpdate', sessionGuard, CambioDatos);
 router.post('/cambiar-contrasena', sessionGuard, cambiarContrasenaPropia);
