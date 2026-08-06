@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/layout/ProtectedRoute';
-import HorarioRestriction from './components/layout/HorarioRestriction';
+// HorarioRestriction queda disponible para futura reactivación del horario de biblioteca.
+// import HorarioRestriction from './components/layout/HorarioRestriction';
 import DashboardLayout from './components/layout/DashboardLayout';
 import PageLoader from './components/ui/PageLoader';
 import ErrorBoundary from './components/ui/ErrorBoundary';
@@ -31,7 +32,6 @@ const Documentos        = lazy(() => import('./pages/admin/Documentos'));
 const SolicitudesLibros = lazy(() => import('./pages/admin/SolicitudesLibros'));
 const PrestamosLibros   = lazy(() => import('./pages/admin/PrestamosLibros'));
 const Analytics         = lazy(() => import('./pages/admin/Analytics'));
-const Reportes          = lazy(() => import('./pages/admin/Reportes'));
 const NotFound          = lazy(() => import('./pages/NotFound'));
 
 const SoporteDashboard     = lazy(() => import('./pages/support/SoporteDashboard'));
@@ -67,9 +67,9 @@ export default function App() {
                 path="/user"
                 element={
                   <ProtectedRoute role="alumno">
-                    <HorarioRestriction>
-                      <DashboardLayout />
-                    </HorarioRestriction>
+                    {/* <HorarioRestriction> */}
+                    <DashboardLayout />
+                    {/* </HorarioRestriction> */}
                   </ProtectedRoute>
                 }
               >
@@ -100,8 +100,9 @@ export default function App() {
                 <Route path="solicitudes-libros" element={<SolicitudesLibros />} />
                 <Route path="prestamos-libros" element={<PrestamosLibros />} />
                 <Route path="analytics" element={<Analytics />} />
-                <Route path="reportes" element={<Reportes />} />
                 <Route path="soporte/reportar" element={<ReportarError />} />
+                <Route path="soporte/mis-reportes" element={<MisReportes />} />
+                <Route path="soporte/mis-reportes/:id" element={<DetalleTicket />} />
               </Route>
 
               <Route

@@ -84,7 +84,7 @@ export default function PrestamosLibros() {
       </div>
 
       <div className="toolbar">
-        <div style={{ position: 'relative', flex: 1, maxWidth: 350 }}>
+        <div className="w-full sm:max-w-[350px]" style={{ position: 'relative', flex: 1 }}>
           <Search size={16} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
           <input className="search-input" style={{ paddingLeft: 34 }} placeholder="Buscar por título, boleta..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>

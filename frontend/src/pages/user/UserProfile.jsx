@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
-  UserCircle, Mail, Hash, Shield, Sun, Moon,
+  Mail, Hash, Shield, Sun, Moon,
   Activity, BookOpen, Key, ChevronRight
 } from 'lucide-react';
 import { solicitudesApi } from '../../api/recursos';
@@ -50,7 +49,7 @@ export default function UserProfile() {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [solicitudes, setSolicitudes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
@@ -73,9 +72,9 @@ export default function UserProfile() {
         <p>Información de tu cuenta y preferencias</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.5rem' }}>
+      <div className="profile-layout">
         {/* Profile Card */}
-        <motion.div className="card" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+        <div className="card profile-card">
           <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
             <div style={{
               width: 80, height: 80, borderRadius: '50%',
@@ -116,7 +115,7 @@ export default function UserProfile() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '1rem' }}>
             {[
               { icon: Key, label: 'Cambiar contraseña', to: '/user/cuenta' },
-            ].map(({ icon: Icon, label, to }) => (
+            ].map(({ label, to }) => (
               <button
                 key={to}
                 onClick={() => navigate(to)}
@@ -131,7 +130,7 @@ export default function UserProfile() {
                 onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-glass)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
               >
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Icon size={14} /> {label}
+                  <Key size={14} /> {label}
                 </span>
                 <ChevronRight size={13} style={{ color: 'var(--text-muted)' }} />
               </button>
@@ -157,30 +156,29 @@ export default function UserProfile() {
               width: 40, height: 22, borderRadius: 999, background: theme === 'dark' ? 'var(--button-primary-bg)' : 'var(--bg-glass-strong)',
               position: 'relative', transition: 'background 0.2s'
             }}>
-              <motion.div
+              <div
                 style={{
                   width: 18, height: 18, borderRadius: '50%', background: '#fff',
-                  position: 'absolute', top: 2,
+                  position: 'absolute', top: 2, left: theme === 'dark' ? 20 : 2,
+                  transition: 'left 0.2s ease',
                 }}
-                animate={{ left: theme === 'dark' ? 20 : 2 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               />
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Stats & Activity */}
         <div>
           {/* Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0.75rem', marginBottom: '1.5rem' }}>
+          <div className="profile-stats-grid">
             <StatCard icon={Activity} label="Total Solicitudes" value={solicitudes.length} color="#1f8a70" delay={0} />
             <StatCard icon={BookOpen} label="Libros" value={countByType('libro')} color="#c46f21" delay={0.16} />
           </div>
 
           {/* Status Breakdown */}
-          <motion.div className="card" style={{ marginBottom: '1.5rem' }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <div className="card" style={{ marginBottom: '1.5rem' }}>
             <h3 style={{ margin: '0 0 1rem' }}>Estado de Solicitudes</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+            <div className="profile-status-grid">
               {[
                 { label: 'Pendientes', count: countByEstado('pendiente'), color: '#f59e0b', bg: '#f59e0b15' },
                 { label: 'Aprobadas / Asistió', count: countByEstado('aprobada') + countByEstado('asistió') + countByEstado('entregado'), color: '#10b981', bg: '#10b98115' },
@@ -192,10 +190,10 @@ export default function UserProfile() {
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Recent Solicitudes */}
-          <motion.div className="card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+          <div className="card">
             <h3 style={{ margin: '0 0 1rem' }}>Solicitudes Recientes</h3>
             {solicitudes.length === 0 ? (
               <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '1.5rem' }}>
@@ -218,7 +216,7 @@ export default function UserProfile() {
                 ))}
               </div>
             )}
-          </motion.div>
+          </div>
         </div>
       </div>
     </AnimatedPage>

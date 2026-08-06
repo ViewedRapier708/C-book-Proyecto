@@ -277,7 +277,6 @@ export default function AltaLibros() {
   const [items, setItems] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [catalogLoading, setCatalogLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
@@ -286,51 +285,42 @@ export default function AltaLibros() {
   const [submitting, setSubmitting] = useState(false);
   const [deleteModal, setDeleteModal] = useState(null);
   const [bulkOpen, setBulkOpen] = useState(false);
-  const PER_PAGE = 50;
-  const BATCH_SIZE = 200;
+  const [searchResults, setSearchResults] = useState([]);
+  const PER_PAGE = 10;
+  const LAZY_THRESHOLD = 7;
   const loadTokenRef = useRef(0);
-  const nextBatchPageRef = useRef(1);
-  const itemsRef = useRef([]);
-  const totalCountRef = useRef(0);
-  const loadingMoreRef = useRef(false);
+  const prefetchTokenRef = useRef(0);
+  const pageCacheRef = useRef(new Map());
+  const activePageRef = useRef(1);
 
-  const commitItems = useCallback((valueOrUpdater) => {
-    setItems((prev) => {
-      const next = typeof valueOrUpdater === 'function'
-        ? valueOrUpdater(prev)
-        : valueOrUpdater;
-      itemsRef.current = next;
-      return next;
-    });
-  }, []);
+  const isSearching = search.trim().length > 0;
 
-  const commitTotal = useCallback((value) => {
-    totalCountRef.current = value;
-    setTotalCount(value);
-  }, []);
+  const buildParams = useCallback((extra = {}) => ({ ...extra }), []);
 
-  const fetchBatch = useCallback((batchPage) => (
-    adminApi.getMaterials('libros', { page: batchPage, limit: BATCH_SIZE })
-  ), []);
+  const fetchPage = useCallback((pageNum) => (
+    adminApi.getMaterials('libros', buildParams({ page: pageNum, limit: PER_PAGE }))
+  ), [buildParams]);
 
-  const load = useCallback(async () => {
+  const loadPage = useCallback(async (pageNum) => {
+    const cached = pageCacheRef.current.get(pageNum);
+    if (cached) {
+      if (activePageRef.current === pageNum) {
+        setItems(cached);
+      }
+      return;
+    }
+
     const token = loadTokenRef.current + 1;
     loadTokenRef.current = token;
-    nextBatchPageRef.current = 1;
-    loadingMoreRef.current = false;
-
     setLoading(true);
-    setCatalogLoading(false);
 
     try {
-      const data = await fetchBatch(1);
+      const data = await fetchPage(pageNum);
+      if (loadTokenRef.current !== token || activePageRef.current !== pageNum) return;
       const libros = data.data || [];
-
-      if (loadTokenRef.current !== token) return;
-
-      nextBatchPageRef.current = 2;
-      commitItems(libros);
-      commitTotal(data.total ?? libros.length);
+      pageCacheRef.current.set(pageNum, libros);
+      setItems(libros);
+      setTotalCount(data.total ?? libros.length);
     } catch {
       toast.error('Error al cargar libros');
     } finally {
@@ -338,68 +328,127 @@ export default function AltaLibros() {
         setLoading(false);
       }
     }
+  }, [fetchPage]);
 
-    if (loadTokenRef.current !== token || itemsRef.current.length >= totalCountRef.current) {
+  const refreshCatalog = useCallback(async () => {
+    pageCacheRef.current.clear();
+    const query = search.trim();
+    setLoading(true);
+
+    try {
+      if (query) {
+        const data = await adminApi.getMaterials('libros', buildParams({ q: query, all: true }));
+        const results = data.data || [];
+        setSearchResults(results);
+        setItems(results.slice((page - 1) * PER_PAGE, page * PER_PAGE));
+        setTotalCount(data.total ?? results.length);
+        return;
+      }
+
+      await loadPage(page);
+    } catch {
+      toast.error('Error al cargar libros');
+    } finally {
+      setLoading(false);
+    }
+  }, [buildParams, loadPage, page, search]);
+
+  useEffect(() => {
+    const token = loadTokenRef.current + 1;
+    loadTokenRef.current = token;
+    pageCacheRef.current.clear();
+    activePageRef.current = 1;
+    setLoading(true);
+
+    const query = search.trim();
+    const timer = setTimeout(async () => {
+      try {
+        if (query) {
+          const data = await adminApi.getMaterials('libros', buildParams({ q: query, all: true }));
+          if (loadTokenRef.current !== token) return;
+          const results = data.data || [];
+          setSearchResults(results);
+          setItems(results.slice(0, PER_PAGE));
+          setTotalCount(data.total ?? results.length);
+          setPage(1);
+          return;
+        }
+
+        setSearchResults([]);
+        const data = await fetchPage(1);
+        if (loadTokenRef.current !== token) return;
+        const libros = data.data || [];
+        pageCacheRef.current.set(1, libros);
+        setItems(libros);
+        setTotalCount(data.total ?? libros.length);
+        setPage(1);
+      } catch {
+        toast.error('Error al cargar libros');
+      } finally {
+        if (loadTokenRef.current === token) {
+          setLoading(false);
+        }
+      }
+    }, query ? 300 : 0);
+
+    return () => clearTimeout(timer);
+  }, [buildParams, fetchPage, search]);
+
+  useEffect(() => {
+    if (isSearching || page < LAZY_THRESHOLD || totalCount <= 0) return undefined;
+
+    let cancelled = false;
+    const token = prefetchTokenRef.current + 1;
+    prefetchTokenRef.current = token;
+
+    const prefetchRemaining = async () => {
+      const totalPages = Math.ceil(totalCount / PER_PAGE);
+      for (let nextPage = page + 1; nextPage <= totalPages; nextPage += 1) {
+        if (cancelled || prefetchTokenRef.current !== token) return;
+        if (pageCacheRef.current.has(nextPage)) continue;
+
+        try {
+          const data = await fetchPage(nextPage);
+          if (cancelled || prefetchTokenRef.current !== token) return;
+          pageCacheRef.current.set(nextPage, data.data || []);
+        } catch (err) {
+          console.error('Error precargando libros admin:', err);
+          return;
+        }
+      }
+    };
+
+    void prefetchRemaining();
+    return () => { cancelled = true; };
+  }, [fetchPage, isSearching, page, totalCount]);
+
+  const handlePageChange = async (nextPage) => {
+    activePageRef.current = nextPage;
+    setPage(nextPage);
+    if (isSearching) {
+      setItems(searchResults.slice((nextPage - 1) * PER_PAGE, nextPage * PER_PAGE));
       return;
     }
 
-    loadingMoreRef.current = true;
-    setCatalogLoading(true);
+    await loadPage(nextPage);
+  };
 
-    try {
-      while (loadTokenRef.current === token && itemsRef.current.length < totalCountRef.current) {
-        const batchPage = nextBatchPageRef.current;
-        const data = await fetchBatch(batchPage);
+  const formatExportRows = useCallback((rows) => rows.map((b) => ({
+    titulo: b.libros?.titulo || b.titulo || '',
+    autor: b.libros?.autor || b.autor || '',
+    isbn: b.libros?.isbn || b.isbn || '',
+    tipo_material: b.libros?.tipo_material || b.tipo_material || '',
+    anio: b.anio || '',
+    disponible: (b.Disponible ?? b.disponible) ? 'Si' : 'No',
+  })), []);
 
-        if (loadTokenRef.current !== token) return;
+  const exportData = useMemo(() => formatExportRows(isSearching ? searchResults : items), [formatExportRows, isSearching, items, searchResults]);
 
-        const libros = data.data || [];
-        if (libros.length === 0) {
-          break;
-        }
-
-        nextBatchPageRef.current = batchPage + 1;
-        commitTotal(data.total ?? totalCountRef.current);
-        commitItems((prev) => [...prev, ...libros]);
-      }
-    } catch (err) {
-      if (loadTokenRef.current === token) {
-        console.error('Error cargando libros en segundo plano:', err);
-      }
-    } finally {
-      if (loadTokenRef.current === token) {
-        setCatalogLoading(false);
-      }
-      loadingMoreRef.current = false;
-    }
-  }, [commitItems, commitTotal, fetchBatch]);
-
-  useEffect(() => {
-    load();
-    return () => {
-      loadTokenRef.current += 1;
-      loadingMoreRef.current = false;
-    };
-  }, [load]);
-
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase();
-    return items.filter((b) => !q ||
-      (b.libros?.titulo || b.titulo || '').toLowerCase().includes(q) ||
-      (b.libros?.autor || b.autor || '').toLowerCase().includes(q) ||
-      (b.libros?.isbn || b.isbn || '').toLowerCase().includes(q)
-    );
-  }, [items, search]);
-
-  const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
-  const catalogReady = totalCount > 0 && items.length >= totalCount;
-
-  useEffect(() => {
-    const maxPage = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
-    if (page > maxPage) {
-      setPage(maxPage);
-    }
-  }, [filtered.length, page]);
+  const getExportData = useCallback(async () => {
+    const query = search.trim();
+    const data = await adminApi.getMaterials('libros', buildParams({ q: query || undefined, all: true }));
+    return formatExportRows(data.data || []);
+  }, [buildParams, formatExportRows, search]);
 
   const openNew = () => { setEditing(null); setForm(EMPTY); setModalOpen(true); };
   const openEdit = (b) => {
@@ -438,7 +487,7 @@ export default function AltaLibros() {
         toast.success('Libro creado');
       }
       setModalOpen(false);
-      load();
+      await refreshCatalog();
     } catch (err) { toast.error(err.message); }
     finally { setSubmitting(false); }
   };
@@ -449,7 +498,7 @@ export default function AltaLibros() {
       await adminApi.deleteMaterial('libros', deleteModal.id);
       toast.success('Libro eliminado');
       setDeleteModal(null);
-      load();
+      await refreshCatalog();
     } catch (err) { toast.error(err.message); }
     finally { setSubmitting(false); }
   };
@@ -467,18 +516,20 @@ export default function AltaLibros() {
           <Search size={16} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
           <input className="search-input" style={{ paddingLeft: 34 }} placeholder="Buscar por título, autor, ISBN..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>
-        <ExportButtons data={filtered} columns={EXPORT_COLS} filenameBase="libros" title="Reporte de Libros" disabled={!catalogReady} />
-        <button className="btn btn-outline" onClick={() => setBulkOpen(true)}><Upload size={16} /> Carga masiva</button>
-        <button className="btn btn-primary" onClick={openNew}><Plus size={16} /> Nuevo Libro</button>
+        <div className="flex flex-wrap gap-2">
+          <ExportButtons data={exportData} getData={getExportData} columns={EXPORT_COLS} filenameBase="libros" title="Reporte de Libros" disabled={loading} />
+          <button className="btn btn-outline" onClick={() => setBulkOpen(true)}><Upload size={16} /> Carga masiva</button>
+          <button className="btn btn-primary" onClick={openNew}><Plus size={16} /> Nuevo Libro</button>
+        </div>
       </div>
 
       {loading && items.length === 0 ? (
         <SkeletonGrid count={PER_PAGE} />
-      ) : paged.length === 0 ? (
+      ) : items.length === 0 ? (
         <EmptyState message="No se encontraron libros" />
       ) : (
         <div className="resource-grid">
-          {paged.map((b) => (
+          {items.map((b) => (
             <div key={b.id} className="resource-card">
               <div className="resource-card-title" title={b.libros?.titulo || b.titulo || 'Sin título'}>
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '65%' }}>{b.libros?.titulo || b.titulo || 'Sin título'}</span>
@@ -499,7 +550,7 @@ export default function AltaLibros() {
         </div>
       )}
 
-      <Pagination page={page} total={filtered.length} perPage={PER_PAGE} onChange={setPage} />
+      <Pagination page={page} total={totalCount} perPage={PER_PAGE} onChange={handlePageChange} />
 
       {/* Form Modal */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Editar Libro' : 'Nuevo Libro'} wide
@@ -513,7 +564,7 @@ export default function AltaLibros() {
         }
       >
         <form id="form-libro" onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+          <div className="form-grid">
             <div className="form-group"><label>Título *</label><input value={form.titulo} onChange={set('titulo')} required /></div>
             <div className="form-group"><label>Autor *</label><input value={form.autor} onChange={set('autor')} required /></div>
             <div className="form-group"><label>Clasificación *</label><input value={form.clasificacion} onChange={set('clasificacion')} required /></div>
@@ -568,7 +619,7 @@ export default function AltaLibros() {
         <p>¿Estás seguro de eliminar <strong>{deleteModal?.titulo}</strong>? Esta acción no se puede deshacer.</p>
       </Modal>
 
-      <ModalCargaMasivaLibros open={bulkOpen} onClose={() => setBulkOpen(false)} onSuccess={load} />
+      <ModalCargaMasivaLibros open={bulkOpen} onClose={() => setBulkOpen(false)} onSuccess={refreshCatalog} />
     </AnimatedPage>
   );
 }

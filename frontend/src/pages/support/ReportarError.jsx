@@ -42,12 +42,24 @@ function colorForType(name = '') {
   return COLORS[name] || '#64748b';
 }
 
-const MODULOS = [
-  'Prestamos - Nuevo prestamo',
+const MODULOS_USER = [
+  'Inicio',
   'Catalogo - Busqueda',
-  'Usuarios - Registro',
-  'Reportes - Exportar',
+  'Mis solicitudes',
+  'Perfil',
+  'Login / Acceso',
+  'Otro modulo',
+];
+
+const MODULOS_ADMIN = [
+  'Inicio',
+  'Altas - Alumnos',
+  'Altas - Libros',
+  'Usuarios',
   'Documentos',
+  'Solicitudes de libros',
+  'Prestamos de libros',
+  'Reportes',
   'Login / Acceso',
   'Otro modulo',
 ];
@@ -57,7 +69,8 @@ export default function ReportarError() {
   const { user } = useAuth();
   const [tipos, setTipos] = useState(FALLBACK_TYPES);
   const [tipo, setTipo] = useState('Funcional');
-  const [modulo, setModulo] = useState(MODULOS[0]);
+  const modulosList = user?.rol === 'Admin' ? MODULOS_ADMIN : user ? MODULOS_USER : MODULOS_ADMIN;
+  const [modulo, setModulo] = useState(modulosList[0]);
   const [titulo, setTitulo] = useState('');
   const [correo, setCorreo] = useState('');
   const [nombre, setNombre] = useState('');
@@ -68,7 +81,7 @@ export default function ReportarError() {
   const reportListPath = isSupportRole(user?.rol)
     ? '/soporte/tickets'
     : user?.rol === 'Admin'
-      ? '/admin'
+      ? '/admin/soporte/mis-reportes'
       : '/user/soporte/mis-reportes';
 
   useEffect(() => {
@@ -193,7 +206,7 @@ export default function ReportarError() {
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-[var(--text-primary)]">Donde ocurrio</label>
               <select className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[#e89a4f]" value={modulo} onChange={(e) => setModulo(e.target.value)}>
-                {MODULOS.map((m) => <option key={m}>{m}</option>)}
+                {modulosList.map((m) => <option key={m}>{m}</option>)}
               </select>
             </div>
 

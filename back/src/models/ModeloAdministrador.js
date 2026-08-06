@@ -6,13 +6,67 @@ const DEFAULT_LIMIT = 25;
 const FETCH_BATCH_SIZE = 1000;
 const PROTECTED_BOLETAS = new Set([10000000001, 1000000001]);
 
-function resolvePagination({ page = 1, limit = DEFAULT_LIMIT } = {}) {
-    const all = limit === 0;
-    const safePage = all ? 1 : (Number.isFinite(page) && page > 0 ? page : 1);
-    const safeLimit = all ? 0 : (Number.isFinite(limit) && limit > 0 ? limit : DEFAULT_LIMIT);
+function resolvePagination({ page = 1, limit = DEFAULT_LIMIT, all = false } = {}) {
+    const fetchAll = all || limit === 0;
+    const safePage = fetchAll ? 1 : (Number.isFinite(page) && page > 0 ? page : 1);
+    const safeLimit = fetchAll ? 0 : (Number.isFinite(limit) && limit > 0 ? limit : DEFAULT_LIMIT);
     const from = (safePage - 1) * safeLimit;
     const to = from + safeLimit - 1;
-    return { page: safePage, limit: safeLimit, from, to, all };
+    return { page: safePage, limit: safeLimit, from, to, all: fetchAll };
+}
+
+async function getMatchingLibroIds({ q = '', tipo_material = '' } = {}) {
+    const search = String(q || '').trim();
+    const tipo = String(tipo_material || '').trim();
+
+    if (!search && !tipo) {
+        return null;
+    }
+
+    const buildQuery = (options) => {
+        let query = supabase
+            .from('libros')
+            .select('id', options);
+
+        if (search) {
+            const term = `%${search}%`;
+            query = query.or(`titulo.ilike.${term},autor.ilike.${term},isbn.ilike.${term},clasificacion.ilike.${term}`);
+        }
+
+        if (tipo) {
+            query = query.eq('tipo_material', tipo);
+        }
+
+        return query;
+    };
+
+    const { count, error: countError } = await buildQuery({ count: 'exact', head: true });
+
+    if (countError) {
+        console.error('Error contando busqueda de libros:', countError);
+        return { success: false, message: 'Error al buscar libros' };
+    }
+
+    const result = await fetchRowsInBatches(buildQuery, count || 0);
+
+    if (!result.success) {
+        console.error('Error buscando libros:', result.message);
+        return { success: false, message: 'Error al buscar libros' };
+    }
+
+    return { success: true, ids: result.data.map((row) => row.id) };
+}
+
+function applyEjemplarFilters(query, { libroIds, disponible } = {}) {
+    if (Array.isArray(libroIds)) {
+        query = query.in('libro_id', libroIds);
+    }
+
+    if (disponible !== undefined && disponible !== '') {
+        query = query.eq('Disponible', disponible === true || disponible === 'true' || disponible === 'si');
+    }
+
+    return query;
 }
 
 async function fetchRowsInBatches(buildQuery, total) {
@@ -193,22 +247,39 @@ async function ObtenerMateriales(tipo, pagination = {}) {
 async function obtenerLibros(pagination) {
     try {
         const { page, limit, from, to, all } = resolvePagination(pagination);
+        const matching = await getMatchingLibroIds(pagination);
 
-        const { count, error: countError } = await supabase
+        if (matching && !matching.success) {
+            return matching;
+        }
+
+        const libroIds = matching?.ids;
+
+        if (Array.isArray(libroIds) && libroIds.length === 0) {
+            return { success: true, data: [], total: 0, page: 1, limit: all ? 0 : limit };
+        }
+
+        const { count, error: countError } = await applyEjemplarFilters(supabase
             .from('ejemplares')
-            .select('*', { count: 'exact', head: true });
+            .select('*', { count: 'exact', head: true }), {
+                libroIds,
+                disponible: pagination.disponible,
+            });
 
         if (countError) {
             console.error('Error obteniendo total libros:', countError);
             return { success: false, message: countError.message };
         }
 
-        const buildQuery = () => supabase
+        const buildQuery = () => applyEjemplarFilters(supabase
             .from('ejemplares')
-            .select('id, libro_id, codigo_barras, numero_ejemplar, anio, estatus_item, "Disponible", coleccion')
-            .order('id', { ascending: true });
+            .select('id, libro_id, codigo_barras, numero_ejemplar, anio, estatus_item, "Disponible", coleccion, libros(id, titulo, autor, clasificacion, isbn, tipo_material)')
+            .order('id', { ascending: true }), {
+                libroIds,
+                disponible: pagination.disponible,
+            });
 
-        let ejemplares = [];
+        let data = [];
 
         if (all) {
             const result = await fetchRowsInBatches(buildQuery, count || 0);
@@ -216,30 +287,15 @@ async function obtenerLibros(pagination) {
                 console.error('Error obteniendo libros:', result.message);
                 return result;
             }
-            ejemplares = result.data;
+            data = result.data;
         } else {
             const { data: pagedData, error } = await buildQuery().range(from, to);
             if (error) {
                 console.error('Error obteniendo libros:', error);
                 return { success: false, message: error.message };
             }
-            ejemplares = pagedData || [];
+            data = pagedData || [];
         }
-
-        // Fetch book details separately and join manually
-        const libroIds = [...new Set(ejemplares.map(e => e.libro_id).filter(Boolean))];
-        let librosMap = {};
-        if (libroIds.length > 0) {
-            const { data: librosData, error: librosError } = await supabase
-                .from('libros')
-                .select('id, titulo, autor, clasificacion, isbn, tipo_material')
-                .in('id', libroIds);
-            if (!librosError && librosData) {
-                librosMap = Object.fromEntries(librosData.map(l => [l.id, l]));
-            }
-        }
-
-        const data = ejemplares.map(e => ({ ...e, libros: librosMap[e.libro_id] || null }));
 
         return { success: true, data, total: count, page: all ? 1 : page, limit: all ? count : limit };
     } catch (error) {

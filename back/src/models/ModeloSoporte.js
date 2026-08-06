@@ -754,6 +754,7 @@ async function cambiarEstado(id, estado, user, comentario = '') {
     }
     patch.resolved_at = null;
     patch.closed_at = null;
+    patch.reopened_at = now;
     if (current.estadoRaw === 'closed') {
       patch.assigned_at = now;
     }
@@ -798,12 +799,102 @@ async function cambiarEstado(id, estado, user, comentario = '') {
     throw error;
   }
   logDbSuccess('cambiarEstado.update', { id: data.id, old_status: current.estadoRaw, new_status: nextStatus });
+
+  if (cleanComment && (isReopenAction || nextStatus === 'resolved' || nextStatus === 'closed')) {
+    const body = isReopenAction ? `Reabierto por: ${cleanComment}` : cleanComment;
+    const { error: commentError } = await supabase
+      .from('ticket_comments')
+      .insert({ ticket_id: current.id, body });
+    if (commentError) {
+      logDbError('cambiarEstado.insertComment', commentError);
+    }
+  }
+
   await registrarHistorial(current.id, 'status_changed', user, {
     old_status: current.estadoRaw,
     new_status: nextStatus,
     comment: cleanComment || `Estado cambiado a ${STATUS_FROM_DB[nextStatus]}`,
   });
   return mapTicket(data);
+}
+
+async function reabrirTicket(id, user, comentario = '') {
+  const supabase = getSupportClient();
+
+  const { data, error } = await supabase
+    .from('tickets')
+    .select(ticketSelect())
+    .or(`id.eq.${id},ticket_number.eq.${id}`)
+    .maybeSingle();
+
+  if (error) {
+    logDbError('reabrirTicket.select', error);
+    throw error;
+  }
+  if (!data) {
+    const err = new Error('Ticket no encontrado');
+    err.status = 404;
+    throw err;
+  }
+
+  if (!['resolved', 'closed'].includes(data.status)) {
+    const err = new Error('Solo se puede reabrir un ticket resuelto o cerrado');
+    err.status = 409;
+    throw err;
+  }
+
+  const cleanComment = String(comentario || '').trim();
+  const isSupport = isSupportStaff(user);
+  const isOwner = data.requester_boleta && data.requester_boleta === user?.boleta;
+
+  if (!isSupport && !isOwner) {
+    const err = new Error('No tienes permiso para reabrir este ticket');
+    err.status = 403;
+    throw err;
+  }
+  if (!cleanComment) {
+    const err = new Error('Debes escribir la razon por la que se reabrio el ticket');
+    err.status = 400;
+    throw err;
+  }
+
+  const now = new Date().toISOString();
+  const { data: updated, error: updateError } = await supabase
+    .from('tickets')
+    .update({
+      status: 'open',
+      resolved_at: null,
+      closed_at: null,
+      reopened_at: now,
+      updated_at: now,
+    })
+    .eq('id', data.id)
+    .select(ticketSelect())
+    .single();
+
+  if (updateError) {
+    logDbError('reabrirTicket.update', updateError);
+    throw updateError;
+  }
+
+  logDbSuccess('reabrirTicket.update', { id: data.id, old_status: data.status, new_status: 'open' });
+
+  await registrarHistorial(data.id, 'status_changed', user, {
+    old_status: data.status,
+    new_status: 'open',
+    comment: cleanComment,
+  });
+
+  if (cleanComment) {
+    const { error: commentError } = await supabase
+      .from('ticket_comments')
+      .insert({ ticket_id: data.id, body: `Reabierto por: ${cleanComment}` });
+    if (commentError) {
+      logDbError('reabrirTicket.insertComment', commentError);
+    }
+  }
+
+  return mapTicket(updated);
 }
 
 async function agregarComentario(id, body, isInternal, user) {
@@ -961,6 +1052,7 @@ module.exports = {
   listarTickets,
   obtenerTicket,
   tomarTicket,
+  reabrirTicket,
   cambiarEstado,
   agregarComentario,
   registrarTiempo,

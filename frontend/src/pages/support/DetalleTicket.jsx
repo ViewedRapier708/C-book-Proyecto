@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AnimatedPage from '../../components/layout/AnimatedPage';
+import CollapsibleText from '../../components/ui/CollapsibleText';
 import Modal from '../../components/ui/Modal';
 import { useAuth } from '../../context/AuthContext';
 import { soporteApi } from '../../api/soporte';
@@ -123,8 +124,13 @@ export default function DetalleTicket() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [reopenModalFor, setReopenModalFor] = useState(null);
 
-  const backPath = isSupport ? '/soporte/tickets' : '/user/soporte/mis-reportes';
+  const backPath = isSupport
+    ? '/soporte/tickets'
+    : user?.rol === 'Admin'
+      ? '/admin/soporte/mis-reportes'
+      : '/user/soporte/mis-reportes';
 
   const syncTicketState = (data) => {
     setTicket(data);
@@ -196,12 +202,10 @@ export default function DetalleTicket() {
   const canReply = isSupport ? canMutateSupportTicket && !isClosed : !isClosed;
   const stateOptions = getStateOptions(ticket);
   const canManageState = canMutateSupportTicket && stateOptions.length > 0 && (!isClosed || canReopen);
-  const selectedStateNeedsReopenReason = estado === 'Reabrir';
   const selectedStateBlockedByMissingAssignment = ['Resuelto', 'Cerrado', 'Reabrir'].includes(estado) && !ticketTaken;
   const stateSaveDisabled = busy
     || !canManageState
     || estado === ticket.estado
-    || (selectedStateNeedsReopenReason && !reopenReason.trim())
     || selectedStateBlockedByMissingAssignment;
   const isSolutionModalOpen = Boolean(solutionModalAction);
   const isCloseSolutionModal = solutionModalAction === 'Cerrado';
@@ -220,18 +224,6 @@ export default function DetalleTicket() {
         return null;
       }
       return finalSolution;
-    }
-
-    if (nextEstado === 'Reabrir') {
-      if (!ticketTaken) {
-        setError('Debes tomar el ticket antes de reabrirlo');
-        return null;
-      }
-      if (!reopenReason.trim()) {
-        setError('Debes escribir la razon por la que se reabrio el ticket');
-        return null;
-      }
-      return reopenReason.trim();
     }
 
     return '';
@@ -288,7 +280,33 @@ export default function DetalleTicket() {
       openSolutionModal(estado);
       return;
     }
-    await handleStatusChange(estado, estado === 'Reabrir' ? 'Ticket reabierto' : 'Estado actualizado');
+    if (estado === 'Reabrir') {
+      setError('');
+      setReopenReason('');
+      setReopenModalFor('support');
+      return;
+    }
+    await handleStatusChange(estado, 'Estado actualizado');
+  };
+
+  const handleReopenModalConfirm = async () => {
+    if (!reopenReason.trim()) return;
+    setBusy(true);
+    setError('');
+    try {
+      const action = reopenModalFor === 'non-support'
+        ? soporteApi.reopenTicket(ticket.id, reopenReason.trim())
+        : soporteApi.changeStatus(ticket.id, 'Reabrir', reopenReason.trim());
+      const { ticket: updated } = await action;
+      syncTicketState(updated);
+      setReopenReason('');
+      setReopenModalFor(null);
+      toast.success('Ticket reabierto');
+    } catch (err) {
+      setError(err.message || 'No se pudo reabrir el ticket');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -314,7 +332,7 @@ export default function DetalleTicket() {
                 <span className="sup-badge" style={{ background: 'rgba(220,76,63,0.15)', color: '#f87171' }}>Prioridad {ticket.prioridad}</span>
                 <span className="ml-auto text-xs text-[var(--text-muted)]">actualizado {formatDate(ticket.actualizado)}</span>
               </div>
-              <h2 className="text-xl font-extrabold text-[var(--text-primary)] tracking-tight mb-3 leading-snug">{ticket.titulo}</h2>
+              <CollapsibleText text={ticket.titulo} maxLength={40} className="text-xl font-extrabold text-[var(--text-primary)] tracking-tight mb-3 leading-snug block" />
               <div className="flex flex-wrap gap-4 text-xs text-[var(--text-secondary)] mb-4">
                 <span className="flex items-center gap-1.5"><User size={13} /> {ticket.solicitante} - {ticket.solicitanteRol || ticket.solicitanteBoleta}</span>
                 <span className="flex items-center gap-1.5"><Calendar size={13} /> Creado {formatDate(ticket.creado)}</span>
@@ -328,31 +346,29 @@ export default function DetalleTicket() {
                       Este ticket ya fue tomado por {ticket.agente}. El detalle queda en solo lectura para el resto del equipo.
                     </div>
                   )}
-                  {!ticketTaken && (
+                  {!ticketTaken && !isResolved && !isClosed && (
                     <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-glass)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-                      Toma el ticket antes de resolverlo o cerrarlo.
+                      Toma el ticket antes de resolverlo.
                     </div>
                   )}
                   <div className="flex flex-wrap gap-2">
-                    {!isResolved && !isClosed && (
-                      <>
-                        {!ticketTaken && (
-                          <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#c46f21' }} disabled={!canTake} onClick={() => runAction(() => soporteApi.takeTicket(ticket.id), 'Ticket tomado')}>
-                            <Hand size={14} /> Tomar ticket
-                          </button>
-                        )}
-                        <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#1f9d74' }} disabled={!canResolve} onClick={handleQuickResolve}>
-                          <CheckCircle2 size={14} /> Resolver
-                        </button>
-                      </>
+                    {!ticketTaken && !isResolved && !isClosed && (
+                      <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#c46f21' }} disabled={!canTake} onClick={() => runAction(() => soporteApi.takeTicket(ticket.id), 'Ticket tomado')}>
+                        <Hand size={14} /> Tomar ticket
+                      </button>
                     )}
-                    {!isClosed && (
+                    {ticketTaken && !isResolved && !isClosed && (
+                      <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#1f9d74' }} disabled={!canResolve} onClick={handleQuickResolve}>
+                        <CheckCircle2 size={14} /> Resolver
+                      </button>
+                    )}
+                    {isResolved && (
                       <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--bg-glass)] border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)] disabled:opacity-50" disabled={!canClose} onClick={handleQuickClose}>
                         <Lock size={14} /> Cerrar
                       </button>
                     )}
-                    {(isResolved || isClosed) && (
-                      <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#2563eb' }} disabled={!canReopen || !reopenReason.trim()} onClick={() => handleStatusChange('Reabrir', 'Ticket reabierto')}>
+                    {isClosed && (
+                      <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#2563eb' }} disabled={!canReopen} onClick={() => { setReopenReason(''); setReopenModalFor('support'); }}>
                         <RefreshCcw size={14} /> Reabrir
                       </button>
                     )}
@@ -363,7 +379,7 @@ export default function DetalleTicket() {
 
             <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5">
               <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 mb-3"><Bug size={15} /> Descripcion del error</h3>
-              <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-line mb-3">{ticket.descripcion}</div>
+              <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-line sup-text-wrap mb-3">{ticket.descripcion}</div>
               <div className="text-xs text-[var(--text-muted)]">Modulo reportado: {ticket.modulo}</div>
             </div>
 
@@ -392,7 +408,7 @@ export default function DetalleTicket() {
                           {item.estadoNuevo && <EstadoBadge estado={item.estadoNuevo} />}
                           <span className="ml-auto text-xs text-[var(--text-muted)]">{formatDate(item.creado)}</span>
                         </div>
-                        <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-line">
+                        <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-line sup-text-wrap">
                           {item.texto || `Evento: ${appearance.label}`}
                         </div>
                         {item.estadoAnterior && item.estadoNuevo && item.estadoAnterior !== item.estadoNuevo && (
@@ -435,7 +451,7 @@ export default function DetalleTicket() {
                       </span>
                       <span className="ml-auto text-xs text-[var(--text-muted)]">{formatDate(item.creado)}</span>
                     </div>
-                    <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-line">
+                    <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-line sup-text-wrap">
                       {item.texto}
                     </div>
                   </div>
@@ -477,20 +493,6 @@ export default function DetalleTicket() {
 
             {isSupport && (
               <>
-                {(isResolved || isClosed) && (
-                  <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4">
-                    <h3 className="text-sm font-bold text-[var(--text-primary)] mb-3">Razon de reapertura</h3>
-                    <textarea
-                      className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none resize-none min-h-[110px] disabled:opacity-60"
-                      placeholder="Indica por que este ticket debe volver a abrirse."
-                      value={reopenReason}
-                      onChange={(e) => setReopenReason(e.target.value)}
-                      disabled={!canMutateSupportTicket}
-                    />
-                    <p className="mt-2 text-xs text-[var(--text-muted)]">Obligatoria para la accion Reabrir.</p>
-                  </div>
-                )}
-
                 <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4">
                   <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 mb-3"><PauseCircle size={14} /> Cambiar estado</h3>
                   <select className="w-full px-3 py-2 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] mb-2 disabled:opacity-60" value={estado} onChange={(e) => setEstado(e.target.value)} disabled={!canManageState}>
@@ -501,6 +503,21 @@ export default function DetalleTicket() {
                   </button>
                 </div>
               </>
+            )}
+
+            {!isSupport && (isResolved || isClosed) && (
+              <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4">
+                <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 mb-3"><RefreshCcw size={14} /> Reabrir ticket</h3>
+                <p className="text-xs text-[var(--text-muted)] mb-3">Si el problema persiste, puedes solicitar la reapertura de este ticket.</p>
+                <button
+                  className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50"
+                  style={{ background: '#2563eb' }}
+                  disabled={busy}
+                  onClick={() => { setReopenReason(''); setReopenModalFor('non-support'); }}
+                >
+                  <RefreshCcw size={14} /> Reabrir ticket
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -542,6 +559,47 @@ export default function DetalleTicket() {
             placeholder={isCloseSolutionModal ? 'Describe la solucion final del ticket.' : 'Describe con detalle la solucion aplicada.'}
             value={solutionDescription}
             onChange={(e) => setSolutionDescription(e.target.value)}
+            disabled={busy}
+          />
+        </div>
+      </Modal>
+      <Modal
+        open={Boolean(reopenModalFor)}
+        onClose={() => { if (!busy) setReopenModalFor(null); }}
+        title="Reabrir ticket"
+        footer={(
+          <>
+            <button
+              type="button"
+              className="px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-glass)] text-sm font-medium text-[var(--text-secondary)] disabled:opacity-50"
+              onClick={() => setReopenModalFor(null)}
+              disabled={busy}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className="px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50"
+              style={{ background: '#2563eb' }}
+              onClick={handleReopenModalConfirm}
+              disabled={busy || !reopenReason.trim()}
+            >
+              {busy ? 'Reabriendo...' : 'Reabrir ticket'}
+            </button>
+          </>
+        )}
+      >
+        <div className="space-y-3">
+          <p className="text-sm text-[var(--text-secondary)]">
+            {reopenModalFor === 'non-support'
+              ? 'Estas seguro de reabrir este ticket? Indica la razon por la que solicitas la reapertura.'
+              : 'Estas seguro de reabrir este ticket? Indica la razon por la que se reabre.'}
+          </p>
+          <textarea
+            className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none resize-none min-h-[120px] disabled:opacity-60"
+            placeholder="Describe por que se reabre este ticket."
+            value={reopenReason}
+            onChange={(e) => setReopenReason(e.target.value)}
             disabled={busy}
           />
         </div>

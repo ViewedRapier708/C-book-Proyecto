@@ -78,12 +78,14 @@ export default function Usuarios() {
           <Search size={16} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
           <input className="search-input" style={{ paddingLeft: 34 }} placeholder="Buscar por boleta o correo..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>
-        <select value={filter} onChange={(e) => { setFilter(e.target.value); setPage(1); }} style={{ maxWidth: 200 }}>
-          <option value="">Todos</option>
-          <option value="docs">Con documentación</option>
-          <option value="no-docs">Sin documentación</option>
-        </select>
-        <ExportButtons data={filtered} columns={EXPORT_COLS} filenameBase="usuarios" title="Reporte de Usuarios" />
+        <div className="flex flex-wrap gap-2 items-center">
+          <select className="w-full sm:w-auto sm:max-w-[200px]" value={filter} onChange={(e) => { setFilter(e.target.value); setPage(1); }}>
+            <option value="">Todos</option>
+            <option value="docs">Con documentación</option>
+            <option value="no-docs">Sin documentación</option>
+          </select>
+          <ExportButtons data={filtered} columns={EXPORT_COLS} filenameBase="usuarios" title="Reporte de Usuarios" />
+        </div>
       </div>
 
       {paged.length === 0 ? (

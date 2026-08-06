@@ -9,7 +9,8 @@ const controladorAdministrador = require('../controllers/ControladorAdministrado
 const controladorAnalytics = require('../controllers/ControladorAnalytics.js');
 const controladorSoporte = require('../controllers/ControladorSoporte.js');
 const sessionGuard = require('../middleware/sessionGuard.js');
-const horarioGuard = require('../middleware/horarioGuard.js');
+// horarioGuard queda disponible para futura reactivación del horario de biblioteca.
+// const horarioGuard = require('../middleware/horarioGuard.js');
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
@@ -26,7 +27,8 @@ router.post('/logout', sessionGuard, cerrarSesion);
 router.get('/recursos', obtenerRecursosPorTipo);
 router.get('/libros/mas-solicitados', sessionGuard, obtenerLibrosMasSolicitados);
 router.get('/recursos/usuario', sessionGuard, controladorSolicitudes.obtencionSolicitudesUsuario);
-router.post('/solicitud', sessionGuard, horarioGuard, middlewareAutenticacion.verificarDisponibilidad, controladorSolicitudes.crearSolicitud);
+// Para reactivar horario: agregar horarioGuard después de sessionGuard.
+router.post('/solicitud', sessionGuard, middlewareAutenticacion.verificarDisponibilidad, controladorSolicitudes.crearSolicitud);
 router.delete('/solicitud/:tipo/:id', sessionGuard, controladorSolicitudes.cancelarSolicitud);
 router.patch('/CuentaUpdate', sessionGuard, CambioDatos);
 router.post('/cambiar-contrasena', sessionGuard, cambiarContrasenaPropia);
@@ -79,6 +81,7 @@ router.post('/soporte/tickets', sessionGuard, controladorSoporte.crearTicket);
 router.get('/soporte/tickets', sessionGuard, controladorSoporte.listarTickets);
 router.get('/soporte/tickets/:id', sessionGuard, controladorSoporte.obtenerTicket);
 router.post('/soporte/tickets/:id/tomar', sessionGuard, controladorSoporte.tomarTicket);
+router.post('/soporte/tickets/:id/reabrir', sessionGuard, controladorSoporte.reabrirTicket);
 router.patch('/soporte/tickets/:id/estado', sessionGuard, controladorSoporte.cambiarEstado);
 router.post('/soporte/tickets/:id/comentarios', sessionGuard, controladorSoporte.agregarComentario);
 router.post('/soporte/tickets/:id/tiempo', sessionGuard, controladorSoporte.registrarTiempo);

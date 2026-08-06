@@ -139,6 +139,15 @@ async function tomarTicket(req, res) {
   }
 }
 
+async function reabrirTicket(req, res) {
+  try {
+    const ticket = await soporte.reabrirTicket(req.params.id, getUser(req), req.body.comentario);
+    return res.json({ ticket });
+  } catch (err) {
+    return handleError(res, err);
+  }
+}
+
 async function cambiarEstado(req, res) {
   try {
     const ticket = await soporte.cambiarEstado(req.params.id, req.body.estado, getUser(req), req.body.comentario);
@@ -214,6 +223,7 @@ module.exports = {
   listarTickets,
   obtenerTicket,
   tomarTicket,
+  reabrirTicket,
   cambiarEstado,
   agregarComentario,
   registrarTiempo,

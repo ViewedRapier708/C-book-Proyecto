@@ -32,7 +32,10 @@ node_modules/
 *.swp
 *.swo
 
-# System
+# Design docs / planning
+mds/
+
+# OS/editor
 .DS_Store
 Thumbs.db
 

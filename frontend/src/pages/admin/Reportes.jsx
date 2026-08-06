@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   FileBarChart, FileSpreadsheet,
-  Users, BookOpen,
+  Users, BookOpen, AlertCircle,
 } from 'lucide-react';
 import { adminApi } from '../../api/admin';
 import { exportToExcel, exportMultiSheetExcel } from '../../utils/exportExcel';
@@ -46,6 +46,7 @@ export default function Reportes() {
   const [selected, setSelected] = useState('usuarios');
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(false);
+  const [exportError, setExportError] = useState('');
 
   const loadData = async (type) => {
     if (data[type]) return;
@@ -76,7 +77,7 @@ export default function Reportes() {
     }
   };
 
-  useEffect(() => { loadData(selected); }, [selected]);
+  useEffect(() => { setExportError(''); loadData(selected); }, [selected]);
 
   const currentData = selected === 'completo' ? null : (data[selected] || []);
   const currentCols = columnMap[selected] || [];
@@ -84,7 +85,16 @@ export default function Reportes() {
   const getVal = (row, col) => col.accessor ? col.accessor(row) : row[col.key];
 
   const handleExcelSingle = () => {
-    if (!currentData) return;
+    setExportError('');
+    if (!currentData) {
+      setExportError('No hay datos para exportar');
+      return;
+    }
+    if (currentData.length === 0) {
+      setExportError('No hay registros para exportar');
+      return;
+    }
+    console.log(`[Reportes] Exportando ${selected}: ${currentData.length} registros`);
     const formatted = currentData.map(row => {
       const obj = {};
       currentCols.forEach(c => {
@@ -97,6 +107,7 @@ export default function Reportes() {
   };
 
   const handleExcelCompleto = () => {
+    setExportError('');
     const sheets = Object.keys(columnMap).filter(key => key !== 'completo').map(key => ({
       name: key.charAt(0).toUpperCase() + key.slice(1),
       data: (data[key] || []).map(row => {
@@ -143,7 +154,7 @@ export default function Reportes() {
 
       {/* Export Buttons */}
       <motion.div className="card" style={{ marginBottom: '1.5rem' }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <div>
             <h3 style={{ margin: 0 }}>
               {reportTypes.find(r => r.id === selected)?.label || 'Reporte'}
@@ -163,6 +174,12 @@ export default function Reportes() {
               <FileSpreadsheet size={16} /> Exportar Excel
             </button>
           </div>
+          {exportError && (
+            <div style={{ marginTop: '0.5rem', fontSize: '0.82rem', color: '#f87171' }}>
+              <AlertCircle size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '0.3rem' }} />
+              {exportError}
+            </div>
+          )}
         </div>
       </motion.div>
 
@@ -172,29 +189,45 @@ export default function Reportes() {
       ) : selected !== 'completo' && currentData && currentData.length > 0 ? (
         <motion.div className="card" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <h4 style={{ margin: '0 0 1rem' }}>Vista Previa (primeros 20 registros)</h4>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
-              <thead>
-                <tr>
-                  {currentCols.map(c => (
-                    <th key={c.key} style={{ textAlign: 'left', padding: '0.6rem 0.75rem', borderBottom: '2px solid var(--border)', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>
-                      {c.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {currentData.slice(0, 20).map((row, idx) => (
-                  <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
+          <div>
+            <div className="hidden sm:block" style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                <thead>
+                  <tr>
                     {currentCols.map(c => (
-                      <td key={c.key} style={{ padding: '0.5rem 0.75rem', color: 'var(--text-primary)' }}>
-                        {(() => { const v = getVal(row, c); return typeof v === 'boolean' ? (v ? 'Sí' : 'No') : (v ?? '-'); })()}
-                      </td>
+                      <th key={c.key} style={{ textAlign: 'left', padding: '0.6rem 0.75rem', borderBottom: '2px solid var(--border)', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>
+                        {c.label}
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {currentData.slice(0, 20).map((row, idx) => (
+                    <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
+                      {currentCols.map(c => (
+                        <td key={c.key} style={{ padding: '0.5rem 0.75rem', color: 'var(--text-primary)' }}>
+                          {(() => { const v = getVal(row, c); return typeof v === 'boolean' ? (v ? 'Sí' : 'No') : (v ?? '-'); })()}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="sm:hidden space-y-3">
+              {currentData.slice(0, 20).map((row, idx) => (
+                <div key={idx} className="glass-card">
+                  {currentCols.map(c => (
+                    <div key={c.key} className="flex justify-between py-1.5 text-sm border-b border-[var(--border-color)] last:border-b-0">
+                      <span className="text-[var(--text-muted)] font-semibold text-xs uppercase tracking-wider">{c.label}</span>
+                      <span className="text-[var(--text-primary)] text-right ml-2">
+                        {(() => { const v = getVal(row, c); return typeof v === 'boolean' ? (v ? 'Sí' : 'No') : (v ?? '-'); })()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
           {currentData.length > 20 && (
             <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '1rem' }}>

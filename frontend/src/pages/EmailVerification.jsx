@@ -92,6 +92,10 @@ export default function EmailVerification() {
               <strong>{email}</strong>
             </p>
 
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.75rem', lineHeight: 1.5 }}>
+              El correo puede tardar unos minutos en llegar. Si no lo encuentras, revisa tu bandeja de spam.
+            </p>
+
             <form onSubmit={handleSubmit} style={{ width: '100%', marginTop: '1rem' }}>
               <input
                 type="text"
@@ -108,6 +112,11 @@ export default function EmailVerification() {
                   fontSize: '1.25rem',
                   fontWeight: 600,
                   color: 'var(--text-primary)',
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '0.6rem 0.85rem',
+                  outline: 'none',
                 }}
                 autoFocus
                 required

@@ -48,6 +48,7 @@ export default function HorarioRestriction({ children }) {
           display: 'flex',
           alignItems: 'center',
           gap: '0.75rem',
+          flexWrap: 'wrap',
           padding: '0.7rem 1.2rem',
           background: '#f59e0b18',
           borderBottom: '1px solid #f59e0b44',

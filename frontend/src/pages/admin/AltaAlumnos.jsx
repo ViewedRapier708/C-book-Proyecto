@@ -435,21 +435,22 @@ export default function AltaAlumnos() {
           />
         </div>
         <select
-          className="search-input"
-          style={{ maxWidth: 170 }}
+          className="search-input w-full sm:max-w-[170px]"
           value={grupoFilter}
           onChange={(e) => { setGrupoFilter(e.target.value); setPage(1); }}
         >
           <option value="">Todos los grupos</option>
           {grupos.map(g => <option key={g} value={g}>{g}</option>)}
         </select>
-        <ExportButtons data={filtered} columns={EXPORT_COLS} filenameBase="alumnos" title="Reporte de Alumnos" />
-        <button className="btn btn-outline" onClick={() => setBulkOpen(true)}>
-          <Upload size={16} /> Carga masiva
-        </button>
-        <button className="btn btn-primary" onClick={openNew}>
-          <Plus size={16} /> Nuevo alumno
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <ExportButtons data={filtered} columns={EXPORT_COLS} filenameBase="alumnos" title="Reporte de Alumnos" />
+          <button className="btn btn-outline" onClick={() => setBulkOpen(true)}>
+            <Upload size={16} /> Carga masiva
+          </button>
+          <button className="btn btn-primary" onClick={openNew}>
+            <Plus size={16} /> Nuevo alumno
+          </button>
+        </div>
       </div>
 
       {/* Grid */}

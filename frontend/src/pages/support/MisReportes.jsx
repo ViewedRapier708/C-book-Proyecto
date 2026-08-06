@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Plus, Search, ChevronRight, RefreshCcw, AlertCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
+import CollapsibleText from '../../components/ui/CollapsibleText';
+import Modal from '../../components/ui/Modal';
 import AnimatedPage from '../../components/layout/AnimatedPage';
 import { useAuth } from '../../context/AuthContext';
 import { soporteApi } from '../../api/soporte';
@@ -33,8 +36,15 @@ export default function MisReportes() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [reopenTarget, setReopenTarget] = useState(null);
+  const [reopenReason, setReopenReason] = useState('');
+  const [reopening, setReopening] = useState(false);
 
-  const detailBase = isSupportRole(user?.rol) ? '/soporte/tickets' : '/user/soporte/mis-reportes';
+  const detailBase = isSupportRole(user?.rol)
+    ? '/soporte/tickets'
+    : user?.rol === 'Admin'
+      ? '/admin/soporte/mis-reportes'
+      : '/user/soporte/mis-reportes';
   const reportPath = isSupportRole(user?.rol) ? '/soporte/reportar' : '/user/soporte/reportar';
 
   const load = async () => {
@@ -47,6 +57,23 @@ export default function MisReportes() {
       setError(err.message || 'No se pudieron cargar tus reportes');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleReopen = async () => {
+    if (!reopenTarget) return;
+    setReopening(true);
+    setError('');
+    try {
+      await soporteApi.reopenTicket(reopenTarget.id, reopenReason.trim());
+      toast.success(`Ticket ${reopenTarget.folio} reabierto`);
+      setReopenTarget(null);
+      setReopenReason('');
+      load();
+    } catch (err) {
+      setError(err.message || 'No se pudo reabrir el ticket');
+    } finally {
+      setReopening(false);
     }
   };
 
@@ -126,7 +153,7 @@ export default function MisReportes() {
                     <EstadoBadge estado={t.estado} />
                     <TipoBadge tipo={t.tipo} />
                   </div>
-                  <div className="text-sm font-medium text-[var(--text-primary)] mb-1.5 leading-snug">{t.titulo}</div>
+                  <CollapsibleText text={t.titulo} maxLength={40} className="text-sm font-medium text-[var(--text-primary)] mb-1.5 leading-snug block" />
                   <div className="flex flex-wrap gap-2 text-xs text-[var(--text-muted)]">
                     <span>{t.modulo}</span>
                     <span>-</span>
@@ -134,7 +161,18 @@ export default function MisReportes() {
                     {t.agente && <><span>-</span><span>Agente: <strong className="text-[var(--text-secondary)]">{t.agente}</strong></span></>}
                   </div>
                 </div>
-                <ChevronRight size={16} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors flex-shrink-0 mt-1" />
+                <div className="flex items-center gap-2 flex-shrink-0 mt-1">
+                  {['Resuelto', 'Cerrado'].includes(t.estado) && (
+                    <button
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold"
+                      style={{ background: '#2563eb', color: '#fff' }}
+                      onClick={(e) => { e.stopPropagation(); setReopenTarget(t); setReopenReason(''); }}
+                    >
+                      <RefreshCcw size={12} /> Reabrir
+                    </button>
+                  )}
+                  <ChevronRight size={16} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors" />
+                </div>
               </div>
             </motion.div>
           ))}
@@ -144,6 +182,46 @@ export default function MisReportes() {
           )}
         </div>
       </div>
+
+      <Modal
+        open={Boolean(reopenTarget)}
+        onClose={() => { if (!reopening) setReopenTarget(null); }}
+        title={`Reabrir ticket ${reopenTarget?.folio || ''}`}
+        footer={(
+          <>
+            <button
+              type="button"
+              className="px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-glass)] text-sm font-medium text-[var(--text-secondary)] disabled:opacity-50"
+              onClick={() => setReopenTarget(null)}
+              disabled={reopening}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className="px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50"
+              style={{ background: '#2563eb' }}
+              onClick={handleReopen}
+              disabled={reopening || !reopenReason.trim()}
+            >
+              {reopening ? 'Reabriendo...' : 'Reabrir ticket'}
+            </button>
+          </>
+        )}
+      >
+        <div className="space-y-3">
+          <p className="text-sm text-[var(--text-secondary)]">
+            Estas seguro de reabrir este ticket? Indica la razon por la que solicita la reapertura.
+          </p>
+          <textarea
+            className="w-full px-3 py-2.5 bg-[var(--bg-glass)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none resize-none min-h-[120px] disabled:opacity-60"
+            placeholder="Describe por que necesitas reabrir este ticket."
+            value={reopenReason}
+            onChange={(e) => setReopenReason(e.target.value)}
+            disabled={reopening}
+          />
+        </div>
+      </Modal>
     </AnimatedPage>
   );
 }

@@ -72,7 +72,7 @@ export default function EditarPerfil() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: '1.5rem', maxWidth: 860 }}>
+      <div className="grid gap-6 max-w-[860px] md:grid-cols-[1fr_1.6fr]">
         {/* Avatar & info de solo lectura */}
         <motion.div className="card" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
           <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>

@@ -1,4 +1,4 @@
-import { Headphones } from 'lucide-react';
+import { Bug } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { isSupportRole } from '../../utils/authRoutes';
@@ -22,15 +22,25 @@ export default function SupportFab() {
     location.pathname.startsWith('/soporte');
 
   return (
-    <button
-      type="button"
-      className={`support-fab ${active ? 'support-fab-active' : ''}`}
-      onClick={() => navigate(target)}
-      aria-label="Soporte"
-      title="Soporte"
-    >
-      <Headphones size={18} />
-      <span>Soporte</span>
-    </button>
+    <>
+      <button
+        type="button"
+        className={`support-fab ${active ? 'support-fab-active' : ''}`}
+        onClick={() => navigate(target)}
+        aria-label="Soporte"
+        title="Soporte"
+      >
+        <Bug size={15} />
+        <span>Reportar un error</span>
+      </button>
+      <button
+        type="button"
+        className="support-mobile-link"
+        onClick={() => navigate(target)}
+      >
+        <Bug size={16} />
+        Reportar un error
+      </button>
+    </>
   );
 }
